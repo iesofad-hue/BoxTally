@@ -42,4 +42,6 @@ Product photos load straight from Snap-on's public image server by part number. 
 
 ## Keeping it running
 
-- Supabase pauses free projects after a week with no activity. Normal use of the site (anyone opening it) counts as activity. If it does get paused, restore it from the Supabase dashboard; nothing is lost.
+- Supabase pauses free projects after a week with no activity. `.github/workflows/keep-supabase-awake.yml` reads one row twice a week so that never happens, even when nobody opens the site. If it does get paused anyway, restore it from the Supabase dashboard; nothing is lost.
+- GitHub turns off scheduled workflows in a repo that has had no commits for 60 days. If that happens, open the Actions tab, pick **Keep Supabase awake** and click **Enable workflow**.
+- `robots.txt` and `sitemap.xml` help search engines find the site. When the site moves to its own domain, change the addresses in both files (and `og:url` / `og:image` in `index.html`).

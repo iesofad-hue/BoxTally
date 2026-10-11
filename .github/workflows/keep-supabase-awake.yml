@@ -1,0 +1,34 @@
+name: Keep Supabase awake
+
+# Free Supabase projects pause after about a week with no activity.
+# This makes one tiny read twice a week so the database never goes to sleep,
+# even during quiet stretches when nobody opens the site.
+on:
+  schedule:
+    - cron: "17 14 * * 1,4" # Mondays and Thursdays, 14:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      # The project URL and publishable key are already public in index.html.
+      SB_URL: https://ctteljhhjsfvyyiwzxiy.supabase.co
+      SB_KEY: sb_publishable_y4-sxz8INJZu3fU6xIwWLw_9krKIQJb
+    steps:
+      - name: Read one row from the price list
+        run: |
+          for attempt in 1 2 3; do
+            code=$(curl -s -o /tmp/out.json -w "%{http_code}" \
+              -H "apikey: $SB_KEY" \
+              "$SB_URL/rest/v1/catalog?select=part_number&limit=1")
+            echo "Attempt $attempt: HTTP $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 30
+          done
+          echo "::error::Supabase didn't answer. It may already be paused: restore it from the Supabase dashboard."
+          exit 1
