@@ -4,10 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Snap-on Toolbox Tracker</title>
-<meta name="description" content="Track the Snap-on tools in your box, what they're worth today, and what's next on your wishlist. Prices and photos update daily from Snap-on's store.">
+<meta name="description" content="Track the Snap-on tools in your box, what they're worth at today's store prices, and what's next on your wishlist. Store prices are shared by the people who track each tool.">
 <meta name="theme-color" content="#10151c">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://iesofad-hue.github.io/snapon-toolbox/">
 <meta property="og:title" content="Snap-on Toolbox Tracker">
 <meta property="og:description" content="Your tools, what they're worth today, and price drops on your wishlist.">
+<meta property="og:image" content="https://iesofad-hue.github.io/snapon-toolbox/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Snap-on Toolbox Tracker: box worth, wishlist savings and price drops">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='11' fill='%2310151c'/%3E%3Cg fill='none' stroke='%2378a6ff' stroke-width='3.4' stroke-linecap='round'%3E%3Ccircle cx='18' cy='18' r='8'/%3E%3Cpath d='M24 24 38 38'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -297,6 +304,28 @@ dialog h2 { font-size: 1.6rem; text-transform: uppercase; }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 9px 16px; border-radius: 10px; font-size: .9rem; max-width: calc(100vw - 32px); box-shadow: var(--shadow-hi); z-index: 5; }
 footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
 @media (prefers-reduced-motion: no-preference) { .bar > span { transition: width .5s ease; } .toast { animation: rise .25s ease both; } }
+
+/* ---------- export ---------- */
+.export { display: inline-flex; gap: 4px; margin-left: auto; }
+@media (max-width: 560px) { .export { margin-left: 0; width: 100%; } .export .btn { flex: 1; justify-content: center; } }
+#printSheet { display: none; }
+@media print {
+  @page { margin: 14mm; }
+  body { background: #fff; color: #000; font-size: 10pt; padding: 0; }
+  body > :not(#printSheet) { display: none !important; }
+  #printSheet { display: block; font-family: var(--f-body); }
+  #printSheet h1 { font-family: var(--f-display); font-size: 22pt; text-transform: uppercase; margin: 0 0 2pt; }
+  #printSheet h2 { font-family: var(--f-display); font-size: 14pt; text-transform: uppercase; margin: 16pt 0 4pt; break-after: avoid; }
+  #printSheet .meta { color: #444; margin: 0 0 8pt; }
+  #printSheet .totals { display: flex; flex-wrap: wrap; gap: 4pt 18pt; margin: 6pt 0 2pt; font-weight: 600; }
+  #printSheet table { width: 100%; border-collapse: collapse; }
+  #printSheet th, #printSheet td { border-bottom: 1px solid #bbb; padding: 3pt 5pt; text-align: left; vertical-align: top; }
+  #printSheet th { font-size: 8pt; text-transform: uppercase; letter-spacing: .05em; border-bottom: 1.5px solid #000; }
+  #printSheet td.n, #printSheet th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #printSheet tr { break-inside: avoid; }
+  #printSheet .pn { font-family: var(--f-mono); background: none; padding: 0; border: 0; }
+  #printSheet .foot { color: #444; font-size: 8pt; margin-top: 12pt; }
+}
 </style>
 </head>
 <body>
@@ -349,8 +378,8 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   </div>
 
   <div class="tabs" role="tablist">
-    <button class="tab" role="tab" id="tab-tools" aria-selected="true" type="button">Owned <span class="count" id="c-tools">0</span></button>
-    <button class="tab" role="tab" id="tab-wish" aria-selected="false" type="button">Wishlist <span class="count" id="c-wish">0</span></button>
+    <button class="tab" role="tab" id="tab-tools" aria-selected="true" aria-controls="list" type="button">Owned <span class="count" id="c-tools">0</span></button>
+    <button class="tab" role="tab" id="tab-wish" aria-selected="false" aria-controls="list" type="button">Wishlist <span class="count" id="c-wish">0</span></button>
   </div>
 
   <form class="quick" id="quick" novalidate>
@@ -381,12 +410,19 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     <input class="search" id="q" type="search" placeholder="Search name, part number, notes" aria-label="Search">
     <select id="fCat" aria-label="Category"></select>
     <select id="fSort" aria-label="Sort"></select>
+    <span class="export">
+      <button class="btn small" type="button" id="exportCsv" title="Download a spreadsheet of your box and wishlist">Download CSV</button>
+      <button class="btn small" type="button" id="exportPrint" title="Print a tool list, or save it as a PDF">Print / PDF</button>
+    </span>
   </div>
 
-  <div class="grid" id="list" aria-live="polite"></div>
+  <span class="sr" id="listStatus" role="status"></span>
+  <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner">Not affiliated with Snap-on. Prices and photos come from Snap-on's public online store and may be out of date; check the store before you buy. · <a href="privacy.html" style="color:inherit">Privacy</a></footer>
+<footer class="inner">Not affiliated with Snap-on. Store prices are added by people who track each tool and may be out of date; product photos come from Snap-on's public image server. Check Snap-on's store before you buy. · <a href="privacy.html" style="color:inherit">Privacy</a></footer>
+
+<div id="printSheet"></div>
 
 <input type="file" id="photoInput" accept="image/*" hidden>
 
@@ -584,11 +620,20 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     render();
   }
 
+  // The database hands back at most 1,000 rows per request, so big toolboxes load in pages.
+  async function fetchAllItems() {
+    const out = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await sb.from("items").select("*").order("created_at").order("id").range(from, from + 999);
+      if (error) throw error;
+      out.push(...(data || []));
+      if (!data || data.length < 1000) return out;
+    }
+  }
   async function loadItems() {
     if (signedIn()) {
-      const { data, error } = await sb.from("items").select("*").order("created_at");
-      if (error) { toast("Couldn't load your tools. Check your connection and reload."); state.items = []; }
-      else state.items = data || [];
+      try { state.items = await fetchAllItems(); }
+      catch { toast("Couldn't load your tools. Check your connection and reload."); state.items = []; }
     } else state.items = local.read();
     await loadCatalog();
     state.loaded = true;
@@ -598,12 +643,21 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     if (!sb) return;
     const pns = [...new Set(state.items.map((r) => r.part_number).filter((p) => p && PN_RE.test(p)))];
     if (!pns.length) { state.catalog = {}; state.hist = {}; return; }
-    const [c, h] = await Promise.all([
-      sb.from("catalog").select("part_number,name,price,was_price,status,image_path,checked_at,requested_at").in("part_number", pns),
-      sb.from("catalog_prices").select("part_number,d,price").in("part_number", pns).order("d").limit(5000),
-    ]);
-    if (!c.error) state.catalog = Object.fromEntries((c.data || []).map((r) => [r.part_number, r]));
-    if (!h.error) { const m = {}; (h.data || []).forEach((r) => { (m[r.part_number] ||= []).push({ d: r.d, p: Number(r.price) }); }); state.hist = m; }
+    // Ask in batches so the request stays short even for a box with hundreds of part numbers.
+    const batches = [];
+    for (let i = 0; i < pns.length; i += 150) batches.push(pns.slice(i, i + 150));
+    const res = await Promise.all(batches.map((b) => Promise.all([
+      sb.from("catalog").select("part_number,name,price,was_price,status,image_path,checked_at").in("part_number", b),
+      // newest first, so if there's ever more history than one request holds, the oldest days are what's left out
+      sb.from("catalog_prices").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
+    ])));
+    if (res.every(([c]) => !c.error)) state.catalog = Object.fromEntries(res.flatMap(([c]) => c.data || []).map((r) => [r.part_number, r]));
+    if (res.every(([, h]) => !h.error)) {
+      const m = {};
+      res.flatMap(([, h]) => h.data || []).forEach((r) => { (m[r.part_number] ||= []).push({ d: r.d, p: Number(r.price) }); });
+      Object.values(m).forEach((a) => a.sort((x, y) => String(x.d).localeCompare(String(y.d))));
+      state.hist = m;
+    }
   }
   /* other people's price updates show up without a reload */
   let pollTimer = null;
@@ -662,7 +716,9 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     }
     if (moved === rows.length) { try { localStorage.removeItem(LS); } catch {} }
     $("importYes").disabled = false; $("importBanner").hidden = true;
-    toast(`Moved ${moved} tool${moved === 1 ? "" : "s"} to your account`);
+    toast(moved === rows.length
+      ? `Moved ${moved} tool${moved === 1 ? "" : "s"} to your account`
+      : `Moved ${moved} of ${rows.length} tools. The rest are still saved in this browser.`);
     await loadItems();
   };
 
@@ -822,7 +878,21 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
       list.innerHTML = rows.length ? rows.map((r, i) => (state.tab === "owned" ? cardOwned : cardWish)(r, Math.min(i, 12))).join("") : `<div class="empty"><strong>No matches</strong><span>Nothing matches that search or category.</span></div>`;
       if (!state.introDone) { state.introDone = true; list.classList.add("intro"); setTimeout(() => list.classList.remove("intro"), 1400); }
     }
+    announceCount();
     renderRail(); renderInsights(); renderWatch(); schedulePoll();
+  }
+
+  // Screen readers hear a short count after the list settles, not every card on every keystroke.
+  let announceTimer = 0;
+  function announceCount() {
+    clearTimeout(announceTimer);
+    if (!state.loaded) return;
+    announceTimer = setTimeout(() => {
+      const all = rowsOf(state.tab).length, shown = all ? filtered().length : 0;
+      const what = state.tab === "owned" ? "in your box" : "on your wishlist";
+      const text = !all ? `Nothing ${what} yet` : shown === all ? `${all} tool${all === 1 ? "" : "s"} ${what}` : `${shown} of ${all} tools ${what} match`;
+      if ($("listStatus").textContent !== text) $("listStatus").textContent = text;
+    }, 500);
   }
 
   function renderRail() {
@@ -921,7 +991,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     if (signedIn()) {
       const blob = await shrink(file, 1600, 0.85);
       if (!blob) throw { code: "type" };
-      if (blob.size > 5 * 1024 * 1024) throw { code: "big" };
+      if (blob.size > 3 * 1024 * 1024) throw { code: "big" };
       return { photo_path: await uploadBlob(blob), photo_at: new Date().toISOString() };
     }
     const blob = await shrink(file, 900, 0.8);
@@ -929,8 +999,16 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     const data = await new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(f.result); f.onerror = rej; f.readAsDataURL(blob); });
     return { photo_data: data, photo_at: new Date().toISOString() };
   }
-  const PHOTO_ERR = { type: "That photo format isn't supported. Try a JPG or PNG.", big: "That photo is too big. Try a smaller one.", quota: "This browser is out of room for photos. Sign in to store photos in your account." };
-  const photoErr = (e) => PHOTO_ERR[e && e.code] || "Couldn't save that photo. Try again.";
+  const PHOTO_ERR = { type: "That photo format isn't supported. Try a JPG or PNG.", big: "That photo is too big. Try a smaller one.", quota: "This browser is out of room for photos. Sign in to store photos in your account.", limit: "You've reached the limit of 300 photos per account. Remove some photos to add more." };
+  const photoErr = (e) => {
+    if (e && PHOTO_ERR[e.code]) return PHOTO_ERR[e.code];
+    const msg = String((e && e.message) || "");
+    if (/row-level security/i.test(msg)) return PHOTO_ERR.limit;
+    if (/maximum allowed size|too large/i.test(msg)) return PHOTO_ERR.big;
+    return "Couldn't save that photo. Try again.";
+  };
+  // Messages the database writes for people (limits, price rules) are shown as they are.
+  const dbMsg = (e) => (e && e.code === "P0001" && e.message ? e.message : null);
   function dropOldPhoto(oldPath, newPath) { if (signedIn() && oldPath && oldPath !== newPath) sb.storage.from("tool-photos").remove([oldPath]).catch(() => {}); }
 
   let photoTarget = null;
@@ -972,6 +1050,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     state.tab = tab; state.confirm = null;
     $("tab-tools").setAttribute("aria-selected", tab === "owned");
     $("tab-wish").setAttribute("aria-selected", tab === "wishlist");
+    $("list").setAttribute("aria-labelledby", tab === "owned" ? "tab-tools" : "tab-wish");
     setSortOptions(); render();
     try { localStorage.setItem(LS + "-tab", tab); } catch {}
   }
@@ -982,7 +1061,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 3800); }
   async function guard(fn, okMsg) {
     try { await fn(); if (okMsg) toast(okMsg); return true; }
-    catch (e) { toast(e && e.code === "quota" ? PHOTO_ERR.quota : "Couldn't save that. Check your connection and try again."); return false; }
+    catch (e) { toast(e && e.code === "quota" ? PHOTO_ERR.quota : dbMsg(e) || "Couldn't save that. Check your connection and try again."); return false; }
   }
   const blank = (list) => list === "owned"
     ? { list, name: "", part_number: "", category: "Other", price: 0, date_bought: today(), condition: "Good", location: "", notes: "", priority: null, saved: 0 }
@@ -1043,6 +1122,60 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   });
 
   $("list").addEventListener("submit", (e) => { const f = e.target.closest("[data-price-form]"); if (!f) return; e.preventDefault(); savePrice(f); });
+
+  /* ---------- export: a spreadsheet, or a printable list (handy for insurance) ---------- */
+  const byCatName = (a, b) => String(a.category || "").localeCompare(String(b.category || "")) || displayName(a).localeCompare(displayName(b));
+  const exportRows = () => [...rowsOf("owned").sort(byCatName), ...rowsOf("wishlist").sort(byCatName)];
+  // Text that starts like a formula is prefixed so spreadsheet apps show it as text instead of running it.
+  const csvText = (v) => { let s = String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const csvNum = (n) => (n == null || n === "" || !Number.isFinite(Number(n)) ? "" : String(Math.round(Number(n) * 100) / 100));
+  function toCsv(rows) {
+    const head = ["List", "Tool", "Part number", "Category", "Condition", "Date bought", "Price paid / your price", "Store price", "Regular price (on sale)", "Store price updated", "Where it's kept", "Priority", "Saved so far", "Notes", "Store link"];
+    const lines = rows.map((r) => {
+      const s = storeOf(r), owned = r.list === "owned";
+      return [
+        csvText(owned ? "Owned" : "Wishlist"), csvText(displayName(r)), csvText(r.part_number), csvText(r.category),
+        csvText(owned ? r.condition : ""), csvText(owned ? r.date_bought || "" : ""), csvNum(Number(r.price) || ""),
+        csvNum(storePrice(r)), csvNum(wasPrice(r)), csvText(storeOk(r) && s.checked_at ? String(s.checked_at).slice(0, 10) : ""),
+        csvText(owned ? r.location : ""), csvText(owned ? "" : r.priority || "Want"), csvNum(owned ? "" : Number(r.saved) || ""),
+        csvText(r.notes), csvText(r.part_number ? storeLink(r.part_number) : ""),
+      ].join(",");
+    });
+    return "﻿" + [head.map(csvText).join(","), ...lines].join("\r\n") + "\r\n";
+  }
+  $("exportCsv").onclick = () => {
+    const rows = exportRows();
+    if (!rows.length) { toast("Add some tools first, then you can download them."); return; }
+    const url = URL.createObjectURL(new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = `snapon-toolbox-${today()}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    toast(`Downloaded ${rows.length} tool${rows.length === 1 ? "" : "s"}`);
+  };
+  function printHtml() {
+    const owned = rowsOf("owned").sort(byCatName), wish = rowsOf("wishlist").sort(byCatName);
+    const paid = owned.reduce((s, r) => s + (Number(r.price) || 0), 0);
+    const worth = owned.reduce((s, r) => s + (storePrice(r) ?? (Number(r.price) || 0)), 0);
+    const who = state.user ? state.user.user_metadata?.full_name || state.user.email || "" : "";
+    const m = (n) => (n ? money(n, true) : "");
+    const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(storePrice(r))}</td><td>${esc(r.location || "")}</td></tr>`).join("");
+    const wishRows = wish.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.priority || "Want")}</td><td class="n">${m(wishCost(r))}</td><td class="n">${m(Number(r.saved) || 0)}</td></tr>`).join("");
+    return `<h1>Snap-on Toolbox</h1>
+      <p class="meta">Tool list as of ${esc(fmtDate(today()))}${who ? ` · ${esc(who)}` : ""}</p>
+      <h2>Owned tools</h2>
+      ${owned.length ? `<p class="totals"><span>${owned.length} tool${owned.length === 1 ? "" : "s"}</span><span>Paid ${money(paid, true)}</span><span>Worth at store prices ${money(worth, true)}</span></p>
+      <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Condition</th><th>Bought</th><th class="n">Paid</th><th class="n">Store price</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
+      ${wish.length ? `<h2>Wishlist</h2><table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Priority</th><th class="n">Price</th><th class="n">Saved</th></tr></thead><tbody>${wishRows}</tbody></table>` : ""}
+      <p class="foot">Store prices are added by people who track each tool and may be out of date. Not affiliated with Snap-on.</p>`;
+  }
+  $("exportPrint").onclick = () => {
+    if (!state.items.length) { toast("Add some tools first, then you can print them."); return; }
+    $("printSheet").innerHTML = printHtml();
+    window.print();
+  };
+  window.addEventListener("beforeprint", () => { if (!$("printSheet").innerHTML) $("printSheet").innerHTML = printHtml(); });
+  window.addEventListener("afterprint", () => { $("printSheet").innerHTML = ""; });
 
   /* ---------- form ---------- */
   const dlg = $("dlg");
@@ -1121,7 +1254,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   });
 
   /* ---------- start ---------- */
-  try { const t = localStorage.getItem(LS + "-tab"); if (t === "wishlist") { state.tab = "wishlist"; $("tab-tools").setAttribute("aria-selected", "false"); $("tab-wish").setAttribute("aria-selected", "true"); setSortOptions(); } } catch {}
+  try { const t = localStorage.getItem(LS + "-tab"); if (t === "wishlist") { state.tab = "wishlist"; $("tab-tools").setAttribute("aria-selected", "false"); $("tab-wish").setAttribute("aria-selected", "true"); $("list").setAttribute("aria-labelledby", "tab-wish"); setSortOptions(); } } catch {}
   renderAccount();
   render();
   if (!sb) { state.items = local.read(); state.loaded = true; render(); return; }

@@ -23,6 +23,10 @@ Safeguards in the `submit_price` database function:
 - at most 60 updates per person per hour
 - every update is logged in `price_reports` (who, what, when) in case something needs undoing
 
+### Export
+
+**Download CSV** saves a spreadsheet of the box and wishlist (opens in Excel, Google Sheets or Numbers). **Print / PDF** prints a clean tool list with totals, or saves it as a PDF from the print dialog. Handy to keep for insurance in case of theft or a shop fire.
+
 ### Store photos
 
 Product photos load straight from Snap-on's public image server by part number. When a part number has no photo there, the card shows a placeholder, and people can always upload their own photo instead.
