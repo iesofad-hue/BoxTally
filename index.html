@@ -106,7 +106,17 @@ h1 em { font-style: normal; color: var(--accent); }
 
 .dash { display: grid; grid-template-columns: 1.15fr 1fr 1.5fr; gap: 12px; }
 @media (max-width: 900px) { .dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .dash .watch { grid-column: 1 / -1; } }
-@media (max-width: 560px) { .dash { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) {
+  /* phone: box worth and wishlist side by side, price watch as one compact row underneath */
+  .band { padding-block: calc(18px + env(safe-area-inset-top, 0px)) 16px; }
+  .band .inner { gap: 14px; }
+  .top p { font-size: .9rem; margin-top: 6px; }
+  .dash { gap: 8px; }
+  .tile { padding: 12px; gap: 4px; border-radius: 12px; }
+  .tile .big { font-size: 2rem; }
+  .tile .sub { font-size: .78rem; line-height: 1.35; }
+  .watch .note { font-size: .82rem; }
+}
 .tile { border: 1px solid var(--band-line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; align-content: start; min-width: 0; background: rgb(255 255 255 / .035); }
 .tile .label { color: var(--band-muted); }
 .tile .big { font-family: var(--f-display); font-size: 2.8rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
@@ -119,6 +129,10 @@ h1 em { font-style: normal; color: var(--accent); }
 .watch li .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .watch .note { display: block; color: var(--band-muted); font-size: .86rem; }
 .watch { display: grid; gap: 6px; align-content: start; }
+.watch-empty { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.watch-empty .note { flex: 1 1 200px; }
+.btn-watch { font: inherit; font-size: .82rem; font-weight: 600; padding: 6px 12px; border-radius: 999px; cursor: pointer; background: rgb(255 255 255 / .08); color: var(--band-fg); border: 1px solid var(--band-line); white-space: nowrap; }
+.btn-watch:hover { filter: brightness(1.15); background: rgb(255 255 255 / .14); }
 .thumb { width: 28px; height: 28px; border-radius: 7px; background: var(--plate); overflow: hidden; display: grid; place-items: center; flex: none; }
 .thumb img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
 .thumb img.mine { object-fit: cover; padding: 0; }
@@ -153,19 +167,20 @@ h1 em { font-style: normal; color: var(--accent); }
 .shop { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 12px; box-shadow: var(--shadow); }
 .shop-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
 .shop-head h2 { font-size: 1.15rem; text-transform: uppercase; }
-.shop-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; }
-@media (max-width: 760px) { .shop-row { grid-template-columns: minmax(0, 1fr); } }
-.shop-find, .shop-add { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
-.shop-find input, .shop-add input { flex: 1 1 160px; width: auto; }
-.shop-add { padding-left: 10px; border-left: 1px solid var(--line); }
-@media (max-width: 760px) { .shop-add { padding-left: 0; border-left: 0; padding-top: 10px; border-top: 1px solid var(--line); } }
+.shop-find { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.shop-find input { flex: 1 1 220px; width: auto; }
+@media (max-width: 560px) { .shop-find .btn { flex: 1 1 auto; justify-content: center; } }
 .shop-cats { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .shop-cats a { font-size: .82rem; font-weight: 500; padding: 4px 11px; border-radius: 999px; background: var(--chip); color: var(--fg); text-decoration: none; border: 1px solid transparent; }
 .shop-cats a:hover { border-color: var(--accent); color: var(--accent); }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.toolbar .search { flex: 1 1 220px; min-width: 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; flex: 1 1 520px; min-width: 0; }
+.filters .search { flex: 1 1 220px; min-width: 0; }
+@media (max-width: 560px) { .filters .search { flex-basis: 100%; } .filters select { flex: 1 1 0; } }
 input, select, textarea { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; }
-.toolbar select { width: auto; }
+.toolbar select { width: auto; min-width: 0; }
+/* typed part numbers stay in the mono face; the hint text reads like every other field */
+input.mono::placeholder { font-family: var(--f-body); }
 textarea { resize: vertical; min-height: 64px; }
 .btn { font: inherit; font-weight: 600; border-radius: 8px; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 .btn:hover { background: var(--sunk); }
@@ -178,9 +193,7 @@ textarea { resize: vertical; min-height: 64px; }
 .btn.ghost:hover { background: var(--sunk); }
 .btn svg { width: 16px; height: 16px; flex: none; }
 
-.insights { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-@media (max-width: 960px) { .insights { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .insights .feed { grid-column: 1 / -1; } }
-@media (max-width: 620px) { .insights { grid-template-columns: minmax(0, 1fr); } }
+.insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; box-shadow: var(--shadow); min-width: 0; }
 .panel h2 { font-size: 1.15rem; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
 .panel h2 .live { width: 7px; height: 7px; border-radius: 50%; background: var(--good); position: relative; }
@@ -390,27 +403,24 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   </form>
 
   <section class="shop" aria-labelledby="shopTitle">
-    <div class="shop-head"><h2 id="shopTitle">Shop Snap-on</h2><span class="meta-line">Search opens Snap-on's store in a new tab. Found one you want? Add it here by part number.</span></div>
-    <div class="shop-row">
-      <div class="shop-find">
-        <input id="shopQ" type="search" placeholder="Search the store, e.g. 3/8 ratchet" aria-label="Search Snap-on's store" autocomplete="off">
-        <a class="btn primary" id="shopGo" href="https://shop.snapon.com" target="_blank" rel="noopener">Search Snap-on <span aria-hidden="true">↗</span></a>
-      </div>
-      <form class="shop-add" id="shopAdd" novalidate>
-        <input id="shopPn" class="mono" placeholder="Part number, e.g. CT9010DB" aria-label="Part number to add to your wishlist" autocapitalize="characters" autocomplete="off">
-        <button class="btn" type="submit">Add to wishlist</button>
-      </form>
+    <div class="shop-head"><h2 id="shopTitle">Shop Snap-on</h2><span class="meta-line" id="shopNote">Search opens Snap-on's store in a new tab. Found one you want? Put its part number on your wishlist.</span></div>
+    <div class="shop-find">
+      <input id="shopQ" type="search" placeholder="Search the store, e.g. 3/8 ratchet" aria-label="Search Snap-on's store" autocomplete="off">
+      <a class="btn primary" id="shopGo" href="https://shop.snapon.com" target="_blank" rel="noopener">Search Snap-on <span aria-hidden="true">↗</span></a>
+      <button class="btn" type="button" id="shopWish">Add to wishlist</button>
     </div>
     <div class="shop-cats" id="shopCats"><span class="label">Browse</span></div>
   </section>
 
-  <div class="insights" id="insights"></div>
+  <div class="insights" id="insights" hidden></div>
 
-  <div class="toolbar">
-    <input class="search" id="q" type="search" placeholder="Search name, part number, notes" aria-label="Search">
-    <select id="fCat" aria-label="Category"></select>
-    <select id="fSort" aria-label="Sort"></select>
-    <span class="export">
+  <div class="toolbar" id="toolbar" hidden>
+    <span class="filters" id="filters">
+      <input class="search" id="q" type="search" placeholder="Search name, part number, notes" aria-label="Search">
+      <select id="fCat" aria-label="Category"></select>
+      <select id="fSort" aria-label="Sort"></select>
+    </span>
+    <span class="export" id="exportBox">
       <button class="btn small" type="button" id="exportCsv" title="Download a spreadsheet of your box and wishlist">Download CSV</button>
       <button class="btn small" type="button" id="exportPrint" title="Print a tool list, or save it as a PDF">Print / PDF</button>
     </span>
@@ -860,6 +870,16 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     $("c-tools").textContent = t.length;
     $("c-wish").textContent = w.length;
     $("q-add").textContent = state.tab === "owned" ? "Add to box" : "Add to wishlist";
+    $("q-pn").placeholder = state.tab === "owned" ? "Part number, e.g. F80" : "Part number, e.g. CT9010DB";
+    $("shopWish").hidden = state.tab === "wishlist";
+    $("shopNote").textContent = state.tab === "wishlist"
+      ? "Search opens Snap-on's store in a new tab. Found one you want? Type its part number in the box above."
+      : "Search opens Snap-on's store in a new tab. Found one you want? Put its part number on your wishlist.";
+    // Search, filters and export only show up once there's something to search, filter or export.
+    const tabHas = state.loaded && rowsOf(state.tab).length > 0, anyItems = state.loaded && state.items.length > 0;
+    $("filters").hidden = !tabHas;
+    $("exportBox").hidden = !anyItems;
+    $("toolbar").hidden = !tabHas && !anyItems;
     $("localBanner").hidden = !sb || signedIn() || !state.loaded;
     $("q-hint").textContent = !sb
       ? "Prices can't load right now. You can still add tools and fill in prices yourself."
@@ -922,7 +942,8 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   function feedHtml() {
     const ev = activity();
     const icon = (e) => { const p = e.r && ["add", "photo", "wish"].includes(e.kind) ? photoOf(e.r) : null; return p ? `<span class="ic img">${imgTag(p, "")}</span>` : `<span class="ic ${e.kind}">${{ add: ICON.add, wish: ICON.star, down: ICON.down, up: ICON.up, photo: ICON.cam, check: ICON.check }[e.kind]}</span>`; };
-    return `<div class="panel feed"><h2><span class="live" aria-hidden="true"></span>Recent activity</h2>${ev.length ? `<ol>${ev.map((e) => `<li>${icon(e)}<span class="what">${e.html}</span><span class="when">${rel(e.t)}</span></li>`).join("")}</ol>` : `<span class="meta-line">Adds, photos and price moves show up here.</span>`}</div>`;
+    if (!ev.length) return "";
+    return `<div class="panel feed"><h2><span class="live" aria-hidden="true"></span>Recent activity</h2><ol>${ev.map((e) => `<li>${icon(e)}<span class="what">${e.html}</span><span class="when">${rel(e.t)}</span></li>`).join("")}</ol></div>`;
   }
   function renderInsights() {
     const box = $("insights");
@@ -931,25 +952,28 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
       rowsOf("owned").forEach((r) => { const d = deptOf(r.category); totals[d] = (totals[d] || 0) + (storePrice(r) ?? (Number(r.price) || 0)); });
       const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]), max = entries.length ? entries[0][1] : 0;
       const warranty = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
-      box.innerHTML = feedHtml() + `<div class="panel"><h2>Worth by department</h2>${entries.length ? entries.map(([c, v]) => `<div class="cat"><div class="line"><span>${esc(c)}</span><span class="num">${money(Math.round(v))}</span></div><div class="bar"><span style="width:${max ? Math.max(3, (v / max) * 100) : 0}%"></span></div></div>`).join("") : `<span class="meta-line">Totals show up once you add tools.</span>`}</div>
-        <div class="panel"><h2>Warranty pile</h2>${warranty.length ? warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}</span>${r.part_number ? `<span class="pn">${esc(r.part_number)}</span>` : ""}</div></div>`).join("") + `<span class="meta-line">Take these to the truck next time it stops.</span>` : `<span class="meta-line">Nothing marked “Needs warranty.”</span>`}</div>`;
+      const html = feedHtml()
+        + (entries.length ? `<div class="panel"><h2>Worth by department</h2>${entries.map(([c, v]) => `<div class="cat"><div class="line"><span>${esc(c)}</span><span class="num">${money(Math.round(v))}</span></div><div class="bar"><span style="width:${max ? Math.max(3, (v / max) * 100) : 0}%"></span></div></div>`).join("")}</div>` : "")
+        + (warranty.length ? `<div class="panel"><h2>Warranty pile</h2>${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}</span>${r.part_number ? `<span class="pn">${esc(r.part_number)}</span>` : ""}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span></div>` : "");
+      box.innerHTML = html; box.hidden = !html;
     } else {
       const wl = rowsOf("wishlist");
       const next = wl.filter((r) => wishCost(r) > 0).sort((a, b) => PRIS.indexOf(a.priority || "Want") - PRIS.indexOf(b.priority || "Want") || (wishCost(a) - (Number(a.saved) || 0)) - (wishCost(b) - (Number(b.saved) || 0)))[0];
       const pr = PRIS.map((p) => [p, wl.filter((r) => (r.priority || "Want") === p).reduce((s, r) => s + wishCost(r), 0)]);
-      box.innerHTML = feedHtml() + `<div class="panel"><h2>Next up</h2>${next ? `<div class="nextup">${thumb(next)}<div class="cat"><strong>${esc(displayName(next))}</strong><span class="meta-line">${money(Math.max(wishCost(next) - (Number(next.saved) || 0), 0))} left of ${money(wishCost(next))}</span><div class="bar"><span style="width:${Math.min(100, Math.round(((Number(next.saved) || 0) / wishCost(next)) * 100))}%"></span></div></div></div>` : `<span class="meta-line">Add a priced tool to see what's next.</span>`}</div>
-        <div class="panel"><h2>By priority</h2>${pr.map(([p, v]) => `<div class="cat"><div class="line"><span>${p}</span><span class="num">${money(Math.round(v))}</span></div></div>`).join("")}</div>`;
+      const html = feedHtml()
+        + (next ? `<div class="panel"><h2>Next up</h2><div class="nextup">${thumb(next)}<div class="cat"><strong>${esc(displayName(next))}</strong><span class="meta-line">${money(Math.max(wishCost(next) - (Number(next.saved) || 0), 0))} left of ${money(wishCost(next))}</span><div class="bar"><span style="width:${Math.min(100, Math.round(((Number(next.saved) || 0) / wishCost(next)) * 100))}%"></span></div></div></div></div>` : "")
+        + (wl.length ? `<div class="panel"><h2>By priority</h2>${pr.map(([p, v]) => `<div class="cat"><div class="line"><span>${p}</span><span class="num">${money(Math.round(v))}</span></div></div>`).join("")}</div>` : "");
+      box.innerHTML = html; box.hidden = !html;
     }
   }
 
   function renderWatch() {
     const changes = state.items.map((r) => ({ r, ch: lastChange(r) })).filter((x) => x.ch).sort((a, b) => String(b.ch.d).localeCompare(String(a.ch.d)) || (a.ch.to - a.ch.from) - (b.ch.to - b.ch.from));
     const trackedN = state.items.filter((r) => r.part_number).length;
-    let html = changes.length
-      ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul>`
-      : `<span class="note">${trackedN ? `No price changes yet across ${trackedN} part number${trackedN === 1 ? "" : "s"}. Drops and increases show up here.` : "Add part numbers to start watching prices."}</span>`;
-    html += `<span class="note">Store prices come from people who track each tool. Tap Update price on a card after checking Snap-on's store.</span>`;
-    $("watch").innerHTML = html;
+    const wishN = rowsOf("wishlist").length;
+    $("watch").innerHTML = changes.length
+      ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Prices are shared by people who track each tool.</span>`
+      : `<div class="watch-empty"><span class="note">${trackedN ? `Watching ${trackedN} part number${trackedN === 1 ? "" : "s"}. No price changes yet.` : "Nothing watched yet. Price drops on your tools show up here."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
     $("sync").dataset.mode = signedIn() ? "account" : "local";
     $("syncText").textContent = signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
   }
@@ -1095,12 +1119,14 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const shopHref = () => { const q = $("shopQ").value.trim(); return q ? storeLink(q) : "https://shop.snapon.com"; };
   $("shopQ").addEventListener("input", () => { $("shopGo").href = shopHref(); });
   $("shopQ").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("shopGo").href = shopHref(); $("shopGo").click(); } });
-  $("shopAdd").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const pn = cleanPn($("shopPn").value);
-    if (!pn) { toast("Type the part number from Snap-on's product page."); $("shopPn").focus(); return; }
-    if (await addByPn(pn, "wishlist")) { $("shopPn").value = ""; if (state.tab !== "wishlist") setTab("wishlist"); }
-  });
+  // One add box for everything: these jump to the Wishlist tab and put the cursor in it.
+  function goAddWish() {
+    if (state.tab !== "wishlist") setTab("wishlist");
+    $("quick").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    $("q-pn").focus({ preventScroll: true });
+  }
+  $("shopWish").onclick = goAddWish;
+  $("watch").addEventListener("click", (e) => { if (e.target.closest("[data-watch-go]")) goAddWish(); });
 
   $("list").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-act]"); if (!btn) return;
