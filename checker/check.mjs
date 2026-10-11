@@ -91,7 +91,7 @@ const { chromium } = await import("playwright");
 const isWindows = process.platform === "win32";
 const wanted = process.env.CHECKER_BROWSER || (isWindows ? "msedge" : "bundled");
 const headless = process.env.CHECKER_HEADLESS ? process.env.CHECKER_HEADLESS === "1" : !isWindows;
-const launchOpts = { headless, args: ["--window-size=1100,850"] };
+const launchOpts = { headless, args: ["--window-size=1280,900"] };
 let browser;
 try {
   browser = await chromium.launch(wanted === "bundled" ? launchOpts : { ...launchOpts, channel: wanted });
@@ -146,36 +146,38 @@ async function readProduct(pn) {
     const sku = decodeURIComponent(new URL(page.url()).pathname.split("/").pop() || "").toUpperCase();
     if (sku !== pn) { note(`${pn}: the store opened a different product (${sku})`); return null; }
 
-    try {
-      await page.waitForSelector("h1", { timeout: 20000 });
-    } catch {
-      const seen = await page.evaluate(() => (document.body ? document.body.innerText : "").replace(/\s+/g, " ").trim().slice(0, 200)).catch(() => "");
-      note(`${pn}: the product page stayed blank. API calls: ${apiSeen.slice(-8).join(", ") || "none"}. Text: ${seen.slice(0, 160)}`);
-      throw new Error("the product page stayed blank");
-    }
-    // Read the name, the prices next to it (a struck-through regular price shows before a sale price), and the main photo.
+    // Wait for the store's own product data (name, price, photo); the visible page is the backup.
+    for (let t = 0; t < 20 && !feed; t++) await page.waitForTimeout(500);
+
+    const anchor = (feed && feed.Description) || "";
     let dom = { name: "", prices: [], image: null };
     for (let t = 0; t < 12; t++) {
-      dom = await page.evaluate(() => {
-        const name = (document.querySelector("h1") || {}).textContent?.trim() || "";
+      dom = await page.evaluate((anchorText) => {
+        const heads = [...document.querySelectorAll("h1")].map((h) => h.textContent.trim()).filter(Boolean);
+        const name = anchorText || heads[0] || "";
         const text = document.body.innerText;
         const i = name ? text.indexOf(name) : -1;
-        const end = i >= 0 ? text.indexOf("ADD TO CART", i) : -1;
-        const seg = i >= 0 ? text.slice(i, end > 0 ? end : i + 800) : "";
+        const end = i >= 0 ? text.search(/ADD TO CART/i) : -1;
+        const seg = i >= 0 ? text.slice(i, end > i ? end : i + 800) : "";
         const prices = [...seg.matchAll(/\$([\d,]+\.\d{2})/g)].map((m) => Number(m[1].replace(/,/g, "")));
         const im = [...document.querySelectorAll("img")].find((x) => /snap-on-products-hr\.imgix\.net/.test(x.currentSrc || x.src) && x.naturalWidth > 150 && x.naturalWidth <= 800);
         return { name, prices, image: im ? (im.currentSrc || im.src) : null };
-      });
-      if (dom.prices.length && (dom.image || t > 4)) break;
+      }, anchor);
+      if (dom.prices.length || (feed && t > 3)) break;
       await page.waitForTimeout(1000);
     }
 
-    const listed = feed && typeof feed.Price === "number" ? feed.Price : null;
-    const price = dom.prices.length ? dom.prices[dom.prices.length - 1] : listed;
-    if (price == null) { note(`${pn}: the product page showed no price`); return null; }
+    const listed = feed && typeof feed.Price === "number" && feed.Price > 0 ? feed.Price : null;
+    const shown = dom.prices.length ? dom.prices[dom.prices.length - 1] : null;
+    const price = shown ?? listed;
+    if (price == null) {
+      const seen = await page.evaluate(() => (document.body ? document.body.innerText : "").replace(/\s+/g, " ").trim().slice(0, 200)).catch(() => "");
+      note(`${pn}: no price found. Product data: ${feed ? "yes" : "no"}. API calls: ${apiSeen.slice(-8).join(", ") || "none"}. Text: ${seen.slice(0, 160)}`);
+      return null;
+    }
     const wasPrice = dom.prices.length >= 2 && dom.prices[0] > price ? dom.prices[0] : null;
     return {
-      name: (dom.name || (feed && feed.Description) || "").slice(0, 200) || null,
+      name: ((feed && feed.Description) || dom.name || "").slice(0, 200) || null,
       price,
       wasPrice,
       image: (feed && typeof feed.PrimaryImage === "string" && feed.PrimaryImage) || dom.image,
