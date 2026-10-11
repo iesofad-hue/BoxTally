@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Snap-on Toolbox Tracker</title>
-<meta name="description" content="Track the Snap-on tools in your box, what they're worth at today's store prices, and what's next on your wishlist. Store prices are shared by the people who track each tool.">
+<title>BoxTally · Snap-on tool tracker</title>
+<meta name="description" content="BoxTally tracks the Snap-on tools in your box, what they're worth at today's store prices, and what's next on your wishlist. Store prices are shared by the people who track each tool.">
 <meta name="theme-color" content="#10151c">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://boxtally.app/">
-<meta property="og:title" content="Snap-on Toolbox Tracker">
+<meta property="og:title" content="BoxTally · Snap-on tool tracker">
+<meta property="og:site_name" content="BoxTally">
 <meta property="og:description" content="Your tools, what they're worth today, and price drops on your wishlist.">
 <meta property="og:image" content="https://boxtally.app/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Snap-on Toolbox Tracker: box worth, wishlist savings and price drops">
+<meta property="og:image:alt" content="BoxTally: box worth, wishlist savings and price drops">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='11' fill='%2310151c'/%3E%3Cg fill='none' stroke='%2378a6ff' stroke-width='3.4' stroke-linecap='round'%3E%3Ccircle cx='18' cy='18' r='8'/%3E%3Cpath d='M24 24 38 38'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -412,7 +413,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     <div class="top">
       <div>
         <span class="eyebrow">Tool truck ledger</span>
-        <h1>Snap-on <em>Toolbox</em></h1>
+        <h1>Box<em>Tally</em></h1>
         <p>What's in the box, what it's worth today, and what's next off the truck.</p>
       </div>
       <div class="top-actions">
@@ -501,7 +502,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner">Not affiliated with Snap-on. Store prices are added by people who track each tool and may be out of date; product photos come from Snap-on's public image server. Check Snap-on's store before you buy. · <a href="privacy.html" style="color:inherit">Privacy</a></footer>
+<footer class="inner">BoxTally is not affiliated with Snap-on. Store prices are added by people who track each tool and may be out of date; product photos come from Snap-on's public image server. Check Snap-on's store before you buy. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a></footer>
 
 <div id="printSheet"></div>
 
@@ -1315,13 +1316,13 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     const m = (n) => (n ? money(n, true) : "");
     const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(storePrice(r))}</td><td>${esc(r.location || "")}</td></tr>`).join("");
     const wishRows = wish.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.priority || "Want")}</td><td class="n">${m(wishCost(r))}</td><td class="n">${m(Number(r.saved) || 0)}</td></tr>`).join("");
-    return `<h1>Snap-on Toolbox</h1>
+    return `<h1>BoxTally</h1>
       <p class="meta">Tool list as of ${esc(fmtDate(today()))}${who ? ` · ${esc(who)}` : ""}</p>
       <h2>Owned tools</h2>
       ${owned.length ? `<p class="totals"><span>${owned.length} tool${owned.length === 1 ? "" : "s"}</span><span>Paid ${money(paid, true)}</span><span>Worth at store prices ${money(worth, true)}</span></p>
       <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Condition</th><th>Bought</th><th class="n">Paid</th><th class="n">Store price</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
       ${wish.length ? `<h2>Wishlist</h2><table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Priority</th><th class="n">Price</th><th class="n">Saved</th></tr></thead><tbody>${wishRows}</tbody></table>` : ""}
-      <p class="foot">Store prices are added by people who track each tool and may be out of date. Not affiliated with Snap-on.</p>`;
+      <p class="foot">Store prices are added by people who track each tool and may be out of date. BoxTally is not affiliated with Snap-on.</p>`;
   }
   $("exportPrint").onclick = () => {
     if (!state.items.length) { toast("Add some tools first, then you can print them."); return; }

@@ -1,4 +1,6 @@
-# Snap-on Toolbox Tracker
+# BoxTally
+
+A Snap-on tool tracker at [boxtally.app](https://boxtally.app). Not affiliated with Snap-on.
 
 Track the Snap-on tools in your box, what they're worth today, and what's next on your wishlist.
 
