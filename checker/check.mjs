@@ -74,6 +74,17 @@ const { chromium } = await import("playwright");
 const browser = await chromium.launch();
 const page = await browser.newPage({ locale: "en-US" });
 
+// A short log saved with the run, so problems can be diagnosed from the database.
+const logLines = [];
+const note = (line) => { console.log(line); logLines.push(line); };
+let apiSeen = [];
+page.on("response", (r) => {
+  try {
+    const u = new URL(r.url());
+    if (u.hostname === "shop.snapon.com" && u.pathname.startsWith("/api/")) apiSeen.push(`${r.status()} ${u.pathname}`);
+  } catch {}
+});
+
 let changes = 0, found = 0, notFound = 0, errors = 0;
 
 async function readProduct(pn) {
@@ -90,7 +101,7 @@ async function readProduct(pn) {
       path: location.pathname,
       text: (document.body ? document.body.innerText : "").replace(/\s+/g, " ").trim().slice(0, 300),
     })).catch(() => ({ title: "", path: "", text: "" }));
-    console.log(`  ${pn}: no product data. Page "${seen.title}" at ${seen.path}: ${seen.text.slice(0, 160)}`);
+    note(`${pn}: no product data. Page "${seen.title}" at ${seen.path}. API calls: ${apiSeen.slice(0, 12).join(", ") || "none"}. Text: ${seen.text.slice(0, 160)}`);
     if (/request unsuccessful|incapsula incident|access denied|pardon our interruption|verify you are human|are you a robot/i.test(seen.title + " " + seen.text)) {
       throw new BlockedError(`blocked (${seen.title || "no title"}: ${seen.text.slice(0, 120)})`);
     }
@@ -152,6 +163,7 @@ try {
   for (let k = 0; k < parts.length; k++) {
     const { part_number: pn, has_image, last_price } = parts[k];
     await updateRun({ done: k, current: pn });
+    apiSeen = [];
     try {
       const p = await readProduct(pn);
       const checked_at = now();
@@ -166,27 +178,31 @@ try {
         if (last_price != null && Number(last_price) !== p.price) changes++;
         found++;
         console.log(`  ${pn}: $${p.price}${p.wasPrice ? ` (was $${p.wasPrice})` : ""}${fields.image_path ? " + photo" : ""}`);
+      } else if (last_price != null) {
+        // It had a price before: one failed lookup isn't enough to call it gone. Keep the last good price.
+        errors++;
+        note(`${pn}: no price this time; keeping the last price ($${last_price})`);
       } else {
         await rest(`catalog?part_number=eq.${encodeURIComponent(pn)}`, { method: "PATCH", body: { status: "not_found", checked_at } });
         notFound++;
-        console.log(`  ${pn}: not found`);
+        note(`${pn}: not found`);
       }
     } catch (e) {
       if (e instanceof BlockedError) throw e;
       errors++;
-      console.warn(`  ${pn}: error, will retry next time (${e.message})`);
+      note(`${pn}: error, will retry next time (${String(e.message).slice(0, 200)})`);
     }
     if (k < parts.length - 1) await sleep(PAUSE_MS);
   }
 
-  if (errors && !found && !notFound) throw new Error("Every product page failed to load. Snap-on's site may be down.");
-  await updateRun({ status: "ok", done: parts.length, current: null, finished_at: now(), changes });
+  if (errors && !found && !notFound) throw new Error("No product page gave a price this time. Snap-on's site may be down or not showing prices to the checker.");
+  await updateRun({ status: "ok", done: parts.length, current: null, finished_at: now(), changes, log: logLines.join("\n").slice(0, 8000) || null });
   console.log(`Done: ${found} priced, ${notFound} not found, ${errors} errors, ${changes} price changes.`);
 } catch (e) {
   const message = e instanceof BlockedError
     ? `Snap-on's site blocked the automatic check. The checker doesn't try to get around that. Details: ${String(e.message).slice(0, 180)}`
     : `The price check stopped: ${String(e.message || e).slice(0, 200)}`;
-  await updateRun({ status: "failed", current: null, finished_at: now(), error: message });
+  await updateRun({ status: "failed", current: null, finished_at: now(), error: message, log: logLines.join("\n").slice(0, 8000) || null });
   console.error(message);
   process.exitCode = 1;
 } finally {
