@@ -110,7 +110,8 @@ async function readProduct(pn) {
   }
   let data = null;
   try { data = await res.json(); } catch { data = null; }
-  if (!data || String(data.SKU || "").toUpperCase() !== pn) return null;
+  if (!data) { note(`${pn}: product data came back empty (${res.status()} ${new URL(res.url()).pathname})`); return null; }
+  if (String(data.SKU || "").toUpperCase() !== pn) { note(`${pn}: the store showed a different product (${String(data.SKU || "?")})`); return null; }
 
   // The page shows a struck-through regular price next to the sale price when something is on sale.
   let shown = [];
@@ -159,7 +160,23 @@ async function saveImage(pn, imageUrl) {
   return path;
 }
 
+// First visit: answer the cookie banner with the most private choice, the same as a careful visitor would.
+// The store waits for this choice before it runs searches.
+async function answerCookieBanner() {
+  const reject = page.locator("#onetrust-reject-all-handler, button:has-text('Necessary Cookies Only')").first();
+  try {
+    await reject.waitFor({ state: "visible", timeout: 12000 });
+    await reject.click();
+    await page.waitForTimeout(1000);
+    note("Cookie banner: chose Necessary Cookies Only");
+  } catch {
+    note("Cookie banner: none shown");
+  }
+}
+
 try {
+  await page.goto(STORE, { waitUntil: "domcontentloaded", timeout: 45000 });
+  await answerCookieBanner();
   for (let k = 0; k < parts.length; k++) {
     const { part_number: pn, has_image, last_price } = parts[k];
     await updateRun({ done: k, current: pn });
