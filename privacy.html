@@ -37,7 +37,7 @@ a { color: var(--accent); }
 
   <h2>Where it's kept</h2>
   <p>Your data is stored with Supabase, the database service this site uses. We don't sell it, share it with advertisers, or use it for anything other than running your tracker.</p>
-  <p>The site is served through Cloudflare, which counts page views (which pages, rough location by country, browser type) so we can see how many people use it. It doesn't use cookies or track individual visitors.</p>
+  <p>The site uses Cloudflare Web Analytics to count page views (which pages, rough location by country, browser type) so we can see how many people use it. It doesn't use cookies or track individual visitors.</p>
 
   <h2>Store prices and photos</h2>
   <p>Store prices are added by the people who track each tool, after checking Snap-on's online store, so they can be out of date. Product photos load from Snap-on's public image server. This site isn't affiliated with Snap-on.</p>
@@ -45,5 +45,7 @@ a { color: var(--accent); }
   <h2>Deleting your data</h2>
   <p>You can delete any tool or photo yourself on the site. To delete your whole account and everything in it, email <a href="mailto:contact@boxtally.app">contact@boxtally.app</a> from the address you signed in with.</p>
 </main>
+<!-- Cloudflare Web Analytics: cookie-free page view counts -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>
 </html>
