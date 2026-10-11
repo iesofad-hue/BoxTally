@@ -721,7 +721,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     if (!r.part_number) return `<span class="meta-line">Add a part number to track its price.</span>`;
     const s = storeOf(r);
     if (!s) return `<span class="meta-line">${signedIn() ? "Waiting for the price checker." : "Sign in so the price checker picks up this part number."}</span>`;
-    if (s.status === "pending") return `<span class="meta-line">Waiting for the price checker. New part numbers are checked within about 15 minutes.</span>`;
+    if (s.status === "pending") return `<span class="meta-line">Waiting for the price checker. New part numbers are checked within about 30 minutes.</span>`;
     if (s.status === "not_found") return `<span class="meta-line">Not found on Snap-on's store (checked ${fmtDate(s.checked_at, false)}). Check the part number.</span>`;
     return "";
   }
@@ -878,8 +878,8 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     const lastOk = state.runs.find((x) => x.status === "ok");
     const last = state.runs[0];
     if (running()) html += `<span class="note">Checking prices now. Progress shows at the top.</span>`;
-    else if (lastOk) html += `<span class="note">Last checked ${new Date(lastOk.finished_at || lastOk.started_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · prices check daily, new part numbers every 15 minutes</span>`;
-    else html += `<span class="note">Prices check daily, and new part numbers within about 15 minutes.</span>`;
+    else if (lastOk) html += `<span class="note">Last checked ${new Date(lastOk.finished_at || lastOk.started_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · prices check daily, new part numbers every 30 minutes</span>`;
+    else html += `<span class="note">Prices check daily, and new part numbers within about 30 minutes.</span>`;
     if (last && last.status === "failed" && (!lastOk || ts(last.started_at) > ts(lastOk.started_at))) html += `<span class="note">Last check had a problem: ${esc(last.error || "it stopped early")}</span>`;
     $("watch").innerHTML = html;
     renderProgress();
@@ -920,7 +920,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     if (signedIn() && due) {
       box.hidden = false; bar.classList.add("indet"); span.style.width = ""; bar.removeAttribute("aria-valuenow");
       $("progText").textContent = `${due} part number${due === 1 ? "" : "s"} queued for the price checker`;
-      $("progEta").textContent = "it runs every 15 minutes";
+      $("progEta").textContent = "it runs every 30 minutes";
       return;
     }
     box.hidden = true;
@@ -932,7 +932,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     if (error) { toast("Couldn't queue a refresh. Try again in a minute."); return; }
     state.waiting = Date.now();
     await loadCatalog(); render();
-    toast(data ? `Queued ${data} part number${data === 1 ? "" : "s"}. The checker picks them up within about 15 minutes.` : "Already queued. The checker picks them up within about 15 minutes.");
+    toast(data ? `Queued ${data} part number${data === 1 ? "" : "s"}. The checker picks them up within about 30 minutes.` : "Already queued. The checker picks them up within about 30 minutes.");
   };
 
   /* ---------- photos ---------- */
@@ -1025,7 +1025,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const addedMsg = (pn, where) => {
     const s = state.catalog[pn];
     if (s && s.status === "ok") return `Added ${pn} to your ${where}.`;
-    return signedIn() ? `Added ${pn}. Its price and photo arrive within about 15 minutes.` : `Added ${pn} to your ${where}. Sign in so the price checker can look it up.`;
+    return signedIn() ? `Added ${pn}. Its price and photo arrive within about 30 minutes.` : `Added ${pn} to your ${where}. Sign in so the price checker can look it up.`;
   };
 
   async function addByPn(pn, list) {

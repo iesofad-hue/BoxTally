@@ -12,18 +12,31 @@
 //   SUPABASE_SECRET_KEY   the project's secret key (sb_secret_...), kept in GitHub Actions secrets
 //   MODE                  "due" (new or refresh-requested part numbers) or "all" (every tracked part number)
 
-import { appendFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/+$/, "");
+// On a home computer the secret key lives in checker/.env (never committed). In GitHub Actions it comes from secrets.
+const envFile = join(dirname(fileURLToPath(import.meta.url)), ".env");
+if (existsSync(envFile)) {
+  for (const line of readFileSync(envFile, "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+}
+
+const SUPABASE_URL = (process.env.SUPABASE_URL || "https://ctteljhhjsfvyyiwzxiy.supabase.co").replace(/\/+$/, "");
 const KEY = process.env.SUPABASE_SECRET_KEY || "";
-const MODE = process.env.MODE === "all" ? "all" : "due";
+const modeArg = process.argv.find((a) => a.startsWith("--mode="));
+const MODE = (modeArg ? modeArg.slice(7) : process.env.MODE) === "all" ? "all" : "due";
 const STORE = "https://shop.snapon.com";
 const PAUSE_MS = 2500; // be polite: one product every few seconds
 
-if (!SUPABASE_URL || !KEY) {
-  console.error("Missing SUPABASE_URL or SUPABASE_SECRET_KEY.");
+if (!KEY) {
+  console.error("Missing SUPABASE_SECRET_KEY. On Windows, run setup-windows.bat again to save it.");
   process.exit(1);
 }
+console.log(`[${new Date().toLocaleString()}] mode: ${MODE}`);
 
 class BlockedError extends Error {}
 
@@ -71,7 +84,8 @@ const updateRun = (fields) =>
   rest(`check_runs?id=eq.${run.id}`, { method: "PATCH", body: fields }).catch((e) => console.warn("Progress update failed:", e.message));
 
 const { chromium } = await import("playwright");
-const browser = await chromium.launch();
+// CHECKER_BROWSER=chrome uses the Google Chrome installed on this computer instead of Playwright's own copy.
+const browser = await chromium.launch(process.env.CHECKER_BROWSER === "chrome" ? { channel: "chrome" } : {});
 const page = await browser.newPage({ locale: "en-US" });
 
 // A short log saved with the run, so problems can be diagnosed from the database.

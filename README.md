@@ -13,30 +13,29 @@ Not affiliated with Snap-on.
 | --- | --- | --- |
 | Website | `index.html`, hosted free on GitHub Pages | The tracker people use. Sign in with Google to sync, or use it without an account (saved in that browser). |
 | Database and photos | Supabase (free plan) | Everyone's toolboxes, one shared price list per part number, price history, and photos. Setup is in `supabase/schema.sql`. |
-| Price checker | `checker/check.mjs`, run by GitHub Actions (`.github/workflows/check-prices.yml`) | Every 15 minutes it checks new or refresh-requested part numbers; once a day it re-checks every tracked part number. |
+| Price checker | `checker/check.mjs`, run on a home Windows computer by two scheduled tasks | Every 30 minutes it checks new or refresh-requested part numbers; once a day it re-checks every tracked part number. |
 
 Each part number is checked once no matter how many people track it.
 
-## Running the price checker by hand
+## Setting up the price checker on a Windows computer
 
-GitHub → **Actions** → **Check Snap-on prices** → **Run workflow**. Pick `all` to re-check everything or `due` for only new and requested part numbers.
+Snap-on's store doesn't show product details to cloud servers, so the checker runs from a home computer.
 
-## Settings the checker needs
+1. Install Node.js (LTS) from https://nodejs.org and restart.
+2. Download this repository (Code > Download ZIP) and unzip it somewhere permanent, like Documents.
+3. Double-click `checker\setup-windows.bat`. It installs the checker, asks for the Supabase **secret** key (saved only in `checker\.env` on that computer), tests the connection, and adds two scheduled tasks:
+   - **Snap-on Toolbox - new part numbers**: every 30 minutes, only does work when something is waiting.
+   - **Snap-on Toolbox - daily prices**: once a day, re-checks every part number.
+4. History is written to `checker\checker.log`. To stop it, double-click `checker\uninstall-windows.bat`.
 
-- Repository secret `SUPABASE_SECRET_KEY`: the Supabase project's **secret** key (`sb_secret_...`). Never put it in the code.
+Prices only update while that computer is on; they catch up when it's back.
 
-## If Snap-on blocks the checker
+The checker loads product pages like a normal visitor, a few seconds apart. If Snap-on's site blocks it, the run stops with a message saying so; it does not try to get around the block.
 
-The checker loads product pages like a normal visitor, a few seconds apart. If Snap-on's bot protection blocks GitHub's servers, the run fails with a message saying so; it does not try to get around the block. The same script can run from your own computer instead:
+## Running it by hand
 
-```
-cd checker
-npm install
-npx playwright install chromium
-SUPABASE_URL=https://ctteljhhjsfvyyiwzxiy.supabase.co SUPABASE_SECRET_KEY=sb_secret_... MODE=all node check.mjs
-```
+From the `checker` folder: `node check.mjs --mode=all` (everything) or `node check.mjs --mode=due` (only new and requested part numbers).
 
 ## Keeping it running
 
-- GitHub turns off scheduled workflows in a repository with no activity for 60 days. If that happens, GitHub emails you; re-enable it from the Actions tab.
-- Supabase pauses free projects after a week with no activity. The price checker's daily run keeps it awake.
+- Supabase pauses free projects after a week with no activity. The price checker's daily run keeps it awake, as long as the checker's computer is on at least once a week.
