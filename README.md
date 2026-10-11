@@ -36,12 +36,11 @@ Each account can hold up to 2,000 tools (box and wishlist together) and 300 uplo
 
 ### Photos
 
-The site never loads, copies or hotlinks Snap-on's product photos (Snap-on limits its images to press use). Photos come from people:
+The site never loads, copies or hotlinks Snap-on's product photos (Snap-on limits its images to press use).
 
-- Your own photo always shows on your cards.
-- Otherwise a card shows a **shared photo**: the earliest photo someone shared of that part number. Only photos of tools in someone's **box** can be shared (not wishlist), and the uploader can untick "Share" on any photo. Photos uploaded before sharing existed stay private.
-- **Wrong photo?** Anyone signed in who tracks that part number can report it. It's hidden for them right away, and for everyone after 2 different people report it; the next shared photo takes its place. Reports are kept in `photo_reports`. At most 30 reports per person per hour.
-- The privacy page asks people to upload only photos they took, and gives contact@boxtally.app for takedown requests.
+- **Drawings for everyone.** Every tool shows one of BoxTally's own drawings (ratchet, socket, wrench, torque wrench, screwdriver, pliers, tool chest and so on). The drawing is picked from the tool's name first, then its category, then its part number (for example `F80` → 3/8" ratchet, `OEXM710B` → wrench, `TECH3FR250` → torque wrench). The drawings live in `ART` in `index.html`.
+- **Your photos are yours only.** A photo you upload replaces the drawing on your own cards. Nobody else sees it.
+- The older shared-photo pieces in `supabase/schema.sql` (`photo_shared`, `shared_photos`, `report_photo`) are no longer used by the site.
 
 ### Trademarks
 

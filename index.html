@@ -343,8 +343,6 @@ dialog h2 { font-size: 1.6rem; text-transform: uppercase; }
 .pf-prev.none svg { width: 36px; height: 36px; opacity: .55; }
 .pf-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .pf-actions small { flex-basis: 100%; }
-.pf-share { flex-basis: 100%; display: flex; gap: 8px; align-items: flex-start; font-size: .85rem; color: var(--muted); cursor: pointer; }
-.pf-share input { margin-top: 3px; accent-color: var(--accent); }
 .lookup { font-size: .82rem; color: var(--accent); text-decoration: none; font-weight: 600; justify-self: start; }
 .lookup:hover { text-decoration: underline; }
 .formfoot { display: flex; justify-content: end; gap: 8px; flex-wrap: wrap; }
@@ -519,6 +517,52 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
 /* sparks for buying a tool or sharing a price */
 .spark { position: fixed; width: 8px; height: 4px; border-radius: 1px; pointer-events: none; z-index: 20; }
 
+/* ---------- tool drawings: shown until you add your own photo ---------- */
+/* a blueprint-paper plate, the same light plate in both themes so the drawings read the same */
+.art-bg { background:
+    linear-gradient(rgb(35 86 216 / .045) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, rgb(35 86 216 / .045) 1px, transparent 1px) 0 0 / 16px 16px,
+    radial-gradient(120% 95% at 50% 32%, #ffffff, var(--plate) 62%, #dde3ea) !important; }
+.art { display: block; width: 100%; height: 100%; }
+.art svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.photo .art { position: absolute; inset: 8% 7% 13%; width: auto; height: auto; }
+.thumb .art { padding: 2px; }
+.nextup .thumb .art, .ri .thumb .art { padding: 4px; }
+.shot .plate .art { padding: 14px; }
+.pf-prev .art { padding: 12px; }
+/* chrome, rubber and paint come from the shared gradients in #artDefs */
+.art { --ink: #2e3742; --grip: #2f63e0; }
+.art :is(.s, .sv, .h, .g, .y, .k, .d, .w, .pit, .rc, .ball, .scr, .ring) { stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.art .s { fill: url(#bx-steel); } .art .sv { fill: url(#bx-steel-v); } .art .h { fill: #f1f4f8; } .art .g { fill: url(#bx-grip); } .art .y { fill: url(#bx-yel); }
+.art .k { fill: var(--ink); } .art .d { fill: url(#bx-dark); } .art .w { fill: #f6f9ff; } .art .pit { fill: #39424e; }
+.art .rc { fill: #aeb8c5; stroke-width: 1.2; } .art .ball { fill: url(#bx-ball); } .art .scr { fill: url(#bx-screen); stroke-width: 1.4; } .art .ring { fill: #8e99a6; stroke-width: 1.2; }
+.art .sh { fill: #fff; opacity: .6; stroke: none; }
+.art .shl { fill: none; stroke: #fff; stroke-width: 1.4; stroke-opacity: .75; stroke-linecap: round; }
+.art .shd { fill: #000; opacity: .1; stroke: none; }
+.art .kn { fill: none; stroke: #fff; stroke-opacity: .42; stroke-width: 1.4; stroke-linecap: round; }
+.art .gr { fill: none; stroke: #0f1d3d; stroke-opacity: .35; stroke-width: 1.4; stroke-linecap: round; }
+.art .nl { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
+.art .eng { fill: none; stroke: var(--ink); stroke-opacity: .35; stroke-width: 1.1; stroke-linecap: round; }
+.art .to { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
+.art .tg { fill: none; stroke: var(--grip); stroke-linecap: round; stroke-linejoin: round; }
+.art .tsg { fill: none; stroke: #c9d2dc; stroke-linecap: round; stroke-linejoin: round; }
+.art .ptr { fill: none; stroke: #e0452b; stroke-width: 1.6; }
+.art .tx { fill: var(--ink); font-family: var(--f-mono); font-weight: 600; }
+.art .txw { fill: #fff; font-family: var(--f-mono); font-weight: 700; }
+.art .tri { fill: var(--ink); fill-rule: evenodd; } .art .tri2 { fill: #fff; }
+.art .grid { fill: none; stroke: var(--grip); stroke-opacity: .16; stroke-width: .8; }
+.art .wave { fill: none; stroke: var(--grip); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.art .lamp { fill: #fff6cc; stroke: var(--ink); stroke-width: 2; } .art .led { fill: #ffd84d; stroke: none; } .art .ledoff { fill: #59636f; stroke: none; }
+.art .ray { fill: none; stroke: #f4bd2a; stroke-width: 3; stroke-linecap: round; }
+/* drop shadow under the drawing so it sits on the paper */
+.photo .art svg, .shot .art svg { filter: drop-shadow(0 6px 6px rgb(16 21 28 / .16)); }
+@media (prefers-reduced-motion: no-preference) {
+  .photo .art svg, .shot .art svg, .pf-prev .art svg { transition: transform .5s cubic-bezier(.3, 1.5, .5, 1); }
+  .card:hover .photo .art svg, .shot:hover .art svg { transform: rotate(-5deg) scale(1.05); }
+  .pf-prev .art.swap svg { animation: artSwap .45s cubic-bezier(.3, 1.6, .5, 1); }
+}
+@keyframes artSwap { from { transform: scale(.6) rotate(-14deg); opacity: 0; } }
+
 /* ---------- export ---------- */
 .export { display: inline-flex; gap: 4px; margin-left: auto; }
 @media (max-width: 560px) { .export { margin-left: 0; width: 100%; } .export .btn { flex: 1; justify-content: center; } }
@@ -543,6 +587,16 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
 </style>
 </head>
 <body>
+<!-- shading shared by every tool drawing -->
+<svg id="artDefs" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <linearGradient id="bx-steel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8fafc"/><stop offset=".42" stop-color="#d3dae2"/><stop offset=".58" stop-color="#a9b4c1"/><stop offset="1" stop-color="#e2e7ed"/></linearGradient>
+  <linearGradient id="bx-steel-v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b9c3cf"/><stop offset=".22" stop-color="#f6f8fb"/><stop offset=".55" stop-color="#c9d1db"/><stop offset=".85" stop-color="#97a3b1"/><stop offset="1" stop-color="#c3ccd6"/></linearGradient>
+  <linearGradient id="bx-grip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d8bf6"/><stop offset=".5" stop-color="#2f63e0"/><stop offset="1" stop-color="#1c419f"/></linearGradient>
+  <linearGradient id="bx-yel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffdb75"/><stop offset=".55" stop-color="#f4bd2a"/><stop offset="1" stop-color="#cf960b"/></linearGradient>
+  <linearGradient id="bx-dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a6574"/><stop offset="1" stop-color="#262e38"/></linearGradient>
+  <radialGradient id="bx-ball" cx=".36" cy=".34" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#cfd7e0"/><stop offset="1" stop-color="#8d98a6"/></radialGradient>
+  <linearGradient id="bx-screen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3f8ff"/><stop offset="1" stop-color="#d9e6ff"/></linearGradient>
+</defs></svg>
 
 <section class="band">
   <div class="inner">
@@ -640,7 +694,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner">BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Store prices are added by people who track each tool and may be out of date. Check Snap-on's store before you buy. Photos are uploaded by people of their own tools; to report one, email contact@boxtally.app. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a></footer>
+<footer class="inner">BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Store prices are added by people who track each tool and may be out of date. Check Snap-on's store before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a></footer>
 
 <div id="printSheet"></div>
 
@@ -658,7 +712,6 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
             <button class="btn small" type="button" id="pfPick"></button>
             <button class="btn small ghost danger" type="button" id="pfRemove" hidden>Remove photo</button>
             <small id="pfNote"></small>
-            <label class="pf-share" id="pfShareRow" hidden><input type="checkbox" id="pfShare" checked><span>Share my photo with others tracking this part number. Only photos of your own tool.</span></label>
           </div>
         </div>
         <input type="file" id="pfFile" accept="image/*" hidden>
@@ -686,7 +739,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   <div class="v-img" id="vImg"></div>
   <div class="v-cap">
     <div><h2 id="vName"></h2><span class="meta-line" id="vMeta"></span> <span class="v-hint">· Click the photo to zoom</span></div>
-    <div class="actions"><button class="btn small ghost" type="button" id="vReport" hidden>Wrong photo?</button><button class="btn small" type="button" id="vPhoto">Replace photo</button><button class="btn small primary" type="button" id="vClose">Close</button></div>
+    <div class="actions"><button class="btn small" type="button" id="vPhoto">Replace photo</button><button class="btn small primary" type="button" id="vClose">Close</button></div>
   </div>
 </dialog>
 
@@ -734,7 +787,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
   const pub = (bucket, path) => `${SB_URL}/storage/v1/object/public/${bucket}/${String(path).split("/").map(encodeURIComponent).join("/")}`;
 
-  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, shared: {}, loaded: false, editing: null, confirm: null, priceEdit: null, uploading: {}, introDone: false };
+  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, loaded: false, editing: null, confirm: null, priceEdit: null, uploading: {}, introDone: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
 
@@ -748,7 +801,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   const displayName = (r) => r.name || (storeOf(r) && storeOf(r).name) || r.part_number || "Unnamed tool";
   const wishCost = (r) => storePrice(r) ?? (Number(r.price) || 0);
 
-  /* ---------- photos: your own photo, else one someone tracking the same part number shared ----------
+  /* ---------- photos: your own photo of your own tool, otherwise a drawing ----------
      (Snap-on's product photos aren't shown on this site.) */
   const okData = (u) => typeof u === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u);
   function minePhoto(r) {
@@ -756,13 +809,10 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     if (okData(r.photo_data)) return { src: r.photo_data, mine: true };
     return null;
   }
-  function sharedPhoto(r) {
-    const s = r.part_number && state.shared[r.part_number];
-    return s ? { src: pub("tool-photos", s.photo_path), mine: false, sharedId: s.item_id } : null;
-  }
-  const photoOf = (r) => minePhoto(r) || sharedPhoto(r);
+  // Photos are private: yours show only on your own cards. Everyone else sees BoxTally's drawing.
+  const photoOf = (r) => minePhoto(r);
   const hasMine = (r) => !!minePhoto(r);
-  const photoLabel = (p) => (p.mine ? "Your photo" : "Shared photo");
+  const photoLabel = () => "Your photo";
   const imgTag = (p, alt) => `<img class="${p.mine ? "mine" : ""}" src="${esc(p.src)}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
   const ICON = {
     tool: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="15" r="9"/><circle cx="15" cy="15" r="3.4"/><path d="M21.5 21.5 41 41"/><path d="M36 36l5 5" stroke-width="6"/></svg>`,
@@ -774,7 +824,58 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>`,
     google: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.5 12 2.5 6.8 2.5 2.6 6.7 2.6 12S6.8 21.5 12 21.5c5.5 0 9.1-3.9 9.1-9.3 0-.6-.07-1.1-.16-1.6H12z"/></svg>`,
   };
-  const thumb = (r) => { const p = photoOf(r); return p ? `<span class="thumb">${imgTag(p, "")}</span>` : `<span class="thumb none" aria-hidden="true"></span>`; };
+  /* ---------- tool drawings: BoxTally's own illustrations, one per kind of tool (160 × 100) ---------- */
+  const ART = {
+    ratchet: "<path class=\"s\" d=\"M56 42.5 L100 45 V55 L56 57.5 Z\"/><path class=\"sh\" d=\"M62 46.4 L96 47.7 V49.2 L62 48.2 Z\"/><path class=\"eng\" d=\"M68 53.2 h7 M77 53.4 h3 M82 53.6 h8\"/><rect class=\"g\" x=\"94\" y=\"40\" width=\"57\" height=\"20\" rx=\"10\"/><path class=\"kn\" d=\"M106 43 V57 M110 43 V57 M114 43 V57 M118 43 V57 M122 43 V57 M126 43 V57 M130 43 V57\"/><rect class=\"sh\" x=\"100\" y=\"43\" width=\"40\" height=\"3\" rx=\"1.5\"/><circle class=\"pit\" cx=\"143.5\" cy=\"50\" r=\"3.2\"/><path class=\"s\" d=\"M36 30 A20 20 0 1 0 36 70 C47 70 52 62 62 58 L62 42 C52 38 47 30 36 30 Z\"/><circle class=\"h\" cx=\"36\" cy=\"50\" r=\"13.5\"/><circle class=\"nl\" cx=\"36\" cy=\"50\" r=\"10\" stroke-dasharray=\"1.6 1.9\"/><rect class=\"k\" x=\"31.2\" y=\"45.2\" width=\"9.6\" height=\"9.6\" rx=\"1.3\"/><rect class=\"sh\" x=\"32.6\" y=\"46.4\" width=\"2.4\" height=\"5\" rx=\"1\"/><path class=\"d\" d=\"M24 33.5 Q36 25.5 48 33.5 L45.6 37.4 Q36 31 26.4 37.4 Z\"/><rect class=\"sh\" x=\"21.5\" y=\"43\" width=\"3\" height=\"14\" rx=\"1.5\"/>",
+    socket: "<path class=\"sv\" d=\"M56 24 V78 A24 8 0 0 0 104 78 V24 Z\"/><path class=\"d\" d=\"M56 33 A24 8 0 0 0 104 33 V42 A24 8 0 0 1 56 42 Z\"/><text class=\"txw\" x=\"80\" y=\"47.6\" font-size=\"8.5\" text-anchor=\"middle\">13</text><path class=\"nl\" d=\"M56 60 A24 8 0 0 0 104 60 M56 70 A24 8 0 0 0 104 70\"/><path class=\"nl\" opacity=\".55\" d=\"M59.2 64 V74 M62.4 65.4 V75.4 M65.6 66.4 V76.4 M68.8 67.1 V77.1 M72 67.5 V77.5 M75.2 67.8 V77.8 M78.4 68 V78 M81.6 68 V78 M84.8 67.8 V77.8 M88 67.5 V77.5 M91.2 67.1 V77.1 M94.4 66.4 V76.4 M97.6 65.4 V75.4 M100.8 64 V74\"/><rect class=\"sh\" x=\"61\" y=\"27\" width=\"4\" height=\"12\" rx=\"2\"/><rect class=\"sh\" x=\"61\" y=\"45\" width=\"4\" height=\"12\" rx=\"2\"/><rect class=\"sh\" x=\"61\" y=\"74\" width=\"4\" height=\"6\" rx=\"2\"/><ellipse class=\"h\" cx=\"80\" cy=\"24\" rx=\"24\" ry=\"8\"/><ellipse class=\"s\" cx=\"80\" cy=\"24\" rx=\"17.5\" ry=\"5.8\"/><path class=\"pit\" d=\"M92.5 24 L86.2 27.6 L73.8 27.6 L67.5 24 L73.8 20.4 L86.2 20.4 Z\"/><path class=\"sh\" d=\"M70 24.6 Q80 27.2 90 24.6 L89 25.6 Q80 28.4 71 25.6 Z\" opacity=\".35\"/>",
+    wrench: "<path class=\"s\" d=\"M38 44 L118 45 V55 L38 56 Z\"/><path class=\"s\" d=\"M114 43 L124 39.5 V60.5 L114 57 Z\"/><rect class=\"rc\" x=\"48\" y=\"47.1\" width=\"62\" height=\"5.8\" rx=\"2.9\"/><text class=\"tx\" x=\"79\" y=\"51.9\" font-size=\"4.8\" text-anchor=\"middle\">13 mm</text><rect class=\"sh\" x=\"48\" y=\"45.4\" width=\"62\" height=\"1.4\" rx=\".7\"/><g transform=\"rotate(-15 28 50)\"><path class=\"s\" d=\"M11.1 43.8 A18 18 0 1 1 11.1 56.2 L27 57 A7 7 0 0 0 27 43 Z\"/><path class=\"sh\" d=\"M16 41.6 A15 15 0 0 1 38 38.4 L37 40 A13 13 0 0 0 17 42.8 Z\"/></g><circle class=\"s\" cx=\"134\" cy=\"50\" r=\"17\"/><circle class=\"nl\" cx=\"134\" cy=\"50\" r=\"12.6\" opacity=\".45\"/><path class=\"pit\" d=\"M134 40.6 L136 42.5 L138.7 41.9 L139.5 44.5 L142.1 45.3 L141.5 48 L143.4 50 L141.5 52 L142.1 54.7 L139.5 55.5 L138.7 58.1 L136 57.5 L134 59.4 L132 57.5 L129.3 58.1 L128.5 55.5 L125.9 54.7 L126.5 52 L124.6 50 L126.5 48 L125.9 45.3 L128.5 44.5 L129.3 41.9 L132 42.5 Z\"/><path class=\"sh\" d=\"M121.5 44 A14 14 0 0 1 132 36.3 L132.4 38.2 A12 12 0 0 0 123.4 44.8 Z\"/>",
+    torque: "<path class=\"s\" d=\"M28 45 L104 44 V56 L28 55 Z\"/><rect class=\"sh\" x=\"34\" y=\"46.4\" width=\"22\" height=\"1.6\" rx=\".8\"/><rect class=\"w\" x=\"57\" y=\"46\" width=\"34\" height=\"8\" rx=\"2\"/><path class=\"nl\" d=\"M60 46 v5 M63.5 46 v3.4 M67 46 v5 M70.5 46 v3.4 M74 46 v5 M77.5 46 v3.4 M81 46 v5 M84.5 46 v3.4 M88 46 v5\"/><path class=\"ptr\" d=\"M74 45 V55\"/><text class=\"tx\" x=\"66\" y=\"53.2\" font-size=\"3.2\" text-anchor=\"middle\">150</text><rect class=\"s\" x=\"92\" y=\"42\" width=\"11\" height=\"16\" rx=\"3\"/><path class=\"nl\" d=\"M95.5 42.5 V57.5 M99.5 42.5 V57.5\" opacity=\".45\"/><rect class=\"g\" x=\"102\" y=\"39\" width=\"42\" height=\"22\" rx=\"9\"/><path class=\"kn\" d=\"M106 41.5 L106 41.5 M106 58.5 L106 58.5 M106 45.5 L110 41.5 M106 54.5 L110 58.5 M106 49.5 L114 41.5 M106 50.5 L114 58.5 M106 53.5 L118 41.5 M106 46.5 L118 58.5 M106 57.5 L122 41.5 M106 42.5 L122 58.5 M109 58.5 L126 41.5 M109 41.5 L126 58.5 M113 58.5 L130 41.5 M113 41.5 L130 58.5 M117 58.5 L134 41.5 M117 41.5 L134 58.5 M121 58.5 L138 41.5 M121 41.5 L138 58.5 M125 58.5 L140 43.5 M125 41.5 L140 56.5 M129 58.5 L140 47.5 M129 41.5 L140 52.5 M133 58.5 L140 51.5 M133 41.5 L140 48.5 M137 58.5 L140 55.5 M137 41.5 L140 44.5\"/><rect class=\"d\" x=\"141\" y=\"41\" width=\"13\" height=\"18\" rx=\"4\"/><path class=\"kn\" d=\"M144 43.5 V56.5 M146.4 43.5 V56.5 M148.8 43.5 V56.5\"/><path class=\"s\" d=\"M20 37 A13 13 0 1 0 20 63 C26 63 30 58 34 56 V44 C30 42 26 37 20 37 Z\"/><circle class=\"h\" cx=\"20\" cy=\"50\" r=\"8\"/><rect class=\"k\" x=\"16.6\" y=\"46.6\" width=\"6.8\" height=\"6.8\" rx=\"1\"/><path class=\"d\" d=\"M12 39.5 Q20 34 28 39.5 L26.4 42 Q20 38 13.6 42 Z\"/>",
+    screwdriver: "<rect class=\"s\" x=\"84\" y=\"46.5\" width=\"56\" height=\"7\" rx=\"1.5\"/><rect class=\"sh\" x=\"88\" y=\"47.6\" width=\"48\" height=\"1.6\" rx=\".8\"/><path class=\"s\" d=\"M139 46.5 L153 48.7 V51.3 L139 53.5 Z\"/><path class=\"nl\" d=\"M146 48 V52\" opacity=\".4\"/><rect class=\"s\" x=\"76\" y=\"42.5\" width=\"12\" height=\"15\" rx=\"2\"/><path class=\"nl\" d=\"M76.5 50 H87.5\" opacity=\".4\"/><path class=\"g\" d=\"M18 40 Q15 50 18 60 Q22 67 34 66 L70 63 Q79 62 79 56 V44 Q79 38 70 37 L34 34 Q22 33 18 40 Z\"/><path class=\"gr\" d=\"M26 42.5 Q50 39.6 74 41.4 M24 50 H76 M26 57.5 Q50 60.4 74 58.6\"/><path class=\"kn\" d=\"M28 45.6 Q50 43.4 72 44.6 M28 53.4 H74\"/><path class=\"d\" d=\"M19.5 40.6 Q17 50 19.5 59.4 Q22.5 61 25 60.6 Q22.6 50 25 39.4 Q22.5 39 19.5 40.6 Z\"/><circle class=\"pit\" cx=\"22\" cy=\"50\" r=\"2\"/><rect class=\"sh\" x=\"30\" y=\"36.6\" width=\"38\" height=\"2.6\" rx=\"1.3\"/>",
+    insulated: "<path class=\"s\" d=\"M136 47.2 L153 48.8 V51.2 L136 52.8 Z\"/><rect class=\"y\" x=\"84\" y=\"45\" width=\"54\" height=\"10\" rx=\"2.4\"/><text class=\"tx\" x=\"111\" y=\"52.1\" font-size=\"5.4\" text-anchor=\"middle\" font-weight=\"700\">1000V</text><rect class=\"sh\" x=\"88\" y=\"46.4\" width=\"44\" height=\"1.6\" rx=\".8\"/><path class=\"y\" d=\"M18 40 Q15 50 18 60 Q22 67 34 66 L70 63 Q79 62 79 56 V44 Q79 38 70 37 L34 34 Q22 33 18 40 Z\"/><path class=\"d\" d=\"M60 35.6 L70 37 Q79 38 79 44 V56 Q79 62 70 63 L60 64.4 Z\"/><path class=\"d\" d=\"M19.5 40.6 Q17 50 19.5 59.4 Q22.5 61 25 60.6 Q22.6 50 25 39.4 Q22.5 39 19.5 40.6 Z\"/><path class=\"k\" d=\"M43 37.5 L34.5 51 H41 L37 62.5 L50 46.5 H43.2 L48.5 37.5 Z\"/><path class=\"tri\" d=\"M64.5 44.5 L69.5 54 H59.5 Z M64.5 47.6 L67 52.4 H62 Z\"/><rect class=\"sh\" x=\"28\" y=\"36.6\" width=\"26\" height=\"2.6\" rx=\"1.3\"/>",
+    pliers: "<path class=\"to\" stroke-width=\"14\" d=\"M84 45 Q110 35 149 29\"/><path class=\"tg\" stroke-width=\"9\" d=\"M96 41.4 Q114 35 149 29\"/><path class=\"to\" stroke-width=\"14\" d=\"M84 55 Q110 65 149 71\"/><path class=\"tg\" stroke-width=\"9\" d=\"M96 58.6 Q114 65 149 71\"/><path class=\"kn\" d=\"M112 36.4 l1.2 3.6 M120 34.3 l1 3.6 M128 32.7 l.9 3.6 M112 63.6 l1.2 -3.6 M120 65.7 l1 -3.6 M128 67.3 l.9 -3.6\"/><path class=\"s\" d=\"M88 41 C72 39.6 44 41.4 18 47.4 Q14.6 49.4 19 50 L88 50 Z\"/><path class=\"s\" d=\"M88 59 C72 60.4 44 58.6 18 52.6 Q14.6 50.6 19 50 L88 50 Z\"/><path class=\"nl\" d=\"M22 50 L23.6 48 L25.2 50 L26.8 48 L28.4 50 L30 48 L31.6 50 L33.2 48 L34.8 50 L36.4 48 L38 50 L39.6 48 L41.2 50 L42.8 48 L44.4 50 L46 48 L47.6 50 L49.2 48 L50.8 50 L52.4 48 L54 50 L55.6 48 L57.2 50\"/><path class=\"pit\" d=\"M58 48.6 Q63 46.6 68 48.6 L68 51.4 Q63 53.4 58 51.4 Z\"/><path class=\"sh\" d=\"M24 46 C44 42.4 66 41.4 84 42.4 L84 43.8 C66 43 44 44 25 47.4 Z\"/><ellipse class=\"s\" cx=\"82\" cy=\"50\" rx=\"10.5\" ry=\"10\"/><ellipse class=\"pit\" cx=\"82\" cy=\"50\" rx=\"5.2\" ry=\"2.6\"/><circle class=\"h\" cx=\"82\" cy=\"50\" r=\"2.4\"/>",
+    pick: "<path class=\"to\" stroke-width=\"7.6\" d=\"M86 50 H132 Q147 50 146 33\"/><path class=\"tsg\" stroke-width=\"3.6\" d=\"M86 50 H132 Q147 50 146 33\"/><path class=\"kn\" d=\"M90 49.2 H128\"/><rect class=\"s\" x=\"78\" y=\"44\" width=\"11\" height=\"12\" rx=\"2.4\"/><path class=\"nl\" d=\"M83.5 44.4 V55.6\" opacity=\".45\"/><path class=\"g\" d=\"M22 41 Q20 50 22 59 Q25 64 34 63.5 L72 61.4 Q80 60.6 80 55.4 V44.6 Q80 39.4 72 38.6 L34 36.5 Q25 36 22 41 Z\"/><path class=\"gr\" d=\"M28 44.4 Q52 41.8 76 43 M28 50 H78 M28 55.6 Q52 58.2 76 57\"/><circle class=\"pit\" cx=\"26\" cy=\"50\" r=\"1.8\"/><rect class=\"sh\" x=\"32\" y=\"39.4\" width=\"36\" height=\"2.4\" rx=\"1.2\"/>",
+    pry: "<path class=\"to\" stroke-width=\"12.5\" d=\"M17 69 L31 53 L118 47.6\"/><path class=\"tsg\" stroke-width=\"7.6\" d=\"M17 69 L31 53 L118 47.6\"/><path class=\"kn\" d=\"M36 50.6 L112 45.9\"/><path class=\"s\" d=\"M9 75 L16.5 64 L22.6 69.6 L13.6 78.4 Z\"/><path class=\"to\" stroke-width=\"17\" d=\"M110 48 L146 45.8\"/><path class=\"tg\" stroke-width=\"11.6\" d=\"M110 48 L146 45.8\"/><path class=\"gr\" d=\"M116 42.5 l.5 8.4 M120 42.3 l.5 8.4 M124 42 l.5 8.4 M128 41.8 l.5 8.4 M132 41.6 l.5 8.4 M136 41.3 l.5 8.4 M140 41.1 l.5 8.4\"/><path class=\"s\" d=\"M145 38.4 H152 Q155 38.4 155 41.4 V50.2 Q155 53.2 152 53.2 H145 Z\"/><rect class=\"sh\" x=\"147\" y=\"40.4\" width=\"1.8\" height=\"10\" rx=\".9\"/>",
+    punch: "<path class=\"s\" d=\"M30 41 H114 L148 47.4 Q150.4 50 148 52.6 L114 59 H30 Z\"/><path class=\"shd\" d=\"M30 55 H114 L148 52.6 Q150.4 50 148 52.6 L114 59 H30 Z\"/><path class=\"nl\" opacity=\".4\" d=\"M30 45 H114 L147 49 M30 55 H114 L147 51 M114 41.4 V58.6\"/><rect class=\"sh\" x=\"36\" y=\"42.4\" width=\"72\" height=\"1.8\" rx=\".9\"/><path class=\"nl\" opacity=\".35\" d=\"M46 45.6 L46 45.6 M46 54.4 L46 54.4 M46 48.8 L49.2 45.6 M46 51.2 L49.2 54.4 M46 52 L52.4 45.6 M46 48 L52.4 54.4 M46.8 54.4 L55.6 45.6 M46.8 45.6 L55.6 54.4 M50 54.4 L58.8 45.6 M50 45.6 L58.8 54.4 M53.2 54.4 L62 45.6 M53.2 45.6 L62 54.4 M56.4 54.4 L65.2 45.6 M56.4 45.6 L65.2 54.4 M59.6 54.4 L68.4 45.6 M59.6 45.6 L68.4 54.4 M62.8 54.4 L71.6 45.6 M62.8 45.6 L71.6 54.4 M66 54.4 L74.8 45.6 M66 45.6 L74.8 54.4 M69.2 54.4 L78 45.6 M69.2 45.6 L78 54.4 M72.4 54.4 L81.2 45.6 M72.4 45.6 L81.2 54.4 M75.6 54.4 L84.4 45.6 M75.6 45.6 L84.4 54.4 M78.8 54.4 L87.6 45.6 M78.8 45.6 L87.6 54.4 M82 54.4 L90.8 45.6 M82 45.6 L90.8 54.4 M85.2 54.4 L92 47.6 M85.2 45.6 L92 52.4 M88.4 54.4 L92 50.8 M88.4 45.6 L92 49.2 M91.6 54.4 L92 54 M91.6 45.6 L92 46\"/><path class=\"s\" d=\"M17 36.6 Q11 50 17 63.4 L32 60.6 V39.4 Z\"/><path class=\"nl\" opacity=\".45\" d=\"M20 39.6 Q15.6 50 20 60.4\"/>",
+    hammer: "<rect class=\"d\" x=\"50\" y=\"44.5\" width=\"60\" height=\"12\" rx=\"4\"/><rect class=\"kn\" x=\"56\" y=\"47.4\" width=\"40\" height=\"1.4\" rx=\".7\"/><rect class=\"g\" x=\"100\" y=\"41\" width=\"50\" height=\"19\" rx=\"8\"/><path class=\"gr\" d=\"M108 43.6 V57.4 M112.6 43.6 V57.4 M117.2 43.6 V57.4 M121.8 43.6 V57.4 M126.4 43.6 V57.4 M131 43.6 V57.4 M135.6 43.6 V57.4\"/><rect class=\"d\" x=\"145\" y=\"42.4\" width=\"7\" height=\"16.2\" rx=\"3\"/><circle class=\"ball\" cx=\"43\" cy=\"80\" r=\"11.5\"/><path class=\"s\" d=\"M24 20 H62 L58 27 Q54 30 54 36 V60 Q54 66 49 68 L37 68 Q32 66 32 60 V36 Q32 30 28 27 Z\"/><rect class=\"h\" x=\"22\" y=\"12\" width=\"42\" height=\"9.6\" rx=\"3\"/><path class=\"nl\" opacity=\".45\" d=\"M24 18.4 H62\"/><path class=\"nl\" opacity=\".4\" d=\"M37 44 H49 M37 56 H49\"/><path class=\"sh\" d=\"M35.6 33 Q35.6 31 34 29.4 H37.6 Q38.6 31 38.6 33 V60 H35.6 Z\"/>",
+    general: "<rect class=\"y\" x=\"98\" y=\"63.6\" width=\"50\" height=\"10.4\"/><path class=\"nl\" d=\"M100 64 v6 M102.2 64 v3.4 M104.4 64 v3.4 M106.6 64 v3.4 M108.8 64 v6 M111 64 v3.4 M113.2 64 v3.4 M115.4 64 v3.4 M117.6 64 v6 M119.8 64 v3.4 M122 64 v3.4 M124.2 64 v3.4 M126.4 64 v6 M128.6 64 v3.4 M130.8 64 v3.4 M133 64 v3.4 M135.2 64 v6 M137.4 64 v3.4 M139.6 64 v3.4 M141.8 64 v3.4 M144 64 v6\"/><text class=\"tx\" x=\"108.8\" y=\"73\" font-size=\"3.4\" text-anchor=\"middle\">1</text><text class=\"tx\" x=\"126.4\" y=\"73\" font-size=\"3.4\" text-anchor=\"middle\">2</text><path class=\"s\" d=\"M146 59.6 H152.6 V78 H146 Z\"/><path class=\"s\" d=\"M88 16 H98 Q101 16 101 19 V22 H88 Z\"/><path class=\"d\" d=\"M30 30 Q30 20 44 20 H90 Q104 20 104 34 V66 Q104 82 88 82 H44 Q28 82 28 68 Z\"/><rect class=\"g\" x=\"34\" y=\"26\" width=\"64\" height=\"50\" rx=\"13\"/><path class=\"y\" d=\"M76 20.6 H90 V26 H76 Z\"/><circle class=\"s\" cx=\"64\" cy=\"51\" r=\"16.5\"/><circle class=\"h\" cx=\"64\" cy=\"51\" r=\"9\"/><path class=\"nl\" d=\"M60.4 51 H67.6 M64 47.4 V54.6\"/><rect class=\"sh\" x=\"40\" y=\"30\" width=\"34\" height=\"3\" rx=\"1.5\"/>",
+    set: "<rect class=\"d\" x=\"12\" y=\"28\" width=\"136\" height=\"54\" rx=\"8\"/><rect class=\"kn\" x=\"18\" y=\"45.4\" width=\"124\" height=\"1.4\" rx=\".7\"/><rect class=\"kn\" x=\"18\" y=\"77\" width=\"124\" height=\"1.4\" rx=\".7\"/><rect class=\"w\" x=\"22\" y=\"32.6\" width=\"40\" height=\"8.4\" rx=\"2\"/><text class=\"tx\" x=\"42\" y=\"38.8\" font-size=\"4.6\" text-anchor=\"middle\" font-weight=\"700\">3/8 DR \u00b7 MM</text><circle class=\"s\" cx=\"31\" cy=\"61\" r=\"8\"/><circle class=\"nl\" cx=\"31\" cy=\"61\" r=\"5.9\" opacity=\".4\"/><path class=\"pit\" d=\"M34.6 63.1 L31 65.2 L27.4 63.1 L27.4 58.9 L31 56.8 L34.6 58.9 Z\"/><path class=\"shl\" d=\"M24.6 58.6 A6.8 6.8 0 0 1 29.4 54.4\"/><text class=\"txw\" x=\"31\" y=\"78.4\" font-size=\"4.2\" text-anchor=\"middle\">8</text><circle class=\"s\" cx=\"51\" cy=\"61\" r=\"9\"/><circle class=\"nl\" cx=\"51\" cy=\"61\" r=\"6.7\" opacity=\".4\"/><path class=\"pit\" d=\"M55.1 63.3 L51 65.7 L46.9 63.3 L46.9 58.7 L51 56.3 L55.1 58.7 Z\"/><path class=\"shl\" d=\"M43.8 58.3 A7.6 7.6 0 0 1 49.2 53.6\"/><text class=\"txw\" x=\"51\" y=\"78.4\" font-size=\"4.2\" text-anchor=\"middle\">10</text><circle class=\"s\" cx=\"73.5\" cy=\"61\" r=\"10\"/><circle class=\"nl\" cx=\"73.5\" cy=\"61\" r=\"7.4\" opacity=\".4\"/><path class=\"pit\" d=\"M78 63.6 L73.5 66.2 L69 63.6 L69 58.4 L73.5 55.8 L78 58.4 Z\"/><path class=\"shl\" d=\"M65.5 58 A8.5 8.5 0 0 1 71.5 52.8\"/><text class=\"txw\" x=\"73.5\" y=\"78.4\" font-size=\"4.2\" text-anchor=\"middle\">12</text><circle class=\"s\" cx=\"98\" cy=\"61\" r=\"11\"/><circle class=\"nl\" cx=\"98\" cy=\"61\" r=\"8.1\" opacity=\".4\"/><path class=\"pit\" d=\"M103 63.9 L98 66.7 L93 63.9 L93 58.1 L98 55.3 L103 58.1 Z\"/><path class=\"shl\" d=\"M89.2 57.7 A9.3 9.3 0 0 1 95.8 52\"/><text class=\"txw\" x=\"98\" y=\"78.4\" font-size=\"4.2\" text-anchor=\"middle\">14</text><circle class=\"s\" cx=\"125\" cy=\"61\" r=\"12.2\"/><circle class=\"nl\" cx=\"125\" cy=\"61\" r=\"9\" opacity=\".4\"/><path class=\"pit\" d=\"M130.5 64.2 L125 67.3 L119.5 64.2 L119.5 57.8 L125 54.7 L130.5 57.8 Z\"/><path class=\"shl\" d=\"M115.2 57.3 A10.4 10.4 0 0 1 122.6 51\"/><text class=\"txw\" x=\"125\" y=\"78.4\" font-size=\"4.2\" text-anchor=\"middle\">17</text>",
+    power: "<rect class=\"d\" x=\"74\" y=\"82\" width=\"56\" height=\"14\" rx=\"3.5\"/><path class=\"kn\" d=\"M80 85.6 H124\"/><circle class=\"led\" cx=\"112\" cy=\"90.6\" r=\"1.6\"/><circle class=\"led\" cx=\"116.6\" cy=\"90.6\" r=\"1.6\"/><circle class=\"led\" cx=\"121.2\" cy=\"90.6\" r=\"1.6\"/><circle class=\"ledoff\" cx=\"125.8\" cy=\"90.6\" r=\"1.6\"/><path class=\"g\" d=\"M84 54 H110 L116 83 H90 Z\"/><path class=\"d\" d=\"M90 60 H108 L112.4 80 H94.6 Z\"/><path class=\"gr\" d=\"M96 64 L98 76 M101 64 L103 76 M106 64 L108 76\" opacity=\".5\"/><rect class=\"g\" x=\"40\" y=\"25\" width=\"88\" height=\"34\" rx=\"15\"/><rect class=\"d\" x=\"118\" y=\"28.6\" width=\"18\" height=\"26.8\" rx=\"8\"/><path class=\"kn\" d=\"M123 33 V51 M127.4 33 V51 M131.8 33 V51\"/><path class=\"gr\" d=\"M96 34 L100 50 M102 34 L106 50 M108 34 L112 50\"/><rect class=\"s\" x=\"27\" y=\"32.4\" width=\"16\" height=\"19.2\" rx=\"3.4\"/><path class=\"nl\" opacity=\".45\" d=\"M31.5 33 V51 M36 33 V51\"/><rect class=\"k\" x=\"18.6\" y=\"37.6\" width=\"9.4\" height=\"9\" rx=\"1\"/><rect class=\"pit\" x=\"20\" y=\"40.4\" width=\"3\" height=\"3.4\" rx=\".6\"/><circle class=\"led\" cx=\"48\" cy=\"54\" r=\"2.2\"/><rect class=\"s\" x=\"80\" y=\"55.6\" width=\"7\" height=\"4\" rx=\"1.4\"/><path class=\"k\" d=\"M84 59.6 H92 L90 71 H85 Z\"/><rect class=\"sh\" x=\"50\" y=\"29.4\" width=\"58\" height=\"3.6\" rx=\"1.8\"/>",
+    storage: "<path class=\"to\" stroke-width=\"6.2\" d=\"M134 46 H140 Q143 46 143 49 V69 Q143 72 140 72 H134\"/><path class=\"tsg\" stroke-width=\"3\" d=\"M134 46 H140 Q143 46 143 49 V69 Q143 72 140 72 H134\"/><rect class=\"s\" x=\"35\" y=\"86\" width=\"6\" height=\"5\"/><rect class=\"s\" x=\"119\" y=\"86\" width=\"6\" height=\"5\"/><circle class=\"k\" cx=\"38\" cy=\"93.4\" r=\"4.6\"/><circle class=\"k\" cx=\"122\" cy=\"93.4\" r=\"4.6\"/><circle class=\"h\" cx=\"38\" cy=\"93.4\" r=\"1.4\"/><circle class=\"h\" cx=\"122\" cy=\"93.4\" r=\"1.4\"/><rect class=\"g\" x=\"28\" y=\"40\" width=\"104\" height=\"47\" rx=\"3\"/><rect class=\"d\" x=\"25\" y=\"37\" width=\"110\" height=\"6\" rx=\"2\"/><path class=\"kn\" d=\"M80 43.6 V86.4\"/><path class=\"kn\" d=\"M28.6 43.8 H79.4\"/><rect class=\"s\" x=\"33\" y=\"47.4\" width=\"42\" height=\"3\" rx=\"1.5\"/><path class=\"kn\" d=\"M28.6 54.4 H79.4\"/><rect class=\"s\" x=\"33\" y=\"58\" width=\"42\" height=\"3\" rx=\"1.5\"/><path class=\"kn\" d=\"M28.6 65.2 H79.4\"/><rect class=\"s\" x=\"33\" y=\"68.8\" width=\"42\" height=\"3\" rx=\"1.5\"/><path class=\"kn\" d=\"M28.6 75.8 H79.4\"/><rect class=\"s\" x=\"33\" y=\"79.4\" width=\"42\" height=\"3\" rx=\"1.5\"/><path class=\"kn\" d=\"M80.6 43.8 H131.4\"/><rect class=\"s\" x=\"85\" y=\"48.6\" width=\"42\" height=\"3\" rx=\"1.5\"/><path class=\"kn\" d=\"M80.6 58 H131.4\"/><rect class=\"s\" x=\"85\" y=\"62.8\" width=\"42\" height=\"3\" rx=\"1.5\"/><path class=\"kn\" d=\"M80.6 72.2 H131.4\"/><rect class=\"s\" x=\"85\" y=\"77\" width=\"42\" height=\"3\" rx=\"1.5\"/><rect class=\"g\" x=\"40\" y=\"5\" width=\"80\" height=\"31\" rx=\"3\"/><path class=\"d\" d=\"M38 3.4 H122 Q124 3.4 124 5.4 V11 H36 V5.4 Q36 3.4 38 3.4 Z\"/><circle class=\"s\" cx=\"80\" cy=\"7.2\" r=\"1.8\"/><path class=\"kn\" d=\"M40.6 11 H119.4\"/><rect class=\"s\" x=\"46\" y=\"14\" width=\"68\" height=\"2.8\" rx=\"1.4\"/><path class=\"kn\" d=\"M40.6 19.4 H119.4\"/><rect class=\"s\" x=\"46\" y=\"22.4\" width=\"68\" height=\"2.8\" rx=\"1.4\"/><path class=\"kn\" d=\"M40.6 27.6 H119.4\"/><rect class=\"s\" x=\"46\" y=\"30.6\" width=\"68\" height=\"2.8\" rx=\"1.4\"/>",
+    shop: "<path class=\"ray\" d=\"M20 30 L11 24 M80 15 V7 M140 30 L149 24 M20 62 L11 68 M140 62 L149 68 M48 15.6 L45 8.4 M112 15.6 L115 8.4\"/><path class=\"to\" stroke-width=\"7\" d=\"M80 18 V11 Q80 6 86 6 Q92 6 92 11\"/><path class=\"tsg\" stroke-width=\"3\" d=\"M80 18 V11 Q80 6 86 6 Q92 6 92 11\"/><rect class=\"s\" x=\"72\" y=\"64\" width=\"16\" height=\"16\" rx=\"2\"/><circle class=\"pit\" cx=\"80\" cy=\"68\" r=\"2\"/><rect class=\"d\" x=\"52\" y=\"78\" width=\"56\" height=\"12\" rx=\"5\"/><rect class=\"ring\" x=\"58\" y=\"81.6\" width=\"44\" height=\"4.8\" rx=\"2.4\"/><rect class=\"d\" x=\"28\" y=\"20\" width=\"104\" height=\"46\" rx=\"14\"/><rect class=\"lamp\" x=\"38\" y=\"29\" width=\"84\" height=\"29\" rx=\"8\"/><circle class=\"led\" cx=\"49\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"56.8\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"64.5\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"72.2\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"80\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"87.8\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"95.5\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"103.2\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"111\" cy=\"41.6\" r=\"2.5\"/><circle class=\"led\" cx=\"49\" cy=\"49.4\" r=\"2.5\"/><circle class=\"led\" cx=\"56.8\" cy=\"49.4\" r=\"2.5\"/><circle class=\"led\" cx=\"64.5\" cy=\"49.4\" r=\"2.5\"/><circle class=\"led\" cx=\"72.2\" cy=\"49.4\" r=\"2.5\"/><circle class=\"led\" cx=\"80\" cy=\"49.4\" r=\"2.5\"/><circle class=\"led\" cx=\"87.8\" cy=\"49.4\" r=\"2.5\"/><circle class=\"led\" cx=\"95.5\" cy=\"49.4\" r=\"2.5\"/><circle class=\"led\" cx=\"103.2\" cy=\"49.4\" r=\"2.5\"/><circle class=\"led\" cx=\"111\" cy=\"49.4\" r=\"2.5\"/><circle class=\"g\" cx=\"125\" cy=\"61\" r=\"2.6\"/><rect class=\"sh\" x=\"40\" y=\"23\" width=\"70\" height=\"2.6\" rx=\"1.3\"/>",
+    diag: "<path class=\"to\" stroke-width=\"6.4\" d=\"M80 86 Q80 96.6 110 94 Q132 92 136 82\"/><path class=\"tsg\" stroke-width=\"2.6\" d=\"M80 86 Q80 96.6 110 94 Q132 92 136 82\"/><path class=\"d\" d=\"M128 66 H146 L143 82 H131 Z\"/><path class=\"kn\" d=\"M134 70 v6 M137 70 v6 M140 70 v6\"/><rect class=\"d\" x=\"44\" y=\"6\" width=\"72\" height=\"82\" rx=\"10\"/><path class=\"k\" d=\"M44 16 V12 Q44 6 50 6 H54 Z M116 16 V12 Q116 6 110 6 H106 Z M44 78 V82 Q44 88 50 88 H54 Z M116 78 V82 Q116 88 110 88 H106 Z\"/><rect class=\"scr\" x=\"51\" y=\"13\" width=\"58\" height=\"46\" rx=\"3\"/><rect class=\"g\" x=\"51\" y=\"13\" width=\"58\" height=\"7\" rx=\"2\"/><rect class=\"w\" x=\"54\" y=\"15.4\" width=\"16\" height=\"2.2\" rx=\"1.1\"/><circle class=\"led\" cx=\"104\" cy=\"16.5\" r=\"1.4\"/><path class=\"grid\" d=\"M54 31 H106 M54 40 H106 M54 49 H106 M67 25 V55 M80 25 V55 M93 25 V55\"/><polyline class=\"wave\" points=\"54,44 62,44 65,29 70,52 75,34 80,46 85,40 90,40 94,33 98,46 106,46\"/><circle class=\"g\" cx=\"64\" cy=\"71\" r=\"5.2\"/><circle class=\"s\" cx=\"80\" cy=\"71\" r=\"5.2\"/><circle class=\"s\" cx=\"96\" cy=\"71\" r=\"5.2\"/><path class=\"tri2\" d=\"M62.4 71 L66 68.8 V73.2 Z\"/><rect class=\"sh\" x=\"54\" y=\"62\" width=\"52\" height=\"1.6\" rx=\".8\"/>",
+    other: "<path class=\"to\" stroke-width=\"8.6\" d=\"M58 37 V25 Q58 22 61 22 H99 Q102 22 102 25 V37\"/><path class=\"tsg\" stroke-width=\"4\" d=\"M58 37 V25 Q58 22 61 22 H99 Q102 22 102 25 V37\"/><rect class=\"d\" x=\"66\" y=\"18.6\" width=\"28\" height=\"7\" rx=\"3.5\"/><rect class=\"g\" x=\"20\" y=\"36\" width=\"120\" height=\"48\" rx=\"6\"/><path class=\"d\" d=\"M20 42 Q20 34 28 34 H132 Q140 34 140 42 V50 H20 Z\"/><path class=\"kn\" d=\"M24 50.8 H136\"/><rect class=\"y\" x=\"36\" y=\"45\" width=\"13\" height=\"12\" rx=\"2\"/><rect class=\"y\" x=\"111\" y=\"45\" width=\"13\" height=\"12\" rx=\"2\"/><path class=\"nl\" d=\"M39 51 H46 M114 51 H121\"/><rect class=\"s\" x=\"73\" y=\"45.6\" width=\"14\" height=\"10\" rx=\"2\"/><circle class=\"pit\" cx=\"80\" cy=\"50.6\" r=\"1.8\"/><circle class=\"h\" cx=\"26\" cy=\"54\" r=\"1.3\"/><circle class=\"h\" cx=\"26\" cy=\"78\" r=\"1.3\"/><circle class=\"h\" cx=\"134\" cy=\"54\" r=\"1.3\"/><circle class=\"h\" cx=\"134\" cy=\"78\" r=\"1.3\"/><rect class=\"sh\" x=\"28\" y=\"60\" width=\"104\" height=\"2.6\" rx=\"1.3\"/><path class=\"nl\" opacity=\".35\" d=\"M24 80.4 H136\"/>",
+  };
+  // What the tool is called decides the drawing first, then its category, then its part number.
+  const ART_WORDS = [
+    [/insulated|non-?conductive|1000 ?v\b/i, "insulated"], [/torque/i, "torque"], [/screw ?driver/i, "screwdriver"],
+    [/impact|cordless|drill|grinder|polisher|air (ratchet|hammer)|battery|charger|\d+(\.\d)?v\b/i, "power"],
+    [/scan|diagnos|multi ?meter|scope|tablet|verus|zeus|solus|apollo|triton/i, "diag"],
+    [/roll ?cab|tool ?(chest|box|cart|storage|bag)|cabinet|drawer|\bcart\b|locker|hutch/i, "storage"],
+    [/socket.*\b(sets?|kit)\b|\b(sets?|kit)\b.*socket/i, "set"], [/ratchet/i, "ratchet"], [/socket/i, "socket"], [/wrench|spanner/i, "wrench"],
+    [/plier|cutter|crimp|snip|locking|channel ?lock/i, "pliers"], [/\bpry|crowbar/i, "pry"], [/punch|chisel|drift/i, "punch"],
+    [/hammer|mallet/i, "hammer"], [/\bpick|\bhook|\bawl|scribe/i, "pick"], [/light|lamp|creeper|magnet|mirror|inspection/i, "shop"],
+    [/tape|knife|scraper|\bfile\b|measure/i, "general"], [/\bsets?\b|\bkit\b|\bpc\b|piece/i, "set"],
+  ];
+  const ART_CAT = { '1/4" Drive Tools': "ratchet", '3/8" Drive Tools': "ratchet", '1/2" Drive Tools': "ratchet", '3/4" & Larger Drive Tools': "ratchet", "Wrenches": "wrench", "Torque": "torque", "Screwdrivers": "screwdriver", "Pliers": "pliers", "Awls, Hooks and Picks": "pick", "Prybars": "pry", "Punches/Chisels": "punch", "Hammers": "hammer", "Non-Conductive Composite": "insulated", "General Hand Tools": "general", "Service Tools - Sets": "set", "Power Tools": "power", "Tool Storage": "storage", "Shop & Tech": "shop", "Diagnostics": "diag" };
+  const ART_PN = [
+    [/^(A?TECH|CTECH|QD|QJR|QJFR)/, "torque"], [/^(SGD|SSD|SDD|SHD)/, "screwdriver"], [/^(SPBS?|PBS?)\d/, "pry"],
+    [/^(S?OEX|S?OXI|S?XDH?|SRX|R?XFR|SOXR|GOEX)/, "wrench"], [/^(CTJ?|CDR|CTR|IM\d|MG\d|PT\d|PH\d)/, "power"],
+    [/^(KR|KMP|KCP|KHP|KER|KTL|KSL|KHD)/, "storage"], [/^(ZEE|EE)/, "diag"], [/^(\d{2,3}(ACF|ACP|BCP|CP|CF)|LN\d|PL\d)/, "pliers"],
+    [/^(HBB|HBFE|BPN|HB)\d/, "hammer"], [/^[TFSL][A-Z]*\d/, "ratchet"],
+  ];
+  const DRIVE_CAT = { '1/4" Drive Tools': '1/4"', '3/8" Drive Tools': '3/8"', '1/2" Drive Tools': '1/2"', '3/4" & Larger Drive Tools': '3/4"' };
+  function artOf(r) {
+    const text = [r.name, storeOf(r) && storeOf(r).name].filter(Boolean).join(" ");
+    const pn = String(r.part_number || "").toUpperCase();
+    let key = (ART_WORDS.find(([re]) => re.test(text)) || [])[1] || ART_CAT[r.category];
+    if (!key) key = (ART_PN.find(([re]) => re.test(pn)) || [])[1] || "other";
+    const said = text.match(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?drive/i);
+    const drive = said ? said[1] + '"' : DRIVE_CAT[r.category]
+      || (["ratchet", "socket"].includes(key) && /^[TFSL][A-Z]*\d/.test(pn) ? { T: '1/4"', F: '3/8"', S: '1/2"', L: '3/4"' }[pn[0]] : null);
+    return { key, drive };
+  }
+  const artTag = (key, cls = "") => `<span class="art${cls ? " " + cls : ""}" data-art="${ART[key] ? key : "other"}" aria-hidden="true"><svg viewBox="0 0 160 100" focusable="false">${ART[key] || ART.other}</svg></span>`;
+  const thumb = (r) => { const p = photoOf(r); return p ? `<span class="thumb">${imgTag(p, "")}</span>` : `<span class="thumb art-bg">${artTag(artOf(r).key)}</span>`; };
 
   function spark(r, w = 84, h = 26) {
     const pts = hist(r);
@@ -863,7 +964,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   async function loadCatalog() {
     if (!sb) return;
     const pns = [...new Set(state.items.map((r) => r.part_number).filter((p) => p && PN_RE.test(p)))];
-    if (!pns.length) { state.catalog = {}; state.hist = {}; state.shared = {}; return; }
+    if (!pns.length) { state.catalog = {}; state.hist = {}; return; }
     // Ask in batches so the request stays short even for a box with hundreds of part numbers.
     const batches = [];
     for (let i = 0; i < pns.length; i += 150) batches.push(pns.slice(i, i + 150));
@@ -871,9 +972,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       sb.from("catalog").select("part_number,name,price,was_price,status,checked_at").in("part_number", b),
       // newest first, so if there's ever more history than one request holds, the oldest days are what's left out
       sb.from("catalog_prices").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
-      sb.rpc("shared_photos", { pns: b }),
     ])));
-    if (res.every(([, , p]) => !p.error)) state.shared = Object.fromEntries(res.flatMap(([, , p]) => p.data || []).map((r) => [r.part_number, r]));
     if (res.every(([c]) => !c.error)) state.catalog = Object.fromEntries(res.flatMap(([c]) => c.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, h]) => !h.error)) {
       const m = {};
@@ -1031,11 +1130,12 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   function photoBlock(r, chipsHtml, badgeHtml) {
     const p = photoOf(r);
     const busy = state.uploading[r.id] ? `<div class="busy"><span class="spin" aria-hidden="true"></span><span class="sr">Uploading photo</span></div>` : "";
-    const snap = !busy ? `<button class="snap" type="button" data-act="photo">${ICON.cam}${p && p.mine ? "Replace" : "Add photo"}</button>` : "";
+    const snap = !busy ? `<button class="snap" type="button" data-act="photo">${ICON.cam}${p ? "Replace" : "Add your photo"}</button>` : "";
     const over = `<div class="over"><div class="chips">${chipsHtml}</div>${badgeHtml}</div>`;
     if (!p) {
-      const note = "No photo yet";
-      return `<div class="photo empty slim"><span class="ph-ic">${ICON.tool}</span><div class="ph-text">${chipsHtml || badgeHtml ? `<div class="chips">${chipsHtml}${badgeHtml}</div>` : ""}<span>${note}</span></div>${snap}${busy}</div>`;
+      // no photo of your own yet: BoxTally's drawing of this kind of tool
+      const a = artOf(r);
+      return `<div class="photo art-bg">${artTag(a.key)}${over}<span class="src">${a.drive ? esc(a.drive) + " drive · " : ""}Drawing</span>${snap}${busy}</div>`;
     }
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
@@ -1193,13 +1293,14 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
 
   function renderRail() {
     const owned = rowsOf("owned");
-    const rows = owned.filter(photoOf).slice().sort((a, b) => String(addedAt(b)).localeCompare(String(addedAt(a)))).slice(0, 12);
+    const rows = owned.slice().sort((a, b) => String(addedAt(b)).localeCompare(String(addedAt(a)))).slice(0, 12);
     $("railWrap").hidden = !rows.length;
     if (!rows.length) return;
-    $("railCount").textContent = `${owned.filter(photoOf).length} of ${owned.length} with photos`;
+    const withPh = owned.filter(photoOf).length;
+    $("railCount").textContent = `${owned.length} tool${owned.length === 1 ? "" : "s"}${withPh ? ` · ${withPh} with your photos` : ""}`;
     if (!state.railIntro) { state.railIntro = true; $("rail").classList.add("intro"); setTimeout(() => $("rail").classList.remove("intro"), 2200); }
     $("rail").innerHTML = rows.map((r, i) => { const p = photoOf(r), pr = storePrice(r) ?? (Number(r.price) || 0);
-      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate">${imgTag(p, displayName(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
+      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}">${p ? imgTag(p, displayName(r)) : artTag(artOf(r).key)}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
   }
 
   function activity() {
@@ -1334,11 +1435,10 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     state.uploading[id] = true; render();
     try {
       const fields = await photoFields(file);
-      const share = signedIn() && item.list === "owned" && (item.photo_path ? !!item.photo_shared : true);
-      if (signedIn()) fields.photo_shared = share;
+      if (signedIn()) fields.photo_shared = false;
       await saveItem({ ...item, ...fields });
       dropOldPhoto(item.photo_path, fields.photo_path);
-      toast(share ? "Photo saved and shared with others tracking this tool. Turn sharing off in Edit." : "Photo saved");
+      toast("Photo saved. It's only shown to you.");
     } catch (e) { toast(photoErr(e)); }
     finally { delete state.uploading[id]; render(); }
   });
@@ -1352,10 +1452,8 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     $("vImg").innerHTML = imgTag(p, displayName(r)).replace(' loading="lazy"', "");
     $("vName").textContent = displayName(r);
     const pr = r.list === "owned" ? storePrice(r) ?? (Number(r.price) || 0) : wishCost(r);
-    $("vMeta").textContent = [r.part_number, pr ? money(pr, pr % 1) : "", p.mine ? "Your photo" : "Shared by someone tracking this tool"].filter(Boolean).join(" · ");
-    $("vPhoto").textContent = p.mine ? "Replace photo" : "Use my own photo";
-    $("vReport").hidden = p.mine || !signedIn();
-    $("vReport").dataset.item = p.sharedId || "";
+    $("vMeta").textContent = [r.part_number, pr ? money(pr, pr % 1) : "", "Your photo"].filter(Boolean).join(" · ");
+    $("vPhoto").textContent = "Replace photo";
     $("vImg").classList.remove("zoom");
     viewer.showModal();
   }
@@ -1371,16 +1469,18 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   $("vClose").onclick = () => viewer.close();
   viewer.addEventListener("click", (e) => { if (e.target === viewer) viewer.close(); });
   $("vPhoto").onclick = () => { const v = viewing; viewer.close(); if (v) pickPhotoFor(v); };
-  // A wrong shared photo: hidden for you right away, and for everyone after 2 different people report it.
-  $("vReport").onclick = async () => {
-    const item = $("vReport").dataset.item; if (!item) return;
-    viewer.close();
-    const { error } = await sb.rpc("report_photo", { item });
-    if (error) return toast(dbMsg(error) || "Couldn't report that photo. Try again.");
-    await loadCatalog(); render();
-    toast("Thanks. That photo is hidden for you, and gets hidden for everyone if someone else reports it too.");
-  };
-  $("rail").addEventListener("click", (e) => { const b = e.target.closest(".shot"); if (b) openViewer(b.dataset.id); });
+  // A tool with your photo opens the viewer; one showing a drawing takes you to its card.
+  $("rail").addEventListener("click", (e) => {
+    const b = e.target.closest(".shot"); if (!b) return;
+    const r = state.items.find((x) => x.id === b.dataset.id); if (!r) return;
+    if (photoOf(r)) return openViewer(r.id);
+    if (state.tab !== "owned") setTab("owned");
+    let card = $("list").querySelector(`[data-id="${CSS.escape(r.id)}"]`);
+    if (!card && ($("q").value || $("fCat").value)) { $("q").value = ""; $("fCat").value = ""; render(); card = $("list").querySelector(`[data-id="${CSS.escape(r.id)}"]`); }
+    if (!card) return;
+    card.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    if (!reduce && card.animate) card.animate([{ boxShadow: "0 0 0 3px var(--accent), var(--shadow-hi)" }, { boxShadow: "0 0 0 0 transparent, var(--shadow)" }], { duration: 1600, delay: 350, easing: "ease-out" });
+  });
   // Mouse users can grab the photo rail and fling it sideways.
   (() => {
     const rail = $("rail"); let down = null, moved = false;
@@ -1630,16 +1730,19 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     let p = null;
     if (pf.url) p = { src: pf.url, mine: true };
     else if (it && !pf.remove) p = photoOf(it);
-    else if (it && pf.remove) p = sharedPhoto(it);
-    $("pfPrev").className = "pf-prev" + (p ? "" : " none");
-    $("pfPrev").innerHTML = p ? imgTag(p, "Photo preview") : ICON.tool;
+    $("pfPrev").className = "pf-prev" + (p ? "" : " art-bg");
+    if (p) { $("pfPrev").innerHTML = imgTag(p, "Photo preview"); $("pfPrev")._art = null; }
+    else {
+      // the drawing follows what you type, so you can see which one your card will get
+      const key = artOf({ ...(it || {}), name: $("i-name").value, part_number: cleanPn($("i-pn").value), category: $("i-cat").value }).key;
+      if ($("pfPrev")._art !== key) { $("pfPrev").innerHTML = artTag(key, $("pfPrev")._art ? "swap" : ""); $("pfPrev")._art = key; }
+    }
     const mine = !!pf.url || (it && hasMine(it) && !pf.remove);
     $("pfPick").innerHTML = ICON.cam + (mine ? "Change photo" : "Upload photo");
     $("pfRemove").hidden = !mine;
-    const owned = (it ? it.list : state.tab) === "owned";
-    $("pfShareRow").hidden = !signedIn() || !owned || !(mine || pf.url);
-    $("pfNote").textContent = pf.url ? "Saves when you tap Save." : mine ? "Your photo of this tool." : p ? "Showing a photo someone tracking this tool shared. Upload your own to use yours instead." : "Snap a pic of your own tool. Only upload photos you took yourself.";
+    $("pfNote").textContent = pf.url ? "Saves when you tap Save. Only you see it." : mine ? "Your photo of this tool. Only you see it." : "Showing BoxTally's drawing. Add a photo of your own tool to see it on your card instead. Only you see your photos.";
   }
+  ["i-name", "i-pn", "i-cat"].forEach((id) => $(id).addEventListener("input", () => { if (dlg.open) renderPf(); }));
   $("pfPick").onclick = () => { $("pfFile").value = ""; $("pfFile").click(); };
   $("pfFile").addEventListener("change", () => { const f = $("pfFile").files[0]; if (!f) return; clearPf(); pf.file = f; pf.url = URL.createObjectURL(f); renderPf(); });
   $("pfRemove").onclick = () => { const had = !!pf.url; clearPf(); if (!had) pf.remove = true; renderPf(); };
@@ -1662,7 +1765,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     $("i-saved").value = item?.saved ? Number(item.saved) : "";
     $("i-notes").value = item?.notes || "";
     $("frmErr").hidden = true;
-    $("pfShare").checked = item && item.photo_path ? !!item.photo_shared : true;
+    $("pfPrev")._art = null;
     updateLookup(); renderPf();
     dlg.showModal();
     setTimeout(() => $("i-name").focus(), 0);
@@ -1685,7 +1788,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
         : { priority: $("i-pri").value, saved: Math.max(0, Number($("i-saved").value) || 0) }),
     };
     const oldPath = state.editing ? state.editing.photo_path : null;
-    if (signedIn()) item.photo_shared = list === "owned" && $("pfShare").checked;
+    if (signedIn()) item.photo_shared = false;
     $("saveBtn").disabled = true;
     try {
       if (pf.file) { $("saveBtn").textContent = "Uploading photo…"; Object.assign(item, await photoFields(pf.file)); }
