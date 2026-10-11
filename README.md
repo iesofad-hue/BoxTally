@@ -38,7 +38,7 @@ Each account can hold up to 2,000 tools (box and wishlist together) and 300 uplo
 
 The site never loads, copies or hotlinks Snap-on's product photos (Snap-on limits its images to press use).
 
-- **Drawings for everyone.** Every tool shows one of BoxTally's own drawings (ratchet, socket, wrench, torque wrench, screwdriver, pliers, tool chest and so on). The drawing is picked from the tool's name first, then its category, then its part number (for example `F80` → 3/8" ratchet, `OEXM710B` → wrench, `TECH3FR250` → torque wrench). The drawings live in `ART` in `index.html`.
+- **Drawings for everyone.** Every tool shows one of BoxTally's own drawings (ratchet, socket, wrench, torque wrench, screwdriver, pliers, tool chest and so on). The drawing is picked from the tool's name first, then its category, then its part number (for example `F80` → 3/8" ratchet, `OEXM710B` → wrench, `TECH3FR250` → torque wrench). Within a kind of tool the drawing shows which one it is: standard, long, stubby or flex-head ratchets; 6-point, 12-point, deep, impact, swivel or bit sockets; combination, ratcheting, flare-nut, box-end, open-end or adjustable wrenches; slip-joint, needle-nose, diagonal, locking, water-pump or snap-ring pliers; hook, straight, 45° or complex picks; flat, Phillips, Torx, stubby or ratcheting screwdrivers. Each card's label names the kind. The drawings live in `ART` in `index.html`; the matching rules are `ART_WORDS`, `ART_PN`, `VARIANT_WORDS` and `VARIANT_PN`.
 - **Your photos are yours only.** A photo you upload replaces the drawing on your own cards. Nobody else sees it.
 - The older shared-photo pieces in `supabase/schema.sql` (`photo_shared`, `shared_photos`, `report_photo`) are no longer used by the site.
 
