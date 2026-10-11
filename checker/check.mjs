@@ -88,55 +88,67 @@ page.on("response", (r) => {
 let changes = 0, found = 0, notFound = 0, errors = 0;
 
 async function readProduct(pn) {
-  const productResponse = page
-    .waitForResponse((r) => /\/api\/Product\/\d+\?sku=/i.test(r.url()) && r.request().method() === "GET", { timeout: 25000 })
-    .catch(() => null);
-  await page.goto(`${STORE}/search?q=${encodeURIComponent(pn)}`, { waitUntil: "domcontentloaded", timeout: 45000 });
-  const res = await productResponse;
-
-  if (!res) {
-    // The bot-protection script is on every page, so judge by what the visitor actually sees.
-    const seen = await page.evaluate(() => ({
-      title: document.title,
-      path: location.pathname,
-      text: (document.body ? document.body.innerText : "").replace(/\s+/g, " ").trim().slice(0, 300),
-    })).catch(() => ({ title: "", path: "", text: "" }));
-    note(`${pn}: no product data. Page "${seen.title}" at ${seen.path}. API calls: ${apiSeen.slice(0, 12).join(", ") || "none"}. Text: ${seen.text.slice(0, 160)}`);
-    if (/request unsuccessful|incapsula incident|access denied|pardon our interruption|verify you are human|are you a robot/i.test(seen.title + " " + seen.text)) {
-      throw new BlockedError(`blocked (${seen.title || "no title"}: ${seen.text.slice(0, 120)})`);
-    }
-    if (seen.path.includes("/search")) return null; // a search page with no single product: not found
-    throw new Error(`the page didn't finish loading (${seen.title || seen.path || "blank page"})`);
-  }
-  let data = null;
-  try { data = await res.json(); } catch { data = null; }
-  if (!data) { note(`${pn}: product data came back empty (${res.status()} ${new URL(res.url()).pathname})`); return null; }
-  if (String(data.SKU || "").toUpperCase() !== pn) { note(`${pn}: the store showed a different product (${String(data.SKU || "?")})`); return null; }
-
-  // The page shows a struck-through regular price next to the sale price when something is on sale.
-  let shown = [];
-  try {
-    await page.waitForSelector("h1", { timeout: 10000 });
-    shown = await page.evaluate(() => {
-      const name = (document.querySelector("h1") || {}).textContent?.trim() || "";
-      const text = document.body.innerText;
-      const i = name ? text.indexOf(name) : -1;
-      if (i < 0) return [];
-      const end = text.indexOf("ADD TO CART", i);
-      const seg = text.slice(i, end > 0 ? end : i + 800);
-      return [...seg.matchAll(/\$([\d,]+\.\d{2})/g)].map((m) => Number(m[1].replace(/,/g, "")));
-    });
-  } catch { shown = []; }
-
-  const listed = typeof data.Price === "number" ? data.Price : null;
-  const price = shown.length ? shown[shown.length - 1] : listed;
-  const wasPrice = shown.length >= 2 && shown[0] > shown[shown.length - 1] ? shown[0] : null;
-  return {
-    name: String(data.Description || "").slice(0, 200) || null,
-    price,
-    wasPrice,
-    image: typeof data.PrimaryImage === "string" ? data.PrimaryImage : null,
+  // The product data feed is used when it has the details; the visible page is the fallback.
+  let feed = null;
+  const onResponse = async (r) => {
+    if (!/\/api\/Product\/\d+\?sku=/i.test(r.url())) return;
+    try { const d = await r.json(); if (d && String(d.SKU || "").toUpperCase() === pn) feed = d; } catch {}
   };
+  page.on("response", onResponse);
+  try {
+    await page.goto(`${STORE}/search?q=${encodeURIComponent(pn)}`, { waitUntil: "domcontentloaded", timeout: 45000 });
+    // A search for an exact part number opens that product's page.
+    const onProduct = await page.waitForURL((u) => u.pathname.includes("/product/"), { timeout: 25000 }).then(() => true).catch(() => false);
+
+    if (!onProduct) {
+      // The bot-protection script is on every page, so judge by what the visitor actually sees.
+      const seen = await page.evaluate(() => ({
+        title: document.title,
+        path: location.pathname,
+        text: (document.body ? document.body.innerText : "").replace(/\s+/g, " ").trim().slice(0, 300),
+      })).catch(() => ({ title: "", path: "", text: "" }));
+      note(`${pn}: no product page. Page "${seen.title}" at ${seen.path}. API calls: ${apiSeen.slice(0, 12).join(", ") || "none"}. Text: ${seen.text.slice(0, 160)}`);
+      if (/request unsuccessful|incapsula incident|access denied|pardon our interruption|verify you are human|are you a robot/i.test(seen.title + " " + seen.text)) {
+        throw new BlockedError(`blocked (${seen.title || "no title"}: ${seen.text.slice(0, 120)})`);
+      }
+      if (seen.path.includes("/search")) return null; // a search with no single product: not found
+      throw new Error(`the page didn't finish loading (${seen.title || seen.path || "blank page"})`);
+    }
+
+    const sku = decodeURIComponent(new URL(page.url()).pathname.split("/").pop() || "").toUpperCase();
+    if (sku !== pn) { note(`${pn}: the store opened a different product (${sku})`); return null; }
+
+    await page.waitForSelector("h1", { timeout: 15000 });
+    // Read the name, the prices next to it (a struck-through regular price shows before a sale price), and the main photo.
+    let dom = { name: "", prices: [], image: null };
+    for (let t = 0; t < 12; t++) {
+      dom = await page.evaluate(() => {
+        const name = (document.querySelector("h1") || {}).textContent?.trim() || "";
+        const text = document.body.innerText;
+        const i = name ? text.indexOf(name) : -1;
+        const end = i >= 0 ? text.indexOf("ADD TO CART", i) : -1;
+        const seg = i >= 0 ? text.slice(i, end > 0 ? end : i + 800) : "";
+        const prices = [...seg.matchAll(/\$([\d,]+\.\d{2})/g)].map((m) => Number(m[1].replace(/,/g, "")));
+        const im = [...document.querySelectorAll("img")].find((x) => /snap-on-products-hr\.imgix\.net/.test(x.currentSrc || x.src) && x.naturalWidth > 150 && x.naturalWidth <= 800);
+        return { name, prices, image: im ? (im.currentSrc || im.src) : null };
+      });
+      if (dom.prices.length && (dom.image || t > 4)) break;
+      await page.waitForTimeout(1000);
+    }
+
+    const listed = feed && typeof feed.Price === "number" ? feed.Price : null;
+    const price = dom.prices.length ? dom.prices[dom.prices.length - 1] : listed;
+    if (price == null) { note(`${pn}: the product page showed no price`); return null; }
+    const wasPrice = dom.prices.length >= 2 && dom.prices[0] > price ? dom.prices[0] : null;
+    return {
+      name: (dom.name || (feed && feed.Description) || "").slice(0, 200) || null,
+      price,
+      wasPrice,
+      image: (feed && typeof feed.PrimaryImage === "string" && feed.PrimaryImage) || dom.image,
+    };
+  } finally {
+    page.off("response", onResponse);
+  }
 }
 
 async function saveImage(pn, imageUrl) {
