@@ -36,7 +36,8 @@ if (!KEY) {
   console.error("Missing SUPABASE_SECRET_KEY. On Windows, run setup-windows.bat again to save it.");
   process.exit(1);
 }
-console.log(`[${new Date().toLocaleString()}] mode: ${MODE}`);
+const VERSION = "2026-10-11.2";
+console.log(`[${new Date().toLocaleString()}] checker version ${VERSION}, mode: ${MODE}`);
 
 class BlockedError extends Error {}
 
