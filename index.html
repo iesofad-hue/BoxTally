@@ -23,8 +23,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://ctteljhhjsfvyyiwzxiy.supabase.co" crossorigin>
+<!-- fonts and the database library load in the background, so the page shows up before they arrive -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
 <style>
 /* Layout: a graphite dashboard band with a photo rail of the latest tools, then drawer tabs over a photo-first card grid; one column on a phone */
 :root {
@@ -256,6 +261,8 @@ textarea { resize: vertical; min-height: 64px; }
 .nextup .thumb.none { background: var(--sunk); }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 14px; }
+/* cards off screen are skipped until you scroll near them, so big boxes stay quick */
+.grid > .card { content-visibility: auto; contain-intrinsic-size: auto 340px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; display: grid; grid-template-rows: auto 1fr; align-content: start; min-width: 0; overflow: hidden; box-shadow: var(--shadow); }
 .card.drop { border-color: var(--good); box-shadow: 0 0 0 1px var(--good) inset, var(--shadow); }
 @media (prefers-reduced-motion: no-preference) {
@@ -872,7 +879,8 @@ footer #iosHint { margin: 0 0 8px; }
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
-(() => {
+// Starts once the page and the database library are ready (the library loads in the background).
+document.addEventListener("DOMContentLoaded", () => {
   /* ---------- settings: the project URL and publishable key are meant to be public ---------- */
   const SB_URL = "https://ctteljhhjsfvyyiwzxiy.supabase.co";
   const SB_KEY = "sb_publishable_y4-sxz8INJZu3fU6xIwWLw_9krKIQJb";
@@ -2472,7 +2480,7 @@ footer #iosHint { margin: 0 0 8px; }
   sb.auth.onAuthStateChange((_event, session) => { setTimeout(() => setUser(session ? session.user : null), 0); });
   // Installable app: works offline for the page itself; your box comes from the last-saved copy.
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
-})();
+});
 </script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
