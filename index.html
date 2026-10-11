@@ -110,7 +110,8 @@ h1 em { font-style: normal; color: var(--accent); }
 .watch ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
 .watch li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: .88rem; }
 .watch li .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.watch .note { color: var(--band-muted); font-size: .86rem; }
+.watch .note { display: block; color: var(--band-muted); font-size: .86rem; }
+.watch { display: grid; gap: 6px; align-content: start; }
 .thumb { width: 28px; height: 28px; border-radius: 7px; background: var(--plate); overflow: hidden; display: grid; place-items: center; flex: none; }
 .thumb img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
 .thumb img.mine { object-fit: cover; padding: 0; }
