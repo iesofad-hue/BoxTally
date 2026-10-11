@@ -1,0 +1,50 @@
+name: Check Snap-on prices
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes: only new or refresh-requested part numbers
+    - cron: "43 15 * * *"    # once a day: every tracked part number
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "due = new or refresh-requested part numbers, all = every part number"
+        type: choice
+        options: [all, due]
+        default: all
+
+concurrency:
+  group: price-check
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_URL: https://ctteljhhjsfvyyiwzxiy.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      MODE: ${{ github.event_name == 'workflow_dispatch' && inputs.mode || (github.event.schedule == '43 15 * * *' && 'all' || 'due') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Anything to check?
+        id: due
+        run: node checker/check.mjs --count
+
+      - name: Install the browser
+        if: steps.due.outputs.count != '0'
+        working-directory: checker
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+
+      - name: Check prices
+        if: steps.due.outputs.count != '0'
+        run: node checker/check.mjs

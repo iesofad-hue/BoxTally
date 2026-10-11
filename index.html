@@ -1,0 +1,1164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Snap-on Toolbox Tracker</title>
+<meta name="description" content="Track the Snap-on tools in your box, what they're worth today, and what's next on your wishlist. Prices and photos update daily from Snap-on's store.">
+<meta name="theme-color" content="#10151c">
+<meta property="og:title" content="Snap-on Toolbox Tracker">
+<meta property="og:description" content="Your tools, what they're worth today, and price drops on your wishlist.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='11' fill='%2310151c'/%3E%3Cg fill='none' stroke='%2378a6ff' stroke-width='3.4' stroke-linecap='round'%3E%3Ccircle cx='18' cy='18' r='8'/%3E%3Cpath d='M24 24 38 38'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<style>
+/* Layout: a graphite dashboard band with a photo rail of the latest tools, then drawer tabs over a photo-first card grid; one column on a phone */
+:root {
+  --bg: #eceff3; --surface: #ffffff; --sunk: #e2e7ed; --line: #d2d9e2; --fg: #121821; --muted: #586473;
+  --accent: #2356d8; --accent-ink: #ffffff; --accent-soft: #dde7fb;
+  --band: #10151c; --band-2: #18202a; --band-fg: #eef2f7; --band-muted: #98a7b9; --band-line: rgb(255 255 255 / .1);
+  --tag: #ffc629; --tag-ink: #1d1600;
+  --good: #1b7a4b; --good-soft: #d9f0e4; --warn: #9c5b07; --bad: #b3261e; --bad-soft: #f8e1df; --chip: #e8ecf1;
+  --plate: #ffffff; --plate-line: #e5e9ee; --scrim: rgb(10 14 20 / .62); --scrim-ink: #ffffff;
+  --shadow: 0 1px 2px rgb(16 21 28 / .05), 0 10px 28px -16px rgb(16 21 28 / .28);
+  --shadow-hi: 0 2px 4px rgb(16 21 28 / .06), 0 18px 40px -18px rgb(16 21 28 / .4);
+  --f-display: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1116; --surface: #161c24; --sunk: #1e262f; --line: #2b3542;
+    --fg: #e7ecf2; --muted: #98a4b4; --accent: #78a6ff; --accent-ink: #0a1220; --accent-soft: #1b2b47;
+    --band: #07090d; --band-2: #121820; --band-fg: #e7ecf2; --band-muted: #8e9cae;
+    --tag: #ffcf4a; --good: #5cc28d; --good-soft: #15332a; --warn: #e3a54d; --bad: #f08a80; --bad-soft: #3a1f1d; --chip: #252e39;
+    --plate: #e9edf1; --plate-line: #2b3542;
+    --shadow: 0 1px 2px rgb(0 0 0 / .3), 0 10px 28px -16px rgb(0 0 0 / .7);
+    --shadow-hi: 0 2px 4px rgb(0 0 0 / .35), 0 18px 40px -18px rgb(0 0 0 / .85);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 15px; line-height: 1.45; padding-bottom: env(safe-area-inset-bottom, 0px); }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; letter-spacing: .01em; }
+.num, .mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.label { font-size: .72rem; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); font-weight: 600; }
+.inner { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- band ---------- */
+.band { color: var(--band-fg); padding-block: calc(26px + env(safe-area-inset-top, 0px)) 22px; position: relative; overflow: hidden;
+  background:
+    radial-gradient(900px 340px at 88% -20%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 70%),
+    radial-gradient(600px 260px at -5% 120%, color-mix(in srgb, var(--tag) 9%, transparent), transparent 70%),
+    linear-gradient(180deg, var(--band-2), var(--band)); }
+.band::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5; background: repeating-linear-gradient(90deg, rgb(255 255 255 / .018) 0 1px, transparent 1px 3px); }
+.band .inner { display: grid; gap: 20px; position: relative; }
+.band .inner > * { min-width: 0; }
+.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+.eyebrow { font-family: var(--f-mono); font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--band-muted); }
+h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 800; line-height: .95; text-transform: uppercase; }
+h1 em { font-style: normal; color: var(--accent); }
+.top p { margin: 8px 0 0; color: var(--band-muted); max-width: 52ch; }
+.top-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sync { font-size: .8rem; color: var(--band-fg); display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px; border: 1px solid var(--band-line); border-radius: 999px; background: rgb(255 255 255 / .04); }
+.sync i { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--band-muted); }
+.sync[data-mode="account"] i { background: #4fc58a; }
+.sync[data-mode="busy"] i { background: var(--tag); }
+@media (prefers-reduced-motion: no-preference) {
+  .sync[data-mode="account"] i::after, .sync[data-mode="busy"] i::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: ping 2.2s ease-out infinite; }
+}
+@keyframes ping { 0% { transform: scale(1); opacity: .7; } 80%, 100% { transform: scale(3); opacity: 0; } }
+.btn-refresh, .btn-account { font: inherit; font-size: .86rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px 7px 12px; border-radius: 999px; border: 0; cursor: pointer; }
+.btn-refresh { background: var(--accent); color: var(--accent-ink); box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--accent) 80%, transparent); }
+.btn-refresh:hover:not(:disabled), .btn-account:hover { filter: brightness(1.1); }
+.btn-refresh:disabled { cursor: default; opacity: .9; }
+.btn-refresh svg, .btn-account svg { width: 16px; height: 16px; flex: none; }
+@media (prefers-reduced-motion: no-preference) { .btn-refresh.running svg { animation: spin 1s linear infinite; } }
+.btn-refresh .pend { background: var(--tag); color: var(--tag-ink); font-size: .72rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; }
+.btn-account { background: rgb(255 255 255 / .08); color: var(--band-fg); border: 1px solid var(--band-line); }
+.who { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--band-muted); }
+.who .av { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; font-size: .8rem; }
+
+.progress { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--band-line); border-radius: 12px; background: rgb(255 255 255 / .04); }
+.prog-line { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; font-size: .92rem; font-weight: 500; }
+.prog-line .mono { color: var(--band-muted); font-size: .8rem; font-weight: 400; }
+.pbar { height: 8px; border-radius: 4px; background: rgb(255 255 255 / .12); overflow: hidden; }
+.pbar > span { display: block; height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--tag))); }
+.pbar.indet > span { width: 30%; }
+@media (prefers-reduced-motion: no-preference) { .pbar > span { transition: width .6s ease; } .pbar.indet > span { animation: indet 1.5s ease-in-out infinite; } }
+@media (prefers-reduced-motion: reduce) { .pbar.indet > span { width: 100%; opacity: .45; } }
+@keyframes indet { from { transform: translateX(-110%); } to { transform: translateX(340%); } }
+
+.dash { display: grid; grid-template-columns: 1.15fr 1fr 1.5fr; gap: 12px; }
+@media (max-width: 900px) { .dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .dash .watch { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .dash { grid-template-columns: minmax(0, 1fr); } }
+.tile { border: 1px solid var(--band-line); border-radius: 14px; padding: 16px; display: grid; gap: 6px; align-content: start; min-width: 0; background: rgb(255 255 255 / .035); }
+.tile .label { color: var(--band-muted); }
+.tile .big { font-family: var(--f-display); font-size: 2.8rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.tile .sub { color: var(--band-muted); font-size: .88rem; }
+.delta { font-family: var(--f-mono); font-size: .85rem; font-weight: 500; }
+.delta.up { color: #4fc58a; } .delta.down { color: #f08a80; }
+.tile .bar { background: rgb(255 255 255 / .12); }
+.watch ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.watch li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: .88rem; }
+.watch li .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.watch .note { color: var(--band-muted); font-size: .86rem; }
+.thumb { width: 28px; height: 28px; border-radius: 7px; background: var(--plate); overflow: hidden; display: grid; place-items: center; flex: none; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+.thumb img.mine { object-fit: cover; padding: 0; }
+.thumb.none { background: rgb(255 255 255 / .08); }
+
+.rail-wrap { display: grid; gap: 10px; }
+.rail-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.rail-head .label { color: var(--band-muted); }
+.rail { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 8px; scrollbar-width: thin; }
+.shot { flex: 0 0 150px; scroll-snap-align: start; display: grid; gap: 6px; background: none; border: 0; padding: 0; color: inherit; text-align: left; font: inherit; cursor: zoom-in; }
+.shot .plate { aspect-ratio: 1; border-radius: 12px; background: var(--plate); overflow: hidden; display: grid; place-items: center; border: 1px solid var(--band-line); }
+.shot .plate img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
+.shot .plate img.mine { object-fit: cover; padding: 0; }
+.shot .cap { font-size: .8rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.shot .pr { font-family: var(--f-mono); font-size: .78rem; color: var(--band-muted); }
+@media (prefers-reduced-motion: no-preference) { .shot .plate img { transition: transform .35s ease; } .shot:hover .plate img { transform: scale(1.06); } }
+
+/* ---------- body ---------- */
+.body { padding-block: 22px 72px; display: grid; gap: 18px; }
+.body > * { min-width: 0; }
+.banner { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: .9rem; box-shadow: var(--shadow); }
+.banner.info { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--line); }
+.tab { font-family: var(--f-display); font-size: 1.35rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: none; border: 0; color: var(--muted); padding: 6px 14px 8px; margin-bottom: -2px; border-bottom: 3px solid transparent; cursor: pointer; display: inline-flex; gap: 8px; align-items: baseline; }
+.tab .count { font-family: var(--f-mono); font-size: .78rem; font-weight: 500; background: var(--chip); padding: 1px 7px; border-radius: 999px; }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tab[aria-selected="true"] .count { background: var(--accent); color: var(--accent-ink); }
+
+.quick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; box-shadow: var(--shadow); }
+.quick input { flex: 1 1 180px; width: auto; }
+.quick .hint { flex-basis: 100%; font-size: .8rem; color: var(--muted); padding-inline: 2px; }
+.shop { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 12px; box-shadow: var(--shadow); }
+.shop-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; }
+.shop-head h2 { font-size: 1.15rem; text-transform: uppercase; }
+.shop-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; }
+@media (max-width: 760px) { .shop-row { grid-template-columns: minmax(0, 1fr); } }
+.shop-find, .shop-add { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.shop-find input, .shop-add input { flex: 1 1 160px; width: auto; }
+.shop-add { padding-left: 10px; border-left: 1px solid var(--line); }
+@media (max-width: 760px) { .shop-add { padding-left: 0; border-left: 0; padding-top: 10px; border-top: 1px solid var(--line); } }
+.shop-cats { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.shop-cats a { font-size: .82rem; font-weight: 500; padding: 4px 11px; border-radius: 999px; background: var(--chip); color: var(--fg); text-decoration: none; border: 1px solid transparent; }
+.shop-cats a:hover { border-color: var(--accent); color: var(--accent); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar .search { flex: 1 1 220px; min-width: 0; }
+input, select, textarea { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; }
+.toolbar select { width: auto; }
+textarea { resize: vertical; min-height: 64px; }
+.btn { font: inherit; font-weight: 600; border-radius: 8px; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; white-space: nowrap; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { background: var(--sunk); }
+.btn:disabled { opacity: .6; cursor: default; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.small { padding: 4px 10px; font-size: .85rem; }
+.btn.danger { color: var(--bad); }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.ghost:hover { background: var(--sunk); }
+.btn svg { width: 16px; height: 16px; flex: none; }
+
+.insights { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 960px) { .insights { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .insights .feed { grid-column: 1 / -1; } }
+@media (max-width: 620px) { .insights { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; box-shadow: var(--shadow); min-width: 0; }
+.panel h2 { font-size: 1.15rem; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.panel h2 .live { width: 7px; height: 7px; border-radius: 50%; background: var(--good); position: relative; }
+@media (prefers-reduced-motion: no-preference) { .panel h2 .live::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: ping 2.4s ease-out infinite; } }
+.cat { display: grid; gap: 4px; font-size: .86rem; }
+.cat .line { display: flex; justify-content: space-between; gap: 8px; }
+.bar { height: 6px; border-radius: 3px; background: var(--sunk); overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); }
+.bar.done > span { background: var(--good); }
+.feed ol { list-style: none; margin: 0; padding: 0; display: grid; }
+.feed li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding-block: 7px; border-top: 1px solid var(--line); font-size: .88rem; }
+.feed li:first-child { border-top: 0; padding-top: 0; }
+.feed li .what { min-width: 0; overflow-wrap: anywhere; }
+.feed li .when { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); white-space: nowrap; }
+.feed .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--chip); color: var(--muted); overflow: hidden; }
+.feed .ic svg { width: 15px; height: 15px; }
+.feed .ic.down { background: var(--good-soft); color: var(--good); }
+.feed .ic.up { background: var(--bad-soft); color: var(--bad); }
+.feed .ic.add, .feed .ic.wish, .feed .ic.photo { background: var(--accent-soft); color: var(--accent); }
+.feed .ic.img { background: var(--plate); border: 1px solid var(--plate-line); }
+.feed .ic.img img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+.feed .ic.img img.mine { object-fit: cover; padding: 0; }
+.nextup { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: center; }
+.nextup .thumb { width: 64px; height: 64px; border-radius: 10px; border: 1px solid var(--plate-line); }
+.nextup .thumb.none { background: var(--sunk); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; display: grid; grid-template-rows: auto 1fr; align-content: start; min-width: 0; overflow: hidden; box-shadow: var(--shadow); }
+.card.drop { border-color: var(--good); box-shadow: 0 0 0 1px var(--good) inset, var(--shadow); }
+@media (prefers-reduced-motion: no-preference) {
+  .card { transition: transform .2s ease, box-shadow .2s ease, border-color .2s; }
+  .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hi); }
+  .photo img { transition: transform .45s ease; }
+  .card:hover .photo img { transform: scale(1.04); }
+  .grid.intro .card { animation: rise .5s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+}
+@keyframes rise { from { transform: translateY(10px); opacity: .25; } to { transform: none; opacity: 1; } }
+.photo { position: relative; aspect-ratio: 16 / 10; max-width: 100%; background: var(--plate); border-bottom: 1px solid var(--plate-line); overflow: hidden; }
+.photo .open { position: absolute; inset: 0; border: 0; padding: 0; background: none; cursor: zoom-in; display: block; width: 100%; }
+.photo img { width: 100%; height: 100%; object-fit: contain; padding: 14px 22px; display: block; }
+.photo img.mine { object-fit: cover; padding: 0; }
+.photo.empty { background: var(--sunk); background-image: repeating-linear-gradient(135deg, transparent 0 11px, color-mix(in srgb, var(--line) 55%, transparent) 11px 12px); display: grid; place-items: center; color: var(--muted); }
+.photo.empty .ph { display: grid; justify-items: center; gap: 6px; font-size: .8rem; text-align: center; padding: 10px; }
+.photo.empty .ph svg { width: 42px; height: 42px; opacity: .55; }
+.photo .over { position: absolute; inset: 10px 10px auto 10px; display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; pointer-events: none; }
+.photo .over .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.photo .src { position: absolute; left: 10px; bottom: 10px; font-size: .66rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; background: var(--scrim); color: var(--scrim-ink); padding: 3px 8px; border-radius: 999px; pointer-events: none; }
+.photo .snap { position: absolute; right: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: .8rem; font-weight: 600; color: var(--scrim-ink); background: var(--scrim); border: 0; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.photo .snap:hover { filter: brightness(1.25); }
+.photo .snap svg { width: 15px; height: 15px; }
+.photo .busy { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--surface) 70%, transparent); }
+.spin { width: 22px; height: 22px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) { .spin { animation: spin .8s linear infinite; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+.card-body { padding: 14px 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.card h3 { font-family: var(--f-body); font-size: 1.02rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.card h3.pending { font-family: var(--f-mono); }
+.idrow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .82rem; color: var(--muted); margin-top: 4px; }
+.pn { font-family: var(--f-mono); font-size: .8rem; background: var(--chip); padding: 1px 6px; border-radius: 4px; color: var(--fg); text-decoration: none; border: 1px solid transparent; }
+a.pn:hover { border-color: var(--accent); color: var(--accent); }
+a.pn span { color: var(--accent); }
+.chip { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 3px 9px; border-radius: 999px; background: var(--chip); color: var(--muted); white-space: nowrap; }
+.chip.good { color: var(--good); background: var(--good-soft); }
+.chip.warn { color: var(--warn); background: var(--surface); }
+.chip.bad { color: var(--bad); background: var(--bad-soft); }
+.chip.need { background: var(--accent); color: var(--accent-ink); }
+.chip.tag { background: var(--tag); color: var(--tag-ink); }
+.prices { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding-block: 10px; border-block: 1px solid var(--line); }
+.prices > div { display: grid; gap: 2px; min-width: 0; }
+.price-big { font-family: var(--f-display); font-size: 1.8rem; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.was { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); text-decoration: line-through; }
+.trend { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); }
+.trend svg { flex: none; }
+.chg { font-family: var(--f-mono); font-size: .8rem; font-weight: 500; }
+.chg.up { color: var(--bad); } .chg.down { color: var(--good); }
+.meta-line { font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; gap: 4px; }
+.actions .spacer { flex: 1; }
+.confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .88rem; background: var(--sunk); padding: 8px 10px; border-radius: 8px; }
+.empty { grid-column: 1 / -1; padding: 36px 20px; text-align: center; color: var(--muted); display: grid; gap: 10px; justify-items: center; background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; }
+.empty strong { color: var(--fg); font-family: var(--f-display); font-size: 1.35rem; text-transform: uppercase; }
+.skel { border-radius: 14px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; display: grid; }
+.skel .a { aspect-ratio: 16 / 10; background: var(--sunk); }
+.skel .b { height: 120px; }
+@media (prefers-reduced-motion: no-preference) { .skel .a { animation: shimmer 1.4s ease-in-out infinite; } }
+@keyframes shimmer { 50% { opacity: .55; } }
+
+dialog { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--fg); padding: 0; width: min(580px, calc(100vw - 32px)); max-height: calc(100vh - 32px); }
+dialog::backdrop { background: rgb(8 11 16 / .6); backdrop-filter: blur(3px); }
+dialog form { display: grid; gap: 14px; padding: 20px; }
+dialog h2 { font-size: 1.6rem; text-transform: uppercase; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 480px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field.full { grid-column: 1 / -1; }
+.field small { color: var(--muted); font-size: .78rem; }
+.pf { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: center; }
+.pf-prev { width: 120px; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--plate); border: 1px solid var(--plate-line); display: grid; place-items: center; }
+.pf-prev img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+.pf-prev img.mine { object-fit: cover; padding: 0; }
+.pf-prev.none { background: var(--sunk); color: var(--muted); }
+.pf-prev.none svg { width: 36px; height: 36px; opacity: .55; }
+.pf-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pf-actions small { flex-basis: 100%; }
+.lookup { font-size: .82rem; color: var(--accent); text-decoration: none; font-weight: 600; justify-self: start; }
+.lookup:hover { text-decoration: underline; }
+.formfoot { display: flex; justify-content: end; gap: 8px; flex-wrap: wrap; }
+.err { color: var(--bad); font-size: .85rem; margin: 0; }
+.viewer { width: min(860px, calc(100vw - 24px)); }
+.viewer .v-img { background: var(--plate); display: grid; place-items: center; max-height: 72vh; overflow: hidden; }
+.viewer .v-img img { max-width: 100%; max-height: 72vh; object-fit: contain; padding: 18px; }
+.viewer .v-img img.mine { padding: 0; }
+.viewer .v-cap { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; padding: 14px 18px; }
+.viewer .v-cap h2 { font-family: var(--f-body); font-size: 1.05rem; font-weight: 600; text-transform: none; }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 9px 16px; border-radius: 10px; font-size: .9rem; max-width: calc(100vw - 32px); box-shadow: var(--shadow-hi); z-index: 5; }
+footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
+@media (prefers-reduced-motion: no-preference) { .bar > span { transition: width .5s ease; } .toast { animation: rise .25s ease both; } }
+</style>
+</head>
+<body>
+
+<section class="band">
+  <div class="inner">
+    <div class="top">
+      <div>
+        <span class="eyebrow">Tool truck ledger</span>
+        <h1>Snap-on <em>Toolbox</em></h1>
+        <p>What's in the box, what it's worth today, and what's next off the truck.</p>
+      </div>
+      <div class="top-actions">
+        <span class="sync" id="sync" data-mode="local"><i aria-hidden="true"></i><span id="syncText">Loading…</span></span>
+        <button class="btn-refresh" id="checkBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg><span id="checkLabel">Refresh prices</span><span class="pend" id="checkPend" hidden></span></button>
+        <span id="account"></span>
+      </div>
+    </div>
+    <div class="progress" id="prog" hidden>
+      <div class="prog-line"><span id="progText">Starting up…</span><span class="mono" id="progEta"></span></div>
+      <div class="pbar" id="pbar" role="progressbar" aria-label="Price check progress" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+    </div>
+    <div class="dash">
+      <div class="tile">
+        <span class="label">Box worth today</span>
+        <span class="big" id="d-worth">$0</span>
+        <span class="sub" id="d-worth-sub">Add tools to see their value.</span>
+      </div>
+      <div class="tile">
+        <span class="label">Wishlist</span>
+        <span class="big" id="d-left">$0</span>
+        <span class="sub" id="d-left-sub">left to save</span>
+        <div class="bar" id="d-left-bar"><span style="width:0%"></span></div>
+      </div>
+      <div class="tile watch">
+        <span class="label">Price watch</span>
+        <div id="watch"></div>
+      </div>
+    </div>
+    <div class="rail-wrap" id="railWrap" hidden>
+      <div class="rail-head"><span class="label">Latest in the box</span><span class="label" id="railCount"></span></div>
+      <div class="rail" id="rail"></div>
+    </div>
+  </div>
+</section>
+
+<main class="inner body">
+  <div class="banner info" id="localBanner" hidden>
+    <span id="localText">You're not signed in, so your toolbox is saved in this browser only. Sign in with Google to keep it on every device and get prices for new part numbers.</span>
+    <button class="btn small primary" id="localSignIn" type="button">Sign in with Google</button>
+  </div>
+  <div class="banner info" id="importBanner" hidden>
+    <span id="importText"></span>
+    <span><button class="btn small primary" id="importYes" type="button">Move them to my account</button> <button class="btn small ghost" id="importNo" type="button">Not now</button></span>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-tools" aria-selected="true" type="button">Owned <span class="count" id="c-tools">0</span></button>
+    <button class="tab" role="tab" id="tab-wish" aria-selected="false" type="button">Wishlist <span class="count" id="c-wish">0</span></button>
+  </div>
+
+  <form class="quick" id="quick" novalidate>
+    <input id="q-pn" class="mono" placeholder="Part number, e.g. F80" aria-label="Part number" autocapitalize="characters" autocomplete="off">
+    <button class="btn primary" type="submit" id="q-add">Add to box</button>
+    <button class="btn" type="button" id="q-more">Add with details &amp; photo</button>
+    <span class="hint" id="q-hint">Just the part number is enough. The price checker fills in the name, price and store photo from Snap-on.</span>
+  </form>
+
+  <section class="shop" aria-labelledby="shopTitle">
+    <div class="shop-head"><h2 id="shopTitle">Shop Snap-on</h2><span class="meta-line">Search opens Snap-on's store in a new tab. Found one you want? Add it here by part number.</span></div>
+    <div class="shop-row">
+      <div class="shop-find">
+        <input id="shopQ" type="search" placeholder="Search the store, e.g. 3/8 ratchet" aria-label="Search Snap-on's store" autocomplete="off">
+        <a class="btn primary" id="shopGo" href="https://shop.snapon.com" target="_blank" rel="noopener">Search Snap-on <span aria-hidden="true">↗</span></a>
+      </div>
+      <form class="shop-add" id="shopAdd" novalidate>
+        <input id="shopPn" class="mono" placeholder="Part number, e.g. CT9010DB" aria-label="Part number to add to your wishlist" autocapitalize="characters" autocomplete="off">
+        <button class="btn" type="submit">Add to wishlist</button>
+      </form>
+    </div>
+    <div class="shop-cats" id="shopCats"><span class="label">Browse</span></div>
+  </section>
+
+  <div class="insights" id="insights"></div>
+
+  <div class="toolbar">
+    <input class="search" id="q" type="search" placeholder="Search name, part number, notes" aria-label="Search">
+    <select id="fCat" aria-label="Category"></select>
+    <select id="fSort" aria-label="Sort"></select>
+  </div>
+
+  <div class="grid" id="list" aria-live="polite"></div>
+</main>
+
+<footer class="inner">Not affiliated with Snap-on. Prices and photos come from Snap-on's public online store and may be out of date; check the store before you buy.</footer>
+
+<input type="file" id="photoInput" accept="image/*" hidden>
+
+<dialog id="dlg">
+  <form id="frm" novalidate>
+    <h2 id="dlgTitle">Add tool</h2>
+    <div class="grid2">
+      <div class="field full">
+        <span class="label">Photo</span>
+        <div class="pf">
+          <div class="pf-prev" id="pfPrev"></div>
+          <div class="pf-actions">
+            <button class="btn small" type="button" id="pfPick"></button>
+            <button class="btn small ghost danger" type="button" id="pfRemove" hidden>Remove photo</button>
+            <small id="pfNote"></small>
+          </div>
+        </div>
+        <input type="file" id="pfFile" accept="image/*" hidden>
+      </div>
+      <label class="field full"><span class="label">Tool name</span><input id="i-name" placeholder="3/8&quot; drive dual 80 ratchet" maxlength="200"><small>Leave blank and the price checker fills it from Snap-on.</small></label>
+      <label class="field"><span class="label">Part number</span><input id="i-pn" class="mono" placeholder="F80" autocapitalize="characters" autocomplete="off" maxlength="40"><a class="lookup" id="lookup" href="https://shop.snapon.com" target="_blank" rel="noopener" hidden>Look up on Snap-on ↗</a></label>
+      <label class="field"><span class="label">Category</span><select id="i-cat"></select></label>
+      <label class="field"><span class="label" id="l-price">Price paid ($)</span><input id="i-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+      <label class="field" data-only="owned"><span class="label">Date bought</span><input id="i-date" type="date"></label>
+      <label class="field" data-only="owned"><span class="label">Condition</span><select id="i-cond"></select></label>
+      <label class="field full" data-only="owned"><span class="label">Where it's kept</span><input id="i-loc" placeholder="Top chest, drawer 3" maxlength="120"></label>
+      <label class="field" data-only="wishlist"><span class="label">Priority</span><select id="i-pri"></select></label>
+      <label class="field" data-only="wishlist"><span class="label">Saved so far ($)</span><input id="i-saved" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+      <label class="field full"><span class="label">Notes</span><textarea id="i-notes" placeholder="Warranty swapped once, came in a set, etc." maxlength="1000"></textarea></label>
+    </div>
+    <p class="err" id="frmErr" hidden></p>
+    <div class="formfoot">
+      <button class="btn" type="button" id="cancelBtn">Cancel</button>
+      <button class="btn primary" type="submit" id="saveBtn">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="viewer" class="viewer">
+  <div class="v-img" id="vImg"></div>
+  <div class="v-cap">
+    <div><h2 id="vName"></h2><span class="meta-line" id="vMeta"></span></div>
+    <div class="actions"><button class="btn small" type="button" id="vPhoto">Replace photo</button><button class="btn small primary" type="button" id="vClose">Close</button></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(() => {
+  /* ---------- settings: the project URL and publishable key are meant to be public ---------- */
+  const SB_URL = "https://ctteljhhjsfvyyiwzxiy.supabase.co";
+  const SB_KEY = "sb_publishable_y4-sxz8INJZu3fU6xIwWLw_9krKIQJb";
+  const sb = window.supabase && window.supabase.createClient ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+
+  const DEPTS = {
+    "Hand Tools": ['1/4" Drive Tools', '3/8" Drive Tools', '1/2" Drive Tools', '3/4" & Larger Drive Tools', "Wrenches", "Torque", "Screwdrivers", "Pliers", "Awls, Hooks and Picks", "Prybars", "Punches/Chisels", "Hammers", "Non-Conductive Composite", "General Hand Tools", "Service Tools - Sets"],
+    "Power Tools": ["Power Tools"], "Tool Storage": ["Tool Storage"], "Shop & Tech": ["Shop & Tech"], "Diagnostics": ["Diagnostics"], "Other": ["Other"],
+  };
+  const CATS = Object.values(DEPTS).flat();
+  const CONDS = ["New", "Good", "Worn", "Needs warranty"];
+  const PRIS = ["Need", "Want", "Someday"];
+  const PN_RE = /^[A-Z0-9][A-Z0-9./-]{0,39}$/;
+  const FIELDS = ["list", "name", "part_number", "category", "price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "from_wishlist"];
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const money = (n, cents) => (Number(n) || 0).toLocaleString("en-US", { style: "currency", currency: "USD", minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents || Number(n) % 1 ? 2 : 0 });
+  const signed = (n) => (n > 0 ? "+" : n < 0 ? "−" : "") + money(Math.abs(n));
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  const toDate = (d) => { if (!d) return null; if (d.length <= 10) { const [y, m, day] = d.split("-").map(Number); return new Date(y, m - 1, day); } const t = new Date(d); return isNaN(t) ? null : t; };
+  const fmtDate = (d, withYear = true) => { const t = toDate(d); return t ? t.toLocaleDateString("en-US", { month: "short", day: "numeric", ...(withYear ? { year: "numeric" } : {}) }) : ""; };
+  const rel = (d) => {
+    const t = toDate(d); if (!t) return "";
+    const a = new Date(t.getFullYear(), t.getMonth(), t.getDate()), n = new Date(), b = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    const days = Math.round((b - a) / 86400000);
+    if (days <= 0) { if (d.length > 10) { const mins = Math.round((Date.now() - t) / 60000); if (mins < 1) return "just now"; if (mins < 60) return mins + "m ago"; return Math.round(mins / 60) + "h ago"; } return "today"; }
+    if (days === 1) return "yesterday";
+    if (days < 7) return days + "d ago";
+    return fmtDate(d, t.getFullYear() !== n.getFullYear());
+  };
+  const ts = (x) => (x ? Date.parse(x) || 0 : 0);
+  const deptOf = (cat) => Object.keys(DEPTS).find((d) => DEPTS[d].includes(cat)) || "Other";
+  const storeLink = (pn) => "https://shop.snapon.com/search?q=" + encodeURIComponent(pn);
+  const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+  const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
+  const pub = (bucket, path) => `${SB_URL}/storage/v1/object/public/${bucket}/${String(path).split("/").map(encodeURIComponent).join("/")}`;
+
+  const state = { tab: "owned", user: null, items: [], catalog: {}, hist: {}, runs: [], loaded: false, editing: null, confirm: null, uploading: {}, introDone: false, waiting: 0 };
+  const signedIn = () => !!state.user;
+  const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
+
+  /* ---------- prices from the shared list ---------- */
+  const storeOf = (r) => state.catalog[r.part_number] || null;
+  const storeOk = (r) => { const s = storeOf(r); return !!(s && s.status === "ok" && s.price != null); };
+  const storePrice = (r) => (storeOk(r) ? Number(storeOf(r).price) : null);
+  const wasPrice = (r) => { const s = storeOf(r); return s && s.was_price != null ? Number(s.was_price) : null; };
+  const hist = (r) => state.hist[r.part_number] || [];
+  const lastChange = (r) => { const h = hist(r); if (h.length < 2) return null; const a = h[h.length - 2].p, b = h[h.length - 1].p; return b === a ? null : { from: a, to: b, d: h[h.length - 1].d }; };
+  const displayName = (r) => r.name || (storeOf(r) && storeOf(r).name) || r.part_number || "Unnamed tool";
+  const wishCost = (r) => storePrice(r) ?? (Number(r.price) || 0);
+  const isDue = (s) => s && (s.status === "pending" || ts(s.requested_at) > ts(s.checked_at));
+
+  /* ---------- photos: your own photo wins over the store photo ---------- */
+  const okData = (u) => typeof u === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u);
+  function photoOf(r) {
+    if (r.photo_path && signedIn()) return { src: pub("tool-photos", r.photo_path), mine: true };
+    if (okData(r.photo_data)) return { src: r.photo_data, mine: true };
+    const s = storeOf(r);
+    if (s && s.image_path) return { src: pub("catalog", s.image_path), mine: false };
+    return null;
+  }
+  const hasMine = (r) => !!((r.photo_path && signedIn()) || okData(r.photo_data));
+  const imgTag = (p, alt) => `<img class="${p.mine ? "mine" : ""}" src="${esc(p.src)}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
+  const ICON = {
+    tool: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="15" r="9"/><circle cx="15" cy="15" r="3.4"/><path d="M21.5 21.5 41 41"/><path d="M36 36l5 5" stroke-width="6"/></svg>`,
+    cam: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>`,
+    down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>`,
+    up: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>`,
+    add: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`,
+    star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>`,
+    check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg>`,
+    google: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.5 12 2.5 6.8 2.5 2.6 6.7 2.6 12S6.8 21.5 12 21.5c5.5 0 9.1-3.9 9.1-9.3 0-.6-.07-1.1-.16-1.6H12z"/></svg>`,
+  };
+  const thumb = (r) => { const p = photoOf(r); return p ? `<span class="thumb">${imgTag(p, "")}</span>` : `<span class="thumb none" aria-hidden="true"></span>`; };
+
+  function spark(r, w = 84, h = 26) {
+    const pts = hist(r);
+    if (!pts.length) return "";
+    const ps = pts.map((x) => x.p), min = Math.min(...ps), max = Math.max(...ps), span = max - min || 1;
+    const xy = pts.map((x, i) => [pts.length === 1 ? w - 3 : 3 + (i * (w - 6)) / (pts.length - 1), h - 4 - ((x.p - min) / span) * (h - 8)]);
+    const line = xy.map((p) => p.map((v) => v.toFixed(1)).join(",")).join(" ");
+    const last = xy[xy.length - 1];
+    const ch = lastChange(r);
+    const col = ch ? (ch.to < ch.from ? "var(--good)" : "var(--bad)") : "var(--accent)";
+    return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><line x1="3" x2="${w - 3}" y1="${h - 4}" y2="${h - 4}" stroke="var(--line)" stroke-width="1"/>${pts.length > 1 ? `<polygon points="3,${h - 4} ${line} ${last[0].toFixed(1)},${h - 4}" fill="${col}" opacity=".12"/><polyline points="${line}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>` : ""}<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.8" fill="${col}"/></svg>`;
+  }
+
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function countTo(el, value) {
+    const from = el._v ?? 0; el._v = value;
+    if (reduce || from === value) { el.textContent = money(value); return; }
+    const t0 = performance.now(), dur = 700;
+    cancelAnimationFrame(el._raf);
+    const step = (t) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = money(Math.round(from + (value - from) * e)); if (k < 1) el._raf = requestAnimationFrame(step); };
+    el._raf = requestAnimationFrame(step);
+  }
+
+  /* ---------- storage: your account when signed in, this browser otherwise ---------- */
+  const LS = "snapon-toolbox-v1";
+  const local = {
+    read() { try { const v = JSON.parse(localStorage.getItem(LS)); return Array.isArray(v) ? v : []; } catch { return []; } },
+    write(rows) { localStorage.setItem(LS, JSON.stringify(rows)); },
+  };
+  const pick = (r) => { const o = {}; FIELDS.forEach((k) => { if (r[k] !== undefined) o[k] = r[k]; }); if (o.date_bought === "") o.date_bought = null; return o; };
+
+  async function saveItem(item) {
+    if (signedIn()) {
+      const body = pick(item);
+      const q = item.id ? sb.from("items").update(body).eq("id", item.id) : sb.from("items").insert(body);
+      const { data, error } = await q.select().single();
+      if (error) throw error;
+      state.items = state.items.filter((x) => x.id !== data.id).concat([data]);
+    } else {
+      const rows = local.read();
+      const row = { ...item, id: item.id || newId(), created_at: item.created_at || new Date().toISOString() };
+      if (row.photo_data && !okData(row.photo_data)) delete row.photo_data;
+      const next = rows.filter((x) => x.id !== row.id).concat([row]);
+      try { local.write(next); } catch { throw { code: "quota" }; }
+      state.items = next;
+    }
+    await loadCatalog();
+    render();
+  }
+  async function removeItem(item) {
+    if (signedIn()) {
+      const { error } = await sb.from("items").delete().eq("id", item.id);
+      if (error) throw error;
+      if (item.photo_path) sb.storage.from("tool-photos").remove([item.photo_path]).catch(() => {});
+    } else {
+      local.write(local.read().filter((x) => x.id !== item.id));
+    }
+    state.items = state.items.filter((x) => x.id !== item.id);
+    render();
+  }
+
+  async function loadItems() {
+    if (signedIn()) {
+      const { data, error } = await sb.from("items").select("*").order("created_at");
+      if (error) { toast("Couldn't load your tools. Check your connection and reload."); state.items = []; }
+      else state.items = data || [];
+    } else state.items = local.read();
+    await loadCatalog();
+    state.loaded = true;
+    render();
+  }
+  async function loadCatalog() {
+    if (!sb) return;
+    const pns = [...new Set(state.items.map((r) => r.part_number).filter((p) => p && PN_RE.test(p)))];
+    if (!pns.length) { state.catalog = {}; state.hist = {}; return; }
+    const [c, h] = await Promise.all([
+      sb.from("catalog").select("part_number,name,price,was_price,status,image_path,checked_at,requested_at").in("part_number", pns),
+      sb.from("catalog_prices").select("part_number,d,price").in("part_number", pns).order("d").limit(5000),
+    ]);
+    if (!c.error) state.catalog = Object.fromEntries((c.data || []).map((r) => [r.part_number, r]));
+    if (!h.error) { const m = {}; (h.data || []).forEach((r) => { (m[r.part_number] ||= []).push({ d: r.d, p: Number(r.price) }); }); state.hist = m; }
+  }
+  async function loadRuns() {
+    if (!sb) return;
+    const { data, error } = await sb.from("check_runs").select("*").order("started_at", { ascending: false }).limit(5);
+    if (error) return;
+    const prev = state.runs[0];
+    state.runs = data || [];
+    const cur = state.runs[0];
+    if (prev && cur && prev.id === cur.id && prev.status === "running" && cur.status !== "running") {
+      await loadCatalog(); render();
+      toast(cur.status === "ok" ? `Prices updated${cur.changes ? `: ${cur.changes} changed` : ", no changes"}` : (cur.error || "The price check stopped before it finished."));
+    } else if (!prev && cur && cur.status === "ok" && state.waiting) {
+      await loadCatalog();
+    }
+    renderWatch();
+  }
+  const running = () => { const r = state.runs[0]; return !!(r && r.status === "running" && Date.now() - ts(r.started_at) < 45 * 60000); };
+  const dueCount = () => state.items.filter((r) => r.part_number && isDue(state.catalog[r.part_number])).length;
+
+  /* polling: quick while something is happening, slow otherwise */
+  let pollTimer = null;
+  function schedulePoll() {
+    clearTimeout(pollTimer);
+    const busy = running() || dueCount() > 0 || state.waiting;
+    pollTimer = setTimeout(async () => {
+      await loadRuns();
+      if (dueCount() > 0 && !running()) { await loadCatalog(); render(); }
+      schedulePoll();
+    }, busy ? 15000 : 120000);
+  }
+
+  /* ---------- account ---------- */
+  function renderAccount() {
+    const box = $("account");
+    if (!sb) { box.innerHTML = ""; return; }
+    if (state.user) {
+      const name = state.user.user_metadata?.full_name || state.user.email || "Signed in";
+      box.innerHTML = `<span class="who"><span class="av" aria-hidden="true">${esc(name.trim()[0] || "?").toUpperCase()}</span><span class="sr">Signed in as </span>${esc(name)}</span> <button class="btn-account" id="signOut" type="button">Sign out</button>`;
+    } else {
+      box.innerHTML = `<button class="btn-account" id="signIn" type="button">${ICON.google}Sign in with Google</button>`;
+    }
+  }
+  async function signIn() {
+    if (!sb) return;
+    const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + location.pathname } });
+    if (error) toast("Google sign-in isn't available right now. Try again later.");
+  }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.id === "signIn" || b.id === "localSignIn") signIn();
+    if (b.id === "signOut") sb.auth.signOut().then(() => toast("Signed out"));
+  });
+
+  let booted = false;
+  async function setUser(user) {
+    const changed = (state.user && state.user.id) !== (user && user.id);
+    state.user = user;
+    renderAccount();
+    if (changed || !booted) { booted = true; await loadItems(); }
+    const localRows = local.read();
+    $("importBanner").hidden = !(user && localRows.length);
+    if (user && localRows.length) $("importText").textContent = `You have ${localRows.length} tool${localRows.length === 1 ? "" : "s"} saved in this browser from before you signed in.`;
+  }
+  $("importNo").onclick = () => { $("importBanner").hidden = true; };
+  $("importYes").onclick = async () => {
+    const rows = local.read(); if (!rows.length || !signedIn()) return;
+    $("importYes").disabled = true;
+    let moved = 0;
+    for (const r of rows) {
+      try {
+        const item = pick(r); delete item.photo_path;
+        if (okData(r.photo_data)) { const blob = await (await fetch(r.photo_data)).blob(); item.photo_path = await uploadBlob(blob); item.photo_at = r.photo_at || new Date().toISOString(); }
+        const { error } = await sb.from("items").insert(item);
+        if (!error) moved++;
+      } catch {}
+    }
+    if (moved === rows.length) { try { localStorage.removeItem(LS); } catch {} }
+    $("importYes").disabled = false; $("importBanner").hidden = true;
+    toast(`Moved ${moved} tool${moved === 1 ? "" : "s"} to your account`);
+    await loadItems();
+  };
+
+  /* ---------- selects ---------- */
+  function catOptions(first) {
+    const groups = Object.entries(DEPTS).map(([d, cats]) => cats.length === 1 && cats[0] === d
+      ? `<option value="${esc(d)}">${esc(d)}</option>`
+      : `<optgroup label="${esc(d)}">${cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("")}</optgroup>`).join("");
+    return (first ? `<option value="">${first}</option>` : "") + groups;
+  }
+  const opts = (list) => list.map((o) => `<option value="${esc(o.v ?? o)}">${esc(o.t ?? o)}</option>`).join("");
+  $("fCat").innerHTML = catOptions("All categories");
+  $("i-cat").innerHTML = catOptions();
+  $("i-cond").innerHTML = opts(CONDS);
+  $("i-pri").innerHTML = opts(PRIS);
+  const SORTS = {
+    owned: [{ v: "date", t: "Newest first" }, { v: "worth", t: "Worth, high to low" }, { v: "change", t: "Biggest price change" }, { v: "name", t: "Name A–Z" }, { v: "cat", t: "Category" }, { v: "nophoto", t: "Missing photos first" }],
+    wishlist: [{ v: "pri", t: "Priority" }, { v: "drop", t: "Price drops first" }, { v: "worth", t: "Price, high to low" }, { v: "close", t: "Closest to paid off" }, { v: "name", t: "Name A–Z" }],
+  };
+  function setSortOptions() { const cur = $("fSort").value; $("fSort").innerHTML = opts(SORTS[state.tab]); if (SORTS[state.tab].some((s) => s.v === cur)) $("fSort").value = cur; }
+  setSortOptions();
+
+  const rowsOf = (list) => state.items.filter((r) => r.list === list);
+  const addedAt = (r) => r.created_at || r.date_bought || "";
+  function filtered() {
+    const q = $("q").value.trim().toLowerCase(), cat = $("fCat").value;
+    const rows = rowsOf(state.tab).filter((r) => (!cat || r.category === cat) && (!q || [displayName(r), r.part_number, r.notes, r.location].some((f) => String(f || "").toLowerCase().includes(q))));
+    const worth = (r) => (state.tab === "owned" ? storePrice(r) ?? (Number(r.price) || 0) : wishCost(r));
+    const chg = (r) => { const c = lastChange(r); return c ? c.to - c.from : 0; };
+    const by = {
+      date: (a, b) => String(b.date_bought || "").localeCompare(String(a.date_bought || "")) || String(addedAt(b)).localeCompare(String(addedAt(a))),
+      worth: (a, b) => worth(b) - worth(a),
+      change: (a, b) => Math.abs(chg(b)) - Math.abs(chg(a)),
+      drop: (a, b) => chg(a) - chg(b),
+      name: (a, b) => displayName(a).localeCompare(displayName(b)),
+      cat: (a, b) => String(a.category).localeCompare(String(b.category)) || displayName(a).localeCompare(displayName(b)),
+      pri: (a, b) => PRIS.indexOf(a.priority || "Want") - PRIS.indexOf(b.priority || "Want") || wishCost(b) - wishCost(a),
+      close: (a, b) => (wishCost(a) - (Number(a.saved) || 0)) - (wishCost(b) - (Number(b.saved) || 0)),
+      nophoto: (a, b) => (photoOf(a) ? 1 : 0) - (photoOf(b) ? 1 : 0) || displayName(a).localeCompare(displayName(b)),
+    }[$("fSort").value];
+    return by ? rows.slice().sort(by) : rows;
+  }
+
+  /* ---------- cards ---------- */
+  const condClass = { "New": "good", "Good": "", "Worn": "warn", "Needs warranty": "bad" };
+  const idRow = (r) => `<div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)} <span aria-hidden="true">↗</span></a>` : ""}<span>${esc(r.category || "Other")}</span></div>`;
+  function storeStatus(r) {
+    if (!r.part_number) return `<span class="meta-line">Add a part number to track its price.</span>`;
+    const s = storeOf(r);
+    if (!s) return `<span class="meta-line">${signedIn() ? "Waiting for the price checker." : "Sign in so the price checker picks up this part number."}</span>`;
+    if (s.status === "pending") return `<span class="meta-line">Waiting for the price checker. New part numbers are checked within about 15 minutes.</span>`;
+    if (s.status === "not_found") return `<span class="meta-line">Not found on Snap-on's store (checked ${fmtDate(s.checked_at, false)}). Check the part number.</span>`;
+    return "";
+  }
+  function trendLine(r) {
+    if (!storeOk(r)) return "";
+    const ch = lastChange(r), h = hist(r), s = storeOf(r);
+    return `<div class="trend">${spark(r)}<span>${ch ? `<span class="chg ${ch.to < ch.from ? "down" : "up"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span> on ${fmtDate(ch.d, false)}` : h.length > 1 ? `No change since ${fmtDate(h[0].d, false)}` : `Tracking since ${fmtDate(h[0] ? h[0].d : s.checked_at, false)}`}</span></div>`;
+  }
+  function confirmHtml(r) {
+    if (!state.confirm || state.confirm.id !== r.id) return "";
+    if (state.confirm.kind === "del") return `<div class="confirm">Delete <strong>${esc(displayName(r))}</strong>${hasMine(r) ? " and your photo of it" : ""}? This can't be undone. <button class="btn small danger" data-act="del-yes" type="button">Delete</button><button class="btn small ghost" data-act="cancel" type="button">Keep it</button></div>`;
+    return `<div class="confirm">Move to Owned at ${money(wishCost(r), true)}, bought today? <button class="btn small primary" data-act="bought-yes" type="button">Move it</button><button class="btn small ghost" data-act="cancel" type="button">Not yet</button></div>`;
+  }
+  function photoBlock(r, chipsHtml, badgeHtml) {
+    const p = photoOf(r);
+    const busy = state.uploading[r.id] ? `<div class="busy"><span class="spin" aria-hidden="true"></span><span class="sr">Uploading photo</span></div>` : "";
+    const snap = !busy ? `<button class="snap" type="button" data-act="photo">${ICON.cam}${p && p.mine ? "Replace" : "Add photo"}</button>` : "";
+    const over = `<div class="over"><div class="chips">${chipsHtml}</div>${badgeHtml}</div>`;
+    if (!p) {
+      const s = storeOf(r);
+      const note = r.part_number && (!s || s.status === "pending") ? "Store photo arrives with the next price check" : "No photo yet";
+      return `<div class="photo empty"><div class="ph">${ICON.tool}<span>${note}</span></div>${over}${snap}${busy}</div>`;
+    }
+    return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${p.mine ? "Your photo" : "Store photo"}</span>${snap}${busy}</div>`;
+  }
+  function cardOwned(r, i) {
+    const now = storePrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
+    const chips = r.condition ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "";
+    const badge = wasPrice(r) ? `<span class="chip tag">On sale</span>` : "";
+    return `<article class="card" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
+      <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
+      <div class="prices">
+        <div><span class="label">You paid</span><span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span></div>
+        <div><span class="label">Store price now</span><span class="price-big">${now != null ? money(now, now % 1) : "—"}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : now != null ? "Same as you paid" : "&nbsp;"}</span></div>
+      </div>
+      ${trendLine(r)}${storeStatus(r)}
+      ${r.location ? `<span class="meta-line">Kept in ${esc(r.location)}</span>` : ""}
+      ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
+      <div class="actions"><span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      ${confirmHtml(r)}</div></article>`;
+  }
+  function cardWish(r, i) {
+    const cost = wishCost(r), saved = Number(r.saved) || 0;
+    const left = Math.max(cost - saved, 0), pct = cost ? Math.min(100, Math.round((saved / cost) * 100)) : 0;
+    const ch = lastChange(r), dropped = ch && ch.to < ch.from;
+    const chips = `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`;
+    const badge = dropped ? `<span class="chip tag">Price dropped</span>` : wasPrice(r) ? `<span class="chip tag">On sale</span>` : "";
+    return `<article class="card ${dropped ? "drop" : ""}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
+      <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
+      <div class="prices">
+        <div><span class="label">${storeOk(r) ? "Store price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span>${wasPrice(r) ? `<span class="was">${money(wasPrice(r), true)}</span>` : `<span class="meta-line">&nbsp;</span>`}</div>
+        <div><span class="label">Left to save</span><span class="price-big">${cost ? money(left, left % 1) : "—"}</span><span class="meta-line">${cost ? (left ? `${money(saved)} saved` : "Ready to buy") : "&nbsp;"}</span></div>
+      </div>
+      ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
+      ${trendLine(r)}${storeStatus(r)}
+      ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
+      <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button><span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      ${confirmHtml(r)}</div></article>`;
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    const t = rowsOf("owned"), w = rowsOf("wishlist");
+    const paid = t.reduce((s, r) => s + (Number(r.price) || 0), 0);
+    const worth = t.reduce((s, r) => s + (storePrice(r) ?? (Number(r.price) || 0)), 0);
+    const tracked = t.filter(storeOk).length;
+    countTo($("d-worth"), Math.round(worth));
+    $("d-worth-sub").innerHTML = t.length
+      ? `${t.length} tool${t.length === 1 ? "" : "s"} · you paid ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}<br>${tracked} priced from Snap-on's store`
+      : "Add tools to see their value.";
+    const cost = w.reduce((s, r) => s + wishCost(r), 0), saved = w.reduce((s, r) => s + Math.min(Number(r.saved) || 0, wishCost(r)), 0);
+    countTo($("d-left"), Math.round(Math.max(cost - saved, 0)));
+    $("d-left-sub").textContent = w.length ? `left to save · ${money(Math.round(saved))} of ${money(Math.round(cost))} saved` : "Add tools you want to start saving.";
+    $("d-left-bar").firstElementChild.style.width = (cost ? Math.round((saved / cost) * 100) : 0) + "%";
+    $("c-tools").textContent = t.length;
+    $("c-wish").textContent = w.length;
+    $("q-add").textContent = state.tab === "owned" ? "Add to box" : "Add to wishlist";
+    $("localBanner").hidden = !sb || signedIn() || !state.loaded;
+    $("q-hint").textContent = !sb
+      ? "Prices can't load right now. You can still add tools and fill in prices yourself."
+      : signedIn() ? "Just the part number is enough. The price checker fills in the name, price and store photo from Snap-on."
+      : "Part numbers someone has already added get prices right away. Sign in to have the checker look up new ones.";
+
+    const list = $("list");
+    if (!state.loaded) {
+      list.innerHTML = Array.from({ length: 3 }, () => `<div class="skel" aria-hidden="true"><div class="a"></div><div class="b"></div></div>`).join("") + `<span class="sr">Loading your tools</span>`;
+    } else if (!rowsOf(state.tab).length) {
+      list.innerHTML = state.tab === "owned"
+        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool. Its store photo and price fill in on their own.</span></div>`
+        : `<div class="empty"><strong>Wishlist is empty</strong><span>Find a tool in the Shop box above and add it by part number.</span></div>`;
+    } else {
+      const rows = filtered();
+      list.innerHTML = rows.length ? rows.map((r, i) => (state.tab === "owned" ? cardOwned : cardWish)(r, Math.min(i, 12))).join("") : `<div class="empty"><strong>No matches</strong><span>Nothing matches that search or category.</span></div>`;
+      if (!state.introDone) { state.introDone = true; list.classList.add("intro"); setTimeout(() => list.classList.remove("intro"), 1400); }
+    }
+    renderRail(); renderInsights(); renderWatch(); schedulePoll();
+  }
+
+  function renderRail() {
+    const owned = rowsOf("owned");
+    const rows = owned.filter(photoOf).slice().sort((a, b) => String(addedAt(b)).localeCompare(String(addedAt(a)))).slice(0, 12);
+    $("railWrap").hidden = !rows.length;
+    if (!rows.length) return;
+    $("railCount").textContent = `${owned.filter(photoOf).length} of ${owned.length} with photos`;
+    $("rail").innerHTML = rows.map((r) => { const p = photoOf(r), pr = storePrice(r) ?? (Number(r.price) || 0);
+      return `<button class="shot" type="button" data-id="${esc(r.id)}"><span class="plate">${imgTag(p, displayName(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
+  }
+
+  function activity() {
+    const ev = [], nm = (r) => `<strong>${esc(displayName(r))}</strong>`;
+    state.items.forEach((r) => {
+      const t = addedAt(r);
+      if (t) ev.push({ t, kind: r.list === "wishlist" ? "wish" : r.from_wishlist ? "wish" : "add", r, html: r.list === "wishlist" ? `Put ${nm(r)} on the wishlist` : r.from_wishlist ? `Bought ${nm(r)} off the wishlist` : `Added ${nm(r)} to the box` });
+      const h = hist(r);
+      for (let i = 1; i < h.length; i++) if (h[i].p !== h[i - 1].p) {
+        const d = h[i].p - h[i - 1].p;
+        ev.push({ t: h[i].d, kind: d < 0 ? "down" : "up", r, html: `${nm(r)} ${d < 0 ? "dropped" : "went up"} <span class="chg ${d < 0 ? "down" : "up"}">${money(Math.abs(d), true)}</span>` });
+      }
+      if (r.photo_at && hasMine(r)) ev.push({ t: r.photo_at, kind: "photo", r, html: `New photo of ${nm(r)}` });
+    });
+    const lastOk = state.runs.find((x) => x.status === "ok");
+    if (lastOk && lastOk.finished_at) ev.push({ t: lastOk.finished_at, kind: "check", html: `Prices checked${lastOk.changes ? ` · ${lastOk.changes} changed` : " · no changes"}` });
+    return ev.sort((a, b) => String(b.t).localeCompare(String(a.t))).slice(0, 7);
+  }
+  function feedHtml() {
+    const ev = activity();
+    const icon = (e) => { const p = e.r && ["add", "photo", "wish"].includes(e.kind) ? photoOf(e.r) : null; return p ? `<span class="ic img">${imgTag(p, "")}</span>` : `<span class="ic ${e.kind}">${{ add: ICON.add, wish: ICON.star, down: ICON.down, up: ICON.up, photo: ICON.cam, check: ICON.check }[e.kind]}</span>`; };
+    return `<div class="panel feed"><h2><span class="live" aria-hidden="true"></span>Recent activity</h2>${ev.length ? `<ol>${ev.map((e) => `<li>${icon(e)}<span class="what">${e.html}</span><span class="when">${rel(e.t)}</span></li>`).join("")}</ol>` : `<span class="meta-line">Adds, photos and price moves show up here.</span>`}</div>`;
+  }
+  function renderInsights() {
+    const box = $("insights");
+    if (state.tab === "owned") {
+      const totals = {};
+      rowsOf("owned").forEach((r) => { const d = deptOf(r.category); totals[d] = (totals[d] || 0) + (storePrice(r) ?? (Number(r.price) || 0)); });
+      const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]), max = entries.length ? entries[0][1] : 0;
+      const warranty = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
+      box.innerHTML = feedHtml() + `<div class="panel"><h2>Worth by department</h2>${entries.length ? entries.map(([c, v]) => `<div class="cat"><div class="line"><span>${esc(c)}</span><span class="num">${money(Math.round(v))}</span></div><div class="bar"><span style="width:${max ? Math.max(3, (v / max) * 100) : 0}%"></span></div></div>`).join("") : `<span class="meta-line">Totals show up once you add tools.</span>`}</div>
+        <div class="panel"><h2>Warranty pile</h2>${warranty.length ? warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}</span>${r.part_number ? `<span class="pn">${esc(r.part_number)}</span>` : ""}</div></div>`).join("") + `<span class="meta-line">Take these to the truck next time it stops.</span>` : `<span class="meta-line">Nothing marked “Needs warranty.”</span>`}</div>`;
+    } else {
+      const wl = rowsOf("wishlist");
+      const next = wl.filter((r) => wishCost(r) > 0).sort((a, b) => PRIS.indexOf(a.priority || "Want") - PRIS.indexOf(b.priority || "Want") || (wishCost(a) - (Number(a.saved) || 0)) - (wishCost(b) - (Number(b.saved) || 0)))[0];
+      const pr = PRIS.map((p) => [p, wl.filter((r) => (r.priority || "Want") === p).reduce((s, r) => s + wishCost(r), 0)]);
+      box.innerHTML = feedHtml() + `<div class="panel"><h2>Next up</h2>${next ? `<div class="nextup">${thumb(next)}<div class="cat"><strong>${esc(displayName(next))}</strong><span class="meta-line">${money(Math.max(wishCost(next) - (Number(next.saved) || 0), 0))} left of ${money(wishCost(next))}</span><div class="bar"><span style="width:${Math.min(100, Math.round(((Number(next.saved) || 0) / wishCost(next)) * 100))}%"></span></div></div></div>` : `<span class="meta-line">Add a priced tool to see what's next.</span>`}</div>
+        <div class="panel"><h2>By priority</h2>${pr.map(([p, v]) => `<div class="cat"><div class="line"><span>${p}</span><span class="num">${money(Math.round(v))}</span></div></div>`).join("")}</div>`;
+    }
+  }
+
+  function renderWatch() {
+    const changes = state.items.map((r) => ({ r, ch: lastChange(r) })).filter((x) => x.ch).sort((a, b) => String(b.ch.d).localeCompare(String(a.ch.d)) || (a.ch.to - a.ch.from) - (b.ch.to - b.ch.from));
+    const trackedN = state.items.filter((r) => r.part_number).length;
+    let html = changes.length
+      ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul>`
+      : `<span class="note">${trackedN ? `No price changes yet across ${trackedN} part number${trackedN === 1 ? "" : "s"}. Drops and increases show up here.` : "Add part numbers to start watching prices."}</span>`;
+    const lastOk = state.runs.find((x) => x.status === "ok");
+    const last = state.runs[0];
+    if (running()) html += `<span class="note">Checking prices now. Progress shows at the top.</span>`;
+    else if (lastOk) html += `<span class="note">Last checked ${new Date(lastOk.finished_at || lastOk.started_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · prices check daily, new part numbers every 15 minutes</span>`;
+    else html += `<span class="note">Prices check daily, and new part numbers within about 15 minutes.</span>`;
+    if (last && last.status === "failed" && (!lastOk || ts(last.started_at) > ts(lastOk.started_at))) html += `<span class="note">Last check had a problem: ${esc(last.error || "it stopped early")}</span>`;
+    $("watch").innerHTML = html;
+    renderProgress();
+
+    const busy = running();
+    $("sync").dataset.mode = busy ? "busy" : signedIn() ? "account" : "local";
+    $("syncText").textContent = busy ? "Checking prices…" : signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
+    const btn = $("checkBtn"), due = dueCount();
+    btn.hidden = !sb || !state.loaded || !state.items.some((r) => r.part_number);
+    btn.disabled = busy;
+    btn.classList.toggle("running", busy);
+    $("checkLabel").textContent = busy ? "Checking prices…" : "Refresh prices";
+    $("checkPend").hidden = busy || !due;
+    $("checkPend").textContent = `${due} queued`;
+  }
+
+  /* progress bar: a running check reports done/total/current as it goes */
+  let prog = null;
+  function renderProgress() {
+    const box = $("prog"), r = state.runs[0], bar = $("pbar"), span = bar.firstElementChild;
+    const due = dueCount();
+    if (running()) {
+      box.hidden = false;
+      const total = Number(r.total) || 0, done = Math.min(Number(r.done) || 0, total), now = Date.now();
+      if (!prog || prog.id !== r.id || done < prog.lastDone) prog = { id: r.id, firstDone: done, firstAt: now, lastDone: done, lastAt: now };
+      if (done !== prog.lastDone) { prog.lastDone = done; prog.lastAt = now; }
+      if (!total) { bar.classList.add("indet"); $("progText").textContent = "Starting the price check…"; $("progEta").textContent = ""; return; }
+      bar.classList.remove("indet");
+      const pct = Math.round(4 + (done / total) * 92);
+      span.style.width = pct + "%"; bar.setAttribute("aria-valuenow", pct);
+      $("progText").textContent = `Checking ${Math.min(done + 1, total)} of ${total}${r.current ? ` · ${String(r.current).slice(0, 40)}` : ""}`;
+      const per = done > prog.firstDone ? (prog.lastAt - prog.firstAt) / (done - prog.firstDone) : 8000;
+      const secs = Math.max(5, Math.round(((total - done) * per) / 1000));
+      $("progEta").textContent = `${pct}% · about ${secs < 90 ? secs + " sec" : Math.round(secs / 60) + " min"} left`;
+      return;
+    }
+    prog = null;
+    if (signedIn() && due) {
+      box.hidden = false; bar.classList.add("indet"); span.style.width = ""; bar.removeAttribute("aria-valuenow");
+      $("progText").textContent = `${due} part number${due === 1 ? "" : "s"} queued for the price checker`;
+      $("progEta").textContent = "it runs every 15 minutes";
+      return;
+    }
+    box.hidden = true;
+  }
+
+  $("checkBtn").onclick = async () => {
+    if (!signedIn()) { toast("Sign in with Google to ask for fresh prices."); return; }
+    const { data, error } = await sb.rpc("request_refresh");
+    if (error) { toast("Couldn't queue a refresh. Try again in a minute."); return; }
+    state.waiting = Date.now();
+    await loadCatalog(); render();
+    toast(data ? `Queued ${data} part number${data === 1 ? "" : "s"}. The checker picks them up within about 15 minutes.` : "Already queued. The checker picks them up within about 15 minutes.");
+  };
+
+  /* ---------- photos ---------- */
+  async function shrink(file, max, quality) {
+    try {
+      const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
+      const s = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      return await new Promise((res) => c.toBlob(res, "image/jpeg", quality));
+    } catch { return /^image\/(jpeg|png|webp)$/.test(file.type) ? file : null; }
+  }
+  async function uploadBlob(blob) {
+    const path = `${state.user.id}/${newId()}.jpg`;
+    const { error } = await sb.storage.from("tool-photos").upload(path, blob, { contentType: blob.type || "image/jpeg", upsert: false });
+    if (error) throw error;
+    return path;
+  }
+  async function photoFields(file) {
+    if (signedIn()) {
+      const blob = await shrink(file, 1600, 0.85);
+      if (!blob) throw { code: "type" };
+      if (blob.size > 5 * 1024 * 1024) throw { code: "big" };
+      return { photo_path: await uploadBlob(blob), photo_at: new Date().toISOString() };
+    }
+    const blob = await shrink(file, 900, 0.8);
+    if (!blob) throw { code: "type" };
+    const data = await new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(f.result); f.onerror = rej; f.readAsDataURL(blob); });
+    return { photo_data: data, photo_at: new Date().toISOString() };
+  }
+  const PHOTO_ERR = { type: "That photo format isn't supported. Try a JPG or PNG.", big: "That photo is too big. Try a smaller one.", quota: "This browser is out of room for photos. Sign in to store photos in your account." };
+  const photoErr = (e) => PHOTO_ERR[e && e.code] || "Couldn't save that photo. Try again.";
+  function dropOldPhoto(oldPath, newPath) { if (signedIn() && oldPath && oldPath !== newPath) sb.storage.from("tool-photos").remove([oldPath]).catch(() => {}); }
+
+  let photoTarget = null;
+  function pickPhotoFor(id) { photoTarget = id; $("photoInput").value = ""; $("photoInput").click(); }
+  $("photoInput").addEventListener("change", async () => {
+    const file = $("photoInput").files[0], id = photoTarget; photoTarget = null;
+    const item = state.items.find((r) => r.id === id);
+    if (!file || !item) return;
+    state.uploading[id] = true; render();
+    try {
+      const fields = await photoFields(file);
+      await saveItem({ ...item, ...fields });
+      dropOldPhoto(item.photo_path, fields.photo_path);
+      toast("Photo saved");
+    } catch (e) { toast(photoErr(e)); }
+    finally { delete state.uploading[id]; render(); }
+  });
+
+  const viewer = $("viewer");
+  let viewing = null;
+  function openViewer(id) {
+    const r = state.items.find((x) => x.id === id); if (!r) return;
+    const p = photoOf(r); if (!p) return;
+    viewing = id;
+    $("vImg").innerHTML = imgTag(p, displayName(r)).replace(' loading="lazy"', "");
+    $("vName").textContent = displayName(r);
+    const pr = r.list === "owned" ? storePrice(r) ?? (Number(r.price) || 0) : wishCost(r);
+    $("vMeta").textContent = [r.part_number, pr ? money(pr, pr % 1) : "", p.mine ? "Your photo" : "Photo from Snap-on's store"].filter(Boolean).join(" · ");
+    $("vPhoto").textContent = p.mine ? "Replace photo" : "Use my own photo";
+    viewer.showModal();
+  }
+  $("vClose").onclick = () => viewer.close();
+  viewer.addEventListener("click", (e) => { if (e.target === viewer) viewer.close(); });
+  $("vPhoto").onclick = () => { const v = viewing; viewer.close(); if (v) pickPhotoFor(v); };
+  $("rail").addEventListener("click", (e) => { const b = e.target.closest(".shot"); if (b) openViewer(b.dataset.id); });
+
+  /* ---------- events ---------- */
+  function setTab(tab) {
+    state.tab = tab; state.confirm = null;
+    $("tab-tools").setAttribute("aria-selected", tab === "owned");
+    $("tab-wish").setAttribute("aria-selected", tab === "wishlist");
+    setSortOptions(); render();
+    try { localStorage.setItem(LS + "-tab", tab); } catch {}
+  }
+  $("tab-tools").onclick = () => setTab("owned");
+  $("tab-wish").onclick = () => setTab("wishlist");
+  ["q", "fCat", "fSort"].forEach((id) => $(id).addEventListener("input", render));
+
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 3800); }
+  async function guard(fn, okMsg) {
+    try { await fn(); if (okMsg) toast(okMsg); return true; }
+    catch (e) { toast(e && e.code === "quota" ? PHOTO_ERR.quota : "Couldn't save that. Check your connection and try again."); return false; }
+  }
+  const blank = (list) => list === "owned"
+    ? { list, name: "", part_number: "", category: "Other", price: 0, date_bought: today(), condition: "Good", location: "", notes: "", priority: null, saved: 0 }
+    : { list, name: "", part_number: "", category: "Other", price: 0, date_bought: null, condition: null, location: "", notes: "", priority: "Want", saved: 0 };
+  const addedMsg = (pn, where) => {
+    const s = state.catalog[pn];
+    if (s && s.status === "ok") return `Added ${pn} to your ${where}.`;
+    return signedIn() ? `Added ${pn}. Its price and photo arrive within about 15 minutes.` : `Added ${pn} to your ${where}. Sign in so the price checker can look it up.`;
+  };
+
+  async function addByPn(pn, list) {
+    if (!pn) return false;
+    if (!PN_RE.test(pn)) { toast("That doesn't look like a Snap-on part number. Use letters, numbers, dots, dashes or slashes."); return false; }
+    const same = (r) => (r.part_number || "") === pn;
+    if (rowsOf(list).some(same)) { toast(`${pn} is already on your ${list === "owned" ? "box" : "wishlist"}.`); return false; }
+    if (list === "wishlist" && rowsOf("owned").some(same)) { toast(`You already own ${pn}. It's in your box.`); return false; }
+    const ok = await guard(() => saveItem({ ...blank(list), part_number: pn }));
+    if (ok) toast(addedMsg(pn, list === "owned" ? "box" : "wishlist"));
+    return ok;
+  }
+  $("quick").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pn = cleanPn($("q-pn").value);
+    if (!pn) { openForm(null); return; }
+    if (await addByPn(pn, state.tab)) $("q-pn").value = "";
+  });
+  $("q-more").onclick = () => openForm(null, cleanPn($("q-pn").value));
+
+  const SHOP_CATS = ["Ratchets", "Socket sets", "Combination wrenches", "Torque wrenches", "Impact wrenches", "Screwdrivers", "Pliers", "Pry bars", "Tool storage", "Diagnostics"];
+  $("shopCats").insertAdjacentHTML("beforeend", SHOP_CATS.map((c) => `<a href="${esc(storeLink(c))}" target="_blank" rel="noopener">${esc(c)}</a>`).join(""));
+  const shopHref = () => { const q = $("shopQ").value.trim(); return q ? storeLink(q) : "https://shop.snapon.com"; };
+  $("shopQ").addEventListener("input", () => { $("shopGo").href = shopHref(); });
+  $("shopQ").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("shopGo").href = shopHref(); $("shopGo").click(); } });
+  $("shopAdd").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pn = cleanPn($("shopPn").value);
+    if (!pn) { toast("Type the part number from Snap-on's product page."); $("shopPn").focus(); return; }
+    if (await addByPn(pn, "wishlist")) { $("shopPn").value = ""; if (state.tab !== "wishlist") setTab("wishlist"); }
+  });
+
+  $("list").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]"); if (!btn) return;
+    const act = btn.dataset.act, id = btn.closest("[data-id]")?.dataset.id;
+    const item = state.items.find((r) => r.id === id);
+    if (!item) return;
+    if (act === "view") return openViewer(id);
+    if (act === "photo") return pickPhotoFor(id);
+    if (act === "edit") return openForm(item);
+    if (act === "del" || act === "bought") { state.confirm = { id, kind: act }; return render(); }
+    if (act === "cancel") { state.confirm = null; return render(); }
+    if (act === "del-yes") { state.confirm = null; return guard(() => removeItem(item), "Deleted"); }
+    if (act === "bought-yes") {
+      state.confirm = null;
+      return guard(() => saveItem({ ...item, list: "owned", price: wishCost(item), date_bought: today(), condition: "New", location: "", priority: null, saved: 0, from_wishlist: true, created_at: undefined }), "Moved to Owned");
+    }
+  });
+
+  /* ---------- form ---------- */
+  const dlg = $("dlg");
+  const pf = { file: null, url: null, remove: false };
+  function clearPf() { if (pf.url) URL.revokeObjectURL(pf.url); pf.file = null; pf.url = null; pf.remove = false; }
+  function renderPf() {
+    const it = state.editing;
+    let p = null;
+    if (pf.url) p = { src: pf.url, mine: true };
+    else if (it && !pf.remove) p = photoOf(it);
+    else if (it && pf.remove) { const s = storeOf(it); if (s && s.image_path) p = { src: pub("catalog", s.image_path), mine: false }; }
+    $("pfPrev").className = "pf-prev" + (p ? "" : " none");
+    $("pfPrev").innerHTML = p ? imgTag(p, "Photo preview") : ICON.tool;
+    const mine = !!pf.url || (it && hasMine(it) && !pf.remove);
+    $("pfPick").innerHTML = ICON.cam + (mine ? "Change photo" : "Upload photo");
+    $("pfRemove").hidden = !mine;
+    $("pfNote").textContent = pf.url ? "Saves when you tap Save." : mine ? "Your photo shows instead of the store photo." : p ? "Showing Snap-on's store photo. Upload your own to replace it." : "Snap a pic of your tool, or let the price checker add the store photo.";
+  }
+  $("pfPick").onclick = () => { $("pfFile").value = ""; $("pfFile").click(); };
+  $("pfFile").addEventListener("change", () => { const f = $("pfFile").files[0]; if (!f) return; clearPf(); pf.file = f; pf.url = URL.createObjectURL(f); renderPf(); });
+  $("pfRemove").onclick = () => { const had = !!pf.url; clearPf(); if (!had) pf.remove = true; renderPf(); };
+  function updateLookup() { const pn = cleanPn($("i-pn").value); $("lookup").hidden = !pn; if (pn) $("lookup").href = storeLink(pn); }
+  function openForm(item, pn) {
+    state.editing = item; clearPf();
+    const list = item ? item.list : state.tab;
+    $("dlgTitle").textContent = item ? "Edit tool" : list === "owned" ? "Add tool" : "Add to wishlist";
+    $("l-price").textContent = list === "owned" ? "Price paid ($)" : "Your price ($)";
+    document.querySelectorAll("[data-only]").forEach((el) => (el.hidden = el.dataset.only !== list));
+    $("i-name").value = item?.name || "";
+    $("i-name").placeholder = (item && storeOf(item)?.name) || '3/8" drive dual 80 ratchet';
+    $("i-pn").value = item?.part_number || pn || "";
+    $("i-cat").value = CATS.includes(item?.category) ? item.category : '3/8" Drive Tools';
+    $("i-price").value = item?.price ? Number(item.price) : "";
+    $("i-date").value = item?.date_bought || (list === "owned" ? today() : "");
+    $("i-cond").value = item?.condition || "Good";
+    $("i-loc").value = item?.location || "";
+    $("i-pri").value = item?.priority || "Want";
+    $("i-saved").value = item?.saved ? Number(item.saved) : "";
+    $("i-notes").value = item?.notes || "";
+    $("frmErr").hidden = true;
+    updateLookup(); renderPf();
+    dlg.showModal();
+    setTimeout(() => $("i-name").focus(), 0);
+  }
+  $("i-pn").addEventListener("input", updateLookup);
+  $("cancelBtn").onclick = () => dlg.close();
+  dlg.addEventListener("close", clearPf);
+  $("frm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("i-name").value.trim(), pn = cleanPn($("i-pn").value);
+    const err = (m) => { $("frmErr").textContent = m; $("frmErr").hidden = false; };
+    if (!name && !pn) return err("Add a name or a part number so you can find this tool later.");
+    if (pn && !PN_RE.test(pn)) return err("That part number has characters Snap-on doesn't use. Use letters, numbers, dots, dashes or slashes.");
+    const list = state.editing ? state.editing.list : state.tab;
+    const item = {
+      ...(state.editing || blank(list)),
+      name, part_number: pn, category: $("i-cat").value, price: Math.max(0, Number($("i-price").value) || 0), notes: $("i-notes").value.trim(),
+      ...(list === "owned"
+        ? { date_bought: $("i-date").value || null, condition: $("i-cond").value, location: $("i-loc").value.trim() }
+        : { priority: $("i-pri").value, saved: Math.max(0, Number($("i-saved").value) || 0) }),
+    };
+    const oldPath = state.editing ? state.editing.photo_path : null;
+    $("saveBtn").disabled = true;
+    try {
+      if (pf.file) { $("saveBtn").textContent = "Uploading photo…"; Object.assign(item, await photoFields(pf.file)); }
+      else if (pf.remove) { item.photo_path = null; item.photo_at = null; delete item.photo_data; }
+    } catch (ex) { err(photoErr(ex)); $("saveBtn").disabled = false; $("saveBtn").textContent = "Save"; return; }
+    $("saveBtn").textContent = "Saving…";
+    const ok = await guard(() => saveItem(item), state.editing ? "Saved" : (pn ? null : "Added"));
+    $("saveBtn").disabled = false; $("saveBtn").textContent = "Save";
+    if (ok) {
+      if (!state.editing && pn) toast(addedMsg(pn, list === "owned" ? "box" : "wishlist"));
+      dropOldPhoto(oldPath, item.photo_path);
+      dlg.close();
+    } else if (item.photo_path && item.photo_path !== oldPath) dropOldPhoto(item.photo_path, null);
+  });
+
+  /* ---------- start ---------- */
+  try { const t = localStorage.getItem(LS + "-tab"); if (t === "wishlist") { state.tab = "wishlist"; $("tab-tools").setAttribute("aria-selected", "false"); $("tab-wish").setAttribute("aria-selected", "true"); setSortOptions(); } } catch {}
+  renderAccount();
+  render();
+  if (!sb) { state.items = local.read(); state.loaded = true; render(); return; }
+  // fires once on load (INITIAL_SESSION), and again on sign-in and sign-out
+  sb.auth.onAuthStateChange((_event, session) => { setTimeout(() => setUser(session ? session.user : null), 0); });
+  loadRuns();
+})();
+</script>
+</body>
+</html>
