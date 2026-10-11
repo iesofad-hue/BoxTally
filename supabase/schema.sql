@@ -322,3 +322,71 @@ create policy "Upload own tool photos" on storage.objects for insert to authenti
               and (storage.foldername(name))[1] = (select auth.uid())::text
               and private.photo_count((select auth.uid())) < 300);
 update storage.buckets set file_size_limit = 3145728 where id = 'tool-photos';
+
+-- ===== Shared photos (added October 11, 2026) =====
+-- People can share the photo of a tool in their box with everyone tracking the same part number.
+-- The earliest shared photo for a part number is the one shown. Anyone tracking that part number
+-- can report a wrong photo: it's hidden for them at once, and for everyone after 2 different reports.
+
+alter table public.items add column if not exists photo_shared boolean not null default false;
+
+create table if not exists public.photo_reports (
+  item_id    uuid not null references public.items(id) on delete cascade,
+  photo_path text not null,
+  reporter   uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (item_id, photo_path, reporter)
+);
+create index if not exists photo_reports_reporter_idx on public.photo_reports (reporter, created_at desc);
+alter table public.photo_reports enable row level security;
+revoke all on public.photo_reports from anon, authenticated;
+
+create index if not exists items_shared_photo_idx on public.items (part_number, photo_at)
+  where photo_shared and photo_path is not null and list = 'owned';
+
+-- The shared photo for each part number asked about (at most 500 at a time).
+-- Your own photos aren't included (you already see those), nor ones you reported.
+create or replace function public.shared_photos(pns text[])
+returns table (part_number text, item_id uuid, photo_path text)
+language sql stable security definer set search_path = '' as $$
+  select distinct on (i.part_number) i.part_number, i.id, i.photo_path
+    from public.items i
+   where i.part_number = any (pns[1:500])
+     and i.list = 'owned'
+     and i.photo_shared
+     and i.photo_path is not null
+     and i.user_id is distinct from auth.uid()
+     and (select count(*) from public.photo_reports r
+           where r.item_id = i.id and r.photo_path = i.photo_path) < 2
+     and not exists (select 1 from public.photo_reports r
+                      where r.item_id = i.id and r.photo_path = i.photo_path and r.reporter = auth.uid())
+   order by i.part_number, i.photo_at nulls last, i.created_at, i.id;
+$$;
+revoke execute on function public.shared_photos(text[]) from public;
+grant execute on function public.shared_photos(text[]) to anon, authenticated;
+
+-- "Wrong photo?": only people tracking that part number, at most 30 reports an hour.
+create or replace function public.report_photo(item uuid)
+returns void
+language plpgsql security definer set search_path = '' as $$
+declare
+  uid uuid := auth.uid();
+  it record;
+begin
+  if uid is null then raise exception 'Sign in to report a photo.'; end if;
+  select i.id, i.user_id, i.part_number, i.photo_path, i.photo_shared, i.list into it from public.items i where i.id = item;
+  if it.id is null or not it.photo_shared or it.photo_path is null or it.list <> 'owned' then
+    raise exception 'That photo isn''t shared anymore.';
+  end if;
+  if it.user_id = uid then raise exception 'That''s your own photo. Replace or remove it instead.'; end if;
+  if not exists (select 1 from public.items i where i.user_id = uid and i.part_number = it.part_number) then
+    raise exception 'Only people tracking % can report its photo.', it.part_number;
+  end if;
+  if (select count(*) from public.photo_reports r where r.reporter = uid and r.created_at > now() - interval '1 hour') >= 30 then
+    raise exception 'That''s a lot of reports in an hour. Try again later.';
+  end if;
+  insert into public.photo_reports (item_id, photo_path, reporter) values (it.id, it.photo_path, uid)
+  on conflict do nothing;
+end $$;
+revoke execute on function public.report_photo(uuid) from public, anon;
+grant execute on function public.report_photo(uuid) to authenticated;

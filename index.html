@@ -336,6 +336,8 @@ dialog h2 { font-size: 1.6rem; text-transform: uppercase; }
 .pf-prev.none svg { width: 36px; height: 36px; opacity: .55; }
 .pf-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .pf-actions small { flex-basis: 100%; }
+.pf-share { flex-basis: 100%; display: flex; gap: 8px; align-items: flex-start; font-size: .85rem; color: var(--muted); cursor: pointer; }
+.pf-share input { margin-top: 3px; accent-color: var(--accent); }
 .lookup { font-size: .82rem; color: var(--accent); text-decoration: none; font-weight: 600; justify-self: start; }
 .lookup:hover { text-decoration: underline; }
 .formfoot { display: flex; justify-content: end; gap: 8px; flex-wrap: wrap; }
@@ -520,6 +522,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
             <button class="btn small" type="button" id="pfPick"></button>
             <button class="btn small ghost danger" type="button" id="pfRemove" hidden>Remove photo</button>
             <small id="pfNote"></small>
+            <label class="pf-share" id="pfShareRow" hidden><input type="checkbox" id="pfShare" checked><span>Share my photo with others tracking this part number. Only photos of your own tool.</span></label>
           </div>
         </div>
         <input type="file" id="pfFile" accept="image/*" hidden>
@@ -547,7 +550,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   <div class="v-img" id="vImg"></div>
   <div class="v-cap">
     <div><h2 id="vName"></h2><span class="meta-line" id="vMeta"></span></div>
-    <div class="actions"><button class="btn small" type="button" id="vPhoto">Replace photo</button><button class="btn small primary" type="button" id="vClose">Close</button></div>
+    <div class="actions"><button class="btn small ghost" type="button" id="vReport" hidden>Wrong photo?</button><button class="btn small" type="button" id="vPhoto">Replace photo</button><button class="btn small primary" type="button" id="vClose">Close</button></div>
   </div>
 </dialog>
 
@@ -570,7 +573,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const CONDS = ["New", "Good", "Worn", "Needs warranty"];
   const PRIS = ["Need", "Want", "Someday"];
   const PN_RE = /^[A-Z0-9][A-Z0-9./-]{0,39}$/;
-  const FIELDS = ["list", "name", "part_number", "category", "price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "from_wishlist"];
+  const FIELDS = ["list", "name", "part_number", "category", "price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "photo_shared", "from_wishlist"];
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -595,7 +598,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
   const pub = (bucket, path) => `${SB_URL}/storage/v1/object/public/${bucket}/${String(path).split("/").map(encodeURIComponent).join("/")}`;
 
-  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, loaded: false, editing: null, confirm: null, priceEdit: null, uploading: {}, introDone: false };
+  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, shared: {}, loaded: false, editing: null, confirm: null, priceEdit: null, uploading: {}, introDone: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
 
@@ -609,14 +612,21 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const displayName = (r) => r.name || (storeOf(r) && storeOf(r).name) || r.part_number || "Unnamed tool";
   const wishCost = (r) => storePrice(r) ?? (Number(r.price) || 0);
 
-  /* ---------- photos: only people's own photos (Snap-on's product photos aren't shown on this site) ---------- */
+  /* ---------- photos: your own photo, else one someone tracking the same part number shared ----------
+     (Snap-on's product photos aren't shown on this site.) */
   const okData = (u) => typeof u === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u);
-  function photoOf(r) {
+  function minePhoto(r) {
     if (r.photo_path && signedIn()) return { src: pub("tool-photos", r.photo_path), mine: true };
     if (okData(r.photo_data)) return { src: r.photo_data, mine: true };
     return null;
   }
-  const hasMine = (r) => !!photoOf(r);
+  function sharedPhoto(r) {
+    const s = r.part_number && state.shared[r.part_number];
+    return s ? { src: pub("tool-photos", s.photo_path), mine: false, sharedId: s.item_id } : null;
+  }
+  const photoOf = (r) => minePhoto(r) || sharedPhoto(r);
+  const hasMine = (r) => !!minePhoto(r);
+  const photoLabel = (p) => (p.mine ? "Your photo" : "Shared photo");
   const imgTag = (p, alt) => `<img class="${p.mine ? "mine" : ""}" src="${esc(p.src)}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
   const ICON = {
     tool: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="15" r="9"/><circle cx="15" cy="15" r="3.4"/><path d="M21.5 21.5 41 41"/><path d="M36 36l5 5" stroke-width="6"/></svg>`,
@@ -712,7 +722,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   async function loadCatalog() {
     if (!sb) return;
     const pns = [...new Set(state.items.map((r) => r.part_number).filter((p) => p && PN_RE.test(p)))];
-    if (!pns.length) { state.catalog = {}; state.hist = {}; return; }
+    if (!pns.length) { state.catalog = {}; state.hist = {}; state.shared = {}; return; }
     // Ask in batches so the request stays short even for a box with hundreds of part numbers.
     const batches = [];
     for (let i = 0; i < pns.length; i += 150) batches.push(pns.slice(i, i + 150));
@@ -720,7 +730,9 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
       sb.from("catalog").select("part_number,name,price,was_price,status,checked_at").in("part_number", b),
       // newest first, so if there's ever more history than one request holds, the oldest days are what's left out
       sb.from("catalog_prices").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
+      sb.rpc("shared_photos", { pns: b }),
     ])));
+    if (res.every(([, , p]) => !p.error)) state.shared = Object.fromEntries(res.flatMap(([, , p]) => p.data || []).map((r) => [r.part_number, r]));
     if (res.every(([c]) => !c.error)) state.catalog = Object.fromEntries(res.flatMap(([c]) => c.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, h]) => !h.error)) {
       const m = {};
@@ -876,7 +888,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
       const note = "No photo yet";
       return `<div class="photo empty slim"><span class="ph-ic">${ICON.tool}</span><div class="ph-text">${chipsHtml || badgeHtml ? `<div class="chips">${chipsHtml}${badgeHtml}</div>` : ""}<span>${note}</span></div>${snap}${busy}</div>`;
     }
-    return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">Your photo</span>${snap}${busy}</div>`;
+    return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
   function cardOwned(r, i) {
     const now = storePrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
@@ -1144,9 +1156,11 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     state.uploading[id] = true; render();
     try {
       const fields = await photoFields(file);
+      const share = signedIn() && item.list === "owned" && (item.photo_path ? !!item.photo_shared : true);
+      if (signedIn()) fields.photo_shared = share;
       await saveItem({ ...item, ...fields });
       dropOldPhoto(item.photo_path, fields.photo_path);
-      toast("Photo saved");
+      toast(share ? "Photo saved and shared with others tracking this tool. Turn sharing off in Edit." : "Photo saved");
     } catch (e) { toast(photoErr(e)); }
     finally { delete state.uploading[id]; render(); }
   });
@@ -1160,13 +1174,24 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     $("vImg").innerHTML = imgTag(p, displayName(r)).replace(' loading="lazy"', "");
     $("vName").textContent = displayName(r);
     const pr = r.list === "owned" ? storePrice(r) ?? (Number(r.price) || 0) : wishCost(r);
-    $("vMeta").textContent = [r.part_number, pr ? money(pr, pr % 1) : "", "Your photo"].filter(Boolean).join(" · ");
+    $("vMeta").textContent = [r.part_number, pr ? money(pr, pr % 1) : "", p.mine ? "Your photo" : "Shared by someone tracking this tool"].filter(Boolean).join(" · ");
     $("vPhoto").textContent = p.mine ? "Replace photo" : "Use my own photo";
+    $("vReport").hidden = p.mine || !signedIn();
+    $("vReport").dataset.item = p.sharedId || "";
     viewer.showModal();
   }
   $("vClose").onclick = () => viewer.close();
   viewer.addEventListener("click", (e) => { if (e.target === viewer) viewer.close(); });
   $("vPhoto").onclick = () => { const v = viewing; viewer.close(); if (v) pickPhotoFor(v); };
+  // A wrong shared photo: hidden for you right away, and for everyone after 2 different people report it.
+  $("vReport").onclick = async () => {
+    const item = $("vReport").dataset.item; if (!item) return;
+    viewer.close();
+    const { error } = await sb.rpc("report_photo", { item });
+    if (error) return toast(dbMsg(error) || "Couldn't report that photo. Try again.");
+    await loadCatalog(); render();
+    toast("Thanks. That photo is hidden for you, and gets hidden for everyone if someone else reports it too.");
+  };
   $("rail").addEventListener("click", (e) => { const b = e.target.closest(".shot"); if (b) openViewer(b.dataset.id); });
 
   /* ---------- events ---------- */
@@ -1327,12 +1352,15 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     let p = null;
     if (pf.url) p = { src: pf.url, mine: true };
     else if (it && !pf.remove) p = photoOf(it);
+    else if (it && pf.remove) p = sharedPhoto(it);
     $("pfPrev").className = "pf-prev" + (p ? "" : " none");
     $("pfPrev").innerHTML = p ? imgTag(p, "Photo preview") : ICON.tool;
     const mine = !!pf.url || (it && hasMine(it) && !pf.remove);
     $("pfPick").innerHTML = ICON.cam + (mine ? "Change photo" : "Upload photo");
     $("pfRemove").hidden = !mine;
-    $("pfNote").textContent = pf.url ? "Saves when you tap Save." : mine ? "Your photo of this tool." : "Snap a pic of your own tool. Only upload photos you took yourself.";
+    const owned = (it ? it.list : state.tab) === "owned";
+    $("pfShareRow").hidden = !signedIn() || !owned || !(mine || pf.url);
+    $("pfNote").textContent = pf.url ? "Saves when you tap Save." : mine ? "Your photo of this tool." : p ? "Showing a photo someone tracking this tool shared. Upload your own to use yours instead." : "Snap a pic of your own tool. Only upload photos you took yourself.";
   }
   $("pfPick").onclick = () => { $("pfFile").value = ""; $("pfFile").click(); };
   $("pfFile").addEventListener("change", () => { const f = $("pfFile").files[0]; if (!f) return; clearPf(); pf.file = f; pf.url = URL.createObjectURL(f); renderPf(); });
@@ -1356,6 +1384,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     $("i-saved").value = item?.saved ? Number(item.saved) : "";
     $("i-notes").value = item?.notes || "";
     $("frmErr").hidden = true;
+    $("pfShare").checked = item && item.photo_path ? !!item.photo_shared : true;
     updateLookup(); renderPf();
     dlg.showModal();
     setTimeout(() => $("i-name").focus(), 0);
@@ -1378,6 +1407,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
         : { priority: $("i-pri").value, saved: Math.max(0, Number($("i-saved").value) || 0) }),
     };
     const oldPath = state.editing ? state.editing.photo_path : null;
+    if (signedIn()) item.photo_shared = list === "owned" && $("pfShare").checked;
     $("saveBtn").disabled = true;
     try {
       if (pf.file) { $("saveBtn").textContent = "Uploading photo…"; Object.assign(item, await photoFields(pf.file)); }

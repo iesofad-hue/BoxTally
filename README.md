@@ -36,7 +36,12 @@ Each account can hold up to 2,000 tools (box and wishlist together) and 300 uplo
 
 ### Photos
 
-The site only shows photos people upload of their own tools. It doesn't load, copy or hotlink Snap-on's product photos (Snap-on limits its images to press use). Cards without a photo show a placeholder. The privacy page asks people to upload only photos they took, and gives contact@boxtally.app for takedown requests.
+The site never loads, copies or hotlinks Snap-on's product photos (Snap-on limits its images to press use). Photos come from people:
+
+- Your own photo always shows on your cards.
+- Otherwise a card shows a **shared photo**: the earliest photo someone shared of that part number. Only photos of tools in someone's **box** can be shared (not wishlist), and the uploader can untick "Share" on any photo. Photos uploaded before sharing existed stay private.
+- **Wrong photo?** Anyone signed in who tracks that part number can report it. It's hidden for them right away, and for everyone after 2 different people report it; the next shared photo takes its place. Reports are kept in `photo_reports`. At most 30 reports per person per hour.
+- The privacy page asks people to upload only photos they took, and gives contact@boxtally.app for takedown requests.
 
 ### Trademarks
 
