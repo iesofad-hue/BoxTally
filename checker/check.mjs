@@ -84,9 +84,18 @@ async function readProduct(pn) {
   const res = await productResponse;
 
   if (!res) {
-    const html = await page.content();
-    if (/incapsula|request unsuccessful|access denied/i.test(html)) throw new BlockedError("blocked");
-    return null; // search page with no single product: not found
+    // The bot-protection script is on every page, so judge by what the visitor actually sees.
+    const seen = await page.evaluate(() => ({
+      title: document.title,
+      path: location.pathname,
+      text: (document.body ? document.body.innerText : "").replace(/\s+/g, " ").trim().slice(0, 300),
+    })).catch(() => ({ title: "", path: "", text: "" }));
+    console.log(`  ${pn}: no product data. Page "${seen.title}" at ${seen.path}: ${seen.text.slice(0, 160)}`);
+    if (/request unsuccessful|incapsula incident|access denied|pardon our interruption|verify you are human|are you a robot/i.test(seen.title + " " + seen.text)) {
+      throw new BlockedError(`blocked (${seen.title || "no title"}: ${seen.text.slice(0, 120)})`);
+    }
+    if (seen.path.includes("/search")) return null; // a search page with no single product: not found
+    throw new Error(`the page didn't finish loading (${seen.title || seen.path || "blank page"})`);
   }
   let data = null;
   try { data = await res.json(); } catch { data = null; }
@@ -175,7 +184,7 @@ try {
   console.log(`Done: ${found} priced, ${notFound} not found, ${errors} errors, ${changes} price changes.`);
 } catch (e) {
   const message = e instanceof BlockedError
-    ? "Snap-on's site blocked the automatic check. The checker doesn't try to get around that."
+    ? `Snap-on's site blocked the automatic check. The checker doesn't try to get around that. Details: ${String(e.message).slice(0, 180)}`
     : `The price check stopped: ${String(e.message || e).slice(0, 200)}`;
   await updateRun({ status: "failed", current: null, finished_at: now(), error: message });
   console.error(message);
