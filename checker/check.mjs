@@ -1,8 +1,8 @@
 // Snap-on price checker.
 //
 // Visits each tracked part number on shop.snapon.com the way a normal visitor would,
-// reads the product data the page itself loads, and saves name, price, sale price,
-// photo and a daily price history to Supabase.
+// reads the product data the page itself loads, and saves name, price, sale price
+// and a daily price history to Supabase. It never copies Snap-on's product photos.
 //
 //   node checker/check.mjs --count   prints how many part numbers are due (no browser needed)
 //   node checker/check.mjs           runs the check
@@ -181,32 +181,10 @@ async function readProduct(pn) {
       name: ((feed && feed.Description) || dom.name || "").slice(0, 200) || null,
       price,
       wasPrice,
-      image: (feed && typeof feed.PrimaryImage === "string" && feed.PrimaryImage) || dom.image,
     };
   } finally {
     page.off("response", onResponse);
   }
-}
-
-async function saveImage(pn, imageUrl) {
-  let host;
-  try { host = new URL(imageUrl).hostname; } catch { return null; }
-  if (!host.endsWith(".imgix.net")) return null;
-  const img = await fetch(`${imageUrl.split("?")[0]}?w=480&h=480&fit=max&fm=webp&q=70`);
-  if (!img.ok) return null;
-  const bytes = Buffer.from(await img.arrayBuffer());
-  if (!bytes.length || bytes.length > 1_000_000) return null;
-  const path = `${pn.replace(/[^A-Z0-9-]/g, "_")}.webp`;
-  const up = await fetch(`${SUPABASE_URL}/storage/v1/object/catalog/${path}`, {
-    method: "POST",
-    headers: { apikey: KEY, "Content-Type": "image/webp", "x-upsert": "true" },
-    body: bytes,
-  });
-  if (!up.ok) {
-    console.warn(`  photo upload failed for ${pn}: ${up.status} ${(await up.text()).slice(0, 200)}`);
-    return null;
-  }
-  return path;
 }
 
 // First visit: answer the cookie banner with the most private choice, the same as a careful visitor would.
@@ -227,7 +205,7 @@ try {
   await page.goto(STORE, { waitUntil: "domcontentloaded", timeout: 45000 });
   await answerCookieBanner();
   for (let k = 0; k < parts.length; k++) {
-    const { part_number: pn, has_image, last_price } = parts[k];
+    const { part_number: pn, last_price } = parts[k];
     await updateRun({ done: k, current: pn });
     apiSeen = [];
     try {
@@ -235,15 +213,11 @@ try {
       const checked_at = now();
       if (p && typeof p.price === "number") {
         const fields = { name: p.name, price: p.price, was_price: p.wasPrice, status: "ok", checked_at };
-        if (!has_image && p.image) {
-          const path = await saveImage(pn, p.image).catch((e) => { console.warn(`  photo failed for ${pn}: ${e.message}`); return null; });
-          if (path) fields.image_path = path;
-        }
         await rest(`catalog?part_number=eq.${encodeURIComponent(pn)}`, { method: "PATCH", body: fields });
         await rest("catalog_prices", { method: "POST", body: { part_number: pn, d: today(), price: p.price }, prefer: "resolution=merge-duplicates" });
         if (last_price != null && Number(last_price) !== p.price) changes++;
         found++;
-        console.log(`  ${pn}: $${p.price}${p.wasPrice ? ` (was $${p.wasPrice})` : ""}${fields.image_path ? " + photo" : ""}`);
+        console.log(`  ${pn}: $${p.price}${p.wasPrice ? ` (was $${p.wasPrice})` : ""}`);
       } else if (last_price != null) {
         // It had a price before: one failed lookup isn't enough to call it gone. Keep the last good price.
         errors++;

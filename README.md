@@ -1,6 +1,6 @@
 # BoxTally
 
-A Snap-on tool tracker at [boxtally.app](https://boxtally.app). Not affiliated with Snap-on.
+A tracker for Snap-on® tools at [boxtally.app](https://boxtally.app). Not affiliated with Snap-on.
 
 Track the Snap-on tools in your box, what they're worth today, and what's next on your wishlist.
 
@@ -34,9 +34,13 @@ Each account can hold up to 2,000 tools (box and wishlist together) and 300 uplo
 
 **Download CSV** saves a spreadsheet of the box and wishlist (opens in Excel, Google Sheets or Numbers). **Print / PDF** prints a clean tool list with totals, or saves it as a PDF from the print dialog. Handy to keep for insurance in case of theft or a shop fire.
 
-### Store photos
+### Photos
 
-Product photos load straight from Snap-on's public image server by part number. When a part number has no photo there, the card shows a placeholder, and people can always upload their own photo instead.
+The site only shows photos people upload of their own tools. It doesn't load, copy or hotlink Snap-on's product photos (Snap-on limits its images to press use). Cards without a photo show a placeholder. The privacy page asks people to upload only photos they took, and gives contact@boxtally.app for takedown requests.
+
+### Trademarks
+
+BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on's logo, colors or fonts, and the footer and privacy page say it's independent, with the Snap-on® trademark notice.
 
 ## The retired price checker
 

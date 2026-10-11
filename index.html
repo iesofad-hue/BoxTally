@@ -464,14 +464,14 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     <input id="q-pn" class="mono" placeholder="Part number, e.g. F80" aria-label="Part number" autocapitalize="characters" autocomplete="off">
     <button class="btn primary" type="submit" id="q-add">Add to box</button>
     <button class="btn" type="button" id="q-more">Add with details &amp; photo</button>
-    <span class="hint" id="q-hint">Just the part number is enough. The store photo shows up right away, and anyone tracking it can add the store price.</span>
+    <span class="hint" id="q-hint">Just the part number is enough. Anyone tracking it can add the store price, and you can add a photo of your own tool.</span>
   </form>
 
   <section class="shop" aria-labelledby="shopTitle">
-    <div class="shop-head"><h2 id="shopTitle">Shop Snap-on</h2><span class="meta-line" id="shopNote">Search opens Snap-on's store in a new tab. Found one you want? Put its part number on your wishlist.</span></div>
+    <div class="shop-head"><h2 id="shopTitle">Find it on Snap-on's store</h2><span class="meta-line" id="shopNote">Search opens Snap-on's store in a new tab. Found one you want? Put its part number on your wishlist.</span></div>
     <div class="shop-find">
       <input id="shopQ" type="search" placeholder="Search the store, e.g. 3/8 ratchet" aria-label="Search Snap-on's store" autocomplete="off">
-      <a class="btn primary" id="shopGo" href="https://shop.snapon.com" target="_blank" rel="noopener">Search Snap-on <span aria-hidden="true">↗</span></a>
+      <a class="btn primary" id="shopGo" href="https://shop.snapon.com" target="_blank" rel="noopener">Search the store <span aria-hidden="true">↗</span></a>
       <button class="btn" type="button" id="shopWish">Add to wishlist</button>
     </div>
     <div class="shop-cats" id="shopCats"><span class="label">Browse</span></div>
@@ -502,7 +502,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner">BoxTally is not affiliated with Snap-on. Store prices are added by people who track each tool and may be out of date; product photos come from Snap-on's public image server. Check Snap-on's store before you buy. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a></footer>
+<footer class="inner">BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Store prices are added by people who track each tool and may be out of date. Check Snap-on's store before you buy. Photos are uploaded by people of their own tools; to report one, email contact@boxtally.app. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a></footer>
 
 <div id="printSheet"></div>
 
@@ -609,29 +609,15 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const displayName = (r) => r.name || (storeOf(r) && storeOf(r).name) || r.part_number || "Unnamed tool";
   const wishCost = (r) => storePrice(r) ?? (Number(r.price) || 0);
 
-  /* ---------- photos: your own photo wins over the store photo ---------- */
+  /* ---------- photos: only people's own photos (Snap-on's product photos aren't shown on this site) ---------- */
   const okData = (u) => typeof u === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u);
-  // Snap-on's product photos are public images named after the part number.
-  const badImg = new Set();
-  const storeImg = (pn) => `https://snap-on-products-hr.imgix.net/${encodeURIComponent(pn)}.jpg?w=600&h=600&fit=max&auto=format&q=70`;
   function photoOf(r) {
     if (r.photo_path && signedIn()) return { src: pub("tool-photos", r.photo_path), mine: true };
     if (okData(r.photo_data)) return { src: r.photo_data, mine: true };
-    const s = storeOf(r);
-    if (s && s.image_path) return { src: pub("catalog", s.image_path), mine: false };
-    if (r.part_number && PN_RE.test(r.part_number) && !badImg.has(r.part_number)) return { src: storeImg(r.part_number), mine: false, pn: r.part_number };
     return null;
   }
-  const hasMine = (r) => !!((r.photo_path && signedIn()) || okData(r.photo_data));
-  const imgTag = (p, alt) => `<img class="${p.mine ? "mine" : ""}" src="${esc(p.src)}" alt="${esc(alt)}" loading="lazy" decoding="async"${p.pn ? ` data-pn="${esc(p.pn)}"` : ""}>`;
-  // A part number without a store photo: remember it and show the placeholder instead.
-  let reRender = 0;
-  document.addEventListener("error", (e) => {
-    const img = e.target;
-    if (!(img instanceof HTMLImageElement) || !img.dataset.pn || badImg.has(img.dataset.pn)) return;
-    badImg.add(img.dataset.pn);
-    cancelAnimationFrame(reRender); reRender = requestAnimationFrame(() => render());
-  }, true);
+  const hasMine = (r) => !!photoOf(r);
+  const imgTag = (p, alt) => `<img class="${p.mine ? "mine" : ""}" src="${esc(p.src)}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
   const ICON = {
     tool: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="15" r="9"/><circle cx="15" cy="15" r="3.4"/><path d="M21.5 21.5 41 41"/><path d="M36 36l5 5" stroke-width="6"/></svg>`,
     cam: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>`,
@@ -731,7 +717,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     const batches = [];
     for (let i = 0; i < pns.length; i += 150) batches.push(pns.slice(i, i + 150));
     const res = await Promise.all(batches.map((b) => Promise.all([
-      sb.from("catalog").select("part_number,name,price,was_price,status,image_path,checked_at").in("part_number", b),
+      sb.from("catalog").select("part_number,name,price,was_price,status,checked_at").in("part_number", b),
       // newest first, so if there's ever more history than one request holds, the oldest days are what's left out
       sb.from("catalog_prices").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
     ])));
@@ -887,10 +873,10 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     const snap = !busy ? `<button class="snap" type="button" data-act="photo">${ICON.cam}${p && p.mine ? "Replace" : "Add photo"}</button>` : "";
     const over = `<div class="over"><div class="chips">${chipsHtml}</div>${badgeHtml}</div>`;
     if (!p) {
-      const note = r.part_number ? "No store photo for this part number" : "No photo yet";
+      const note = "No photo yet";
       return `<div class="photo empty slim"><span class="ph-ic">${ICON.tool}</span><div class="ph-text">${chipsHtml || badgeHtml ? `<div class="chips">${chipsHtml}${badgeHtml}</div>` : ""}<span>${note}</span></div>${snap}${busy}</div>`;
     }
-    return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${p.mine ? "Your photo" : "Store photo"}</span>${snap}${busy}</div>`;
+    return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">Your photo</span>${snap}${busy}</div>`;
   }
   function cardOwned(r, i) {
     const now = storePrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
@@ -986,7 +972,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     $("localBanner").hidden = !sb || signedIn() || !state.loaded;
     $("q-hint").textContent = !sb
       ? "Prices can't load right now. You can still add tools and fill in prices yourself."
-      : signedIn() ? "Just the part number is enough. The store photo shows up right away, and anyone tracking it can add the store price."
+      : signedIn() ? "Just the part number is enough. Anyone tracking it can add the store price, and you can add a photo of your own tool."
       : "Just the part number is enough. Store prices other people have added show up automatically.";
 
     const list = $("list");
@@ -994,7 +980,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
       list.innerHTML = Array.from({ length: 3 }, () => `<div class="skel" aria-hidden="true"><div class="a"></div><div class="b"></div></div>`).join("") + `<span class="sr">Loading your tools</span>`;
     } else if (!rowsOf(state.tab).length) {
       list.innerHTML = state.tab === "owned"
-        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool. Its store photo and price fill in on their own.</span></div>`
+        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool. Its store price fills in when someone tracking it adds one.</span></div>`
         : `<div class="empty"><strong>Wishlist is empty</strong><span>Find a tool in the Shop box above and add it by part number.</span></div>`;
     } else {
       const rows = filtered();
@@ -1174,7 +1160,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     $("vImg").innerHTML = imgTag(p, displayName(r)).replace(' loading="lazy"', "");
     $("vName").textContent = displayName(r);
     const pr = r.list === "owned" ? storePrice(r) ?? (Number(r.price) || 0) : wishCost(r);
-    $("vMeta").textContent = [r.part_number, pr ? money(pr, pr % 1) : "", p.mine ? "Your photo" : "Photo from Snap-on's store"].filter(Boolean).join(" · ");
+    $("vMeta").textContent = [r.part_number, pr ? money(pr, pr % 1) : "", "Your photo"].filter(Boolean).join(" · ");
     $("vPhoto").textContent = p.mine ? "Replace photo" : "Use my own photo";
     viewer.showModal();
   }
@@ -1341,13 +1327,12 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     let p = null;
     if (pf.url) p = { src: pf.url, mine: true };
     else if (it && !pf.remove) p = photoOf(it);
-    else if (it && pf.remove) { const s = storeOf(it); if (s && s.image_path) p = { src: pub("catalog", s.image_path), mine: false }; }
     $("pfPrev").className = "pf-prev" + (p ? "" : " none");
     $("pfPrev").innerHTML = p ? imgTag(p, "Photo preview") : ICON.tool;
     const mine = !!pf.url || (it && hasMine(it) && !pf.remove);
     $("pfPick").innerHTML = ICON.cam + (mine ? "Change photo" : "Upload photo");
     $("pfRemove").hidden = !mine;
-    $("pfNote").textContent = pf.url ? "Saves when you tap Save." : mine ? "Your photo shows instead of the store photo." : p ? "Showing Snap-on's store photo. Upload your own to replace it." : "Snap a pic of your tool. Snap-on's store photo shows when there is one.";
+    $("pfNote").textContent = pf.url ? "Saves when you tap Save." : mine ? "Your photo of this tool." : "Snap a pic of your own tool. Only upload photos you took yourself.";
   }
   $("pfPick").onclick = () => { $("pfFile").value = ""; $("pfFile").click(); };
   $("pfFile").addEventListener("change", () => { const f = $("pfFile").files[0]; if (!f) return; clearPf(); pf.file = f; pf.url = URL.createObjectURL(f); renderPf(); });
