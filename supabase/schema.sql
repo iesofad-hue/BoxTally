@@ -208,3 +208,117 @@ begin
 end $$;
 revoke execute on function public.submit_price(text, numeric, numeric) from public, anon;
 grant execute on function public.submit_price(text, numeric, numeric) to authenticated;
+
+-- ===== Price rules and account limits (added October 11, 2026) =====
+-- Replaces submit_price above with the stricter version, and adds limits per account.
+
+-- ===== Store prices: one update per person per part number per day =====
+
+-- Remember what the price was before each update, so a bad update can be judged against
+-- (and walked back to) the price before it.
+alter table public.price_reports add column if not exists prev_price numeric(10,2);
+
+create or replace function public.submit_price(pn text, new_price numeric, regular_price numeric default null)
+returns json
+language plpgsql security definer set search_path = '' as $$
+declare
+  uid uuid := auth.uid();
+  clean text := upper(regexp_replace(coalesce(pn, ''), '\s', '', 'g'));
+  cur numeric;
+  latest record;
+  mine record;
+  recent int;
+  ok boolean;
+  within4 constant numeric := 4;
+begin
+  if uid is null then raise exception 'Sign in to add store prices.'; end if;
+  if new_price is null or new_price <= 0 or new_price >= 100000 then raise exception 'Enter a price between $0.01 and $99,999.'; end if;
+  if regular_price is not null and (regular_price <= new_price or regular_price >= 100000) then
+    raise exception 'The regular price should be higher than the sale price.';
+  end if;
+  if not exists (select 1 from public.items i where i.user_id = uid and i.part_number = clean) then
+    raise exception 'Add % to your box or wishlist first.', clean;
+  end if;
+
+  -- one price update at a time per part number
+  perform pg_advisory_xact_lock(hashtext('submit_price:' || clean));
+
+  select count(*) into recent from public.price_reports r where r.user_id = uid and r.created_at > now() - interval '1 hour';
+  if recent >= 60 then raise exception 'That''s a lot of price updates in an hour. Try again later.'; end if;
+
+  select c.price into cur from public.catalog c where c.part_number = clean;
+  select r.* into latest from public.price_reports r where r.part_number = clean order by r.created_at desc, r.id desc limit 1;
+  select r.* into mine from public.price_reports r
+   where r.part_number = clean and r.user_id = uid and r.created_at > now() - interval '24 hours'
+   order by r.created_at desc, r.id desc limit 1;
+
+  if mine.id is not null and latest.id = mine.id and mine.created_at > now() - interval '10 minutes' then
+    -- Fixing your own typo within 10 minutes: judged against the price from before your update.
+    ok := mine.prev_price is null
+          or (new_price <= mine.prev_price * within4 and new_price >= mine.prev_price / within4);
+    if not ok then
+      raise exception 'That''s very different from the price before your update ($%). Double-check it on Snap-on''s store.', mine.prev_price;
+    end if;
+  elsif mine.id is not null then
+    raise exception 'You already updated the price of % today. You can update it again tomorrow.', clean;
+  else
+    -- Close to the current price, or close to the price before the latest update
+    -- (so anyone can undo a bad update), or the latest update was the very first price.
+    ok := cur is null
+          or (new_price <= cur * within4 and new_price >= cur / within4)
+          or (latest.id is not null and (latest.prev_price is null
+              or (new_price <= latest.prev_price * within4 and new_price >= latest.prev_price / within4)));
+    if not ok then
+      raise exception 'That''s very different from the last price ($%). Double-check it on Snap-on''s store.', cur;
+    end if;
+  end if;
+
+  insert into public.catalog (part_number) values (clean) on conflict (part_number) do nothing;
+  update public.catalog
+     set price = round(new_price, 2), was_price = round(regular_price, 2), status = 'ok', checked_at = now()
+   where part_number = clean;
+  insert into public.catalog_prices (part_number, d, price)
+  values (clean, (now() at time zone 'utc')::date, round(new_price, 2))
+  on conflict (part_number, d) do update set price = excluded.price;
+  insert into public.price_reports (part_number, user_id, price, was_price, prev_price)
+  values (clean, uid, round(new_price, 2), round(regular_price, 2),
+          case when mine.id is not null and latest.id = mine.id then mine.prev_price else cur end);
+  return json_build_object('part_number', clean, 'price', round(new_price, 2), 'was_price', round(regular_price, 2));
+end $$;
+revoke execute on function public.submit_price(text, numeric, numeric) from public, anon;
+grant execute on function public.submit_price(text, numeric, numeric) to authenticated;
+
+-- ===== Per-account limits =====
+
+-- At most 2,000 tools (box + wishlist) per account
+create or replace function public.items_limit() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if (select count(*) from public.items i where i.user_id = new.user_id) >= 2000 then
+    raise exception 'You''ve reached the limit of 2,000 tools per account. Delete some to add more.';
+  end if;
+  return new;
+end $$;
+revoke execute on function public.items_limit() from public, anon, authenticated;
+drop trigger if exists items_limit on public.items;
+create trigger items_limit before insert on public.items
+  for each row execute function public.items_limit();
+
+-- At most 300 uploaded photos per account, up to 3 MB each (the site shrinks photos well under that)
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
+grant usage on schema private to authenticated;
+create or replace function private.photo_count(uid uuid) returns int
+language sql stable security definer set search_path = '' as $$
+  select count(*)::int from storage.objects o
+   where o.bucket_id = 'tool-photos' and (storage.foldername(o.name))[1] = uid::text;
+$$;
+revoke execute on function private.photo_count(uuid) from public, anon;
+grant execute on function private.photo_count(uuid) to authenticated;
+
+drop policy if exists "Upload own tool photos" on storage.objects;
+create policy "Upload own tool photos" on storage.objects for insert to authenticated
+  with check (bucket_id = 'tool-photos'
+              and (storage.foldername(name))[1] = (select auth.uid())::text
+              and private.photo_count((select auth.uid())) < 300);
+update storage.buckets set file_size_limit = 3145728 where id = 'tool-photos';

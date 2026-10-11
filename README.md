@@ -19,9 +19,14 @@ Snap-on's online store withholds product details from automated tools, so the si
 
 Safeguards in the `submit_price` database function:
 - only signed-in people, and only for part numbers in their own box or wishlist
-- a price more than 4x higher or lower than the last one is rejected with a "double-check it" message
+- one update per person per part number per day; a typo can be fixed within 10 minutes
+- a new price has to be within 4x of the current price. So one person can't walk a price up or down in steps, and a typo fix is judged against the price from before their own update. Anyone can undo a bad update: a price within 4x of the one before it is always accepted
 - at most 60 updates per person per hour
-- every update is logged in `price_reports` (who, what, when) in case something needs undoing
+- every update is logged in `price_reports` (who, what, when, and the price before it) in case something needs undoing
+
+### Limits per account
+
+Each account can hold up to 2,000 tools (box and wishlist together) and 300 uploaded photos of up to 3 MB each. The site shrinks photos well under that before uploading. The limits keep one account from filling the free Supabase plan.
 
 ### Export
 
