@@ -1,0 +1,44 @@
+name: Price-drop emails
+
+# Once a day, emails people who asked for it when a store price on their wishlist went down.
+# Does nothing until the email secrets are added (see README, "Price-drop emails").
+on:
+  schedule:
+    - cron: "23 13 * * *" # every day, 13:23 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only print what would be sent"
+        type: boolean
+        default: false
+
+concurrency:
+  group: price-alerts
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: https://ctteljhhjsfvyyiwzxiy.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      ALERT_FROM: ${{ secrets.ALERT_FROM }}
+      DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install the email sender
+        if: env.SMTP_HOST != ''
+        run: npm install --no-save --no-package-lock --no-audit --no-fund nodemailer@6
+      - name: Send price-drop emails
+        run: node checker/alerts.mjs

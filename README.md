@@ -13,7 +13,7 @@ Not affiliated with Snap-on.
 | Part | Where it lives | What it does |
 | --- | --- | --- |
 | Website | `index.html`, hosted free on GitHub Pages | The tracker people use. Sign in with Google to sync, or use it without an account (saved in that browser). |
-| Database and photos | Supabase (free plan) | Everyone's toolboxes, one shared price list per part number, price history, and people's own tool photos. Setup is in `supabase/schema.sql` plus the community-price function described below. |
+| Database and photos | Supabase (free plan) | Everyone's toolboxes, one shared price list per part number, price history, people's own tool photos, share links and email settings. Setup is in `supabase/schema.sql`. |
 
 ### Store prices come from the community
 
@@ -42,9 +42,30 @@ The site never loads, copies or hotlinks Snap-on's product photos (Snap-on limit
 - **Your photos are yours only.** A photo you upload replaces the drawing on your own cards. Nobody else sees it.
 - The older shared-photo pieces in `supabase/schema.sql` (`photo_shared`, `shared_photos`, `report_photo`) are no longer used by the site.
 
+### Everyday features
+
+- **Sample box.** A first-time visitor with an empty box can tap **See a sample box** to look around a pretend toolbox (with a truck account and lent-out tools). It lives in memory only and is never saved; **Start my own box** clears it.
+- **Undo.** Deleting a tool is instant, with an **Undo** button for a few seconds. A deleted tool's photo file is only removed once the Undo has passed.
+- **Add several at once.** Paste a list of part numbers (one per line, or separated by spaces or commas) into the add box. Up to 200 at a time; ones already on the list are skipped.
+- **Drawers view.** Groups your tools by "Where it's kept", with the count and worth of each drawer. The location field suggests drawer names you've already used.
+- **Lent out.** **Lend** on a tool records who has it and since when; **Got it back** clears it. A "Who has my stuff" panel lists everything that's out, and you can sort by "Lent out first".
+- **Truck account.** Balance owed, weekly payment and payoff date in the header. **Made a payment** logs one week's payment (with Undo), and **Bought it** on a wishlist tool can add it to the balance. Saved with your sign-in (in Supabase Auth's user data), or in the browser when you're not signed in.
+- **Share my box.** Signed-in people can make a read-only link (`boxtally.app/?box=…`) with an optional title, and choose whether it shows prices paid and the wishlist. It never shows photos, notes, locations, who has a tool, or the owner's name or email. Turning the link off kills it; turning it back on makes a new one. Stored in `box_shares`, read through the `shared_box` function.
+- **Install as an app.** `manifest.webmanifest`, `icons/` and `sw.js` let phones and computers install BoxTally. The page, fonts and icons work offline, and a signed-in box is kept in the browser so it still shows (read-only) with no connection. When you change `index.html` in a way an old copy shouldn't survive, bump `VERSION` in `sw.js`.
+
+### Price-drop emails
+
+`checker/alerts.mjs` runs once a day from `.github/workflows/price-alerts.yml`. For everyone who ticked **Email me when something on my wishlist drops** (stored in `alert_prefs`; the address always comes from the person's own Google sign-in), it emails any store-price drops on their wishlist since the last email.
+
+To switch it on:
+1. Make an app password for the Gmail account that will send the emails (Google Account → Security → 2-Step Verification → App passwords).
+2. In the GitHub repo, go to **Settings → Secrets and variables → Actions** and add: `SMTP_HOST` = `smtp.gmail.com`, `SMTP_PORT` = `465`, `SMTP_USER` = that Gmail address, `SMTP_PASS` = the app password. Optional: `ALERT_FROM`, e.g. `BoxTally <yourname@gmail.com>`. The workflow also needs `SUPABASE_SECRET_KEY` (the same secret the price checker uses).
+3. Run **Price-drop emails** from the Actions tab with "Only print what would be sent" ticked to check it.
+4. Set `EMAIL_ALERTS_READY = true` in `index.html` so the checkbox appears under Price watch.
+
 ### Trademarks
 
-BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on's logo, colors or fonts, and the footer and privacy page say it's independent, with the Snap-on® trademark notice.
+BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on's logo, wordmark or fonts, and the tool drawings are BoxTally's own. The footer and privacy page say it's independent, with the Snap-on® trademark notice.
 
 ## The retired price checker
 

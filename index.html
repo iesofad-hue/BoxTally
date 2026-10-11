@@ -16,7 +16,11 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="BoxTally: box worth, wishlist savings and price drops">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='11' fill='%2310151c'/%3E%3Cg fill='none' stroke='%2378a6ff' stroke-width='3.4' stroke-linecap='round'%3E%3Ccircle cx='18' cy='18' r='8'/%3E%3Cpath d='M24 24 38 38'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='11' fill='%2310151c'/%3E%3Ccircle cx='24' cy='24' r='14.5' fill='none' stroke='%23ff4b53' stroke-width='4.4'/%3E%3Cpath d='M31 24 27.5 30.1H20.5L17 24 20.5 17.9H27.5Z' fill='none' stroke='%23e9edf2' stroke-width='3.2' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="BoxTally">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -25,7 +29,7 @@
 /* Layout: a graphite dashboard band with a photo rail of the latest tools, then drawer tabs over a photo-first card grid; one column on a phone */
 :root {
   --bg: #eceff3; --surface: #ffffff; --sunk: #e2e7ed; --line: #d2d9e2; --fg: #121821; --muted: #586473;
-  --accent: #2356d8; --accent-ink: #ffffff; --accent-soft: #dde7fb;
+  --accent: #c8171f; --accent-ink: #ffffff; --accent-soft: #fbe2e3; --band-accent: #ff4b53;
   --band: #10151c; --band-2: #18202a; --band-fg: #eef2f7; --band-muted: #98a7b9; --band-line: rgb(255 255 255 / .1);
   --tag: #ffc629; --tag-ink: #1d1600;
   --good: #1b7a4b; --good-soft: #d9f0e4; --warn: #9c5b07; --bad: #b3261e; --bad-soft: #f8e1df; --chip: #e8ecf1;
@@ -40,7 +44,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0d1116; --surface: #161c24; --sunk: #1e262f; --line: #2b3542;
-    --fg: #e7ecf2; --muted: #98a4b4; --accent: #78a6ff; --accent-ink: #0a1220; --accent-soft: #1b2b47;
+    --fg: #e7ecf2; --muted: #98a4b4; --accent: #ff5a60; --accent-ink: #1c0405; --accent-soft: #3d1a1c; --band-accent: #ff5a60;
     --band: #07090d; --band-2: #121820; --band-fg: #e7ecf2; --band-muted: #8e9cae;
     --tag: #ffcf4a; --good: #5cc28d; --good-soft: #15332a; --warn: #e3a54d; --bad: #f08a80; --bad-soft: #3a1f1d; --chip: #252e39;
     --plate: #e9edf1; --plate-line: #2b3542;
@@ -80,7 +84,7 @@ h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; lette
 .top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
 .eyebrow { font-family: var(--f-mono); font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--band-muted); }
 h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 800; line-height: .95; text-transform: uppercase; }
-h1 em { font-style: normal; color: var(--accent); }
+h1 em { font-style: normal; color: var(--band-accent); }
 .top p { margin: 8px 0 0; color: var(--band-muted); max-width: 52ch; }
 .top-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .sync { font-size: .8rem; color: var(--band-fg); display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 10px; border: 1px solid var(--band-line); border-radius: 999px; background: rgb(255 255 255 / .04); }
@@ -112,8 +116,9 @@ h1 em { font-style: normal; color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .pbar.indet > span { width: 100%; opacity: .45; } }
 @keyframes indet { from { transform: translateX(-110%); } to { transform: translateX(340%); } }
 
-.dash { display: grid; grid-template-columns: 1.15fr 1fr 1.5fr; gap: 12px; }
-@media (max-width: 900px) { .dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .dash .watch { grid-column: 1 / -1; } }
+.dash { display: grid; grid-template-columns: 1.1fr 1fr 1.05fr 1.35fr; gap: 12px; }
+.readonly .dash { grid-template-columns: 1.15fr 1fr 1.5fr; }
+@media (max-width: 1100px) { .dash, .readonly .dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .readonly .dash .watch { grid-column: 1 / -1; } }
 @media (max-width: 560px) {
   /* phone: box worth and wishlist side by side, price watch as one compact row underneath */
   .band { padding-block: calc(18px + env(safe-area-inset-top, 0px)) 16px; }
@@ -396,7 +401,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
 h1 { display: flex; align-items: center; }
 .mark { display: inline-grid; place-items: center; width: .82em; height: .82em; margin-right: .2em; border-radius: .2em; flex: none;
   background: linear-gradient(160deg, rgb(255 255 255 / .1), rgb(255 255 255 / .02)); border: 1px solid var(--band-line); box-shadow: inset 0 1px 0 rgb(255 255 255 / .08); }
-.mark svg { width: 64%; height: 64%; transform-origin: 37.5% 37.5%; overflow: visible; }
+.mark svg { width: 70%; height: 70%; transform-origin: 50% 50%; overflow: visible; }
 @media (prefers-reduced-motion: no-preference) {
   .mark svg { animation: ratchet 1s .35s backwards; }
   h1:hover .mark svg { animation: ratchet2 .8s; }
@@ -517,11 +522,60 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
 /* sparks for buying a tool or sharing a price */
 .spark { position: fixed; width: 8px; height: 4px; border-radius: 1px; pointer-events: none; z-index: 20; }
 
+/* ---------- quality of life ---------- */
+.btn-account { text-decoration: none; }
+.toast { display: flex; align-items: center; gap: 14px; }
+.toast-act { font: inherit; font-weight: 700; background: none; border: 0; color: var(--accent-soft); cursor: pointer; padding: 2px 4px; text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.banner.demo { border-color: color-mix(in srgb, var(--tag) 70%, var(--line)); background: color-mix(in srgb, var(--tag) 14%, var(--surface)); }
+.empty small { color: var(--muted); font-size: .8rem; }
+footer #iosHint { margin: 0 0 8px; }
+/* truck account tile */
+.truck { display: grid; gap: 6px; align-content: start; }
+.truck .big { font-family: var(--f-display); font-size: 2.8rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.truck .sub { color: var(--band-muted); font-size: .86rem; }
+.truck .bar { background: rgb(255 255 255 / .12); }
+.truck-act { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+@media (max-width: 560px) { .truck .big { font-size: 2rem; } .truck .sub { font-size: .78rem; line-height: 1.35; } }
+.t-log { display: grid; gap: 4px; font-size: .86rem; background: var(--sunk); padding: 10px 12px; border-radius: 10px; }
+.t-log .line { display: flex; justify-content: space-between; gap: 10px; }
+.t-log .num { font-family: var(--f-mono); font-size: .8rem; }
+.t-log .num.pay { color: var(--good); }
+.alert-opt { display: flex; gap: 8px; align-items: flex-start; font-size: .82rem; color: var(--band-muted); margin-top: 8px; cursor: pointer; }
+.alert-opt input { accent-color: var(--band-accent); margin-top: 2px; }
+/* lent out */
+.chip.lent { background: var(--tag); color: var(--tag-ink); }
+.lentline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; font-size: .86rem; padding: 6px 8px 6px 10px; border-radius: 8px;
+  background: color-mix(in srgb, var(--tag) 16%, var(--surface)); border: 1px solid color-mix(in srgb, var(--tag) 45%, var(--line)); }
+.card.lent .photo .art { opacity: .5; filter: grayscale(.4); }
+/* by drawer: each group looks like a drawer, pull handle and all */
+.drawers { display: grid; gap: 12px; }
+.drawer { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+.drawer > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--surface), var(--sunk)); }
+.drawer > summary::-webkit-details-marker { display: none; }
+.drawer > summary::before { content: ""; flex: none; width: 36px; height: 7px; border-radius: 4px; border: 1px solid #8a96a4;
+  background: linear-gradient(180deg, #ffffff, #c9d1da 45%, #6f7b89 55%, #e6ebf0); }
+.drawer > summary::after { content: ""; flex: none; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform .2s; }
+.drawer[open] > summary::after { transform: rotate(45deg); }
+.drawer:not([open]) > summary { border-bottom: 0; }
+.drawer .dname { font-family: var(--f-display); font-size: 1.15rem; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.drawer .dmeta { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); white-space: nowrap; }
+.drawer .rows { border: 0; border-radius: 0; box-shadow: none; }
+.dhint { margin: 0; padding: 8px 16px 12px; font-size: .82rem; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .drawers.intro .drawer { animation: rise .5s cubic-bezier(.2, .7, .2, 1) backwards; animation-delay: calc(var(--i, 0) * 60ms); } }
+/* dialogs */
+.pf-check { display: flex; gap: 8px; align-items: center; font-size: .92rem; cursor: pointer; }
+.pf-check input { width: auto; accent-color: var(--accent); }
+.share-link { display: flex; gap: 8px; }
+.share-link input { font-family: var(--f-mono); font-size: .82rem; }
+/* someone's shared box: look, don't touch */
+.readonly :is(.quick, .shop, .actions, .snap, .keys, #exportBox, .addprice, .lentline, .pricebox) { display: none !important; }
+
 /* ---------- tool drawings: shown until you add your own photo ---------- */
 /* a blueprint-paper plate, the same light plate in both themes so the drawings read the same */
 .art-bg { background:
-    linear-gradient(rgb(35 86 216 / .045) 1px, transparent 1px) 0 0 / 16px 16px,
-    linear-gradient(90deg, rgb(35 86 216 / .045) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(rgb(16 21 28 / .045) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, rgb(16 21 28 / .045) 1px, transparent 1px) 0 0 / 16px 16px,
     radial-gradient(120% 95% at 50% 32%, #ffffff, var(--plate) 62%, #dde3ea) !important; }
 .art { display: block; width: 100%; height: 100%; }
 .art svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -613,10 +667,11 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     <div class="top">
       <div>
         <span class="eyebrow" id="eyebrow">Tool truck ledger</span>
-        <h1><span class="mark" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="var(--accent)" stroke-width="4.4" stroke-linecap="round"><circle cx="18" cy="18" r="9"/><path d="M24.5 24.5 38 38"/></svg></span>Box<em>Tally</em></h1>
+        <h1><span class="mark" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke-linejoin="round"><circle cx="24" cy="24" r="16" stroke="var(--band-accent)" stroke-width="4.6"/><path d="M32.5 24 28.25 31.36H19.75L15.5 24 19.75 16.64H28.25Z" stroke="var(--band-fg)" stroke-width="3.6"/></svg></span>Box<em>Tally</em></h1>
         <p>What's in the box, what it's worth today, and what's next off the truck.</p>
       </div>
       <div class="top-actions">
+        <button class="btn-account" id="installBtn" type="button" hidden>Install app</button>
         <span class="sync" id="sync" data-mode="local"><i aria-hidden="true"></i><span id="syncText">Loading…</span></span>
         <span id="account"></span>
       </div>
@@ -628,10 +683,14 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
         <span class="sub" id="d-worth-sub">Add tools to see their value.</span>
       </div>
       <div class="tile">
-        <span class="label">Wishlist</span>
+        <span class="label" id="d-left-label">Wishlist</span>
         <span class="big" id="d-left">$0</span>
         <span class="sub" id="d-left-sub">left to save</span>
         <div class="bar" id="d-left-bar"><span style="width:0%"></span></div>
+      </div>
+      <div class="tile truck" id="truckTile">
+        <span class="label">Truck account</span>
+        <div id="truck"></div>
       </div>
       <div class="tile watch">
         <span class="label">Price watch</span>
@@ -649,6 +708,14 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   <div class="banner info" id="localBanner" hidden>
     <span id="localText">You're not signed in, so your toolbox is saved in this browser only. Sign in with Google to keep it on every device and to add store prices.</span>
     <button class="btn small primary" id="localSignIn" type="button">Sign in with Google</button>
+  </div>
+  <div class="banner demo" id="demoBanner" hidden>
+    <span><strong>Sample box.</strong> Look around, add, lend or delete tools. Nothing here is saved.</span>
+    <button class="btn small primary" id="demoExit" type="button">Start my own box</button>
+  </div>
+  <div class="banner info" id="shareBanner" hidden>
+    <span id="shareText"></span>
+    <a class="btn small primary" href="./">Make your own box</a>
   </div>
   <div class="banner info" id="importBanner" hidden>
     <span id="importText"></span>
@@ -692,6 +759,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       <span class="seg" role="group" aria-label="View">
         <button type="button" data-view="cards" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span class="seg-t">Cards</span></button>
         <button type="button" data-view="list" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg><span class="seg-t">List</span></button>
+        <button type="button" data-view="drawers" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="3.5" width="16" height="17" rx="2"/><path d="M4 9.2h16M4 14.8h16M10 6.4h4M10 12h4M10 17.6h4"/></svg><span class="seg-t">Drawers</span></button>
       </span>
     </span>
     <span class="export" id="exportBox">
@@ -704,11 +772,54 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner">BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Store prices are added by people who track each tool and may be out of date. Check Snap-on's store before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a></footer>
+<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Store prices are added by people who track each tool and may be out of date. Check Snap-on's store before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a></footer>
 
 <div id="printSheet"></div>
 
 <input type="file" id="photoInput" accept="image/*" hidden>
+<datalist id="locList"></datalist>
+<datalist id="whoList"></datalist>
+
+<dialog id="truckDlg">
+  <form id="truckFrm" novalidate>
+    <h2>Truck account</h2>
+    <p class="meta-line">Buying off the truck on a weekly payment? Keep the balance here and see when it's paid off.</p>
+    <div class="grid2">
+      <label class="field"><span class="label">Balance owed ($)</span><input id="t-bal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+      <label class="field"><span class="label">Weekly payment ($)</span><input id="t-week" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+      <label class="field full"><span class="label">Truck or dealer</span><input id="t-dealer" maxlength="60" placeholder="Thursday truck"><small>Optional.</small></label>
+    </div>
+    <div id="t-log"></div>
+    <p class="err" id="t-err" hidden></p>
+    <div class="formfoot">
+      <button class="btn ghost danger" type="button" id="t-clear">Remove account</button>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" type="button" id="t-cancel">Cancel</button>
+      <button class="btn primary" type="submit" id="t-save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="shareDlg">
+  <form id="shareFrm" novalidate>
+    <h2>Share my box</h2>
+    <p class="meta-line">A read-only link anyone can open, no sign-in needed. It shows your tools as drawings with names and part numbers. It never shows your photos, notes, where things are kept, who has them, or your name and email.</p>
+    <label class="field"><span class="label">Title</span><input id="s-title" maxlength="60" placeholder="Kev's box"><small>Optional. Shown at the top, e.g. "Kev's box".</small></label>
+    <label class="pf-check"><input type="checkbox" id="s-prices"><span>Show what I paid</span></label>
+    <label class="pf-check"><input type="checkbox" id="s-wish" checked><span>Include my wishlist</span></label>
+    <div class="share-link" id="s-linkRow" hidden>
+      <input id="s-link" readonly aria-label="Your share link">
+      <button class="btn primary" type="button" id="s-copy">Copy link</button>
+    </div>
+    <p class="err" id="s-err" hidden></p>
+    <div class="formfoot">
+      <button class="btn ghost danger" type="button" id="s-off" hidden>Turn off link</button>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" type="button" id="s-close">Close</button>
+      <button class="btn primary" type="submit" id="s-save">Create link</button>
+    </div>
+  </form>
+</dialog>
 
 <dialog id="dlg">
   <form id="frm" novalidate>
@@ -732,7 +843,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       <label class="field"><span class="label" id="l-price">Price paid ($)</span><input id="i-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
       <label class="field" data-only="owned"><span class="label">Date bought</span><input id="i-date" type="date"></label>
       <label class="field" data-only="owned"><span class="label">Condition</span><select id="i-cond"></select></label>
-      <label class="field full" data-only="owned"><span class="label">Where it's kept</span><input id="i-loc" placeholder="Top chest, drawer 3" maxlength="120"></label>
+      <label class="field full" data-only="owned"><span class="label">Where it's kept</span><input id="i-loc" placeholder="Top chest, drawer 3" maxlength="120" list="locList" autocomplete="off"></label>
       <label class="field" data-only="wishlist"><span class="label">Priority</span><select id="i-pri"></select></label>
       <label class="field" data-only="wishlist"><span class="label">Saved so far ($)</span><input id="i-saved" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
       <label class="field full"><span class="label">Notes</span><textarea id="i-notes" placeholder="Warranty swapped once, came in a set, etc." maxlength="1000"></textarea></label>
@@ -772,7 +883,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   const CONDS = ["New", "Good", "Worn", "Needs warranty"];
   const PRIS = ["Need", "Want", "Someday"];
   const PN_RE = /^[A-Z0-9][A-Z0-9./-]{0,39}$/;
-  const FIELDS = ["list", "name", "part_number", "category", "price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "photo_shared", "from_wishlist"];
+  const FIELDS = ["list", "name", "part_number", "category", "price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "photo_shared", "from_wishlist", "lent_to", "lent_at"];
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -797,7 +908,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
   const pub = (bucket, path) => `${SB_URL}/storage/v1/object/public/${bucket}/${String(path).split("/").map(encodeURIComponent).join("/")}`;
 
-  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, loaded: false, editing: null, confirm: null, priceEdit: null, uploading: {}, introDone: false };
+  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, loaded: false, editing: null, confirm: null, priceEdit: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
 
@@ -825,7 +936,8 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   const photoLabel = () => "Your photo";
   const imgTag = (p, alt) => `<img class="${p.mine ? "mine" : ""}" src="${esc(p.src)}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
   const ICON = {
-    tool: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="15" r="9"/><circle cx="15" cy="15" r="3.4"/><path d="M21.5 21.5 41 41"/><path d="M36 36l5 5" stroke-width="6"/></svg>`,
+    share: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><path d="M8.3 10.8 15.7 6.7M8.3 13.2l7.4 4.1"/></svg>`,
+    tool: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M30.5 6.5a9 9 0 0 0-8.3 12.4L7.6 33.5a3.6 3.6 0 0 0 5.1 5.1l14.6-14.6a9 9 0 0 0 12.4-8.3l-5.4 5.4-5.4-1.8-1.8-5.4z"/></svg>`,
     cam: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>`,
     down: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>`,
     up: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>`,
@@ -988,12 +1100,17 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   const pick = (r) => { const o = {}; FIELDS.forEach((k) => { if (r[k] !== undefined) o[k] = r[k]; }); if (o.date_bought === "") o.date_bought = null; return o; };
 
   async function saveItem(item) {
-    if (signedIn()) {
+    if (state.demo) {
+      // the sample box lives in memory only; nothing is saved
+      const row = { ...item, id: item.id || "demo-" + newId(), created_at: item.created_at || new Date().toISOString() };
+      if (!item.id) state.flash = new Set([row.id]);
+      state.items = state.items.filter((x) => x.id !== row.id).concat([row]);
+    } else if (signedIn()) {
       const body = pick(item);
       const q = item.id ? sb.from("items").update(body).eq("id", item.id) : sb.from("items").insert(body);
       const { data, error } = await q.select().single();
       if (error) throw error;
-      if (!item.id) state.flash = data.id;
+      if (!item.id) state.flash = new Set([data.id]);
       state.items = state.items.filter((x) => x.id !== data.id).concat([data]);
     } else {
       const rows = local.read();
@@ -1001,21 +1118,59 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       if (row.photo_data && !okData(row.photo_data)) delete row.photo_data;
       const next = rows.filter((x) => x.id !== row.id).concat([row]);
       try { local.write(next); } catch { throw { code: "quota" }; }
-      if (!item.id) state.flash = row.id;
+      if (!item.id) state.flash = new Set([row.id]);
       state.items = next;
     }
     await loadCatalog();
     render();
   }
+  // Several new tools at once (pasted part numbers), saved in one go.
+  async function saveMany(items) {
+    let saved;
+    if (state.demo) saved = items.map((it, i) => ({ ...it, id: "demo-" + newId(), created_at: new Date(Date.now() + i).toISOString() }));
+    else if (signedIn()) {
+      const { data, error } = await sb.from("items").insert(items.map(pick)).select();
+      if (error) throw error;
+      saved = data || [];
+    } else {
+      saved = items.map((it, i) => ({ ...it, id: newId(), created_at: new Date(Date.now() + i).toISOString() }));
+      const next = local.read().concat(saved);
+      try { local.write(next); } catch { throw { code: "quota" }; }
+    }
+    state.items = state.items.concat(saved);
+    state.flash = new Set(saved.map((r) => r.id));
+    await loadCatalog();
+    render();
+    return saved.length;
+  }
+  // Deleting is instant with an Undo; your photo file is only removed once the Undo has passed.
+  const photoTrash = {};
   async function removeItem(item) {
-    if (signedIn()) {
+    if (state.demo) { /* memory only */ }
+    else if (signedIn()) {
       const { error } = await sb.from("items").delete().eq("id", item.id);
       if (error) throw error;
-      if (item.photo_path) sb.storage.from("tool-photos").remove([item.photo_path]).catch(() => {});
+      if (item.photo_path) photoTrash[item.id] = setTimeout(() => { delete photoTrash[item.id]; sb.storage.from("tool-photos").remove([item.photo_path]).catch(() => {}); }, 10000);
     } else {
       local.write(local.read().filter((x) => x.id !== item.id));
     }
     state.items = state.items.filter((x) => x.id !== item.id);
+    render();
+  }
+  async function restoreItem(item) {
+    clearTimeout(photoTrash[item.id]); delete photoTrash[item.id];
+    if (state.demo) state.items = state.items.concat([item]);
+    else if (signedIn()) {
+      const { data, error } = await sb.from("items").insert({ ...pick(item), id: item.id, created_at: item.created_at }).select().single();
+      if (error) throw error;
+      state.items = state.items.filter((x) => x.id !== data.id).concat([data]);
+    } else {
+      const next = local.read().filter((x) => x.id !== item.id).concat([item]);
+      try { local.write(next); } catch { throw { code: "quota" }; }
+      state.items = next;
+    }
+    state.flash = new Set([item.id]);
+    await loadCatalog();
     render();
   }
 
@@ -1029,11 +1184,38 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       if (!data || data.length < 1000) return out;
     }
   }
+  // Signed-in boxes are also kept in this browser, so the site still shows your box with no signal.
+  const CACHE = LS + "-cache";
+  const saveCache = () => { try { if (state.user && !state.demo && !state.readonly) localStorage.setItem(CACHE, JSON.stringify({ uid: state.user.id, at: new Date().toISOString(), items: state.items, catalog: state.catalog, hist: state.hist })); } catch {} };
+  const readCache = () => { try { const c = JSON.parse(localStorage.getItem(CACHE)); return c && state.user && c.uid === state.user.id ? c : null; } catch { return null; } };
   async function loadItems() {
+    state.demo = false;
+    if (state.readonly) return loadShared();
+    state.offline = false;
     if (signedIn()) {
       try { state.items = await fetchAllItems(); }
-      catch { toast("Couldn't load your tools. Check your connection and reload."); state.items = []; }
+      catch {
+        const c = readCache();
+        if (c) {
+          Object.assign(state, { items: c.items || [], catalog: c.catalog || {}, hist: c.hist || {}, offline: true, loaded: true });
+          render();
+          toast(`No connection. Showing your box from ${rel(c.at)}. Changes need a connection.`);
+          return;
+        }
+        toast("Couldn't load your tools. Check your connection and reload."); state.items = [];
+      }
     } else state.items = local.read();
+    await loadCatalog();
+    state.loaded = true;
+    saveCache();
+    render();
+  }
+  // Someone's shared box (a ?box= link): read-only, no photos, notes or locations.
+  async function loadShared() {
+    let data = null;
+    if (sb) { const res = await sb.rpc("shared_box", { t: state.shareToken }); data = res.error ? null : res.data; }
+    state.shareInfo = data;
+    state.items = data && Array.isArray(data.items) ? data.items : [];
     await loadCatalog();
     state.loaded = true;
     render();
@@ -1076,12 +1258,13 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     return `${h < 4 ? "Late shift" : h < 12 ? "Morning" : h < 17 ? "Afternoon" : "Evening"}, ${name}`;
   }
   function renderAccount() {
-    $("eyebrow").textContent = greeting();
+    $("eyebrow").textContent = state.readonly ? "Shared toolbox" : greeting();
     const box = $("account");
     if (!sb) { box.innerHTML = ""; return; }
+    if (state.readonly) { box.innerHTML = `<a class="btn-account" href="./">Make your own box</a>`; return; }
     if (state.user) {
       const name = state.user.user_metadata?.full_name || state.user.email || "Signed in";
-      box.innerHTML = `<span class="who"><span class="av" aria-hidden="true">${esc(name.trim()[0] || "?").toUpperCase()}</span><span class="sr">Signed in as </span>${esc(name)}</span> <button class="btn-account" id="signOut" type="button">Sign out</button>`;
+      box.innerHTML = `<button class="btn-account" id="shareBtn" type="button">${ICON.share}Share my box</button> <span class="who"><span class="av" aria-hidden="true">${esc(name.trim()[0] || "?").toUpperCase()}</span><span class="sr">Signed in as </span>${esc(name)}</span> <button class="btn-account" id="signOut" type="button">Sign out</button>`;
     } else {
       box.innerHTML = `<button class="btn-account" id="signIn" type="button">${ICON.google}Sign in with Google</button>`;
     }
@@ -1095,6 +1278,8 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     const b = e.target.closest("button"); if (!b) return;
     if (b.id === "signIn" || b.id === "localSignIn") signIn();
     if (b.id === "signOut") sb.auth.signOut().then(() => toast("Signed out"));
+    if (b.id === "shareBtn") openShare();
+    if (b.id === "installBtn") installApp();
   });
 
   let booted = false;
@@ -1102,6 +1287,8 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     const changed = (state.user && state.user.id) !== (user && user.id);
     state.user = user;
     renderAccount();
+    if (state.readonly) { if (!booted) { booted = true; await loadShared(); } return; }
+    loadAlerts();
     if (changed || !booted) { booted = true; await loadItems(); }
     const localRows = local.read();
     $("importBanner").hidden = !(user && localRows.length);
@@ -1141,7 +1328,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   $("i-cond").innerHTML = opts(CONDS);
   $("i-pri").innerHTML = opts(PRIS);
   const SORTS = {
-    owned: [{ v: "date", t: "Newest first" }, { v: "worth", t: "Worth, high to low" }, { v: "change", t: "Biggest price change" }, { v: "name", t: "Name A–Z" }, { v: "cat", t: "Category" }, { v: "nophoto", t: "Missing photos first" }],
+    owned: [{ v: "date", t: "Newest first" }, { v: "worth", t: "Worth, high to low" }, { v: "change", t: "Biggest price change" }, { v: "name", t: "Name A–Z" }, { v: "cat", t: "Category" }, { v: "nophoto", t: "Missing photos first" }, { v: "lent", t: "Lent out first" }],
     wishlist: [{ v: "pri", t: "Priority" }, { v: "drop", t: "Price drops first" }, { v: "worth", t: "Price, high to low" }, { v: "close", t: "Closest to paid off" }, { v: "name", t: "Name A–Z" }],
   };
   function setSortOptions() { const cur = $("fSort").value; $("fSort").innerHTML = opts(SORTS[state.tab]); if (SORTS[state.tab].some((s) => s.v === cur)) $("fSort").value = cur; }
@@ -1163,6 +1350,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       cat: (a, b) => String(a.category).localeCompare(String(b.category)) || displayName(a).localeCompare(displayName(b)),
       pri: (a, b) => PRIS.indexOf(a.priority || "Want") - PRIS.indexOf(b.priority || "Want") || wishCost(b) - wishCost(a),
       close: (a, b) => (wishCost(a) - (Number(a.saved) || 0)) - (wishCost(b) - (Number(b.saved) || 0)),
+      lent: (a, b) => (b.lent_to ? 1 : 0) - (a.lent_to ? 1 : 0) || String(a.lent_at || "").localeCompare(String(b.lent_at || "")) || displayName(a).localeCompare(displayName(b)),
       nophoto: (a, b) => (photoOf(a) ? 1 : 0) - (photoOf(b) ? 1 : 0) || displayName(a).localeCompare(displayName(b)),
     }[$("fSort").value];
     return by ? rows.slice().sort(by) : rows;
@@ -1170,15 +1358,27 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
 
   /* ---------- cards ---------- */
   const condClass = { "New": "good", "Good": "", "Worn": "warn", "Needs warranty": "bad" };
-  const fresh = (r) => (state.flash && state.flash === r.id ? " fresh" : "");
+  const fresh = (r) => (state.flash && state.flash.has(r.id) ? " fresh" : "");
   const idRow = (r) => `<div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)} <span aria-hidden="true">↗</span></a>` : ""}<span>${esc(r.category || "Other")}</span></div>`;
+  const canPrice = () => signedIn() && !state.demo && !state.readonly;
+  const signInHint = () => (state.demo || state.readonly ? "" : " Sign in to add it.");
+  // Lending: who has it, since when, and the buttons to lend it or mark it back
+  const lentDays = (r) => { const t = toDate(r.lent_at); return t ? Math.max(0, Math.round((toDate(today()) - t) / 86400000)) : 0; };
+  const lentChip = (r) => (r.lent_to ? `<span class="chip lent">Lent out</span>` : "");
+  const lentLine = (r) => {
+    if (!r.lent_to || state.readonly) return "";
+    const d = lentDays(r);
+    return `<div class="lentline"><span>Lent to <strong>${esc(r.lent_to)}</strong>${r.lent_at ? ` · ${d === 0 ? "today" : d === 1 ? "yesterday" : d + " days"}` : ""}</span><button class="btn small" data-act="returned" type="button">Got it back</button></div>`;
+  };
+  const lendForm = (r) => (state.lendEdit === r.id ? `<form class="pricebox" data-lend-form="${esc(r.id)}" novalidate><label>Who's borrowing it?<input name="who" list="whoList" maxlength="60" autocomplete="off" placeholder="Name"></label><div class="row"><button class="btn small primary" type="submit">Lend it</button><button class="btn small ghost" data-act="lend-cancel" type="button">Cancel</button></div></form>` : "");
+  const lendBtn = (r) => (r.list === "owned" && !r.lent_to && state.lendEdit !== r.id ? `<button class="btn small ghost" data-act="lend" type="button">Lend</button>` : "");
   function storeStatus(r) {
     if (!r.part_number) return `<span class="meta-line">Add a part number to track its store price.</span>`;
     if (state.priceEdit === r.id) return "";
     if (storeOk(r)) return "";
-    return `<div class="addprice"><span>No store price yet.</span>${signedIn()
+    return `<div class="addprice"><span>No store price yet.</span>${canPrice()
       ? `<button class="btn small" data-act="price" type="button">Add store price</button>`
-      : `<span>Sign in to add it.</span>`}</div>`;
+      : signInHint() ? `<span>${signInHint().trim()}</span>` : ""}</div>`;
   }
   function priceForm(r) {
     if (state.priceEdit !== r.id) return "";
@@ -1201,8 +1401,8 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   }
   function confirmHtml(r) {
     if (!state.confirm || state.confirm.id !== r.id) return "";
-    if (state.confirm.kind === "del") return `<div class="confirm">Delete <strong>${esc(displayName(r))}</strong>${hasMine(r) ? " and your photo of it" : ""}? This can't be undone. <button class="btn small danger" data-act="del-yes" type="button">Delete</button><button class="btn small ghost" data-act="cancel" type="button">Keep it</button></div>`;
-    return `<div class="confirm">Move to Owned at ${money(wishCost(r), true)}, bought today? <button class="btn small primary" data-act="bought-yes" type="button">Move it</button><button class="btn small ghost" data-act="cancel" type="button">Not yet</button></div>`;
+    const onTruck = truckOn() ? `<button class="btn small" data-act="bought-truck" type="button">Move it + add to truck account</button>` : "";
+    return `<div class="confirm">Move to Owned at ${money(wishCost(r), true)}, bought today? <button class="btn small primary" data-act="bought-yes" type="button">Move it</button>${onTruck}<button class="btn small ghost" data-act="cancel" type="button">Not yet</button></div>`;
   }
   function photoBlock(r, chipsHtml, badgeHtml) {
     const p = photoOf(r);
@@ -1216,22 +1416,25 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     }
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
+  // A shared box whose owner keeps what they paid private
+  const hidePaid = () => !!state.readonly && !(state.shareInfo && state.shareInfo.show_prices);
   function cardOwned(r, i) {
     const now = storePrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
-    const chips = r.condition ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "";
+    const chips = (r.condition ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r);
     const badge = wasPrice(r) ? `<span class="chip tag">On sale</span>` : "";
-    return `<article class="card${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
+    return `<article class="card${fresh(r)}${r.lent_to ? " lent" : ""}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
-        <div><span class="label">You paid</span><span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span></div>
+        <div><span class="label">${state.readonly ? "Paid" : "You paid"}</span>${hidePaid() ? `<span class="no-price">Kept private</span>` : `<span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span>`}</div>
         <div><span class="label">Store price now</span>${now != null || !r.part_number || state.priceEdit === r.id
           ? `<span class="price-big">${now != null ? money(now, now % 1) : "—"}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : now != null ? "Same as you paid" : "&nbsp;"}</span>`
-          : `<span class="no-price">${signedIn() ? `Not priced yet.<br><button class="btn small" data-act="price" type="button">Add store price</button>` : "Not priced yet. Sign in to add it."}</span>`}</div>
+          : `<span class="no-price">${canPrice() ? `Not priced yet.<br><button class="btn small" data-act="price" type="button">Add store price</button>` : "Not priced yet." + signInHint()}</span>`}</div>
       </div>
       ${trendLine(r)}${priceNote(r)}${r.part_number ? "" : storeStatus(r)}${priceForm(r)}
       ${r.location ? `<span class="meta-line">Kept in ${esc(r.location)}</span>` : ""}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
-      <div class="actions">${storeOk(r) && signedIn() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      ${lentLine(r)}${lendForm(r)}
+      <div class="actions">${storeOk(r) && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}${lendBtn(r)}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;
   }
   function cardWish(r, i) {
@@ -1249,7 +1452,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
       ${trendLine(r)}${priceNote(r)}${storeStatus(r)}${priceForm(r)}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
-      <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button>${storeOk(r) && signedIn() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button>${storeOk(r) && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;
   }
 
@@ -1267,15 +1470,36 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       price = cost ? money(cost, cost % 1) : "—";
       sub = !cost ? "" : left ? `${money(left, left % 1)} left` : "Ready to buy";
     }
-    const chips = (owned ? (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
+    const chips = (owned ? (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
       + (dropped ? `<span class="chip tag">Price dropped</span>` : wasPrice(r) ? `<span class="chip tag">On sale</span>` : "");
-    const priceBtn = r.part_number && signedIn() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">${storeOk(r) ? "Update price" : "Add price"}</button>` : "";
+    const priceBtn = r.part_number && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">${storeOk(r) ? "Update price" : "Add price"}</button>` : "";
     return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
       <div><h3>${esc(displayName(r))}</h3><div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(r.category || "Other")}</span>${chips}</div></div>
       <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span></div>
-      <div class="actions">${owned ? "" : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}${priceBtn}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
-      </div>${priceForm(r)}${confirmHtml(r)}</article>`;
+      <div class="actions">${owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}${priceBtn}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      </div>${r.lent_to && !state.readonly ? `<span class="meta-line">Lent to ${esc(r.lent_to)} · ${lentDays(r)} days</span>` : ""}${priceForm(r)}${lendForm(r)}${confirmHtml(r)}</article>`;
   }
+
+  /* ---------- by drawer: tools grouped by "Where it's kept" ---------- */
+  function drawersHtml(rows) {
+    const groups = new Map();
+    rows.forEach((r) => { const k = String(r.location || "").trim(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
+    const keys = [...groups.keys()].sort((a, b) => (a ? 0 : 1) - (b ? 0 : 1) || a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+    return keys.map((k, gi) => {
+      const g = groups.get(k), worth = g.reduce((sum, r) => sum + (storePrice(r) ?? (Number(r.price) || 0)), 0);
+      const open = !state.closedDrawers.has(k);
+      return `<details class="drawer" data-drawer="${esc(k)}" style="--i:${Math.min(gi, 12)}"${open ? " open" : ""}><summary><span class="dname">${k ? esc(k) : "No drawer set"}</span><span class="dmeta">${g.length} tool${g.length === 1 ? "" : "s"} · ${money(Math.round(worth))}</span></summary>`
+        + `<div class="rows">${g.map((r, i) => rowItem(r, i)).join("")}</div>`
+        + (k ? "" : `<p class="dhint">Tap Edit and fill in "Where it's kept" to file these into drawers.</p>`) + `</details>`;
+    }).join("");
+  }
+  $("list").addEventListener("toggle", (e) => {
+    const d = e.target.closest && e.target.closest("details.drawer"); if (!d) return;
+    if (d.open) state.closedDrawers.delete(d.dataset.drawer); else state.closedDrawers.add(d.dataset.drawer);
+  }, true);
+  // people you've lent to before, for the "Who's borrowing it?" suggestions
+  const recentWho = () => { try { const v = JSON.parse(localStorage.getItem(LS + "-who")); return Array.isArray(v) ? v : []; } catch { return []; } };
+  const rememberWho = (name) => { try { localStorage.setItem(LS + "-who", JSON.stringify([name, ...recentWho().filter((n) => n.toLowerCase() !== name.toLowerCase())].slice(0, 20))); } catch {} };
 
   /* ---------- render ---------- */
   function render() {
@@ -1285,14 +1509,20 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     const tracked = t.filter(storeOk).length;
     countTo($("d-worth"), Math.round(worth));
     $("d-worth-sub").innerHTML = t.length
-      ? `${t.length} tool${t.length === 1 ? "" : "s"} · you paid ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}${tracked ? `<br>${tracked} of ${t.length} priced from Snap-on's store` : ""}`
+      ? `${t.length} tool${t.length === 1 ? "" : "s"}${hidePaid() ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}${tracked ? `<br>${tracked} of ${t.length} priced from Snap-on's store` : ""}`
       : "Add tools to see their value.";
     const cost = w.reduce((s, r) => s + wishCost(r), 0), saved = w.reduce((s, r) => s + Math.min(Number(r.saved) || 0, wishCost(r)), 0);
-    countTo($("d-left"), Math.round(Math.max(cost - saved, 0)));
-    $("d-left-sub").textContent = w.length ? `left to save · ${money(Math.round(saved))} of ${money(Math.round(cost))} saved` : "Add tools you want to start saving.";
-    $("d-left-bar").firstElementChild.style.width = (cost ? Math.round((saved / cost) * 100) : 0) + "%";
+    countTo($("d-left"), Math.round(Math.max(cost - (state.readonly ? 0 : saved), 0)));
+    $("d-left-label").textContent = state.readonly ? "Wishlist total" : "Wishlist";
+    $("d-left-sub").textContent = !w.length ? (state.readonly ? "Nothing on the wishlist." : "Add tools you want to start saving.")
+      : state.readonly ? `${w.length} tool${w.length === 1 ? "" : "s"} on the wishlist`
+      : `left to save · ${money(Math.round(saved))} of ${money(Math.round(cost))} saved`;
+    $("d-left-bar").firstElementChild.style.width = (cost && !state.readonly ? Math.round((saved / cost) * 100) : 0) + "%";
     setCount($("c-tools"), t.length);
     setCount($("c-wish"), w.length);
+    renderTruck();
+    document.body.classList.toggle("readonly", !!state.readonly);
+    document.body.classList.toggle("demo", !!state.demo);
     $("q-add").textContent = state.tab === "owned" ? "Add to box" : "Add to wishlist";
     $("shopWish").hidden = state.tab === "wishlist";
     $("shopNote").textContent = state.tab === "wishlist"
@@ -1301,29 +1531,49 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     // Search, filters and export only show up once there's something to search, filter or export.
     const tabHas = state.loaded && rowsOf(state.tab).length > 0, anyItems = state.loaded && state.items.length > 0;
     $("filters").hidden = !tabHas;
-    $("exportBox").hidden = !anyItems;
-    $("toolbar").hidden = !tabHas && !anyItems;
+    $("exportBox").hidden = !anyItems || state.readonly;
+    $("toolbar").hidden = !tabHas && (!anyItems || state.readonly);
     document.querySelector(".shop").classList.toggle("compact", anyItems);
     $("fabText").textContent = state.tab === "owned" ? "Add tool" : "Add to wishlist";
-    document.querySelectorAll(".seg [data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === state.view));
-    $("list").className = state.view === "list" && state.loaded && rowsOf(state.tab).length ? "rows" : "grid";
-    $("localBanner").hidden = !sb || signedIn() || !state.loaded;
-    $("q-hint").textContent = !sb
-      ? "Prices can't load right now. You can still add tools and fill in prices yourself."
-      : signedIn() ? "Just the part number is enough. Anyone tracking it can add the store price, and you can add a photo of your own tool."
-      : "Just the part number is enough. Store prices other people have added show up automatically.";
+    // drawers only make sense for tools you own, and a shared box doesn't show where things are kept
+    const drawersOk = state.tab === "owned" && !state.readonly;
+    document.querySelector('.seg [data-view="drawers"]').hidden = !drawersOk;
+    const view = state.view === "drawers" && !drawersOk ? "cards" : state.view;
+    document.querySelectorAll(".seg [data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
+    $("list").className = state.loaded && rowsOf(state.tab).length ? (view === "list" ? "rows" : view === "drawers" ? "drawers" : "grid") : "grid";
+    $("localBanner").hidden = !sb || signedIn() || !state.loaded || state.demo || state.readonly;
+    $("demoBanner").hidden = !state.demo;
+    $("shareBanner").hidden = !state.readonly;
+    if (state.readonly) {
+      const title = state.shareInfo && state.shareInfo.title;
+      $("shareText").textContent = !state.loaded ? "Loading a shared box…" : !state.shareInfo ? "This shared box link was turned off, or it's not quite right." : `You're looking at ${title ? title : "someone's toolbox"} on BoxTally. It's read-only.`;
+    }
+    $("q-hint").textContent = state.demo ? "This is the sample box. Try adding, lending or deleting tools; nothing is saved."
+      : !sb ? "Prices can't load right now. You can still add tools and fill in prices yourself."
+      : (signedIn() ? "Just the part number is enough. Anyone tracking it can add the store price, and you can add a photo of your own tool."
+        : "Just the part number is enough. Store prices other people have added show up automatically.") + " Paste several part numbers to add them all at once.";
+    // suggestions for "Where it's kept" and "Who's borrowing it?"
+    const opts = (vals) => [...new Set(vals.map((v) => String(v || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).slice(0, 80).map((v) => `<option value="${esc(v)}">`).join("");
+    $("locList").innerHTML = opts(t.map((r) => r.location));
+    $("whoList").innerHTML = opts(t.map((r) => r.lent_to).concat(recentWho()));
 
     const list = $("list");
     if (!state.loaded) {
       list.innerHTML = Array.from({ length: 3 }, () => `<div class="skel" aria-hidden="true"><div class="a"></div><div class="b"></div></div>`).join("") + `<span class="sr">Loading your tools</span>`;
     } else if (!rowsOf(state.tab).length) {
-      list.innerHTML = state.tab === "owned"
-        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool. Its store price fills in when someone tracking it adds one.</span></div>`
-        : `<div class="empty"><strong>Wishlist is empty</strong><span>Find a tool in the Shop box above and add it by part number.</span></div>`;
+      const demoBtn = !state.items.length && !state.demo && !state.readonly ? `<button class="btn primary" data-act="demo" type="button">See a sample box</button><small>Fills in a pretend box so you can look around. Nothing is saved.</small>` : "";
+      list.innerHTML = state.readonly
+        ? `<div class="empty"><strong>${state.shareInfo ? "Nothing here yet" : "Link not found"}</strong><span>${state.shareInfo ? "This box doesn't have any tools on this list yet." : "Ask whoever sent it for a new link."}</span></div>`
+        : state.tab === "owned"
+        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool, or paste a whole list of them. Its store price fills in when someone tracking it adds one.</span>${demoBtn}</div>`
+        : `<div class="empty"><strong>Wishlist is empty</strong><span>Find a tool in the Shop box above and add it by part number.</span>${demoBtn}</div>`;
     } else {
       const rows = filtered();
-      list.innerHTML = rows.length ? rows.map((r, i) => (state.view === "list" ? rowItem : state.tab === "owned" ? cardOwned : cardWish)(r, Math.min(i, 12))).join("") : `<div class="empty"><strong>No matches</strong><span>Nothing matches that search or category.</span></div>`;
+      list.innerHTML = !rows.length ? `<div class="empty"><strong>No matches</strong><span>Nothing matches that search or category.</span></div>`
+        : view === "drawers" ? drawersHtml(rows)
+        : rows.map((r, i) => (view === "list" ? rowItem : state.tab === "owned" ? cardOwned : cardWish)(r, Math.min(i, 12))).join("");
     }
+    clearTimeout(saveCache._t); saveCache._t = setTimeout(saveCache, 1200);
     state.flash = null;
     announceCount();
     renderRail(); renderInsights(); renderWatch(); schedulePoll();
@@ -1409,7 +1659,8 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       const warranty = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
       const html = feedHtml()
         + (entries.length ? `<div class="panel"><h2>Worth by department</h2>${entries.map(([c, v]) => `<div class="cat"><div class="line"><span>${esc(c)}</span><span class="num">${money(Math.round(v))}</span></div><div class="bar"><span style="width:${max ? Math.max(3, (v / max) * 100) : 0}%"></span></div></div>`).join("")}</div>` : "")
-        + (warranty.length ? `<div class="panel"><h2>Warranty pile</h2>${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}</span>${r.part_number ? `<span class="pn">${esc(r.part_number)}</span>` : ""}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span></div>` : "");
+        + (warranty.length ? `<div class="panel"><h2>Warranty pile</h2>${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}</span>${r.part_number ? `<span class="pn">${esc(r.part_number)}</span>` : ""}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span></div>` : "")
+        + whoHasHtml();
       box.innerHTML = html; showStats(html, [warranty.length ? `${warranty.length} need${warranty.length === 1 ? "s" : ""} warranty` : "", entries.length ? `${entries.length} department${entries.length === 1 ? "" : "s"}` : ""]);
     } else {
       const wl = rowsOf("wishlist");
@@ -1440,8 +1691,10 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     $("watch").innerHTML = changes.length
       ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Prices are shared by people who track each tool.</span>`
       : `<div class="watch-empty"><span class="note">${trackedN ? `Watching ${trackedN} part number${trackedN === 1 ? "" : "s"}. No price changes yet.` : "Nothing watched yet. Price drops on your tools show up here."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
+    $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
+      ? `<label class="alert-opt"><input type="checkbox" id="alertDrops"${state.alerts && state.alerts.email_drops ? " checked" : ""}><span>Email me when something on my wishlist drops</span></label>` : "");
     $("sync").dataset.mode = signedIn() ? "account" : "local";
-    $("syncText").textContent = signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
+    $("syncText").textContent = state.readonly ? "Shared box" : state.demo ? "Sample box · not saved" : state.offline ? "Offline · last saved copy" : signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
   }
 
   async function savePrice(form) {
@@ -1480,6 +1733,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     return path;
   }
   async function photoFields(file) {
+    if (state.demo) throw { code: "demo" };
     if (signedIn()) {
       const blob = await shrink(file, 1600, 0.85);
       if (!blob) throw { code: "type" };
@@ -1491,7 +1745,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     const data = await new Promise((res, rej) => { const f = new FileReader(); f.onload = () => res(f.result); f.onerror = rej; f.readAsDataURL(blob); });
     return { photo_data: data, photo_at: new Date().toISOString() };
   }
-  const PHOTO_ERR = { type: "That photo format isn't supported. Try a JPG or PNG.", big: "That photo is too big. Try a smaller one.", quota: "This browser is out of room for photos. Sign in to store photos in your account.", limit: "You've reached the limit of 300 photos per account. Remove some photos to add more." };
+  const PHOTO_ERR = { demo: "Photos are off in the sample box. Start your own box to add photos.", type: "That photo format isn't supported. Try a JPG or PNG.", big: "That photo is too big. Try a smaller one.", quota: "This browser is out of room for photos. Sign in to store photos in your account.", limit: "You've reached the limit of 300 photos per account. Remove some photos to add more." };
   const photoErr = (e) => {
     if (e && PHOTO_ERR[e.code]) return PHOTO_ERR[e.code];
     const msg = String((e && e.message) || "");
@@ -1573,6 +1827,212 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
     rail.addEventListener("click", (e) => { if (moved) { e.stopImmediatePropagation(); moved = false; } }, true);
   })();
 
+  /* ---------- who has my stuff ---------- */
+  function whoHasHtml() {
+    const lent = rowsOf("owned").filter((r) => r.lent_to);
+    if (!lent.length || state.readonly) return "";
+    const by = new Map();
+    lent.forEach((r) => { const k = r.lent_to.trim(); if (!by.has(k)) by.set(k, []); by.get(k).push(r); });
+    const people = [...by.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+    return `<div class="panel"><h2>Who has my stuff</h2>${people.map(([who, rs]) => `<div class="cat"><div class="line"><strong>${esc(who)}</strong><span class="num">${rs.length} tool${rs.length === 1 ? "" : "s"}</span></div>${rs.map((r) => `<span class="meta-line">${esc(displayName(r))} · ${lentDays(r)} day${lentDays(r) === 1 ? "" : "s"}</span>`).join("")}</div>`).join("")}</div>`;
+  }
+
+  /* ---------- truck account: balance, weekly payment, payoff date ---------- */
+  const TRUCK_LS = LS + "-truck";
+  function getTruck() {
+    if (state.demo) return state.demoTruck;
+    if (signedIn()) return state.user.user_metadata?.truck || null;
+    try { return JSON.parse(localStorage.getItem(TRUCK_LS)); } catch { return null; }
+  }
+  async function setTruck(t) {
+    if (t && t.log) t.log = t.log.slice(0, 30);
+    if (state.demo) state.demoTruck = t;
+    else if (signedIn()) {
+      const { data, error } = await sb.auth.updateUser({ data: { truck: t } });
+      if (error) throw error;
+      if (data && data.user) state.user = data.user;
+    } else {
+      try { t ? localStorage.setItem(TRUCK_LS, JSON.stringify(t)) : localStorage.removeItem(TRUCK_LS); } catch { throw { code: "quota" }; }
+    }
+    render();
+  }
+  const truckOn = () => !state.readonly && !!getTruck();
+  async function truckCharge(amount, what) {
+    const t = getTruck(); if (!t || !(amount > 0)) return;
+    await setTruck({ ...t, balance: round2((Number(t.balance) || 0) + amount), log: [{ d: today(), amt: round2(amount), what: what || "Added" }, ...(t.log || [])] });
+  }
+  const round2 = (n) => Math.round(n * 100) / 100;
+  function payoff(t) {
+    const bal = Number(t.balance) || 0, wk = Number(t.weekly) || 0;
+    if (bal <= 0) return { weeks: 0, text: "All paid off" };
+    if (wk <= 0) return { weeks: null, text: "Add a weekly payment to see when it's paid off" };
+    const weeks = Math.ceil(bal / wk), d = new Date(); d.setDate(d.getDate() + weeks * 7);
+    return { weeks, text: `paid off in ${weeks} week${weeks === 1 ? "" : "s"}, around ${d.toLocaleDateString("en-US", { month: "short", year: "numeric" })}` };
+  }
+  function renderTruck() {
+    const tile = $("truckTile");
+    tile.hidden = !!state.readonly;
+    if (state.readonly) return;
+    const t = getTruck();
+    if (!t) {
+      $("truck").innerHTML = `<div class="watch-empty"><span class="note">Buying off the truck? Keep your balance here and see when it's paid off.</span><button class="btn-watch" type="button" data-truck="edit">Set it up →</button></div>`;
+      return;
+    }
+    const bal = Number(t.balance) || 0, wk = Number(t.weekly) || 0, po = payoff(t);
+    const paid = (t.log || []).filter((x) => x.amt < 0).reduce((sum, x) => sum - x.amt, 0);
+    const pct = paid + bal > 0 ? Math.round((paid / (paid + bal)) * 100) : 100;
+    const lastPay = (t.log || []).find((x) => x.amt < 0);
+    $("truck").innerHTML = `<span class="big">${money(bal, bal % 1)}</span>
+      <span class="sub">${wk ? `${money(wk, wk % 1)} a week · ` : ""}${esc(po.text)}${t.dealer ? ` · ${esc(t.dealer)}` : ""}${lastPay ? `<br>Last payment ${rel(lastPay.d)}` : ""}</span>
+      <div class="bar ${bal <= 0 ? "done" : ""}"><span style="width:${pct}%"></span></div>
+      <div class="truck-act">${bal > 0 ? `<button class="btn-watch" type="button" data-truck="pay">Made a payment${wk ? ` (${money(Math.min(wk, bal), true)})` : ""}</button>` : ""}<button class="btn-watch" type="button" data-truck="edit">Edit</button></div>`;
+  }
+  $("truck").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-truck]"); if (!b) return;
+    if (b.dataset.truck === "edit") return openTruck();
+    const t = getTruck(); if (!t) return;
+    const amt = Math.min(Number(t.weekly) || 0, Number(t.balance) || 0);
+    if (!(amt > 0)) return openTruck();
+    const before = { ...t };
+    const ok = await guard(() => setTruck({ ...t, balance: round2(t.balance - amt), log: [{ d: today(), amt: -amt, what: "Payment" }, ...(t.log || [])] }));
+    if (!ok) return;
+    burst(...centerOf(b), 12);
+    const left = round2(before.balance - amt);
+    toast(left > 0 ? `Logged a ${money(amt, true)} payment. ${money(left, left % 1)} to go.` : "Logged the last payment. All paid off!", { label: "Undo", run: () => guard(() => setTruck(before), "Payment taken back") });
+  });
+  const truckDlg = $("truckDlg");
+  function openTruck() {
+    const t = getTruck() || {};
+    $("t-bal").value = t.balance != null ? Number(t.balance) : "";
+    $("t-week").value = t.weekly ? Number(t.weekly) : "";
+    $("t-dealer").value = t.dealer || "";
+    $("t-clear").hidden = !getTruck();
+    $("t-err").hidden = true;
+    const log = (t.log || []).slice(0, 8);
+    $("t-log").innerHTML = log.length ? `<div class="t-log"><span class="label">Recent</span>${log.map((x) => `<div class="line"><span>${esc(x.what)}</span><span class="num ${x.amt < 0 ? "pay" : ""}">${x.amt < 0 ? "−" : "+"}${money(Math.abs(x.amt), true)} · ${esc(fmtDate(x.d, false))}</span></div>`).join("")}</div>` : "";
+    truckDlg.showModal();
+    setTimeout(() => $("t-bal").focus(), 0);
+  }
+  $("t-cancel").onclick = () => truckDlg.close();
+  $("truckFrm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const bal = Number($("t-bal").value), wk = Number($("t-week").value || 0);
+    const err = (m) => { $("t-err").textContent = m; $("t-err").hidden = false; };
+    if ($("t-bal").value === "" || !(bal >= 0) || bal >= 1000000) return err("Enter what you owe on the truck, or 0.");
+    if (!(wk >= 0) || wk >= 100000) return err("Enter your weekly payment, or leave it empty.");
+    const t = getTruck() || { log: [] };
+    const next = { ...t, balance: round2(bal), weekly: round2(wk), dealer: $("t-dealer").value.trim().slice(0, 60) };
+    if (t.balance != null && round2(bal) !== round2(t.balance)) next.log = [{ d: today(), amt: round2(bal - t.balance), what: "Balance changed" }, ...(t.log || [])];
+    if (await guard(() => setTruck(next), "Truck account saved")) truckDlg.close();
+  });
+  $("t-clear").onclick = async () => {
+    const before = getTruck();
+    if (await guard(() => setTruck(null))) { truckDlg.close(); toast("Truck account removed", { label: "Undo", run: () => guard(() => setTruck(before)) }); }
+  };
+
+  /* ---------- sample box: a pretend toolbox for first-time visitors, never saved ---------- */
+  function demoItems() {
+    const day = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
+    const at = (n) => new Date(Date.now() - n * 86400000).toISOString();
+    const o = (i, name, pn, category, price, ago, location, extra = {}) => ({ id: "demo-" + i, list: "owned", name, part_number: pn, category, price, date_bought: day(ago), condition: "Good", location, notes: "", priority: null, saved: 0, created_at: at(ago), ...extra });
+    const w = (i, name, pn, category, price, priority, saved, ago) => ({ id: "demo-w" + i, list: "wishlist", name, part_number: pn, category, price, date_bought: null, condition: null, location: "", notes: "", priority, saved, created_at: at(ago) });
+    return [
+      o(1, '3/8" drive dual 80 ratchet', "F80", '3/8" Drive Tools', 132, 420, "Top chest, drawer 1"),
+      o(2, '3/8" drive flex head ratchet', "", '3/8" Drive Tools', 148, 300, "Top chest, drawer 1", { lent_to: "Mike", lent_at: day(6) }),
+      o(3, '3/8" drive 6-point deep socket set, 10–19 mm', "", "Service Tools - Sets", 289, 260, "Top chest, drawer 2"),
+      o(4, "13 mm 6-point swivel socket", "", '3/8" Drive Tools', 39, 200, "Top chest, drawer 2"),
+      o(5, "Flank drive combination wrench set, 10–19 mm", "OEXM710B", "Wrenches", 640, 380, "Roll cab, drawer 1"),
+      o(6, "10 × 12 mm flare nut wrench", "", "Wrenches", 58, 120, "Roll cab, drawer 1"),
+      o(7, '1/2" drive click-type torque wrench', "", "Torque", 495, 90, "Roll cab, drawer 3"),
+      o(8, "Needle nose pliers", "", "Pliers", 46, 150, "Top chest, drawer 3", { condition: "Worn" }),
+      o(9, "Locking pliers", "", "Pliers", 41, 60, "Top chest, drawer 3"),
+      o(10, "#2 Phillips screwdriver", "", "Screwdrivers", 24, 170, "Top chest, drawer 4"),
+      o(11, "Hook pick", "", "Awls, Hooks and Picks", 18, 40, "Top chest, drawer 4", { lent_to: "Jess", lent_at: day(2) }),
+      o(12, "Long pry bar", "", "Prybars", 78, 230, "Side locker", { condition: "Needs warranty" }),
+      o(13, '14.4 V 3/8" drive cordless impact', "", "Power Tools", 389, 20, "Roll cab, bottom drawer"),
+      w(1, '1/2" drive electronic torque wrench', "TECH3FR250", "Torque", 799, "Need", 320, 30),
+      w(2, "Water pump pliers", "", "Pliers", 62, "Want", 62, 25),
+      w(3, "Diagnostic scan tool", "", "Diagnostics", 2900, "Want", 400, 14),
+      w(4, "11-drawer roll cab", "", "Tool Storage", 8900, "Someday", 500, 10),
+    ];
+  }
+  function enterDemo() {
+    const day = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return t.toISOString().slice(0, 10); };
+    state.demo = true; state.items = demoItems(); state.introDone = false; state.railIntro = false;
+    state.demoTruck = { balance: 1840, weekly: 60, dealer: "Thursday truck", log: [{ d: day(7), amt: -60, what: "Payment" }, { d: day(14), amt: -60, what: "Payment" }, { d: day(90), amt: 495, what: '1/2" drive click-type torque wrench' }] };
+    render();
+    scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    loadCatalog().then(render);
+  }
+  $("demoExit").onclick = () => { state.introDone = false; state.railIntro = false; state.demoTruck = null; loadItems(); scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); };
+
+  /* ---------- share my box: a read-only link ---------- */
+  const shareDlg = $("shareDlg");
+  let shareRow = null;
+  const shareUrl = (tok) => `${location.origin}${location.pathname.replace(/index\.html$/, "")}?box=${tok}`;
+  function fillShare() {
+    $("s-linkRow").hidden = !shareRow; $("s-off").hidden = !shareRow;
+    $("s-save").textContent = shareRow ? "Save" : "Create link";
+    if (shareRow) $("s-link").value = shareUrl(shareRow.token);
+  }
+  async function openShare() {
+    if (state.demo) return toast("Start your own box first, then you can share it.");
+    $("s-err").hidden = true;
+    const { data, error } = await sb.from("box_shares").select("*").maybeSingle();
+    if (error) return toast("Couldn't open sharing right now. Try again.");
+    shareRow = data;
+    $("s-title").value = data ? data.title : ""; $("s-prices").checked = data ? data.show_prices : false; $("s-wish").checked = data ? data.show_wishlist : true;
+    fillShare();
+    shareDlg.showModal();
+  }
+  $("s-close").onclick = () => shareDlg.close();
+  $("shareFrm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const body = { title: $("s-title").value.trim().slice(0, 60), show_prices: $("s-prices").checked, show_wishlist: $("s-wish").checked };
+    const q = shareRow ? sb.from("box_shares").update(body).eq("user_id", state.user.id) : sb.from("box_shares").insert(body);
+    const { data, error } = await q.select().single();
+    if (error) { $("s-err").textContent = "Couldn't save that. Try again."; $("s-err").hidden = false; return; }
+    const created = !shareRow; shareRow = data; fillShare();
+    toast(created ? "Link ready. Copy it and send it to anyone." : "Saved");
+  });
+  $("s-copy").onclick = async () => {
+    const url = $("s-link").value;
+    try { if (navigator.share && matchMedia("(pointer: coarse)").matches) { await navigator.share({ title: "My toolbox on BoxTally", url }); return; } } catch { return; }
+    try { await navigator.clipboard.writeText(url); toast("Link copied"); } catch { $("s-link").select(); toast("Select the link and copy it"); }
+  };
+  $("s-off").onclick = async () => {
+    const { error } = await sb.from("box_shares").delete().eq("user_id", state.user.id);
+    if (error) return toast("Couldn't turn the link off. Try again.");
+    shareRow = null; fillShare(); toast("Link turned off. Anyone who has it will see that it's gone.");
+  };
+
+  /* ---------- price-drop emails ---------- */
+  // Switched on once the email sender is set up (see README: "Price-drop emails").
+  const EMAIL_ALERTS_READY = false;
+  async function loadAlerts() {
+    state.alerts = null;
+    if (!EMAIL_ALERTS_READY || !signedIn()) return;
+    const { data } = await sb.from("alert_prefs").select("email_drops").maybeSingle();
+    state.alerts = data || { email_drops: false };
+    renderWatch();
+  }
+  $("watch").addEventListener("change", async (e) => {
+    if (e.target.id !== "alertDrops") return;
+    const on = e.target.checked;
+    const { error } = await sb.from("alert_prefs").upsert({ user_id: state.user.id, email_drops: on }, { onConflict: "user_id" });
+    if (error) { e.target.checked = !on; return toast("Couldn't save that. Try again."); }
+    state.alerts = { email_drops: on };
+    toast(on ? `We'll email ${state.user.email} when something on your wishlist drops.` : "Price-drop emails off");
+  });
+
+  /* ---------- install as an app ---------- */
+  let installEvt = null;
+  window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });
+  window.addEventListener("appinstalled", () => { installEvt = null; $("installBtn").hidden = true; toast("BoxTally is on your home screen"); });
+  async function installApp() { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch {} installEvt = null; $("installBtn").hidden = true; }
+  // iPhones don't offer an install button, so tell people where it is
+  if (/iP(hone|ad|od)/.test(navigator.userAgent) && !navigator.standalone) $("iosHint").hidden = false;
+
   /* ---------- events ---------- */
   function setTab(tab) {
     if (tab !== state.tab) state.introDone = false;
@@ -1587,7 +2047,14 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   $("tab-wish").onclick = () => setTab("wishlist");
   ["q", "fCat", "fSort"].forEach((id) => $(id).addEventListener("input", render));
 
-  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; t.style.animation = "none"; void t.offsetWidth; t.style.animation = ""; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), 3800); }
+  // A message at the bottom; with an action (like Undo) it stays a little longer and has a button.
+  function toast(msg, action) {
+    const t = $("toast");
+    t.innerHTML = `<span>${esc(msg)}</span>` + (action ? `<button type="button" class="toast-act">${esc(action.label)}</button>` : "");
+    if (action) t.querySelector(".toast-act").onclick = () => { t.hidden = true; clearTimeout(toast._t); action.run(); };
+    t.hidden = false; t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
+    clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), action ? 7000 : 3800);
+  }
 
   /* ---------- little touches ---------- */
   // A burst of sparks, for buying a tool or sharing a price.
@@ -1649,7 +2116,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
       e.preventDefault();
       const s = !$("filters").hidden && !$("toolbar").hidden ? $("q") : $("q-pn");
       s.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); s.focus({ preventScroll: true }); s.select();
-    } else if (e.key === "n" || e.key === "N") {
+    } else if ((e.key === "n" || e.key === "N") && !state.readonly) {
       e.preventDefault();
       $("quick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); $("q-pn").focus({ preventScroll: true });
     } else if (e.key === "1") setTab("owned");
@@ -1680,10 +2147,41 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   }
   $("quick").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const pn = cleanPn($("q-pn").value);
-    if (!pn) { openForm(null); return; }
-    if (await addByPn(pn, state.tab)) { $("q-pn").value = ""; burst(...centerOf($("q-add")), 10); }
+    if (state.readonly) return;
+    // in a list, only words with letters and numbers count; "ratchet" or "3/8" get reported, not added
+    const parts = $("q-pn").value.split(/[\s,;]+/).map(cleanPn).filter(Boolean);
+    if (!parts.length) { openForm(null); return; }
+    if (parts.length > 1) { if (await addMany(parts, state.tab)) $("q-pn").value = ""; return; }
+    if (await addByPn(parts[0], state.tab)) { $("q-pn").value = ""; burst(...centerOf($("q-add")), 10); }
   });
+  // Pasting a list (one per line, from a receipt or a set's contents) keeps the part numbers apart
+  $("q-pn").addEventListener("paste", (e) => {
+    const text = (e.clipboardData || window.clipboardData)?.getData("text") || "";
+    if (!/[\r\n\t]/.test(text)) return;
+    e.preventDefault();
+    const el = $("q-pn"), a = el.selectionStart ?? el.value.length, b = el.selectionEnd ?? a;
+    // from each line (a receipt row, a set's contents) keep just the part number
+    const joined = text.split(/[\r\n\t]+/).map((x) => x.trim()).filter(Boolean)
+      .map((line) => line.split(/[\s,;]+/).find((w) => pnLike(cleanPn(w))) || line).join(", ");
+    el.setRangeText((a > 0 && !/[\s,]$/.test(el.value.slice(0, a)) ? ", " : "") + joined, a, b, "end");
+  });
+  const pnLike = (p) => PN_RE.test(p) && /\d/.test(p) && /[A-Z]/.test(p);
+  async function addMany(pns, list) {
+    const all = [...new Set(pns)], uniq = all.slice(0, 200);
+    const bad = uniq.filter((p) => !pnLike(p)), good = uniq.filter(pnLike);
+    const have = new Set(rowsOf(list).map((r) => r.part_number)), owned = new Set(rowsOf("owned").map((r) => r.part_number));
+    const add = good.filter((p) => !have.has(p) && !(list === "wishlist" && owned.has(p)));
+    const skipped = good.length - add.length, where = list === "owned" ? "box" : "wishlist";
+    if (!add.length) { shake($("quick")); toast(skipped ? `All of those are already on your ${where}.` : "None of those look like Snap-on part numbers."); return false; }
+    let n = 0;
+    if (!(await guard(async () => { n = await saveMany(add.map((pn) => ({ ...blank(list), part_number: pn }))); }))) return false;
+    burst(...centerOf($("q-add")), 18);
+    toast(`Added ${n} tool${n === 1 ? "" : "s"} to your ${where}.`
+      + (skipped ? ` Skipped ${skipped} already there.` : "")
+      + (bad.length ? ` ${bad.length} didn't look like part numbers (${bad.slice(0, 3).join(", ")}${bad.length > 3 ? "…" : ""}).` : "")
+      + (all.length > 200 ? " Only the first 200 at a time." : ""));
+    return true;
+  }
   $("q-more").onclick = () => openForm(null, cleanPn($("q-pn").value));
 
   const SHOP_CATS = ["Ratchets", "Socket sets", "Combination wrenches", "Torque wrenches", "Impact wrenches", "Screwdrivers", "Pliers", "Pry bars", "Tool storage", "Diagnostics"];
@@ -1707,7 +2205,7 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
 
   // Phones: a floating add button once the add box has scrolled out of sight.
   let quickVisible = true;
-  const syncFab = () => { $("fab").hidden = quickVisible || !state.loaded; };
+  const syncFab = () => { $("fab").hidden = quickVisible || !state.loaded || state.readonly; };
   if ("IntersectionObserver" in window) new IntersectionObserver(([en]) => { quickVisible = en.isIntersecting; syncFab(); }).observe($("quick"));
   $("fab").onclick = () => {
     $("quick").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
@@ -1718,31 +2216,57 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   $("list").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-act]"); if (!btn) return;
     const act = btn.dataset.act, id = btn.closest("[data-id]")?.dataset.id;
+    if (act === "demo") return enterDemo();
     const item = state.items.find((r) => r.id === id);
-    if (!item) return;
+    if (!item || state.readonly) return;
+    if (state.demo && (act === "price" || act === "photo")) return toast("This is the sample box, so prices and photos are off. Tap \"Start my own box\" up top to make yours.");
     if (act === "price") { state.priceEdit = id; render(); setTimeout(() => { const f = document.querySelector(`[data-price-form="${CSS.escape(id)}"] input[name=price]`); if (f) f.focus(); }, 0); return; }
     if (act === "price-cancel") { state.priceEdit = null; return render(); }
+    if (act === "lend") { state.lendEdit = id; render(); setTimeout(() => { const f = document.querySelector(`[data-lend-form="${CSS.escape(id)}"] input`); if (f) f.focus(); }, 0); return; }
+    if (act === "lend-cancel") { state.lendEdit = null; return render(); }
+    if (act === "returned") return guard(() => saveItem({ ...item, lent_to: null, lent_at: null }), `${displayName(item)} is back in the box`);
     if (act === "view") return openViewer(id);
     if (act === "photo") return pickPhotoFor(id);
     if (act === "edit") return openForm(item);
-    if (act === "del" || act === "bought") { state.confirm = { id, kind: act }; return render(); }
+    if (act === "bought") { state.confirm = { id, kind: act }; return render(); }
     if (act === "cancel") { state.confirm = null; return render(); }
-    if (act === "del-yes") {
+    if (act === "del") {
       state.confirm = null;
-      const go = async () => { if (!(await guard(() => removeItem(item), "Deleted"))) render(); };
+      const copy = { ...item };
+      const go = async () => {
+        if (await guard(() => removeItem(item))) toast(`Deleted ${displayName(copy)}`, { label: "Undo", run: () => guard(() => restoreItem(copy), "Put back") });
+        else render();
+      };
       const el = btn.closest("[data-id]");
       if (reduce || !el || !el.animate) return go();
       // the card tips forward and drops out before it's gone
       return el.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "perspective(900px) rotateX(18deg) translateY(16px) scale(.92)" }], { duration: 260, easing: "cubic-bezier(.5, 0, .75, 0)", fill: "forwards" }).finished.then(go, go);
     }
-    if (act === "bought-yes") {
+    if (act === "bought-yes" || act === "bought-truck") {
       state.confirm = null;
       burst(...centerOf(btn), 26);
-      return guard(() => saveItem({ ...item, list: "owned", price: wishCost(item), date_bought: today(), condition: "New", location: "", priority: null, saved: 0, from_wishlist: true, created_at: undefined }), "Moved to Owned");
+      const cost = wishCost(item);
+      return guard(async () => {
+        await saveItem({ ...item, list: "owned", price: cost, date_bought: today(), condition: "New", location: "", priority: null, saved: 0, from_wishlist: true, created_at: undefined });
+        if (act === "bought-truck") await truckCharge(cost);
+      }, act === "bought-truck" ? `Moved to Owned and added ${money(cost, cost % 1)} to your truck account` : "Moved to Owned");
     }
   });
 
-  $("list").addEventListener("submit", (e) => { const f = e.target.closest("[data-price-form]"); if (!f) return; e.preventDefault(); savePrice(f); });
+  $("list").addEventListener("submit", (e) => {
+    const f = e.target.closest("[data-price-form]");
+    if (f) { e.preventDefault(); return savePrice(f); }
+    const lf = e.target.closest("[data-lend-form]");
+    if (lf) {
+      e.preventDefault();
+      const item = state.items.find((r) => r.id === lf.dataset.lendForm), who = lf.who.value.trim().slice(0, 60);
+      if (!item) return;
+      if (!who) { lf.who.focus(); return; }
+      state.lendEdit = null;
+      rememberWho(who);
+      guard(() => saveItem({ ...item, lent_to: who, lent_at: today() }), `${displayName(item)} lent to ${who}`);
+    }
+  });
 
   /* ---------- export: a spreadsheet, or a printable list (handy for insurance) ---------- */
   const byCatName = (a, b) => String(a.category || "").localeCompare(String(b.category || "")) || displayName(a).localeCompare(displayName(b));
@@ -1751,14 +2275,14 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   const csvText = (v) => { let s = String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const csvNum = (n) => (n == null || n === "" || !Number.isFinite(Number(n)) ? "" : String(Math.round(Number(n) * 100) / 100));
   function toCsv(rows) {
-    const head = ["List", "Tool", "Part number", "Category", "Condition", "Date bought", "Price paid / your price", "Store price", "Regular price (on sale)", "Store price updated", "Where it's kept", "Priority", "Saved so far", "Notes", "Store link"];
+    const head = ["List", "Tool", "Part number", "Category", "Condition", "Date bought", "Price paid / your price", "Store price", "Regular price (on sale)", "Store price updated", "Where it's kept", "Lent to", "Priority", "Saved so far", "Notes", "Store link"];
     const lines = rows.map((r) => {
       const s = storeOf(r), owned = r.list === "owned";
       return [
         csvText(owned ? "Owned" : "Wishlist"), csvText(displayName(r)), csvText(r.part_number), csvText(r.category),
         csvText(owned ? r.condition : ""), csvText(owned ? r.date_bought || "" : ""), csvNum(Number(r.price) || ""),
         csvNum(storePrice(r)), csvNum(wasPrice(r)), csvText(storeOk(r) && s.checked_at ? String(s.checked_at).slice(0, 10) : ""),
-        csvText(owned ? r.location : ""), csvText(owned ? "" : r.priority || "Want"), csvNum(owned ? "" : Number(r.saved) || ""),
+        csvText(owned ? r.location : ""), csvText(owned ? r.lent_to || "" : ""), csvText(owned ? "" : r.priority || "Want"), csvNum(owned ? "" : Number(r.saved) || ""),
         csvText(r.notes), csvText(r.part_number ? storeLink(r.part_number) : ""),
       ].join(",");
     });
@@ -1883,13 +2407,22 @@ kbd { font-family: var(--f-mono); font-size: .7rem; min-width: 1.6em; text-align
   });
 
   /* ---------- start ---------- */
-  try { if (localStorage.getItem(LS + "-view") === "list") state.view = "list"; } catch {}
+  // ?box=... opens someone's shared box, read-only
+  const boxToken = new URLSearchParams(location.search).get("box");
+  if (boxToken) {
+    state.readonly = true; state.shareToken = boxToken.slice(0, 40);
+    const m = document.createElement("meta"); m.name = "robots"; m.content = "noindex"; document.head.appendChild(m);
+    document.title = "A shared toolbox · BoxTally";
+  }
+  try { const v = localStorage.getItem(LS + "-view"); if (v === "list" || v === "drawers") state.view = v; } catch {}
   try { const t = localStorage.getItem(LS + "-tab"); if (t === "wishlist") { state.tab = "wishlist"; $("tab-tools").setAttribute("aria-selected", "false"); $("tab-wish").setAttribute("aria-selected", "true"); $("list").setAttribute("aria-labelledby", "tab-wish"); setSortOptions(); } } catch {}
   renderAccount();
   render();
-  if (!sb) { state.items = local.read(); state.loaded = true; render(); return; }
+  if (!sb) { if (state.readonly) { loadShared(); return; } state.items = local.read(); state.loaded = true; render(); return; }
   // fires once on load (INITIAL_SESSION), and again on sign-in and sign-out
   sb.auth.onAuthStateChange((_event, session) => { setTimeout(() => setUser(session ? session.user : null), 0); });
+  // Installable app: works offline for the page itself; your box comes from the last-saved copy.
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
 </script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->

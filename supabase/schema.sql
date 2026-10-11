@@ -390,3 +390,97 @@ begin
 end $$;
 revoke execute on function public.report_photo(uuid) from public, anon;
 grant execute on function public.report_photo(uuid) to authenticated;
+
+-- ===== Lending, share links, price-drop emails (added October 11, 2026) =====
+-- Photos are private to their owner now: shared photos are switched off.
+
+alter table public.items add column if not exists lent_to text check (char_length(lent_to) <= 60);
+alter table public.items add column if not exists lent_at date;
+
+update public.items set photo_shared = false where photo_shared;
+revoke execute on function public.shared_photos(text[]) from anon, authenticated;
+revoke execute on function public.report_photo(uuid) from authenticated;
+
+-- Share my box: one read-only link per person
+create table if not exists public.box_shares (
+  user_id      uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  token        text not null unique default left(replace(gen_random_uuid()::text, '-', ''), 20),
+  title        text not null default '' check (char_length(title) <= 60),
+  show_prices  boolean not null default false,
+  show_wishlist boolean not null default true,
+  created_at   timestamptz not null default now()
+);
+alter table public.box_shares enable row level security;
+create policy "Read own share"   on public.box_shares for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Add own share"    on public.box_shares for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Change own share" on public.box_shares for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Delete own share" on public.box_shares for delete to authenticated using ((select auth.uid()) = user_id);
+revoke all on public.box_shares from anon;
+grant select, insert, update, delete on public.box_shares to authenticated;
+revoke truncate, references, trigger on public.box_shares from authenticated;
+create or replace function public.box_shares_keep_token() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  if tg_op = 'INSERT' then new.token := left(replace(gen_random_uuid()::text, '-', ''), 20);
+  else new.token := old.token; new.user_id := old.user_id; end if;
+  return new;
+end $$;
+create trigger box_shares_keep_token before insert or update on public.box_shares
+  for each row execute function public.box_shares_keep_token();
+
+-- What a shared link shows: names, part numbers, categories, condition. Never photos, notes, where
+-- tools are kept, who has them, or the owner's name or email. Prices paid only if the owner allows.
+create or replace function public.shared_box(t text)
+returns json
+language sql stable security definer set search_path = '' as $$
+  select json_build_object(
+    'title', s.title,
+    'show_prices', s.show_prices,
+    'items', coalesce((
+      select json_agg(json_build_object(
+        'id', i.id, 'list', i.list, 'name', i.name, 'part_number', i.part_number, 'category', i.category,
+        'condition', i.condition, 'priority', i.priority, 'created_at', i.created_at,
+        'price', case when s.show_prices then i.price else 0 end,
+        'date_bought', case when s.show_prices then i.date_bought end
+      ) order by i.created_at)
+      from public.items i
+      where i.user_id = s.user_id and (i.list = 'owned' or s.show_wishlist)
+    ), '[]'::json))
+  from public.box_shares s
+  where s.token = t and char_length(t) = 20;
+$$;
+revoke execute on function public.shared_box(text) from public;
+grant execute on function public.shared_box(text) to anon, authenticated;
+
+-- Price-drop emails: opt in; the address always comes from the person's own sign-in
+create table if not exists public.alert_prefs (
+  user_id      uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  email_drops  boolean not null default false,
+  email        text,
+  last_sent_d  date,
+  updated_at   timestamptz not null default now()
+);
+alter table public.alert_prefs enable row level security;
+create policy "Read own alerts"   on public.alert_prefs for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Add own alerts"    on public.alert_prefs for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Change own alerts" on public.alert_prefs for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Delete own alerts" on public.alert_prefs for delete to authenticated using ((select auth.uid()) = user_id);
+revoke all on public.alert_prefs from anon;
+grant select, insert, update, delete on public.alert_prefs to authenticated;
+revoke truncate, references, trigger on public.alert_prefs from authenticated;
+create or replace function public.alert_prefs_fill() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if tg_op = 'UPDATE' then
+    new.user_id := old.user_id;
+    if coalesce(auth.role(), '') <> 'service_role' then new.last_sent_d := old.last_sent_d; end if;
+  elsif coalesce(auth.role(), '') <> 'service_role' then
+    new.last_sent_d := (now() at time zone 'utc')::date;
+  end if;
+  new.email := (select u.email from auth.users u where u.id = new.user_id);
+  new.updated_at := now();
+  return new;
+end $$;
+revoke execute on function public.alert_prefs_fill() from public, anon, authenticated;
+create trigger alert_prefs_fill before insert or update on public.alert_prefs
+  for each row execute function public.alert_prefs_fill();
