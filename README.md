@@ -27,6 +27,9 @@ Snap-on's store doesn't show product details to cloud servers, so the checker ru
    - **Snap-on Toolbox - new part numbers**: every 30 minutes, only does work when something is waiting.
    - **Snap-on Toolbox - daily prices**: once a day, re-checks every part number.
 4. History is written to `checker\checker.log`. To stop it, double-click `checker\uninstall-windows.bat`.
+5. To get the latest checker later, double-click `checker\update-windows.bat`. To run a check right away and watch it, double-click `checker\check-now.bat`.
+
+On Windows the checker opens a normal, visible Microsoft Edge window while it works (about a minute), because Snap-on's product pages stay blank in a hidden browser.
 
 Prices only update while that computer is on; they catch up when it's back.
 

@@ -84,8 +84,21 @@ const updateRun = (fields) =>
   rest(`check_runs?id=eq.${run.id}`, { method: "PATCH", body: fields }).catch((e) => console.warn("Progress update failed:", e.message));
 
 const { chromium } = await import("playwright");
-// CHECKER_BROWSER=chrome uses the Google Chrome installed on this computer instead of Playwright's own copy.
-const browser = await chromium.launch(process.env.CHECKER_BROWSER === "chrome" ? { channel: "chrome" } : {});
+// Snap-on's store leaves product pages blank in a hidden (headless) browser, so on Windows the checker opens
+// a normal, visible Microsoft Edge window. It doesn't disguise itself; it is just an ordinary browser window.
+//   CHECKER_BROWSER = msedge | chrome | bundled   (Windows default: msedge)
+//   CHECKER_HEADLESS = 1 to hide the window (product pages may come back blank)
+const isWindows = process.platform === "win32";
+const wanted = process.env.CHECKER_BROWSER || (isWindows ? "msedge" : "bundled");
+const headless = process.env.CHECKER_HEADLESS ? process.env.CHECKER_HEADLESS === "1" : !isWindows;
+const launchOpts = { headless, args: ["--window-size=1100,850"] };
+let browser;
+try {
+  browser = await chromium.launch(wanted === "bundled" ? launchOpts : { ...launchOpts, channel: wanted });
+} catch (e) {
+  console.warn(`Couldn't open ${wanted} (${String(e.message).split("\n")[0]}); using the checker's own browser instead.`);
+  browser = await chromium.launch(launchOpts);
+}
 const page = await browser.newPage({ locale: "en-US" });
 
 // A short log saved with the run, so problems can be diagnosed from the database.
@@ -99,6 +112,7 @@ page.on("response", (r) => {
   } catch {}
 });
 
+note(`Browser: ${wanted}${headless ? " (hidden)" : " (visible window)"}`);
 let changes = 0, found = 0, notFound = 0, errors = 0;
 
 async function readProduct(pn) {
@@ -132,7 +146,13 @@ async function readProduct(pn) {
     const sku = decodeURIComponent(new URL(page.url()).pathname.split("/").pop() || "").toUpperCase();
     if (sku !== pn) { note(`${pn}: the store opened a different product (${sku})`); return null; }
 
-    await page.waitForSelector("h1", { timeout: 15000 });
+    try {
+      await page.waitForSelector("h1", { timeout: 20000 });
+    } catch {
+      const seen = await page.evaluate(() => (document.body ? document.body.innerText : "").replace(/\s+/g, " ").trim().slice(0, 200)).catch(() => "");
+      note(`${pn}: the product page stayed blank. API calls: ${apiSeen.slice(-8).join(", ") || "none"}. Text: ${seen.slice(0, 160)}`);
+      throw new Error("the product page stayed blank");
+    }
     // Read the name, the prices next to it (a struck-through regular price shows before a sale price), and the main photo.
     let dom = { name: "", prices: [], image: null };
     for (let t = 0; t < 12; t++) {
