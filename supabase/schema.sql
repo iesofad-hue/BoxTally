@@ -157,3 +157,54 @@ create policy "Replace own tool photos" on storage.objects for update to authent
   using (bucket_id = 'tool-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
 create policy "Delete own tool photos" on storage.objects for delete to authenticated
   using (bucket_id = 'tool-photos' and (storage.foldername(name))[1] = (select auth.uid())::text);
+
+-- ===== Community prices (added after the automatic checker was retired) =====
+
+create table public.price_reports (
+  id          bigint generated always as identity primary key,
+  part_number text not null references public.catalog(part_number) on delete cascade,
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  price       numeric(10,2) not null,
+  was_price   numeric(10,2),
+  created_at  timestamptz not null default now()
+);
+create index price_reports_part_idx on public.price_reports (part_number, created_at desc);
+create index price_reports_user_idx on public.price_reports (user_id, created_at desc);
+alter table public.price_reports enable row level security;
+revoke all on public.price_reports from anon, authenticated;
+
+create function public.submit_price(pn text, new_price numeric, regular_price numeric default null)
+returns json
+language plpgsql security definer set search_path = '' as $$
+declare
+  uid uuid := auth.uid();
+  clean text := upper(regexp_replace(coalesce(pn, ''), '\s', '', 'g'));
+  last numeric;
+  recent int;
+begin
+  if uid is null then raise exception 'Sign in to add store prices.'; end if;
+  if new_price is null or new_price <= 0 or new_price >= 100000 then raise exception 'Enter a price between $0.01 and $99,999.'; end if;
+  if regular_price is not null and (regular_price <= new_price or regular_price >= 100000) then
+    raise exception 'The regular price should be higher than the sale price.';
+  end if;
+  if not exists (select 1 from public.items i where i.user_id = uid and i.part_number = clean) then
+    raise exception 'Add % to your box or wishlist first.', clean;
+  end if;
+  select count(*) into recent from public.price_reports r where r.user_id = uid and r.created_at > now() - interval '1 hour';
+  if recent >= 60 then raise exception 'That''s a lot of price updates in an hour. Try again later.'; end if;
+  select c.price into last from public.catalog c where c.part_number = clean;
+  if last is not null and (new_price > last * 4 or new_price < last / 4) then
+    raise exception 'That''s very different from the last price ($%). Double-check it on Snap-on''s store.', last;
+  end if;
+  insert into public.catalog (part_number) values (clean) on conflict (part_number) do nothing;
+  update public.catalog
+     set price = round(new_price, 2), was_price = round(regular_price, 2), status = 'ok', checked_at = now()
+   where part_number = clean;
+  insert into public.catalog_prices (part_number, d, price)
+  values (clean, (now() at time zone 'utc')::date, round(new_price, 2))
+  on conflict (part_number, d) do update set price = excluded.price;
+  insert into public.price_reports (part_number, user_id, price, was_price) values (clean, uid, round(new_price, 2), round(regular_price, 2));
+  return json_build_object('part_number', clean, 'price', round(new_price, 2), 'was_price', round(regular_price, 2));
+end $$;
+revoke execute on function public.submit_price(text, numeric, numeric) from public, anon;
+grant execute on function public.submit_price(text, numeric, numeric) to authenticated;

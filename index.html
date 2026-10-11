@@ -252,6 +252,12 @@ a.pn span { color: var(--accent); }
 .meta-line { font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
 .actions { display: flex; flex-wrap: wrap; gap: 4px; }
 .actions .spacer { flex: 1; }
+.pricebox { display: grid; gap: 8px; background: var(--sunk); padding: 10px; border-radius: 10px; }
+.pricebox .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.pricebox label { display: grid; gap: 2px; flex: 1 1 110px; min-width: 0; font-size: .78rem; color: var(--muted); }
+.pricebox input { padding: 6px 8px; }
+.pricebox .err { flex-basis: 100%; }
+.addprice { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .85rem; color: var(--muted); }
 .confirm { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: .88rem; background: var(--sunk); padding: 8px 10px; border-radius: 8px; }
 .empty { grid-column: 1 / -1; padding: 36px 20px; text-align: center; color: var(--muted); display: grid; gap: 10px; justify-items: center; background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; }
 .empty strong { color: var(--fg); font-family: var(--f-display); font-size: 1.35rem; text-transform: uppercase; }
@@ -305,13 +311,8 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
       </div>
       <div class="top-actions">
         <span class="sync" id="sync" data-mode="local"><i aria-hidden="true"></i><span id="syncText">Loading…</span></span>
-        <button class="btn-refresh" id="checkBtn" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg><span id="checkLabel">Refresh prices</span><span class="pend" id="checkPend" hidden></span></button>
         <span id="account"></span>
       </div>
-    </div>
-    <div class="progress" id="prog" hidden>
-      <div class="prog-line"><span id="progText">Starting up…</span><span class="mono" id="progEta"></span></div>
-      <div class="pbar" id="pbar" role="progressbar" aria-label="Price check progress" aria-valuemin="0" aria-valuemax="100"><span></span></div>
     </div>
     <div class="dash">
       <div class="tile">
@@ -339,7 +340,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
 
 <main class="inner body">
   <div class="banner info" id="localBanner" hidden>
-    <span id="localText">You're not signed in, so your toolbox is saved in this browser only. Sign in with Google to keep it on every device and get prices for new part numbers.</span>
+    <span id="localText">You're not signed in, so your toolbox is saved in this browser only. Sign in with Google to keep it on every device and to add store prices.</span>
     <button class="btn small primary" id="localSignIn" type="button">Sign in with Google</button>
   </div>
   <div class="banner info" id="importBanner" hidden>
@@ -356,7 +357,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     <input id="q-pn" class="mono" placeholder="Part number, e.g. F80" aria-label="Part number" autocapitalize="characters" autocomplete="off">
     <button class="btn primary" type="submit" id="q-add">Add to box</button>
     <button class="btn" type="button" id="q-more">Add with details &amp; photo</button>
-    <span class="hint" id="q-hint">Just the part number is enough. The price checker fills in the name, price and store photo from Snap-on.</span>
+    <span class="hint" id="q-hint">Just the part number is enough. The store photo shows up right away, and anyone tracking it can add the store price.</span>
   </form>
 
   <section class="shop" aria-labelledby="shopTitle">
@@ -405,7 +406,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
         </div>
         <input type="file" id="pfFile" accept="image/*" hidden>
       </div>
-      <label class="field full"><span class="label">Tool name</span><input id="i-name" placeholder="3/8&quot; drive dual 80 ratchet" maxlength="200"><small>Leave blank and the price checker fills it from Snap-on.</small></label>
+      <label class="field full"><span class="label">Tool name</span><input id="i-name" placeholder="3/8&quot; drive dual 80 ratchet" maxlength="200"><small>Optional. Leave it blank and the card shows the store name, or the part number.</small></label>
       <label class="field"><span class="label">Part number</span><input id="i-pn" class="mono" placeholder="F80" autocapitalize="characters" autocomplete="off" maxlength="40"><a class="lookup" id="lookup" href="https://shop.snapon.com" target="_blank" rel="noopener" hidden>Look up on Snap-on ↗</a></label>
       <label class="field"><span class="label">Category</span><select id="i-cat"></select></label>
       <label class="field"><span class="label" id="l-price">Price paid ($)</span><input id="i-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
@@ -474,7 +475,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
   const pub = (bucket, path) => `${SB_URL}/storage/v1/object/public/${bucket}/${String(path).split("/").map(encodeURIComponent).join("/")}`;
 
-  const state = { tab: "owned", user: null, items: [], catalog: {}, hist: {}, runs: [], loaded: false, editing: null, confirm: null, uploading: {}, introDone: false, waiting: 0 };
+  const state = { tab: "owned", user: null, items: [], catalog: {}, hist: {}, loaded: false, editing: null, confirm: null, priceEdit: null, uploading: {}, introDone: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
 
@@ -487,19 +488,30 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const lastChange = (r) => { const h = hist(r); if (h.length < 2) return null; const a = h[h.length - 2].p, b = h[h.length - 1].p; return b === a ? null : { from: a, to: b, d: h[h.length - 1].d }; };
   const displayName = (r) => r.name || (storeOf(r) && storeOf(r).name) || r.part_number || "Unnamed tool";
   const wishCost = (r) => storePrice(r) ?? (Number(r.price) || 0);
-  const isDue = (s) => s && (s.status === "pending" || ts(s.requested_at) > ts(s.checked_at));
 
   /* ---------- photos: your own photo wins over the store photo ---------- */
   const okData = (u) => typeof u === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u);
+  // Snap-on's product photos are public images named after the part number.
+  const badImg = new Set();
+  const storeImg = (pn) => `https://snap-on-products-hr.imgix.net/${encodeURIComponent(pn)}.jpg?w=600&h=600&fit=max&auto=format&q=70`;
   function photoOf(r) {
     if (r.photo_path && signedIn()) return { src: pub("tool-photos", r.photo_path), mine: true };
     if (okData(r.photo_data)) return { src: r.photo_data, mine: true };
     const s = storeOf(r);
     if (s && s.image_path) return { src: pub("catalog", s.image_path), mine: false };
+    if (r.part_number && PN_RE.test(r.part_number) && !badImg.has(r.part_number)) return { src: storeImg(r.part_number), mine: false, pn: r.part_number };
     return null;
   }
   const hasMine = (r) => !!((r.photo_path && signedIn()) || okData(r.photo_data));
-  const imgTag = (p, alt) => `<img class="${p.mine ? "mine" : ""}" src="${esc(p.src)}" alt="${esc(alt)}" loading="lazy" decoding="async">`;
+  const imgTag = (p, alt) => `<img class="${p.mine ? "mine" : ""}" src="${esc(p.src)}" alt="${esc(alt)}" loading="lazy" decoding="async"${p.pn ? ` data-pn="${esc(p.pn)}"` : ""}>`;
+  // A part number without a store photo: remember it and show the placeholder instead.
+  let reRender = 0;
+  document.addEventListener("error", (e) => {
+    const img = e.target;
+    if (!(img instanceof HTMLImageElement) || !img.dataset.pn || badImg.has(img.dataset.pn)) return;
+    badImg.add(img.dataset.pn);
+    cancelAnimationFrame(reRender); reRender = requestAnimationFrame(() => render());
+  }, true);
   const ICON = {
     tool: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="15" cy="15" r="9"/><circle cx="15" cy="15" r="3.4"/><path d="M21.5 21.5 41 41"/><path d="M36 36l5 5" stroke-width="6"/></svg>`,
     cam: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>`,
@@ -593,34 +605,14 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     if (!c.error) state.catalog = Object.fromEntries((c.data || []).map((r) => [r.part_number, r]));
     if (!h.error) { const m = {}; (h.data || []).forEach((r) => { (m[r.part_number] ||= []).push({ d: r.d, p: Number(r.price) }); }); state.hist = m; }
   }
-  async function loadRuns() {
-    if (!sb) return;
-    const { data, error } = await sb.from("check_runs").select("*").order("started_at", { ascending: false }).limit(5);
-    if (error) return;
-    const prev = state.runs[0];
-    state.runs = data || [];
-    const cur = state.runs[0];
-    if (prev && cur && prev.id === cur.id && prev.status === "running" && cur.status !== "running") {
-      await loadCatalog(); render();
-      toast(cur.status === "ok" ? `Prices updated${cur.changes ? `: ${cur.changes} changed` : ", no changes"}` : (cur.error || "The price check stopped before it finished."));
-    } else if (!prev && cur && cur.status === "ok" && state.waiting) {
-      await loadCatalog();
-    }
-    renderWatch();
-  }
-  const running = () => { const r = state.runs[0]; return !!(r && r.status === "running" && Date.now() - ts(r.started_at) < 45 * 60000); };
-  const dueCount = () => state.items.filter((r) => r.part_number && isDue(state.catalog[r.part_number])).length;
-
-  /* polling: quick while something is happening, slow otherwise */
+  /* other people's price updates show up without a reload */
   let pollTimer = null;
   function schedulePoll() {
     clearTimeout(pollTimer);
-    const busy = running() || dueCount() > 0 || state.waiting;
     pollTimer = setTimeout(async () => {
-      await loadRuns();
-      if (dueCount() > 0 && !running()) { await loadCatalog(); render(); }
-      schedulePoll();
-    }, busy ? 15000 : 120000);
+      if (document.visibilityState === "visible" && sb && state.loaded) { await loadCatalog(); render(); }
+      else schedulePoll();
+    }, 180000);
   }
 
   /* ---------- account ---------- */
@@ -718,13 +710,27 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   const condClass = { "New": "good", "Good": "", "Worn": "warn", "Needs warranty": "bad" };
   const idRow = (r) => `<div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)} <span aria-hidden="true">↗</span></a>` : ""}<span>${esc(r.category || "Other")}</span></div>`;
   function storeStatus(r) {
-    if (!r.part_number) return `<span class="meta-line">Add a part number to track its price.</span>`;
-    const s = storeOf(r);
-    if (!s) return `<span class="meta-line">${signedIn() ? "Waiting for the price checker." : "Sign in so the price checker picks up this part number."}</span>`;
-    if (s.status === "pending") return `<span class="meta-line">Waiting for the price checker. New part numbers are checked within about 30 minutes.</span>`;
-    if (s.status === "not_found") return `<span class="meta-line">Not found on Snap-on's store (checked ${fmtDate(s.checked_at, false)}). Check the part number.</span>`;
-    return "";
+    if (!r.part_number) return `<span class="meta-line">Add a part number to track its store price.</span>`;
+    if (state.priceEdit === r.id) return "";
+    if (storeOk(r)) return "";
+    return `<div class="addprice"><span>No store price yet.</span>${signedIn()
+      ? `<button class="btn small" data-act="price" type="button">Add store price</button>`
+      : `<span>Sign in to add it.</span>`}</div>`;
   }
+  function priceForm(r) {
+    if (state.priceEdit !== r.id) return "";
+    const s = storeOf(r);
+    return `<form class="pricebox" data-price-form="${esc(r.id)}" novalidate>
+      <span class="meta-line">Check the price on <a class="lookup" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener">Snap-on's store ↗</a>, then enter it here. Everyone tracking ${esc(r.part_number)} gets it.</span>
+      <div class="row">
+        <label>Store price ($)<input name="price" type="number" min="0.01" step="0.01" inputmode="decimal" required value="${s && s.price != null ? Number(s.price) : ""}"></label>
+        <label>Regular price, if on sale ($)<input name="was" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Optional" value="${s && s.was_price != null ? Number(s.was_price) : ""}"></label>
+      </div>
+      <p class="err" hidden></p>
+      <div class="row"><button class="btn small primary" type="submit">Save price</button><button class="btn small ghost" data-act="price-cancel" type="button">Cancel</button></div>
+    </form>`;
+  }
+  const priceNote = (r) => { const s = storeOf(r); return storeOk(r) && s.checked_at ? `<span class="meta-line">Store price updated ${rel(s.checked_at)}</span>` : ""; };
   function trendLine(r) {
     if (!storeOk(r)) return "";
     const ch = lastChange(r), h = hist(r), s = storeOf(r);
@@ -741,8 +747,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     const snap = !busy ? `<button class="snap" type="button" data-act="photo">${ICON.cam}${p && p.mine ? "Replace" : "Add photo"}</button>` : "";
     const over = `<div class="over"><div class="chips">${chipsHtml}</div>${badgeHtml}</div>`;
     if (!p) {
-      const s = storeOf(r);
-      const note = r.part_number && (!s || s.status === "pending") ? "Store photo arrives with the next price check" : "No photo yet";
+      const note = r.part_number ? "No store photo for this part number" : "No photo yet";
       return `<div class="photo empty"><div class="ph">${ICON.tool}<span>${note}</span></div>${over}${snap}${busy}</div>`;
     }
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${p.mine ? "Your photo" : "Store photo"}</span>${snap}${busy}</div>`;
@@ -757,10 +762,10 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
         <div><span class="label">You paid</span><span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span></div>
         <div><span class="label">Store price now</span><span class="price-big">${now != null ? money(now, now % 1) : "—"}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : now != null ? "Same as you paid" : "&nbsp;"}</span></div>
       </div>
-      ${trendLine(r)}${storeStatus(r)}
+      ${trendLine(r)}${priceNote(r)}${storeStatus(r)}${priceForm(r)}
       ${r.location ? `<span class="meta-line">Kept in ${esc(r.location)}</span>` : ""}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
-      <div class="actions"><span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      <div class="actions">${storeOk(r) && signedIn() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;
   }
   function cardWish(r, i) {
@@ -776,9 +781,9 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
         <div><span class="label">Left to save</span><span class="price-big">${cost ? money(left, left % 1) : "—"}</span><span class="meta-line">${cost ? (left ? `${money(saved)} saved` : "Ready to buy") : "&nbsp;"}</span></div>
       </div>
       ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
-      ${trendLine(r)}${storeStatus(r)}
+      ${trendLine(r)}${priceNote(r)}${storeStatus(r)}${priceForm(r)}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
-      <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button><span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button>${storeOk(r) && signedIn() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;
   }
 
@@ -802,8 +807,8 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     $("localBanner").hidden = !sb || signedIn() || !state.loaded;
     $("q-hint").textContent = !sb
       ? "Prices can't load right now. You can still add tools and fill in prices yourself."
-      : signedIn() ? "Just the part number is enough. The price checker fills in the name, price and store photo from Snap-on."
-      : "Part numbers someone has already added get prices right away. Sign in to have the checker look up new ones.";
+      : signedIn() ? "Just the part number is enough. The store photo shows up right away, and anyone tracking it can add the store price."
+      : "Just the part number is enough. Store prices other people have added show up automatically.";
 
     const list = $("list");
     if (!state.loaded) {
@@ -842,8 +847,6 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
       }
       if (r.photo_at && hasMine(r)) ev.push({ t: r.photo_at, kind: "photo", r, html: `New photo of ${nm(r)}` });
     });
-    const lastOk = state.runs.find((x) => x.status === "ok");
-    if (lastOk && lastOk.finished_at) ev.push({ t: lastOk.finished_at, kind: "check", html: `Prices checked${lastOk.changes ? ` · ${lastOk.changes} changed` : " · no changes"}` });
     return ev.sort((a, b) => String(b.t).localeCompare(String(a.t))).slice(0, 7);
   }
   function feedHtml() {
@@ -875,65 +878,27 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     let html = changes.length
       ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul>`
       : `<span class="note">${trackedN ? `No price changes yet across ${trackedN} part number${trackedN === 1 ? "" : "s"}. Drops and increases show up here.` : "Add part numbers to start watching prices."}</span>`;
-    const lastOk = state.runs.find((x) => x.status === "ok");
-    const last = state.runs[0];
-    if (running()) html += `<span class="note">Checking prices now. Progress shows at the top.</span>`;
-    else if (lastOk) html += `<span class="note">Last checked ${new Date(lastOk.finished_at || lastOk.started_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · prices check daily, new part numbers every 30 minutes</span>`;
-    else html += `<span class="note">Prices check daily, and new part numbers within about 30 minutes.</span>`;
-    if (last && last.status === "failed" && (!lastOk || ts(last.started_at) > ts(lastOk.started_at))) html += `<span class="note">Last check had a problem: ${esc(last.error || "it stopped early")}</span>`;
+    html += `<span class="note">Store prices come from people who track each tool. Tap Update price on a card after checking Snap-on's store.</span>`;
     $("watch").innerHTML = html;
-    renderProgress();
-
-    const busy = running();
-    $("sync").dataset.mode = busy ? "busy" : signedIn() ? "account" : "local";
-    $("syncText").textContent = busy ? "Checking prices…" : signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
-    const btn = $("checkBtn"), due = dueCount();
-    btn.hidden = !sb || !state.loaded || !state.items.some((r) => r.part_number);
-    btn.disabled = busy;
-    btn.classList.toggle("running", busy);
-    $("checkLabel").textContent = busy ? "Checking prices…" : "Refresh prices";
-    $("checkPend").hidden = busy || !due;
-    $("checkPend").textContent = `${due} queued`;
+    $("sync").dataset.mode = signedIn() ? "account" : "local";
+    $("syncText").textContent = signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
   }
 
-  /* progress bar: a running check reports done/total/current as it goes */
-  let prog = null;
-  function renderProgress() {
-    const box = $("prog"), r = state.runs[0], bar = $("pbar"), span = bar.firstElementChild;
-    const due = dueCount();
-    if (running()) {
-      box.hidden = false;
-      const total = Number(r.total) || 0, done = Math.min(Number(r.done) || 0, total), now = Date.now();
-      if (!prog || prog.id !== r.id || done < prog.lastDone) prog = { id: r.id, firstDone: done, firstAt: now, lastDone: done, lastAt: now };
-      if (done !== prog.lastDone) { prog.lastDone = done; prog.lastAt = now; }
-      if (!total) { bar.classList.add("indet"); $("progText").textContent = "Starting the price check…"; $("progEta").textContent = ""; return; }
-      bar.classList.remove("indet");
-      const pct = Math.round(4 + (done / total) * 92);
-      span.style.width = pct + "%"; bar.setAttribute("aria-valuenow", pct);
-      $("progText").textContent = `Checking ${Math.min(done + 1, total)} of ${total}${r.current ? ` · ${String(r.current).slice(0, 40)}` : ""}`;
-      const per = done > prog.firstDone ? (prog.lastAt - prog.firstAt) / (done - prog.firstDone) : 8000;
-      const secs = Math.max(5, Math.round(((total - done) * per) / 1000));
-      $("progEta").textContent = `${pct}% · about ${secs < 90 ? secs + " sec" : Math.round(secs / 60) + " min"} left`;
-      return;
-    }
-    prog = null;
-    if (signedIn() && due) {
-      box.hidden = false; bar.classList.add("indet"); span.style.width = ""; bar.removeAttribute("aria-valuenow");
-      $("progText").textContent = `${due} part number${due === 1 ? "" : "s"} queued for the price checker`;
-      $("progEta").textContent = "it runs every 30 minutes";
-      return;
-    }
-    box.hidden = true;
-  }
-
-  $("checkBtn").onclick = async () => {
-    if (!signedIn()) { toast("Sign in with Google to ask for fresh prices."); return; }
-    const { data, error } = await sb.rpc("request_refresh");
-    if (error) { toast("Couldn't queue a refresh. Try again in a minute."); return; }
-    state.waiting = Date.now();
+  async function savePrice(form) {
+    const id = form.dataset.priceForm, item = state.items.find((r) => r.id === id);
+    if (!item) return;
+    const err = form.querySelector(".err"), btn = form.querySelector("button[type=submit]");
+    const price = Number(form.price.value), was = form.was.value ? Number(form.was.value) : null;
+    const fail = (m) => { err.textContent = m; err.hidden = false; };
+    if (!(price > 0)) return fail("Enter the price shown on Snap-on's store.");
+    if (was != null && !(was > price)) return fail("The regular price should be higher than the sale price, or leave it empty.");
+    btn.disabled = true; btn.textContent = "Saving…";
+    const { error } = await sb.rpc("submit_price", { pn: item.part_number, new_price: price, regular_price: was });
+    if (error) { btn.disabled = false; btn.textContent = "Save price"; return fail(error.message || "Couldn't save that price. Try again."); }
+    state.priceEdit = null;
     await loadCatalog(); render();
-    toast(data ? `Queued ${data} part number${data === 1 ? "" : "s"}. The checker picks them up within about 30 minutes.` : "Already queued. The checker picks them up within about 30 minutes.");
-  };
+    toast(`Saved ${money(price, true)} for ${item.part_number}. Thanks, everyone tracking it sees it now.`);
+  }
 
   /* ---------- photos ---------- */
   async function shrink(file, max, quality) {
@@ -1024,8 +989,8 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     : { list, name: "", part_number: "", category: "Other", price: 0, date_bought: null, condition: null, location: "", notes: "", priority: "Want", saved: 0 };
   const addedMsg = (pn, where) => {
     const s = state.catalog[pn];
-    if (s && s.status === "ok") return `Added ${pn} to your ${where}.`;
-    return signedIn() ? `Added ${pn}. Its price and photo arrive within about 30 minutes.` : `Added ${pn} to your ${where}. Sign in so the price checker can look it up.`;
+    if (s && s.status === "ok") return `Added ${pn} to your ${where}, with its store price.`;
+    return signedIn() ? `Added ${pn}. No store price yet: tap Add store price on its card after checking Snap-on's store.` : `Added ${pn} to your ${where}.`;
   };
 
   async function addByPn(pn, list) {
@@ -1063,6 +1028,8 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     const act = btn.dataset.act, id = btn.closest("[data-id]")?.dataset.id;
     const item = state.items.find((r) => r.id === id);
     if (!item) return;
+    if (act === "price") { state.priceEdit = id; render(); setTimeout(() => { const f = document.querySelector(`[data-price-form="${CSS.escape(id)}"] input[name=price]`); if (f) f.focus(); }, 0); return; }
+    if (act === "price-cancel") { state.priceEdit = null; return render(); }
     if (act === "view") return openViewer(id);
     if (act === "photo") return pickPhotoFor(id);
     if (act === "edit") return openForm(item);
@@ -1074,6 +1041,8 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
       return guard(() => saveItem({ ...item, list: "owned", price: wishCost(item), date_bought: today(), condition: "New", location: "", priority: null, saved: 0, from_wishlist: true, created_at: undefined }), "Moved to Owned");
     }
   });
+
+  $("list").addEventListener("submit", (e) => { const f = e.target.closest("[data-price-form]"); if (!f) return; e.preventDefault(); savePrice(f); });
 
   /* ---------- form ---------- */
   const dlg = $("dlg");
@@ -1090,7 +1059,7 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
     const mine = !!pf.url || (it && hasMine(it) && !pf.remove);
     $("pfPick").innerHTML = ICON.cam + (mine ? "Change photo" : "Upload photo");
     $("pfRemove").hidden = !mine;
-    $("pfNote").textContent = pf.url ? "Saves when you tap Save." : mine ? "Your photo shows instead of the store photo." : p ? "Showing Snap-on's store photo. Upload your own to replace it." : "Snap a pic of your tool, or let the price checker add the store photo.";
+    $("pfNote").textContent = pf.url ? "Saves when you tap Save." : mine ? "Your photo shows instead of the store photo." : p ? "Showing Snap-on's store photo. Upload your own to replace it." : "Snap a pic of your tool. Snap-on's store photo shows when there is one.";
   }
   $("pfPick").onclick = () => { $("pfFile").value = ""; $("pfFile").click(); };
   $("pfFile").addEventListener("change", () => { const f = $("pfFile").files[0]; if (!f) return; clearPf(); pf.file = f; pf.url = URL.createObjectURL(f); renderPf(); });
@@ -1158,7 +1127,6 @@ footer { color: var(--muted); font-size: .8rem; padding-block: 0 40px; }
   if (!sb) { state.items = local.read(); state.loaded = true; render(); return; }
   // fires once on load (INITIAL_SESSION), and again on sign-in and sign-out
   sb.auth.onAuthStateChange((_event, session) => { setTimeout(() => setUser(session ? session.user : null), 0); });
-  loadRuns();
 })();
 </script>
 </body>
