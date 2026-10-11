@@ -2,7 +2,7 @@
 
 Track the Snap-on tools in your box, what they're worth today, and what's next on your wishlist.
 
-**Live site:** https://iesofad-hue.github.io/snapon-toolbox/
+**Live site:** https://boxtally.app/
 
 Not affiliated with Snap-on.
 

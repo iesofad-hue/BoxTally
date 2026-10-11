@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://iesofad-hue.github.io/snapon-toolbox/sitemap.xml
+Sitemap: https://boxtally.app/sitemap.xml
