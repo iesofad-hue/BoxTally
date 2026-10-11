@@ -1,9 +1,8 @@
 name: Check Snap-on prices
 
+# Automatic runs are off: Snap-on's store doesn't show product details to GitHub's cloud servers.
+# The checker runs from a home computer instead (see README). This can still be started by hand.
 on:
-  schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes: only new or refresh-requested part numbers
-    - cron: "43 15 * * *"    # once a day: every tracked part number
   workflow_dispatch:
     inputs:
       mode:
