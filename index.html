@@ -321,6 +321,7 @@ a.pn span { color: var(--accent); }
 .chg { font-family: var(--f-mono); font-size: .8rem; font-weight: 500; }
 .chg.up { color: var(--bad); } .chg.down { color: var(--good); }
 .meta-line { font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
+.ebay-line a { color: inherit; text-decoration: underline; }
 .actions { display: flex; flex-wrap: wrap; gap: 4px; }
 .actions .spacer { flex: 1; }
 .pricebox { display: grid; gap: 8px; background: var(--sunk); padding: 10px; border-radius: 10px; }
@@ -919,7 +920,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
   const pub = (bucket, path) => `${SB_URL}/storage/v1/object/public/${bucket}/${String(path).split("/").map(encodeURIComponent).join("/")}`;
 
-  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, loaded: false, editing: null, confirm: null, priceEdit: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
+  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, loaded: false, editing: null, confirm: null, priceEdit: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
 
@@ -1288,7 +1289,9 @@ document.addEventListener("DOMContentLoaded", () => {
       sb.from("catalog").select("part_number,name,price,was_price,status,checked_at").in("part_number", b),
       // newest first, so if there's ever more history than one request holds, the oldest days are what's left out
       sb.from("catalog_prices").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
+      sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at").in("part_number", b),
     ])));
+    if (res.every(([, , e]) => !e.error)) state.ebay = Object.fromEntries(res.flatMap(([, , e]) => e.data || []).map((r) => [r.part_number, r]));
     if (res.every(([c]) => !c.error)) state.catalog = Object.fromEntries(res.flatMap(([c]) => c.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, h]) => !h.error)) {
       const m = {};
@@ -1474,6 +1477,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
   // A shared box whose owner keeps what they paid private
+  // eBay asking prices (official eBay API, refreshed daily by .github/workflows/ebay-prices.yml)
+  const ebayLine = (r) => {
+    const e = r.part_number && state.ebay && state.ebay[r.part_number];
+    if (!e) return "";
+    const url = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent("snap-on " + r.part_number)}`;
+    if (!e.listings || e.median == null) return `<span class="meta-line ebay-line">eBay: no listings right now · <a href="${url}" target="_blank" rel="noopener">search eBay</a></span>`;
+    const parts = [];
+    if (e.new_median != null) parts.push(`new ~${money(Number(e.new_median), true)}`);
+    if (e.used_median != null) parts.push(`used ~${money(Number(e.used_median), true)}`);
+    return `<span class="meta-line ebay-line">eBay: ${parts.join(", ") || `~${money(Number(e.median), true)}`} · from ${money(Number(e.low), true)} · ${e.listings} listing${e.listings === 1 ? "" : "s"} · <a href="${url}" target="_blank" rel="noopener">see on eBay</a></span>`;
+  };
   const hidePaid = () => !!state.readonly && !(state.shareInfo && state.shareInfo.show_prices);
   function cardOwned(r, i) {
     const now = storePrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
@@ -1487,7 +1501,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `<span class="price-big">${now != null ? money(now, now % 1) : "—"}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : now != null ? "Same as you paid" : "&nbsp;"}</span>`
           : `<span class="no-price">${canPrice() ? `Not priced yet.<br><button class="btn small" data-act="price" type="button">Add store price</button>` : "Not priced yet." + signInHint()}</span>`}</div>
       </div>
-      ${trendLine(r)}${priceNote(r)}${r.part_number ? "" : storeStatus(r)}${priceForm(r)}
+      ${trendLine(r)}${ebayLine(r)}${priceNote(r)}${r.part_number ? "" : storeStatus(r)}${priceForm(r)}
       ${r.location ? `<span class="meta-line">Kept in ${esc(r.location)}</span>` : ""}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
       ${lentLine(r)}${lendForm(r)}
@@ -1507,7 +1521,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div><span class="label">Left to save</span><span class="price-big">${cost ? money(left, left % 1) : "—"}</span><span class="meta-line">${cost ? (left ? `${money(saved)} saved` : "Ready to buy") : "&nbsp;"}</span></div>
       </div>
       ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
-      ${trendLine(r)}${priceNote(r)}${storeStatus(r)}${priceForm(r)}
+      ${trendLine(r)}${ebayLine(r)}${priceNote(r)}${storeStatus(r)}${priceForm(r)}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
       <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button>${storeOk(r) && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;

@@ -67,6 +67,12 @@ To switch it on:
 
 BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on's logo, wordmark or fonts, and the tool drawings are BoxTally's own. The footer and privacy page say it's independent, with the Snap-on® trademark notice.
 
+### eBay prices
+
+`checker/ebay.mjs` runs once a day from `.github/workflows/ebay-prices.yml`. It uses eBay's official Browse API to find current Buy It Now listings whose title says Snap-on and the exact part number, then saves the typical new and used asking price, the lowest price and the listing count to `ebay_prices`. Each tool card shows that as an "eBay:" line with a link to the search. These are asking prices from active listings, not Snap-on's list price or what things actually sold for.
+
+Setup: make a free account at developer.ebay.com, create a **Production** keyset, then in the GitHub repo go to **Settings → Secrets and variables → Actions** and add `EBAY_CLIENT_ID` (the App ID) and `EBAY_CLIENT_SECRET` (the Cert ID). The workflow also needs `SUPABASE_SECRET_KEY`. Run **eBay prices** from the Actions tab to fill it right away.
+
 ## The retired price checker
 
 `checker/` and `.github/workflows/check-prices.yml` hold an automatic price checker that was tried first. Snap-on's store sends empty product data to automated browsers (from the cloud and from a home computer alike), and the checker was built not to get around that, so it's no longer used. The workflow only runs if started by hand. If you set it up on a Windows computer, double-click `checker\uninstall-windows.bat` to remove its scheduled tasks.

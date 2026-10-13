@@ -484,3 +484,27 @@ end $$;
 revoke execute on function public.alert_prefs_fill() from public, anon, authenticated;
 create trigger alert_prefs_fill before insert or update on public.alert_prefs
   for each row execute function public.alert_prefs_fill();
+
+-- ===== eBay prices (filled daily by checker/ebay.mjs via .github/workflows/ebay-prices.yml) =====
+create table if not exists public.ebay_prices (
+  part_number text primary key references public.catalog(part_number) on delete cascade,
+  listings    int not null default 0,
+  low         numeric(10,2),
+  median      numeric(10,2),
+  new_median  numeric(10,2),
+  used_median numeric(10,2),
+  checked_at  timestamptz not null default now()
+);
+alter table public.ebay_prices enable row level security;
+create policy "Anyone can read eBay prices" on public.ebay_prices for select to anon, authenticated using (true);
+grant select on public.ebay_prices to anon, authenticated;
+
+create or replace function public.parts_for_ebay()
+returns table (part_number text)
+language sql stable set search_path = '' as $$
+  select c.part_number from public.catalog c
+   where exists (select 1 from public.items i where i.part_number = c.part_number)
+   order by c.part_number;
+$$;
+revoke execute on function public.parts_for_ebay() from public, anon, authenticated;
+grant execute on function public.parts_for_ebay() to service_role;

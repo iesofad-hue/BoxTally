@@ -1,0 +1,33 @@
+name: eBay prices
+
+# Once a day, looks up every tracked part number on eBay (official Browse API) and saves the
+# typical Buy It Now asking price, shown on each tool card. Does nothing until the eBay keys
+# are added (see README, "eBay prices").
+on:
+  schedule:
+    - cron: "17 12 * * *" # every day, 12:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: ebay-prices
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ebay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: https://ctteljhhjsfvyyiwzxiy.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      EBAY_CLIENT_ID: ${{ secrets.EBAY_CLIENT_ID }}
+      EBAY_CLIENT_SECRET: ${{ secrets.EBAY_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Look up eBay prices
+        run: node checker/ebay.mjs
