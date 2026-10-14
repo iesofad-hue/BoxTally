@@ -1,9 +1,0 @@
-{
-  "name": "snapon-toolbox-checker",
-  "private": true,
-  "type": "module",
-  "description": "Checks Snap-on store prices for every tracked part number and saves them to Supabase.",
-  "dependencies": {
-    "playwright": "1.63.0"
-  }
-}

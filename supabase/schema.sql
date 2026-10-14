@@ -50,18 +50,6 @@ create table public.catalog_prices (
 );
 
 -- Price check runs, so the site can show a live progress bar
-create table public.check_runs (
-  id          bigint generated always as identity primary key,
-  started_at  timestamptz not null default now(),
-  finished_at timestamptz,
-  status      text not null default 'running' check (status in ('running', 'ok', 'failed')),
-  total       int not null default 0,
-  done        int not null default 0,
-  current     text,
-  changes     int not null default 0,
-  error       text
-);
-create index check_runs_started_idx on public.check_runs (started_at desc);
 
 -- ===== Triggers and functions =====
 
@@ -90,42 +78,11 @@ create trigger items_enqueue_part after insert or update of part_number on publi
   for each row execute function public.items_enqueue_part();
 revoke execute on function public.items_enqueue_part() from public, anon, authenticated;
 
--- "Refresh prices": flag the caller's part numbers for the next check (at most every 10 minutes)
-create function public.request_refresh() returns int
-language plpgsql security definer set search_path = '' as $$
-declare n int;
-begin
-  if auth.uid() is null then return 0; end if;
-  update public.catalog c set requested_at = now()
-   where c.part_number in (select i.part_number from public.items i where i.user_id = auth.uid())
-     and (c.requested_at is null or c.requested_at < now() - interval '10 minutes');
-  get diagnostics n = row_count;
-  return n;
-end $$;
-revoke execute on function public.request_refresh() from public, anon;
-grant execute on function public.request_refresh() to authenticated;
-
--- Which part numbers the price checker should visit (checker only)
-create function public.parts_to_check(full_run boolean default false)
-returns table (part_number text, has_image boolean, last_price numeric)
-language sql stable set search_path = '' as $$
-  select c.part_number, c.image_path is not null, c.price
-    from public.catalog c
-   where exists (select 1 from public.items i where i.part_number = c.part_number)
-     and (full_run
-          or c.status = 'pending'
-          or c.requested_at > coalesce(c.checked_at, 'epoch'::timestamptz))
-   order by (c.status = 'pending') desc, c.part_number;
-$$;
-revoke execute on function public.parts_to_check(boolean) from public, anon, authenticated;
-grant execute on function public.parts_to_check(boolean) to service_role;
-
 -- ===== Access rules =====
 
 alter table public.items enable row level security;
 alter table public.catalog enable row level security;
 alter table public.catalog_prices enable row level security;
-alter table public.check_runs enable row level security;
 
 create policy "Read own items"   on public.items for select to authenticated using ((select auth.uid()) = user_id);
 create policy "Add own items"    on public.items for insert to authenticated with check ((select auth.uid()) = user_id);
@@ -134,12 +91,11 @@ create policy "Delete own items" on public.items for delete to authenticated usi
 
 create policy "Anyone can read prices"        on public.catalog        for select to anon, authenticated using (true);
 create policy "Anyone can read price history" on public.catalog_prices for select to anon, authenticated using (true);
-create policy "Anyone can read check runs"    on public.check_runs     for select to anon, authenticated using (true);
 
 grant select, insert, update, delete on public.items to authenticated;
-grant select on public.catalog, public.catalog_prices, public.check_runs to anon, authenticated;
+grant select on public.catalog, public.catalog_prices to anon, authenticated;
 revoke all on public.items from anon;
-revoke insert, update, delete, truncate, references, trigger on public.catalog, public.catalog_prices, public.check_runs from anon, authenticated;
+revoke insert, update, delete, truncate, references, trigger on public.catalog, public.catalog_prices from anon, authenticated;
 revoke truncate, references, trigger on public.items from authenticated;
 
 -- ===== Photo storage =====
@@ -508,3 +464,15 @@ language sql stable set search_path = '' as $$
 $$;
 revoke execute on function public.parts_for_ebay() from public, anon, authenticated;
 grant execute on function public.parts_for_ebay() to service_role;
+
+-- ===== Weekly cleanup of old data =====
+create extension if not exists pg_cron with schema pg_catalog;
+create or replace function public.cleanup_old_data()
+returns void language sql security definer set search_path to '' as $$
+  delete from public.price_reports where created_at < now() - interval '90 days';
+  -- price history: every day for a year, then Mondays only
+  delete from public.catalog_prices p
+   where p.d < (now() - interval '1 year')::date and extract(isodow from p.d) <> 1;
+$$;
+revoke execute on function public.cleanup_old_data() from public, anon, authenticated;
+select cron.schedule('boxtally-cleanup', '17 9 * * 0', $$select public.cleanup_old_data()$$);

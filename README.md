@@ -75,10 +75,12 @@ Setup: make a free account at developer.ebay.com, create a **Production** keyset
 
 ## The retired price checker
 
-`checker/` and `.github/workflows/check-prices.yml` hold an automatic price checker that was tried first. Snap-on's store sends empty product data to automated browsers (from the cloud and from a home computer alike), and the checker was built not to get around that, so it's no longer used. The workflow only runs if started by hand. If you set it up on a Windows computer, double-click `checker\uninstall-windows.bat` to remove its scheduled tasks.
+An earlier Snap-on store checker was removed (Snap-on's store hides product data from automated browsers). If you ever set it up on a Windows computer, double-click `checker\uninstall-windows.bat` to remove its scheduled tasks.
 
 ## Keeping it running
 
+- A weekly database job (`cleanup_old_data`, Sundays 09:17 UTC) deletes price reports older than 90 days and thins price history older than a year to one price per week.
+- `.github/workflows/uptime.yml` loads boxtally.app every 12 hours; if it's down, GitHub emails you.
 - Supabase pauses free projects after a week with no activity. `.github/workflows/keep-supabase-awake.yml` reads one row twice a week so that never happens, even when nobody opens the site. If it does get paused anyway, restore it from the Supabase dashboard; nothing is lost.
 - GitHub turns off scheduled workflows in a repo that has had no commits for 60 days. If that happens, open the Actions tab, pick **Keep Supabase awake** and click **Enable workflow**.
 - `robots.txt` and `sitemap.xml` help search engines find the site. When the site moves to its own domain, change the addresses in both files (and `og:url` / `og:image` in `index.html`).
