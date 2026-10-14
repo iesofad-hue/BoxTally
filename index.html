@@ -656,6 +656,29 @@ footer #iosHint { margin: 0 0 8px; }
   #printSheet .pn { font-family: var(--f-mono); background: none; padding: 0; border: 0; }
   #printSheet .foot { color: #444; font-size: 8pt; margin-top: 12pt; }
 }
+.scanbtn { display: inline-flex; align-items: center; gap: 6px; }
+.scanbtn svg { width: 18px; height: 18px; }
+.scanpick { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .85rem; color: var(--muted); }
+.scanpick[hidden] { display: none; }
+.scanpick button { font: inherit; font-family: var(--f-mono, ui-monospace, monospace); font-weight: 600; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--chip, var(--sunk)); color: var(--fg); cursor: pointer; }
+.scanpick button:hover { border-color: var(--accent); color: var(--accent); }
+.owners-line { color: var(--muted); }
+.valchart { display: block; width: 100%; height: 110px; margin: 6px 0 4px; color: var(--accent); }
+.valchart .area { fill: currentColor; opacity: .12; }
+.valchart .ln { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.valrow { display: flex; justify-content: space-between; gap: 8px; font-size: .8rem; color: var(--muted); }
+.warr-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.loading-num { opacity: .55; }
+/* phones: bigger tap targets for greasy thumbs */
+@media (max-width: 620px) {
+  .btn { min-height: 44px; padding-block: 10px; }
+  .btn.small { min-height: 40px; padding: 8px 14px; font-size: .9rem; }
+  .shop-cats a { padding: 9px 14px; font-size: .88rem; }
+  .btn-account, .btn-watch { min-height: 40px; padding-block: 9px; }
+  .seg button { min-height: 44px; min-width: 44px; }
+  .snap { min-height: 40px; }
+  .actions { gap: 8px; }
+}
 </style>
 </head>
 <body>
@@ -718,7 +741,7 @@ footer #iosHint { margin: 0 0 8px; }
 <main class="inner body">
   <div class="banner info" id="localBanner" hidden>
     <span id="localText">You're not signed in, so your toolbox is saved in this browser only. Sign in with Google to keep it on every device and to add store prices.</span>
-    <button class="btn small primary" id="localSignIn" type="button">Sign in with Google</button>
+    <span><button class="btn small primary" id="localSignIn" type="button">Sign in with Google</button> <button class="btn small" id="localDemo" type="button" hidden>See a sample box</button></span>
   </div>
   <div class="banner demo" id="demoBanner" hidden>
     <span><strong>Sample box.</strong> Look around, add, lend or delete tools. Nothing here is saved.</span>
@@ -743,7 +766,10 @@ footer #iosHint { margin: 0 0 8px; }
   <form class="quick" id="quick" novalidate>
     <input id="q-pn" class="mono" placeholder="Part number, e.g. F80" aria-label="Part number" autocapitalize="characters" autocomplete="off">
     <button class="btn primary" type="submit" id="q-add">Add to box</button>
+    <button class="btn scanbtn" type="button" id="q-scan" title="Take a photo of the part number stamped on a tool or its package"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M7 12h10"/></svg>Scan</button>
+    <input type="file" id="scanInput" accept="image/*" capture="environment" hidden>
     <button class="btn" type="button" id="q-more">Add with details &amp; photo</button>
+    <div class="scanpick" id="scanPick" hidden></div>
     <span class="hint" id="q-hint">Just the part number is enough. Anyone tracking it can add the store price, and you can add a photo of your own tool.</span>
   </form>
 
@@ -1290,7 +1316,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // newest first, so if there's ever more history than one request holds, the oldest days are what's left out
       sb.from("catalog_prices").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
       sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at").in("part_number", b),
+      sb.rpc("owner_counts", { pns: b }),
     ])));
+    if (res.every(([, , , o]) => !o.error)) state.owners = Object.fromEntries(res.flatMap(([, , , o]) => o.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, , e]) => !e.error)) state.ebay = Object.fromEntries(res.flatMap(([, , e]) => e.data || []).map((r) => [r.part_number, r]));
     if (res.every(([c]) => !c.error)) state.catalog = Object.fromEntries(res.flatMap(([c]) => c.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, h]) => !h.error)) {
@@ -1488,6 +1516,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.used_median != null) parts.push(`used ~${money(Number(e.used_median), true)}`);
     return `<span class="meta-line ebay-line">eBay: ${parts.join(", ") || `~${money(Number(e.median), true)}`} · from ${money(Number(e.low), true)} · ${e.listings} listing${e.listings === 1 ? "" : "s"} · <a href="${url}" target="_blank" rel="noopener">see on eBay</a></span>`;
   };
+  // how many other BoxTally users have this part number (counts only, never who)
+  const ownersLine = (r) => {
+    const o = r.part_number && !state.demo && state.owners && state.owners[r.part_number];
+    if (!o) return "";
+    const me = signedIn() && !state.readonly ? 1 : 0;
+    const own = Math.max(0, o.owners - (r.list === "owned" ? me : 0)), wish = Math.max(0, o.wishers - (r.list === "wishlist" ? me : 0));
+    const bits = [];
+    if (own) bits.push(`in ${own} other box${own === 1 ? "" : "es"}`);
+    if (wish) bits.push(`on ${wish} other wishlist${wish === 1 ? "" : "s"}`);
+    return bits.length ? `<span class="meta-line owners-line">Also ${bits.join(" · ")}</span>` : "";
+  };
   const hidePaid = () => !!state.readonly && !(state.shareInfo && state.shareInfo.show_prices);
   function cardOwned(r, i) {
     const now = storePrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
@@ -1501,7 +1540,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `<span class="price-big">${now != null ? money(now, now % 1) : "—"}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : now != null ? "Same as you paid" : "&nbsp;"}</span>`
           : `<span class="no-price">${canPrice() ? `Not priced yet.<br><button class="btn small" data-act="price" type="button">Add store price</button>` : "Not priced yet." + signInHint()}</span>`}</div>
       </div>
-      ${trendLine(r)}${ebayLine(r)}${priceNote(r)}${r.part_number ? "" : storeStatus(r)}${priceForm(r)}
+      ${trendLine(r)}${ebayLine(r)}${ownersLine(r)}${priceNote(r)}${r.part_number ? "" : storeStatus(r)}${priceForm(r)}
       ${r.location ? `<span class="meta-line">Kept in ${esc(r.location)}</span>` : ""}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
       ${lentLine(r)}${lendForm(r)}
@@ -1521,7 +1560,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div><span class="label">Left to save</span><span class="price-big">${cost ? money(left, left % 1) : "—"}</span><span class="meta-line">${cost ? (left ? `${money(saved)} saved` : "Ready to buy") : "&nbsp;"}</span></div>
       </div>
       ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
-      ${trendLine(r)}${ebayLine(r)}${priceNote(r)}${storeStatus(r)}${priceForm(r)}
+      ${trendLine(r)}${ebayLine(r)}${ownersLine(r)}${priceNote(r)}${storeStatus(r)}${priceForm(r)}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
       <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button>${storeOk(r) && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;
@@ -1578,14 +1617,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const paid = t.reduce((s, r) => s + (Number(r.price) || 0), 0);
     const worth = t.reduce((s, r) => s + (storePrice(r) ?? (Number(r.price) || 0)), 0);
     const tracked = t.filter(storeOk).length;
-    countTo($("d-worth"), Math.round(worth));
-    $("d-worth-sub").innerHTML = t.length
+    if (!state.loaded) {
+      ["d-worth", "d-left"].forEach((k) => { $(k).textContent = "$…"; $(k).classList.add("loading-num"); });
+      $("d-worth-sub").textContent = "Loading your box…"; $("d-left-sub").textContent = "Loading…";
+    } else { ["d-worth", "d-left"].forEach((k) => $(k).classList.remove("loading-num")); }
+    if (state.loaded) countTo($("d-worth"), Math.round(worth));
+    if (state.loaded) $("d-worth-sub").innerHTML = t.length
       ? `${t.length} tool${t.length === 1 ? "" : "s"}${hidePaid() ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}${tracked ? `<br>${tracked} of ${t.length} priced from Snap-on's store` : ""}`
       : "Add tools to see their value.";
     const cost = w.reduce((s, r) => s + wishCost(r), 0), saved = w.reduce((s, r) => s + Math.min(Number(r.saved) || 0, wishCost(r)), 0);
-    countTo($("d-left"), Math.round(Math.max(cost - (state.readonly ? 0 : saved), 0)));
+    if (state.loaded) countTo($("d-left"), Math.round(Math.max(cost - (state.readonly ? 0 : saved), 0)));
     $("d-left-label").textContent = state.readonly ? "Wishlist total" : "Wishlist";
-    $("d-left-sub").textContent = !w.length ? (state.readonly ? "Nothing on the wishlist." : "Add tools you want to start saving.")
+    if (state.loaded) $("d-left-sub").textContent = !w.length ? (state.readonly ? "Nothing on the wishlist." : "Add tools you want to start saving.")
       : state.readonly ? `${w.length} tool${w.length === 1 ? "" : "s"} on the wishlist`
       : `left to save · ${money(Math.round(saved))} of ${money(Math.round(cost))} saved`;
     $("d-left-bar").firstElementChild.style.width = (cost && !state.readonly ? Math.round((saved / cost) * 100) : 0) + "%";
@@ -1613,6 +1656,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".seg [data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
     $("list").className = state.loaded && rowsOf(state.tab).length ? (view === "list" ? "rows" : view === "drawers" ? "drawers" : "grid") : "grid";
     $("localBanner").hidden = !sb || signedIn() || !state.loaded || state.demo || state.readonly;
+    $("localDemo").hidden = state.items.length > 0;
     $("demoBanner").hidden = !state.demo;
     $("shareBanner").hidden = !state.readonly;
     if (state.readonly) {
@@ -1730,7 +1774,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const warranty = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
       const html = feedHtml()
         + (entries.length ? `<div class="panel"><h2>Worth by department</h2>${entries.map(([c, v]) => `<div class="cat"><div class="line"><span>${esc(c)}</span><span class="num">${money(Math.round(v))}</span></div><div class="bar"><span style="width:${max ? Math.max(3, (v / max) * 100) : 0}%"></span></div></div>`).join("")}</div>` : "")
-        + (warranty.length ? `<div class="panel"><h2>Warranty pile</h2>${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}</span>${r.part_number ? `<span class="pn">${esc(r.part_number)}</span>` : ""}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span></div>` : "")
+        + valueChartHtml()
+        + (warranty.length ? `<div class="panel"><h2>Warranty pile</h2>${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}</span>${r.part_number ? `<span class="pn">${esc(r.part_number)}</span>` : ""}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span><div class="warr-actions"><button class="btn small primary" type="button" data-warr="share">${navigator.share ? "Send list" : "Copy list"}</button><button class="btn small" type="button" data-warr="print">Print</button></div></div>` : "")
         + whoHasHtml();
       box.innerHTML = html; showStats(html, [warranty.length ? `${warranty.length} need${warranty.length === 1 ? "s" : ""} warranty` : "", entries.length ? `${entries.length} department${entries.length === 1 ? "" : "s"}` : ""]);
     } else {
@@ -1743,6 +1788,60 @@ document.addEventListener("DOMContentLoaded", () => {
       box.innerHTML = html; showStats(html, [next ? `Next up: ${displayName(next)}` : "", `${wl.length} on the wishlist`]);
     }
   }
+
+  /* ---------- box value over time (from the shared price history) ---------- */
+  function valueSeries() {
+    const owned = rowsOf("owned");
+    if (!owned.length) return [];
+    const dayOf = (v) => String(v || "").slice(0, 10);
+    const today = new Date().toISOString().slice(0, 10);
+    const tools = owned.map((r) => ({ from: dayOf(r.date_bought) || dayOf(r.created_at) || today, h: hist(r), paid: Number(r.price) || 0 }));
+    let start = tools.reduce((m, t) => (t.from < m ? t.from : m), today);
+    const histStart = tools.flatMap((t) => t.h.map((x) => x.d)).sort()[0];
+    if (histStart && histStart > start) start = histStart; // before any price was tracked there's nothing to chart but what you paid
+    const yearAgo = new Date(Date.now() - 365 * 864e5).toISOString().slice(0, 10);
+    if (start < yearAgo) start = yearAgo;
+    const days = [];
+    for (let d = new Date(start + "T00:00:00Z"); d.toISOString().slice(0, 10) <= today; d.setUTCDate(d.getUTCDate() + 1)) days.push(d.toISOString().slice(0, 10));
+    if (days.length < 2) return [];
+    const step = Math.max(1, Math.ceil(days.length / 120));
+    const pick = days.filter((_, i) => i % step === 0 || i === days.length - 1);
+    return pick.map((d) => ({ d, v: tools.reduce((s, t) => {
+      if (t.from > d) return s;
+      let p = null; for (const x of t.h) { if (x.d <= d) p = x.p; else break; }
+      if (p == null && t.h.length) p = t.h[0].p;
+      return s + (p ?? t.paid);
+    }, 0) }));
+  }
+  function valueChartHtml() {
+    const pts = valueSeries();
+    if (pts.length < 2 || state.readonly) return "";
+    const vs = pts.map((p) => p.v), lo = Math.min(...vs), hi = Math.max(...vs), span = hi - lo || Math.max(hi * 0.1, 1);
+    const W = 300, H = 100, x = (i) => (i / (pts.length - 1)) * W, y = (v) => H - 6 - ((v - lo) / span) * (H - 16);
+    const line = pts.map((p, i) => `${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
+    const first = pts[0], last = pts[pts.length - 1], diff = Math.round(last.v - first.v);
+    const fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    return `<div class="panel"><h2>Box value over time</h2><svg class="valchart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Box value went from ${money(Math.round(first.v))} to ${money(Math.round(last.v))}"><polygon class="area" points="0,${H} ${line} ${W},${H}"/><polyline class="ln" points="${line}"/></svg><div class="valrow"><span>${fmt(first.d)} · ${money(Math.round(first.v))}</span><span>${diff ? `<span class="delta ${diff > 0 ? "up" : "down"}">${signed(diff)}</span> · ` : ""}today ${money(Math.round(last.v))}</span></div><span class="meta-line">Uses store prices people add; tools without one count at what you paid.</span></div>`;
+  }
+
+  /* ---------- warranty list: send to the dealer or print ---------- */
+  function warrantyText() {
+    const rows = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
+    return "Warranty list\n" + rows.map((r) => `- ${displayName(r)}${r.part_number ? ` (${r.part_number})` : ""}${r.notes ? ` - ${r.notes}` : ""}`).join("\n");
+  }
+  $("insights").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-warr]"); if (!b) return;
+    const text = warrantyText();
+    if (b.dataset.warr === "share") {
+      if (navigator.share) { try { await navigator.share({ title: "Warranty list", text }); } catch {} return; }
+      try { await navigator.clipboard.writeText(text); toast("Warranty list copied. Paste it in a text to your dealer."); } catch { toast("Couldn't copy. Try Print instead."); }
+      return;
+    }
+    const w = window.open("", "_blank");
+    if (!w) return toast("Allow pop-ups to print the warranty list.");
+    w.document.write(`<!doctype html><meta charset="utf-8"><title>Warranty list</title><body style="font:16px system-ui;padding:24px"><h1 style="font-size:22px">Warranty list</h1><ol>${rowsOf("owned").filter((r) => r.condition === "Needs warranty").map((r) => `<li style="margin:6px 0"><strong>${esc(displayName(r))}</strong>${r.part_number ? ` &nbsp;<code>${esc(r.part_number)}</code>` : ""}${r.notes ? `<br><small>${esc(r.notes)}</small>` : ""}</li>`).join("")}</ol><script>print()<\/script>`);
+    w.document.close();
+  });
 
   function showStats(html, bits) {
     $("stats").hidden = !html;
@@ -1765,7 +1864,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
       ? `<label class="alert-opt"><input type="checkbox" id="alertDrops"${state.alerts && state.alerts.email_drops ? " checked" : ""}><span>Email me when something on my wishlist drops</span></label>` : "");
     $("sync").dataset.mode = signedIn() ? "account" : "local";
-    $("syncText").textContent = state.readonly ? "Shared box" : state.demo ? "Sample box · not saved" : state.offline ? "Offline · last saved copy" : signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
+    $("syncText").textContent = !state.loaded ? "Loading…" : state.readonly ? "Shared box" : state.demo ? "Sample box · not saved" : state.offline ? "Offline · last saved copy" : signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
   }
 
   async function savePrice(form) {
@@ -2035,6 +2134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
     loadCatalog().then(render);
   }
+  $("localDemo").onclick = () => enterDemo();
   $("demoExit").onclick = () => { state.introDone = false; state.railIntro = false; state.demoTruck = null; loadItems(); scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); };
 
   /* ---------- share my box: a read-only link ---------- */
@@ -2216,6 +2316,56 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ok) toast(addedMsg(pn, list === "owned" ? "box" : "wishlist"));
     return ok;
   }
+  /* ---------- scan a part number with the camera ---------- */
+  const scanCands = (text) => {
+    const seen = new Set(), out = [];
+    String(text || "").toUpperCase().replace(/[^A-Z0-9./\-\s]/g, " ").split(/\s+/).forEach((w) => {
+      const t = w.replace(/^[./-]+|[./-]+$/g, "");
+      if (t.length < 2 || t.length > 20 || !/[A-Z]/.test(t) || !/[0-9]/.test(t) || !PN_RE.test(t) || seen.has(t)) return;
+      seen.add(t); out.push(t);
+    });
+    // part numbers usually start with letters (F80, TM72SET, FDX81)
+    return out.sort((a, b) => (/^[A-Z]/.test(b) ? 1 : 0) - (/^[A-Z]/.test(a) ? 1 : 0)).slice(0, 6);
+  };
+  let tessWorker = null;
+  const loadScript = (src) => new Promise((ok, no) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+  async function readImage(file) {
+    const bmp = await createImageBitmap(file);
+    const k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    if ("BarcodeDetector" in window) {
+      try { const codes = await new BarcodeDetector().detect(c); const hit = scanCands(codes.map((x) => x.rawValue).join(" ")); if (hit.length) return hit; } catch {}
+    }
+    if (!window.Tesseract) await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js");
+    if (!tessWorker) { tessWorker = await Tesseract.createWorker("eng"); await tessWorker.setParameters({ tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./ " }); }
+    const { data } = await tessWorker.recognize(c);
+    return scanCands(data.text);
+  }
+  function showPick(cands) {
+    const box = $("scanPick");
+    box.innerHTML = `<span>Which one?</span>${cands.map((c) => `<button type="button" data-pn="${esc(c)}">${esc(c)}</button>`).join("")}`;
+    box.hidden = false;
+  }
+  $("scanPick").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pn]"); if (!b) return;
+    $("q-pn").value = b.dataset.pn; $("scanPick").hidden = true; $("q-pn").focus();
+    toast(`Check ${b.dataset.pn} is right, then tap ${$("q-add").textContent}.`);
+  });
+  $("q-scan").onclick = () => { $("scanPick").hidden = true; $("scanInput").value = ""; $("scanInput").click(); };
+  $("scanInput").addEventListener("change", async () => {
+    const f = $("scanInput").files && $("scanInput").files[0]; if (!f) return;
+    const btn = $("q-scan"); btn.disabled = true; const old = btn.lastChild.textContent; btn.lastChild.textContent = "Reading…";
+    toast("Reading the part number…");
+    try {
+      const cands = await readImage(f);
+      if (!cands.length) toast("Couldn't read a part number. Try closer, with good light, or type it in.");
+      else if (cands.length === 1) { $("q-pn").value = cands[0]; $("q-pn").focus(); toast(`Found ${cands[0]}. Check it, then tap ${$("q-add").textContent}.`); }
+      else showPick(cands);
+    } catch { toast("Scanning didn't work on this device. Type the part number instead."); }
+    finally { btn.disabled = false; btn.lastChild.textContent = old; }
+  });
+
   $("quick").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (state.readonly) return;
