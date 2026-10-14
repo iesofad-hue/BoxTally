@@ -1145,10 +1145,55 @@ document.addEventListener("DOMContentLoaded", () => {
     const said = text.match(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?drive/i);
     const drive = said ? said[1] + '"' : { '1/4" Drive Tools': '1/4"', '3/8" Drive Tools': '3/8"', '1/2" Drive Tools': '1/2"', '3/4" & Larger Drive Tools': '3/4"' }[r.category]
       || (DRIVE_KINDS.includes(key) && /^[TFSL]/.test(pn) && kind !== "socket-impact" ? { T: '1/4"', F: '3/8"', S: '1/2"', L: '3/4"' }[pn[0]] : null);
-    return { key: kind, drive, label: ART_LABEL[kind] || "Drawing" };
+    return { key: kind, drive, size: sizeOf(kind, text, pn, drive), label: ART_LABEL[kind] || "Drawing" };
   }
-  const artTag = (key, cls = "") => `<span class="art${cls ? " " + cls : ""}" data-art="${ART[key] ? key : "other"}" aria-hidden="true"><svg viewBox="0 0 160 100" focusable="false">${ART[key] || ART.other}</svg></span>`;
-  const thumb = (r) => { const p = photoOf(r); return p ? `<span class="thumb">${imgTag(p, "")}</span>` : `<span class="thumb art-bg">${artTag(artOf(r).key)}</span>`; };
+  /* ---------- the size printed on a drawing: 11mm, 9/16", T40, 1/2 × 9/16 ...
+     Read from the tool's name first, then from Snap-on's part number when the
+     number clearly says it. A socket or wrench whose size we can't tell shows
+     no number rather than a wrong one. */
+  const SIZE_SLOT = {
+    socket: "13", "socket-12": "13", "socket-deep": "13", "socket-impact": "13", "socket-swivel": "13", "socket-bit": "T40",
+    wrench: "13 mm", "wrench-ratchet": "13 mm", "wrench-flare": "13 × 15 mm", "wrench-box": "13 × 15 mm", "wrench-open": "13 × 15 mm",
+    power: "3/8", "power-stubby": "3/8", "power-12": "1/2", "air-impact": "1/2 AIR", extension: '6"',
+  };
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  const frac32 = (n) => { const w = Math.floor(n / 32), r = n % 32, g = gcd(r, 32); return (w ? w + (r ? "-" : "") : "") + (r ? r / g + "/" + 32 / g : ""); };
+  const FR = String.raw`(?:\d-)?\d{1,2}\/\d{1,2}`;
+  function sizeOf(kind, text, pn, drive) {
+    if (!(kind in SIZE_SLOT)) return null;
+    const isSocket = kind.startsWith("socket"), isWrench = kind.startsWith("wrench");
+    if (kind.startsWith("power") || kind === "air-impact") return drive ? drive.replace('"', "") + (kind === "air-impact" ? " AIR" : "") : null;
+    // drop the drive size so "3/8 drive 9/16 socket" reads as 9/16
+    const t = text.replace(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?(?:dr\b|drive)/gi, " ");
+    if (kind === "extension") { const m = t.match(/(\d{1,2}(?:\.\d)?)\s*(?:"|″|in\b|inch)/i); return m ? m[1] + '"' : null; }
+    if (kind === "socket-bit") {
+      const m = t.match(/\b(E?T\d{1,2})\b/i) || t.match(/\b(\d{1,2}(?:\.\d)?)\s*mm\b/i) || t.match(new RegExp(`(${FR})`));
+      return m ? (/^\d/.test(m[1]) && !m[1].includes("/") ? m[1] + "mm" : m[1].toUpperCase()) : null;
+    }
+    // two sizes: 13 x 15 mm, 1/2 x 9/16
+    let m = t.match(/\b(\d{1,2})\s*(?:mm)?\s*[x×]\s*(\d{1,2})\s*mm\b/i);
+    if (m && isWrench && kind !== "wrench" && kind !== "wrench-ratchet") return `${m[1]} × ${m[2]} mm`;
+    m = t.match(new RegExp(`(${FR})\\s*(?:"|″|in\\b|inch)?\\s*[x×]\\s*(${FR})`, "i"));
+    if (m && isWrench && kind !== "wrench" && kind !== "wrench-ratchet") return `${m[1]} × ${m[2]}`;
+    // one size
+    m = t.match(/\b(\d{1,2}(?:\.\d)?)\s*mm\b/i);
+    if (m) return isSocket ? m[1] + "mm" : m[1] + " mm";
+    m = t.match(new RegExp(`(?:^|[^\\d/])(${FR})(?![\\d/])`));
+    if (m) return m[1] + '"';
+    // Snap-on part numbers: metric sockets carry the mm (FSM11, TMM10, SIMFM13); OEXM110 is 11 mm; OEX18 is 18/32" = 9/16"
+    if (isSocket && (m = pn.match(/^(?:S?IM)?[TFSL]{1,2}[A-Z]*M[A-Z]?(\d{1,2})[A-Z]?$/))) return m[1] + "mm";
+    if (isWrench && (m = pn.match(/^S?(?:OEX|OXI|SRX|OXR)M(\d{2,3})[A-Z]*$/))) { const v = Number(m[1]); return (v >= 60 ? v / 10 : v) + " mm"; }
+    if (isWrench && (m = pn.match(/^S?(?:OEX|OXI|SRX|OXR)(\d{1,2})[A-Z]*$/))) return frac32(Number(m[1])) + '"';
+    return isSocket || isWrench ? "" : null; // unknown: no number beats a wrong one
+  }
+  const artTag = (a, cls = "") => {
+    const key = typeof a === "string" ? a : a.key;
+    let svg = ART[key] || ART.other;
+    const slot = SIZE_SLOT[key];
+    if (typeof a === "object" && a.size != null && slot) svg = svg.replace(`>${slot}</text>`, `>${esc(a.size)}</text>`);
+    return `<span class="art${cls ? " " + cls : ""}" data-art="${ART[key] ? key : "other"}" aria-hidden="true"><svg viewBox="0 0 160 100" focusable="false">${svg}</svg></span>`;
+  };
+  const thumb = (r) => { const p = photoOf(r); return p ? `<span class="thumb">${imgTag(p, "")}</span>` : `<span class="thumb art-bg">${artTag(artOf(r))}</span>`; };
 
   function spark(r, w = 84, h = 26) {
     const pts = hist(r);
@@ -1500,7 +1545,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!p) {
       // no photo of your own yet: BoxTally's drawing of this kind of tool
       const a = artOf(r);
-      return `<div class="photo art-bg">${artTag(a.key)}${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
+      return `<div class="photo art-bg">${artTag(a)}${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
     }
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
@@ -1742,7 +1787,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("railCount").textContent = `${owned.length} tool${owned.length === 1 ? "" : "s"}${withPh ? ` · ${withPh} with your photos` : ""}`;
     if (!state.railIntro) { state.railIntro = true; $("rail").classList.add("intro"); setTimeout(() => $("rail").classList.remove("intro"), 2200); }
     $("rail").innerHTML = rows.map((r, i) => { const p = photoOf(r), pr = storePrice(r) ?? (Number(r.price) || 0);
-      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}">${p ? imgTag(p, displayName(r)) : artTag(artOf(r).key)}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
+      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}">${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
   }
 
   function activity() {
@@ -2557,7 +2602,7 @@ document.addEventListener("DOMContentLoaded", () => {
     else {
       // the drawing follows what you type, so you can see which one your card will get
       const a = artOf({ ...(it || {}), name: $("i-name").value, part_number: cleanPn($("i-pn").value), category: $("i-cat").value });
-      if ($("pfPrev")._art !== a.key) { $("pfPrev").innerHTML = artTag(a.key, $("pfPrev")._art ? "swap" : ""); $("pfPrev")._art = a.key; }
+      if ($("pfPrev")._art !== a.key + "|" + a.size) { $("pfPrev").innerHTML = artTag(a, $("pfPrev")._art && !$("pfPrev")._art.startsWith(a.key + "|") ? "swap" : ""); $("pfPrev")._art = a.key + "|" + a.size; }
       $("pfPrev")._label = a.label;
     }
     const mine = !!pf.url || (it && hasMine(it) && !pf.remove);
