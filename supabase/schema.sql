@@ -476,3 +476,54 @@ returns void language sql security definer set search_path to '' as $$
 $$;
 revoke execute on function public.cleanup_old_data() from public, anon, authenticated;
 select cron.schedule('boxtally-cleanup', '17 9 * * 0', $$select public.cleanup_old_data()$$);
+
+-- ===== Photo thumbnails and hand-picked drawings (added October 13, 2026) =====
+-- Each photo gets a small copy (name.t.jpg) that cards load; thumbnails don't count toward the 300-photo limit.
+create or replace function private.photo_count(uid uuid) returns int
+language sql stable security definer set search_path = '' as $$
+  select count(*)::int from storage.objects o
+   where o.bucket_id = 'tool-photos' and (storage.foldername(o.name))[1] = uid::text
+     and o.name !~ '\.t\.jpg$';
+$$;
+create or replace function private.thumb_count(uid uuid) returns int
+language sql stable security definer set search_path = '' as $$
+  select count(*)::int from storage.objects o
+   where o.bucket_id = 'tool-photos' and (storage.foldername(o.name))[1] = uid::text
+     and o.name ~ '\.t\.jpg$';
+$$;
+revoke execute on function private.thumb_count(uuid) from public, anon;
+grant execute on function private.thumb_count(uuid) to authenticated;
+
+drop policy if exists "Upload own tool photos" on storage.objects;
+create policy "Upload own tool photos" on storage.objects for insert to authenticated
+  with check (bucket_id = 'tool-photos'
+              and (storage.foldername(name))[1] = (select auth.uid())::text
+              and (case when name ~ '\.t\.jpg$' then private.thumb_count((select auth.uid())) < 300
+                        else private.photo_count((select auth.uid())) < 300 end));
+
+-- A drawing the owner picked by hand; empty means BoxTally picks one from the name.
+alter table public.items add column if not exists art text
+  check (art is null or art ~ '^[a-z0-9-]{1,40}$');
+
+-- Shared box links show the hand-picked drawing too.
+create or replace function public.shared_box(t text)
+returns json
+language sql stable security definer set search_path = '' as $$
+  select json_build_object(
+    'title', s.title,
+    'show_prices', s.show_prices,
+    'items', coalesce((
+      select json_agg(json_build_object(
+        'id', i.id, 'list', i.list, 'name', i.name, 'part_number', i.part_number, 'category', i.category,
+        'condition', i.condition, 'priority', i.priority, 'created_at', i.created_at, 'art', i.art,
+        'price', case when s.show_prices then i.price else 0 end,
+        'date_bought', case when s.show_prices then i.date_bought end
+      ) order by i.created_at)
+      from public.items i
+      where i.user_id = s.user_id and (i.list = 'owned' or s.show_wishlist)
+    ), '[]'::json))
+  from public.box_shares s
+  where s.token = t and char_length(t) = 20;
+$$;
+revoke execute on function public.shared_box(text) from public;
+grant execute on function public.shared_box(text) to anon, authenticated;
