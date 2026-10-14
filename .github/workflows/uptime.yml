@@ -1,0 +1,27 @@
+name: Site uptime
+
+# Checks boxtally.app twice a day. If the site is down, this run fails and GitHub
+# emails the repo owner automatically (no extra service needed).
+on:
+  schedule:
+    - cron: "7 */12 * * *" # every 12 hours
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Load boxtally.app
+        run: |
+          for attempt in 1 2 3; do
+            code=$(curl -sL -o /tmp/page.html -w "%{http_code}" --max-time 20 https://boxtally.app/)
+            echo "Attempt $attempt: HTTP $code"
+            if [ "$code" = "200" ] && grep -qi "BoxTally" /tmp/page.html; then exit 0; fi
+            sleep 30
+          done
+          echo "::error::boxtally.app did not load correctly"
+          exit 1
