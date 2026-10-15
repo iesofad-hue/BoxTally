@@ -582,27 +582,26 @@ footer #iosHint { margin: 0 0 8px; }
 .readonly :is(.quick, .shop, .actions, .snap, .keys, #exportBox, .addprice, .lentline, .pricebox) { display: none !important; }
 
 /* ---------- tool drawings: shown until you add your own photo ---------- */
-/* a blueprint-paper plate, the same light plate in both themes so the drawings read the same */
+/* a photo-studio sweep: a soft key light up top fading to a cool floor, the same in both themes so the drawings read the same */
 .art-bg { background:
-    linear-gradient(rgb(16 21 28 / .045) 1px, transparent 1px) 0 0 / 16px 16px,
-    linear-gradient(90deg, rgb(16 21 28 / .045) 1px, transparent 1px) 0 0 / 16px 16px,
-    radial-gradient(120% 95% at 50% 32%, #ffffff, var(--plate) 62%, #dde3ea) !important; }
+    radial-gradient(70% 55% at 50% 30%, rgb(255 255 255 / .95), transparent 70%),
+    linear-gradient(180deg, #f7f9fb 0%, #eef1f5 58%, #dfe4ea 78%, #e9edf1 100%) !important; }
 .art { display: block; width: 100%; height: 100%; }
 .art svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .photo .art { position: absolute; inset: 8% 7% 13%; width: auto; height: auto; }
-.thumb .art { padding: 2px; }
+.thumb .art { padding: 2px; --stroke: 2.2; }
 .nextup .thumb .art, .ri .thumb .art { padding: 4px; }
 .shot .plate .art { padding: 14px; }
 .pf-prev .art { padding: 12px; }
 /* chrome, rubber and paint come from the shared gradients in #artDefs */
-.art { --ink: #22272e; --grip: #c8171f; }
+.art { --ink: #1e232a; --grip: #c8171f; --stroke: 1.7; }
 .art .dv { fill: url(#bx-dark-v); } .art .gp { fill: #f7f9fb; stroke: none; }
 .art .cb { fill: #fff; stroke: var(--ink); stroke-width: 1.6; filter: drop-shadow(0 2px 2px rgb(0 0 0 / .18)); }
 .art .tkd { fill: none; stroke: #3a4048; stroke-linecap: round; stroke-linejoin: round; }
 .art .clr { fill: rgb(255 214 120 / .45); stroke: var(--ink); stroke-width: 2; }
 .art .ledr { fill: #ff5a4f; stroke: var(--ink); stroke-width: 1.2; } .art .ledg { fill: #4fd18a; stroke: var(--ink); stroke-width: 1.2; }
 .art .spring { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
-.art :is(.s, .sv, .dv, .h, .g, .y, .k, .d, .w, .pit, .rc, .ball, .scr, .ring) { stroke: var(--ink); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+.art :is(.s, .sv, .dv, .h, .g, .y, .k, .d, .w, .pit, .rc, .ball, .scr, .ring) { stroke: var(--ink); stroke-width: var(--stroke); stroke-linejoin: round; stroke-linecap: round; }
 .art .s { fill: url(#bx-steel); } .art .sv { fill: url(#bx-steel-v); } .art .h { fill: #f1f4f8; } .art .g { fill: url(#bx-grip); } .art .y { fill: url(#bx-yel); }
 .art .k { fill: var(--ink); } .art .bl { fill: #2f6fd6; stroke: var(--ink); stroke-width: 2.2; } .art .floor { fill: url(#bx-floor); stroke: none; } .art .d { fill: url(#bx-dark); } .art .w { fill: #f6f9ff; } .art .pit { fill: #39424e; }
 .art .rc { fill: #aeb8c5; stroke-width: 1.2; } .art .ball { fill: url(#bx-ball); } .art .scr { fill: url(#bx-screen); stroke-width: 1.4; } .art .ring { fill: #8e99a6; stroke-width: 1.2; }
@@ -628,11 +627,16 @@ footer #iosHint { margin: 0 0 8px; }
 .art .wave { fill: none; stroke: #4fd18a; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .art .lamp { fill: #fff6cc; stroke: var(--ink); stroke-width: 2; } .art .led { fill: #ffd84d; stroke: none; } .art .ledoff { fill: #59636f; stroke: none; }
 .art .ray { fill: none; stroke: #f4bd2a; stroke-width: 3; stroke-linecap: round; }
+.photo .art .tool, .shot .art .tool, .viewer .art .tool, .pf-prev .art .tool { filter: url(#bx-3d); }
 /* drop shadow under the drawing so it sits on the paper */
 .photo .art svg, .shot .art svg { filter: drop-shadow(0 6px 6px rgb(16 21 28 / .16)); }
 @media (prefers-reduced-motion: no-preference) {
   .photo .art svg, .shot .art svg, .pf-prev .art svg { transition: transform .5s cubic-bezier(.3, 1.5, .5, 1); }
-  .card:hover .photo .art svg, .shot:hover .art svg { transform: rotate(-5deg) scale(1.05); }
+  .photo .art .tool, .photo .art .floor, .shot .art .tool, .shot .art .floor { transition: transform .45s cubic-bezier(.3, 1.4, .5, 1), opacity .45s; transform-box: fill-box; transform-origin: center; }
+  .card:hover .photo .art .tool { transform: translate(calc(var(--px, 0) * 7px), calc(-5px + var(--py, 0) * 5px)) scale(1.05); }
+  .card:hover .photo .art .floor { transform: translateX(calc(var(--px, 0) * -6px)) scale(.86); opacity: .7; }
+  .shot:hover .art .tool { transform: translateY(-4px) scale(1.05); }
+  .shot:hover .art .floor { transform: scale(.86); opacity: .7; }
   .pf-prev .art.swap svg { animation: artSwap .45s cubic-bezier(.3, 1.6, .5, 1); }
 }
 @keyframes artSwap { from { transform: scale(.6) rotate(-14deg); opacity: 0; } }
@@ -681,6 +685,33 @@ footer #iosHint { margin: 0 0 8px; }
   .snap { min-height: 40px; }
   .actions { gap: 8px; }
 }
+
+/* ---------- 2026 refresh: softer, deeper surfaces ---------- */
+:root { --radius: 18px; --glass: rgb(255 255 255 / .05); --glass-line: rgb(255 255 255 / .12); }
+body { background: radial-gradient(1200px 500px at 50% -120px, color-mix(in srgb, var(--surface) 70%, transparent), transparent 70%) no-repeat, var(--bg); }
+/* dashboard tiles: frosted glass with a lit top edge */
+.tile, .progress { background: linear-gradient(180deg, rgb(255 255 255 / .075), rgb(255 255 255 / .025)); border-color: var(--glass-line);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .1), 0 20px 40px -24px rgb(0 0 0 / .7); backdrop-filter: blur(10px) saturate(1.3); -webkit-backdrop-filter: blur(10px) saturate(1.3); border-radius: var(--radius); }
+.tile .big { background: linear-gradient(180deg, #ffffff 30%, #c4ceda); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tile .bar, .pbar { box-shadow: inset 0 1px 2px rgb(0 0 0 / .4); }
+/* rail photos sit on the same studio sweep, with depth */
+.shot .plate { border-radius: 16px; border: 0; box-shadow: inset 0 1px 0 rgb(255 255 255 / .9), 0 14px 28px -16px rgb(0 0 0 / .8); }
+/* cards: rounder, layered shadow, a hairline highlight */
+.card, .panel, .quick, .shop, .banner { border-radius: var(--radius); border-color: color-mix(in srgb, var(--line) 70%, transparent); }
+.card { box-shadow: 0 1px 0 rgb(255 255 255 / .6) inset, 0 1px 2px rgb(16 21 28 / .06), 0 8px 16px -8px rgb(16 21 28 / .12), 0 24px 48px -28px rgb(16 21 28 / .32); }
+@media (prefers-color-scheme: dark) { .card { box-shadow: 0 1px 0 rgb(255 255 255 / .05) inset, 0 1px 2px rgb(0 0 0 / .4), 0 24px 48px -28px rgb(0 0 0 / .9); } }
+.photo { border-bottom: 0; box-shadow: inset 0 -1px 0 var(--plate-line), inset 0 -18px 24px -22px rgb(16 21 28 / .25); }
+/* labels and buttons on top of a drawing are frosted, not flat grey */
+.photo .src, .photo .snap { background: rgb(18 24 32 / .58); backdrop-filter: blur(8px) saturate(1.4); -webkit-backdrop-filter: blur(8px) saturate(1.4); box-shadow: inset 0 1px 0 rgb(255 255 255 / .14); }
+.photo .over .chip[class="chip"] { background: rgb(255 255 255 / .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 1px 2px rgb(16 21 28 / .12); }
+/* primary buttons: a slight bevel so they look pressable */
+.btn.primary, .btn-refresh, .fab { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent) 55%, color-mix(in srgb, var(--accent) 88%, #000)); box-shadow: inset 0 1px 0 rgb(255 255 255 / .28), 0 8px 18px -10px color-mix(in srgb, var(--accent) 80%, #000); }
+.btn { border-radius: 10px; }
+input, select, textarea { border-radius: 10px; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
+/* phone: the truck account gets the full width so its button fits */
+@media (max-width: 560px) { .dash .truck, .dash .watch { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
@@ -696,6 +727,21 @@ footer #iosHint { margin: 0 0 8px; }
   <linearGradient id="bx-dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5e6671"/><stop offset=".16" stop-color="#3d444d"/><stop offset=".5" stop-color="#262b31"/><stop offset=".86" stop-color="#14171b"/><stop offset="1" stop-color="#2c323a"/></linearGradient>
   <radialGradient id="bx-ball" cx=".36" cy=".34" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#dfe5eb"/><stop offset=".7" stop-color="#7e8a98"/><stop offset="1" stop-color="#b9c2cc"/></radialGradient>
   <linearGradient id="bx-screen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a3646"/><stop offset=".45" stop-color="#16202b"/><stop offset=".46" stop-color="#121a23"/><stop offset="1" stop-color="#0b1015"/></linearGradient>
+  <!-- studio lighting for the bigger drawings: bright paint and chrome read as raised, the dark outlines as seams,
+       then a key light from the top left shades the edges and puts a glint on them -->
+  <filter id="bx-3d" x="-6%" y="-12%" width="112%" height="130%" color-interpolation-filters="sRGB">
+    <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .3 .55 .15 0 0" result="lum"/>
+    <feComposite in="lum" in2="SourceAlpha" operator="in"/>
+    <feGaussianBlur stdDeviation="1" result="seams"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="2.4" result="body"/>
+    <feComposite in="body" in2="seams" operator="arithmetic" k1="0" k2=".7" k3=".3" k4="0" result="bump"/>
+    <feDiffuseLighting in="bump" surfaceScale="2.6" diffuseConstant="1.22" lighting-color="#fff" result="diff"><feDistantLight azimuth="225" elevation="52"/></feDiffuseLighting>
+    <feSpecularLighting in="bump" surfaceScale="2.6" specularConstant=".85" specularExponent="22" lighting-color="#fff" result="spec"><feDistantLight azimuth="225" elevation="52"/></feSpecularLighting>
+    <feComposite in="SourceGraphic" in2="diff" operator="arithmetic" k1="1" k2="0" k3="0" k4="0" result="lit"/>
+    <feComposite in="spec" in2="SourceAlpha" operator="in" result="glint"/>
+    <feComposite in="lit" in2="glint" operator="arithmetic" k1="0" k2="1" k3=".55" k4="0" result="out"/>
+    <feComposite in="out" in2="SourceAlpha" operator="in"/>
+  </filter>
   <radialGradient id="bx-floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#10151c" stop-opacity=".22"/><stop offset="1" stop-color="#10151c" stop-opacity="0"/></radialGradient>
 </defs></svg>
 
@@ -1297,7 +1343,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const nums = a.nums || ["", "", "", "", ""];
       let i = 0; svg = svg.replace(/>(8|10|12|14|17)<\/text>/g, () => `>${esc(nums[i++])}</text>`);
     }
-    return `<span class="art${cls ? " " + cls : ""}" data-art="${ART[key] ? key : "other"}" aria-hidden="true"><svg viewBox="0 0 160 100" focusable="false"><ellipse class="floor" cx="80" cy="94" rx="66" ry="6"/>${svg}</svg></span>`;
+    return `<span class="art${cls ? " " + cls : ""}" data-art="${ART[key] ? key : "other"}" aria-hidden="true"><svg viewBox="0 0 160 100" focusable="false"><ellipse class="floor" cx="80" cy="94" rx="66" ry="6"/><g class="tool">${svg}</g></svg></span>`;
   };
   const thumb = (r) => { const p = photoOf(r); return p ? `<span class="thumb">${imgTag(p, "")}</span>` : `<span class="thumb art-bg">${artTag(artOf(r))}</span>`; };
 
@@ -2426,6 +2472,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (el) {
           const r = el.getBoundingClientRect(), px = (last.clientX - r.left) / r.width, py = (last.clientY - r.top) / r.height;
           el.style.setProperty("--mx", (px * 100).toFixed(1) + "%"); el.style.setProperty("--my", (py * 100).toFixed(1) + "%");
+          el.style.setProperty("--px", (px - 0.5).toFixed(3)); el.style.setProperty("--py", (py - 0.5).toFixed(3));
           // no lean while a card has a form open, so typing stays steady
           if (!reduce && !el.querySelector("form, .confirm")) {
             const k = el.classList.contains("tile") ? 6 : 4;
