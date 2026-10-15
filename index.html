@@ -1146,8 +1146,12 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^[TFSL]X[WKL]?\d{1,2}[A-Z]?$/, "extension"], [/^[TFSL]U\d{1,2}[A-Z]?$/, "ujoint"], [/^AW/, "hexkeys"],
     [/^(KR|KMP|KCP|KHP|KER|KTL|KSL|KHD)/, "storage"], [/^(ZEE|EE)/, "diag"],
     [/^(\d{2,3}(ACF|ACP|BCP|CP|CF)|LN\d|PL\d|AWP|SRP)/, "pliers"], [/^(HBB|HBFE|BPN|HB)\d/, "hammer"],
-    [/^[TFSL][HKLXWNF]*(72|80|720|830|936|880)\b/, "ratchet"],
-    [/^[TFSL]{1,2}(S?M{1,2}S?|TXE?|ATX|AM|AB|S?U|S)?\d/, "socket"], [/^[TFSL][A-Z]*\d/, "ratchet"],
+    // Ratchet numbers end in the tooth count (72, 80, 100...) and can carry a letter after it: S80A, FH80A.
+    [/^[TFSL][A-Z]*(72|80|100|720|830|880|936)[A-Z]{0,2}$/, "ratchet"],
+    // Metric, bit and swivel sockets say so in their letters. Plain SAE sockets are a size in 32nds
+    // (F12 is 12/32 = 3/8"), with a 1 on the end for 6-point (F121), so 80 or 100 can't be a socket.
+    [/^[TFSL]{1,2}(S?M{1,2}S?|TXE?|ATX|AM|AB|S?U)\d/, "socket"], [/^[TFSL]{1,2}S?(0?[4-9]|[1-5]\d|6[0-4])1?[A-Z]?$/, "socket"],
+    [/^[TFSL][A-Z]*\d/, "ratchet"],
   ];
   // Then the kind of ratchet, socket, wrench, pliers, pick or screwdriver.
   const VARIANT_WORDS = {
@@ -1170,8 +1174,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const VARIANT_PN = {
     torque: [[/^(A?TECH|CTECH)/, "torque"]],
     power: [[/^CTR/, "power-ratchet"], [/^(FAR|PTR)/, "air-ratchet"], [/^(MG|IM)\d/, "air-impact"], [/^PH\d/, "air-hammer"], [/^CDR/, "power-drill"], [/^CTB/, "battery"], [/^CTC/, "charger"]],
-    ratchet: [[/^[TFSL](72|80|720|830|936|880)$/, "ratchet-hard"], [/^[TFSL]H?L?F\d|^(FHLF|FLF|THLF|SHLF|FHF|THF)/, "ratchet-flex"], [/^[TFSL]H?LL?\d|^(FHL|THL|SHL)\d/, "ratchet-long"], [/^[TFSL]H?K\d|^TMK/, "ratchet-stubby"]],
-    socket: [[/^(IM[A-Z]|SIM|IPM|IPS)/, "socket-impact"], [/^[TFSL]{1,2}(TXE?|ATX|AM|AB)/, "socket-bit"], [/^[TFSL]S?U/, "socket-swivel"], [/^[TFSL]S?M{1,2}S\d/, "socket-deep"], [/^[TFSL]M\d|^[TFSL]\d{3}/, "socket-12"]],
+    ratchet: [[/^[TFSL](72|80|720|830|880|936)[A-Z]?$/, "ratchet-hard"], [/^[TFSL]H?L?F\d|^(FHLF|FLF|THLF|SHLF|FHF|THF)/, "ratchet-flex"], [/^[TFSL]H?LL?\d|^(FHL|THL|SHL)\d/, "ratchet-long"], [/^[TFSL]H?K\d|^TMK/, "ratchet-stubby"]],
+    socket: [[/^(IM[A-Z]|SIM|IPM|IPS)/, "socket-impact"], [/^[TFSL]{1,2}(TXE?|ATX|AM|AB)/, "socket-bit"], [/^[TFSL]S?U/, "socket-swivel"], [/^[TFSL]S?M{1,2}S\d/, "socket-deep"], [/^[TFSL]M\d|^[TFSL]\d{1,2}[A-Z]?$/, "socket-12"]],
     wrench: [[/^(AD\d|FAD)/, "wrench-adjust"], [/^(R?XF|RXH|RXS|SRXF)/, "wrench-flare"], [/^(S?OXRR?|OXRM|SRX?R|SOXRR)/, "wrench-ratchet"], [/^(S?XDH?|SXD)/, "wrench-box"], [/^(VSM?\d|V\d)/, "wrench-open"]],
     pliers: [[/^(LN|9\d|19\d)/, "pliers-needle"], [/^(8[4-9]|18[4-9])/, "pliers-diag"], [/^(PL\d|AWP)/, "pliers-pump"], [/^SRP/, "pliers-snap"]],
   };
