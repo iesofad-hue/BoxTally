@@ -29,6 +29,8 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
+<!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
 <style>
 /* Layout: a graphite dashboard band with a photo rail of the latest tools, then drawer tabs over a photo-first card grid; one column on a phone */
@@ -727,6 +729,20 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .viewer .stage { position: relative; width: 100%; aspect-ratio: 16 / 10; max-height: 70vh; touch-action: none; cursor: crosshair; overflow: hidden; }
 .viewer .stage .art { position: absolute; inset: 9% 7% 15%; width: auto; height: auto; }
 .viewer .stage .art svg { filter: drop-shadow(0 16px 12px rgb(16 21 28 / .2)); }
+/* real 3D models: a rendered picture replaces the drawing on cards and the rail, a live model in the showroom */
+.m3d { position: absolute; inset: 3% 3% 5%; width: 94%; height: 92%; object-fit: contain; pointer-events: none; }
+.shot .plate { position: relative; }
+.has3d .art { visibility: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .m3d { animation: m3dIn .5s ease-out; transition: transform .45s cubic-bezier(.3, 1.4, .5, 1); }
+  .card:hover .photo .m3d { transform: translateY(-4px) scale(1.04); }
+  .shot:hover .m3d { transform: translateY(-3px) scale(1.05); }
+}
+@keyframes m3dIn { from { opacity: 0; transform: scale(.96); } }
+.viewer .stage.is3d { cursor: grab; }
+.viewer .stage.is3d:active { cursor: grabbing; }
+.viewer .stage.is3d .art { visibility: hidden; }
+.viewer .stage .m3d-live { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 /* a shared box still gets a way out of the showroom */
 .readonly .viewer .v-cap .actions { display: flex !important; }
 /* phone: the truck account gets the full width so its button fits */
@@ -1870,7 +1886,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!p) {
       // no photo of your own yet: BoxTally's drawing of this kind of tool
       const a = artOf(r);
-      return `<div class="photo art-bg"><button class="open" type="button" data-act="view" aria-label="See ${esc(displayName(r))} up close">${artTag(a, "", { refl: true })}</button>${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
+      return `<div class="photo art-bg" data-m3d="${esc(a.key + "|" + (a.size || ""))}"><button class="open" type="button" data-act="view" aria-label="See ${esc(displayName(r))} up close">${artTag(a, "", { refl: true })}</button>${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
     }
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
@@ -2112,7 +2128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("railCount").textContent = `${owned.length} tool${owned.length === 1 ? "" : "s"}${withPh ? ` · ${withPh} with your photos` : ""}`;
     if (!state.railIntro) { state.railIntro = true; $("rail").classList.add("intro"); setTimeout(() => $("rail").classList.remove("intro"), 2200); }
     $("rail").innerHTML = rows.map((r, i) => { const p = photoOf(r), pr = storePrice(r) ?? (Number(r.price) || 0);
-      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}">${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
+      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}"${p ? "" : ` data-m3d="${esc(artOf(r).key + "|" + (artOf(r).size || ""))}"`}>${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
   }
 
   function activity() {
@@ -2343,10 +2359,49 @@ document.addEventListener("DOMContentLoaded", () => {
       $("vHint").textContent = matchMedia("(hover: hover)").matches ? "· Move the pointer to light it" : "· Drag to move the light";
       $("vPhoto").textContent = "Add your photo";
       showroomLight(true);
+      // tools with a 3D model swap the drawing for the model, which you can spin around
+      load3d().then((t) => {
+        if (!t || !t.has(a.key) || viewing !== id || !viewer.open || !$("vStage")) return;
+        showroomLight(false);
+        const stop = t.viewer($("vStage"), a.key, a.size || "");
+        if (!stop) return;
+        $("vStage").classList.add("is3d"); $("vHint").textContent = "· Drag to spin it";
+        viewer.addEventListener("close", stop, { once: true });
+      });
     }
     $("vPhoto").hidden = state.readonly || state.demo;
     viewer.showModal();
   }
+  /* ---------- real 3D models (tool3d.js) ----------
+     The 3D engine is big, so it loads after the page is up. Until then, and on devices without 3D
+     graphics, every tool shows its drawing. Once loaded, drawings of tools that have a model are
+     swapped for a picture of the model, made once per kind and size of tool. */
+  let t3 = null;
+  const load3d = () => t3 || (t3 = (() => {
+    try { const c = document.createElement("canvas"); if (!(c.getContext("webgl2") || c.getContext("webgl"))) return Promise.resolve(null); } catch (e) { return Promise.resolve(null); }
+    return import("./tool3d.js").catch(() => null);
+  })());
+  function upgrade3d() {
+    const todo = [...document.querySelectorAll("[data-m3d]:not([data-m3d-done])")];
+    if (!todo.length) return;
+    load3d().then((t) => {
+      if (!t) return;
+      for (const el of todo) {
+        el.setAttribute("data-m3d-done", "");
+        const [key, size] = el.dataset.m3d.split("|");
+        if (!t.has(key)) continue;
+        const square = el.classList.contains("plate");
+        t.picture(key, size, square ? 360 : 720, square ? 360 : 450).then((url) => {
+          if (!url || !el.isConnected) return;
+          const art = el.querySelector(".art"); if (!art) return;
+          const img = new Image(); img.className = "m3d"; img.alt = ""; img.src = url;
+          img.onload = () => { art.parentElement.appendChild(img); el.classList.add("has3d"); };
+        });
+      }
+    });
+  }
+  new MutationObserver(() => { clearTimeout(upgrade3d.t); upgrade3d.t = setTimeout(upgrade3d, 60); }).observe(document.body, { childList: true, subtree: true });
+  setTimeout(upgrade3d, 300);
   // One copy of the studio lighting whose light can move: it follows the pointer over a drawing card
   // and over the showroom view, so the chrome catches the light as you move, like turning a tool in your hand.
   const liveLight = (() => {
