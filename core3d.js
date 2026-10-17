@@ -140,6 +140,11 @@ export function socket({ h = 26, r = 10.5, deep = false, impact = false, points 
     const hole = points === 12 ? pathShape(starPath(12, rIn * 0.88, rIn)) : hexShape(rIn);
     g.add(prism(hole, 9, mat.hole, top - 9.6));
   }
+  if (!swivel) { // the square drive hole in the bottom, with a chamfered rim
+    const sq = Math.min(9.6, r * 0.95);
+    g.add(at(box(sq, 1.2, sq, mat.hole, 0.4), 0, 0.45, 0), at(mesh(new THREE.TorusGeometry(sq * 0.74, 0.5, 8, 40), mat.satin), 0, 0.1, 0));
+    g.children.at(-1).rotation.x = PI / 2;
+  }
   const groove = mesh(new THREE.TorusGeometry(r - 0.2, 0.35, 8, 64), mat.satin); groove.rotation.x = PI / 2; groove.position.y = 11; g.add(groove); // speed ring line
   if (!deep && !bit) g.add(turned([[r - 0.9, 1.8], ...knurl(r - 0.35, 2, 9.2, 1.2, 0.55), [r - 0.9, 9.4]], impact ? mat.black : mat.steel, { along: "y", segs: 64 })); // knurled grip band
   if (deep && !slot) g.add(turned([[r - 1.1, 2], ...knurl(r - 0.5, 2.4, 8.8, 1.3, 0.5), [r - 1.1, 9]], mat.steel, { along: "y", segs: 64 }));

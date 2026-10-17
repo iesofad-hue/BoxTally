@@ -14,18 +14,29 @@ import { ratchet, socket, openHead, boxHead, wrench, handle, screwdriver, nutdri
 
 // More tools live in their own files, grouped by kind. One broken file only loses its own tools.
 const EXTRA = await Promise.all(["./power3d.js", "./storage3d.js", "./shop3d.js", "./hand3d.js"].map((p) => import(p).then((m) => m.MODELS, (e) => { console.error("3D models failed to load", p, e); return {}; })));
+// Sockets lie on their side like a catalog shot: opening toward the camera, size stamp facing up,
+// so you see the hex inside, the barrel and the square drive end instead of a round top.
+function lying(s, yaw = 0.62, spin = 0) {
+  s.rotation.y = spin; const tip = group(s); tip.rotation.x = -PI / 2;
+  s.traverse((m) => { const t = m.material?.map; if (t?.isCanvasTexture) { t.center.set(0.5, 0.5); t.rotation = PI; } }); // keep printed sizes upright
+  bright(s); // a lying barrel mostly mirrors the dark studio; lift it like a catalog shot
+  return turnTo(group(tip), yaw + PI);
+}
+const brightChrome = mat.chrome.clone(); Object.assign(brightChrome, { roughness: 0.14, envMapIntensity: 1.7 }); brightChrome.color.set(0xffffff);
+function bright(o) { o.traverse((m) => { if (m.material === mat.chrome) m.material = brightChrome; }); return o; }
+function turnTo(o, yaw) { o.userData.yaw = yaw; return o; }
 const MODELS = {
   ratchet: () => ratchet(), "ratchet-long": () => ratchet({ len: 280 }), "ratchet-stubby": () => ratchet({ len: 115 }), "ratchet-flex": () => ratchet({ flex: true }),
   "ratchet-hard": () => ratchet({ grip: false }), "ratchet-round": () => ratchet({ round: true }), "ratchet-thumbwheel": () => ratchet({ thumb: true }), "ratchet-long-flex": () => ratchet({ len: 280, flex: true }),
-  socket: (o) => socket(o), "socket-12": (o) => socket({ ...o, points: 12 }), "socket-deep": (o) => socket({ ...o, deep: true }), "socket-impact": (o) => socket({ ...o, impact: true, r: 12 }),
-  "socket-spark": (o) => socket({ ...o, deep: true, r: 11.5, spark: true }), "socket-o2": (o) => socket({ ...o, deep: true, r: 13, slot: true }), "socket-swivel": (o) => socket({ ...o, swivel: true }), "socket-bit": (o) => socket({ ...o, h: 20, bit: true }),
+  socket: (o) => lying(socket(o)), "socket-12": (o) => lying(socket({ ...o, points: 12 })), "socket-deep": (o) => lying(socket({ ...o, deep: true })), "socket-impact": (o) => lying(socket({ ...o, impact: true, r: 12 })),
+  "socket-spark": (o) => lying(socket({ ...o, deep: true, r: 11.5, spark: true })), "socket-o2": (o) => lying(socket({ ...o, deep: true, r: 13, slot: true }), 0.9, 0.2), "socket-swivel": (o) => lying(socket({ ...o, swivel: true })), "socket-bit": (o) => lying(socket({ ...o, h: 20, bit: true })),
   wrench: (o) => wrench(o), "wrench-open": (o) => wrench({ ...o, right: "open" }), "wrench-box": (o) => wrench({ ...o, left: "box" }), "wrench-ratchet": (o) => wrench({ ...o, ratcheting: true }), "wrench-flare": (o) => wrench({ ...o, left: "flare", right: "flare" }),
   screwdriver: () => screwdriver(), "screwdriver-phillips": () => screwdriver({ tip: "phillips" }), "screwdriver-torx": () => screwdriver({ tip: "torx" }),
   "screwdriver-stubby": () => screwdriver({ len: 120, hlen: 70, r: 14 }), "screwdriver-stubby-phillips": () => screwdriver({ tip: "phillips", len: 120, hlen: 70, r: 14 }),
   insulated: () => screwdriver({ m: mat.yellow, insulated: true }), nutdriver: () => nutdriver(),
   pick: () => pick(), "pick-straight": () => pick({ shape: "straight" }), "pick-45": () => pick({ shape: "45" }), "pick-complex": () => pick({ shape: "complex" }),
   pliers: () => pliers(), "pliers-needle": () => pliers({ jaw: "needle" }), "pliers-diag": () => pliers({ jaw: "diag" }), "pliers-pump": () => pliers({ pump: true }), "pliers-strip": () => pliers({ jaw: "strip" }),
-  extension: () => extension(), breaker: () => breaker(), adapter: () => adapter(),
+  extension: () => bright(extension()), breaker: () => breaker(), adapter: () => turnTo(bright(adapter()), 1.05),
   hammer: () => hammer(), "hammer-ballpeen": () => hammer(), "hammer-deadblow": () => hammer({ kind: "deadblow" }), "hammer-mallet": () => hammer({ kind: "mallet" }), "hammer-sledge": () => hammer({ kind: "sledge" }),
   pry: () => prybar(), punch: () => punch({ chisel: true }), "punch-pin": () => punch(), torque: () => torque(), "torque-click": () => torque(), hexkeys: () => hexkeys(),
   set: () => socketRail(), "socket-rail": () => socketRail(), "set-wrench": () => wrenchSet(),
@@ -107,7 +118,7 @@ function makeRenderer(canvas) {
   r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.setClearColor(0x000000, 0);
   return r;
 }
-const disposeTree = (o) => o.traverse((m) => { if (m.geometry) m.geometry.dispose(); if (m.material && !Object.values(mat).includes(m.material)) { m.material.map?.dispose(); m.material.dispose(); } });
+const disposeTree = (o) => o.traverse((m) => { if (m.geometry) m.geometry.dispose(); if (m.material && m.material !== brightChrome && !Object.values(mat).includes(m.material)) { m.material.map?.dispose(); m.material.dispose(); } });
 
 /* ---------- still pictures for cards, made one at a time with a single hidden renderer ---------- */
 let still = null, queue = Promise.resolve();
