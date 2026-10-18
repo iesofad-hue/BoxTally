@@ -15,9 +15,12 @@ Not affiliated with Snap-on.
 | Website | `index.html`, hosted free on GitHub Pages | The tracker people use. Sign in with Google to sync, or use it without an account (saved in that browser). |
 | Database and photos | Supabase (free plan) | Everyone's toolboxes, one shared price list per part number, price history, people's own tool photos, share links and email settings. Setup is in `supabase/schema.sql`. |
 
-### Store prices come from the community
+### Prices come from eBay; what you paid stays private
 
-Snap-on's online store withholds product details from automated tools, so the site doesn't fetch prices on its own. Instead, anyone signed in who tracks a part number can check the price on Snap-on's store and tap **Add store price** / **Update price** on the card. The price is saved once per part number, so everyone tracking that tool gets it, and it builds the price history and the price-drop alerts.
+A tool's price today is the typical eBay asking price for a new one (see "eBay prices" below), filled in automatically. Nobody can type in a public price. The only price people enter is what they paid, which is saved on their own item and only they can see (a share link shows it only if they tick that option).
+
+Shared store prices (typed in by anyone tracking a part number) were retired on 2026-10-18 because there was no way to know they were right. The notes below describe the old `submit_price` function, which the site no longer calls; its execute permission should be revoked (see `supabase/schema.sql`, end of file).
+
 
 Safeguards in the `submit_price` database function:
 - only signed-in people, and only for part numbers in their own box or wishlist

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BoxTally · Snap-on tool tracker</title>
-<meta name="description" content="BoxTally tracks the Snap-on tools in your box, what they're worth at today's store prices, and what's next on your wishlist. Store prices are shared by the people who track each tool.">
+<meta name="description" content="BoxTally tracks the Snap-on tools in your box, what they're worth at today's eBay prices, and what's next on your wishlist.">
 <meta name="theme-color" content="#10151c">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://boxtally.app/">
@@ -820,7 +820,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
         <div id="truck"></div>
       </div>
       <div class="tile watch">
-        <span class="label">Price watch</span>
+        <span class="label">Prices</span>
         <div id="watch"></div>
       </div>
     </div>
@@ -833,7 +833,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 
 <main class="inner body">
   <div class="banner info" id="localBanner" hidden>
-    <span id="localText">You're not signed in, so your toolbox is saved in this browser only. Sign in with Google to keep it on every device and to add store prices.</span>
+    <span id="localText">You're not signed in, so your toolbox is saved in this browser only. Sign in with Google to keep it on every device.</span>
     <span><button class="btn small primary" id="localSignIn" type="button">Sign in with Google</button> <button class="btn small" id="localDemo" type="button" hidden>See a sample box</button></span>
   </div>
   <div class="banner demo" id="demoBanner" hidden>
@@ -863,7 +863,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
     <input type="file" id="scanInput" accept="image/*" capture="environment" hidden>
     <button class="btn" type="button" id="q-more">Add with details &amp; photo</button>
     <div class="scanpick" id="scanPick" hidden></div>
-    <span class="hint" id="q-hint">Just the part number is enough. Anyone tracking it can add the store price, and you can add a photo of your own tool.</span>
+    <span class="hint" id="q-hint">Just the part number is enough. Its eBay price fills in automatically, and you can add what you paid and a photo only you see.</span>
   </form>
 
   <section class="shop" aria-labelledby="shopTitle">
@@ -902,7 +902,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
   <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Store prices are added by people who track each tool and may be out of date. Check Snap-on's store before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a><span id="delWrap" hidden> · <a href="#" id="delAcct" style="color:inherit">Delete my account</a></span></footer>
+<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Prices are typical eBay asking prices and may differ from Snap-on's. Check before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a><span id="delWrap" hidden> · <a href="#" id="delAcct" style="color:inherit">Delete my account</a></span></footer>
 
 <div id="printSheet"></div>
 
@@ -955,7 +955,6 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
   <form id="delFrm" novalidate>
     <h2>Delete my account</h2>
     <p class="meta-line">This permanently deletes everything BoxTally keeps for your account: every tool in your box and wishlist, your photos, your share link and your price-drop alerts. It can't be undone.</p>
-    <p class="meta-line">Store prices you added stay on the shared price list, since other people use them. They never had your name on them.</p>
     <label class="field"><span class="label">Type DELETE to confirm</span><input id="d-word" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
     <p class="err" id="d-err" hidden></p>
     <div class="formfoot">
@@ -986,7 +985,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
       <label class="field"><span class="label">Part number</span><input id="i-pn" class="mono" placeholder="F80" autocapitalize="characters" autocomplete="off" maxlength="40"><a class="lookup" id="lookup" href="https://shop.snapon.com" target="_blank" rel="noopener" hidden>Look up on Snap-on ↗</a></label>
       <label class="field"><span class="label">Category</span><select id="i-cat"></select></label>
       <label class="field"><span class="label">Drawing</span><select id="i-art"></select></label>
-      <label class="field"><span class="label" id="l-price">Price paid ($)</span><input id="i-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+      <label class="field"><span class="label" id="l-price">Snap-on price you paid ($)</span><input id="i-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
       <label class="field" data-only="owned"><span class="label">Date bought</span><input id="i-date" type="date"></label>
       <label class="field" data-only="owned"><span class="label">Condition</span><select id="i-cond"></select></label>
       <label class="field full" data-only="owned"><span class="label">Where it's kept</span><input id="i-loc" placeholder="Top chest, drawer 3" maxlength="120" list="locList" autocomplete="off"></label>
@@ -1054,33 +1053,34 @@ document.addEventListener("DOMContentLoaded", () => {
   const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
 
-  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, loaded: false, editing: null, confirm: null, priceEdit: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
+  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, loaded: false, editing: null, confirm: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
 
   /* ---------- prices from the shared list ---------- */
   const storeOf = (r) => state.catalog[r.part_number] || null;
-  const storeOk = (r) => { const s = storeOf(r); return !!(s && s.status === "ok" && s.price != null); };
-  const storePrice = (r) => (storeOk(r) ? Number(storeOf(r).price) : null);
-  const wasPrice = (r) => { const s = storeOf(r); return s && s.was_price != null ? Number(s.was_price) : null; };
-  const hist = (r) => state.hist[r.part_number] || [];
+  // Store prices used to be typed in by anyone tracking a tool, so they could be anything.
+  // Retired 2026-10-18: a tool's value now comes from eBay automatically, and the only price
+  // people type is what they paid, which stays private to them.
+  const storeOk = () => false;
+  const storePrice = () => null;
+  const wasPrice = () => null;
+  const hist = () => [];
   const lastChange = (r) => { const h = hist(r); if (h.length < 2) return null; const a = h[h.length - 2].p, b = h[h.length - 1].p; return b === a ? null : { from: a, to: b, d: h[h.length - 1].d }; };
   const displayName = (r) => r.name || (storeOf(r) && storeOf(r).name) || r.part_number || "Unnamed tool";
-  // eBay fallback: when Snap-on's store price isn't known yet, use the typical eBay price for a new one
-  // (falls back to all listings when none are new). Refreshed daily by checker/ebay.mjs.
+  // A tool's price today: the typical eBay asking price for a new one (or across all listings
+  // when none are new). Refreshed daily by checker/ebay.mjs.
   const ebayPrice = (r) => {
     const e = r.part_number && state.ebay && state.ebay[r.part_number];
     if (!e || !e.listings) return null;
     const v = e.new_median ?? e.median;
     return v == null ? null : Number(v);
   };
-  const nowPrice = (r) => storePrice(r) ?? ebayPrice(r);
-  // where a tool's current price came from: "store", "ebay" or null
-  const priceSrc = (r) => (storeOk(r) ? "store" : ebayPrice(r) != null ? "ebay" : null);
-  // what an owned tool counts for in "Box worth": store price, else eBay, else what you paid
+  const nowPrice = ebayPrice;
+  // what an owned tool counts for in "Box worth": eBay today, else what you paid
   const worthOf = (r) => nowPrice(r) ?? (Number(r.price) || 0);
-  // a wishlist tool: store price, else the price you typed in, else eBay
-  const wishCost = (r) => storePrice(r) ?? (Number(r.price) || ebayPrice(r) || 0);
+  // a wishlist tool: the price you typed in, else eBay
+  const wishCost = (r) => Number(r.price) || ebayPrice(r) || 0;
 
   /* ---------- photos: your own photo of your own tool, otherwise a drawing ----------
      (Snap-on's product photos aren't shown on this site.) */
@@ -1916,8 +1916,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const condClass = { "New": "good", "Good": "", "Worn": "warn", "Needs warranty": "bad" };
   const fresh = (r) => (state.flash && state.flash.has(r.id) ? " fresh" : "");
   const idRow = (r) => `<div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)} <span aria-hidden="true">↗</span></a>` : ""}<span>${esc(r.category || "Other")}</span></div>`;
-  const canPrice = () => signedIn() && !state.demo && !state.readonly;
-  const signInHint = () => (state.demo || state.readonly ? "" : " Sign in to add it.");
   // Lending: who has it, since when, and the buttons to lend it or mark it back
   const lentDays = (r) => { const t = toDate(r.lent_at); return t ? Math.max(0, Math.round((toDate(today()) - t) / 86400000)) : 0; };
   const lentChip = (r) => (r.lent_to ? `<span class="chip lent">Lent out</span>` : "");
@@ -1928,33 +1926,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const lendForm = (r) => (state.lendEdit === r.id ? `<form class="pricebox" data-lend-form="${esc(r.id)}" novalidate><label>Who's borrowing it?<input name="who" list="whoList" maxlength="60" autocomplete="off" placeholder="Name"></label><div class="row"><button class="btn small primary" type="submit">Lend it</button><button class="btn small ghost" data-act="lend-cancel" type="button">Cancel</button></div></form>` : "");
   const lendBtn = (r) => (r.list === "owned" && !r.lent_to && state.lendEdit !== r.id ? `<button class="btn small ghost" data-act="lend" type="button">Lend</button>` : "");
-  function storeStatus(r) {
-    if (!r.part_number) return `<span class="meta-line">Add a part number to track its store price.</span>`;
-    if (state.priceEdit === r.id) return "";
-    if (storeOk(r)) return "";
-    return `<div class="addprice"><span>No store price yet.</span>${canPrice()
-      ? `<button class="btn small" data-act="price" type="button">Add store price</button>`
-      : signInHint() ? `<span>${signInHint().trim()}</span>` : ""}</div>`;
-  }
-  function priceForm(r) {
-    if (state.priceEdit !== r.id) return "";
-    const s = storeOf(r);
-    return `<form class="pricebox" data-price-form="${esc(r.id)}" novalidate>
-      <span class="meta-line">Check the price on <a class="lookup" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener">Snap-on's store ↗</a>, then enter it here. Everyone tracking ${esc(r.part_number)} gets it.</span>
-      <div class="row">
-        <label>Store price ($)<input name="price" type="number" min="0.01" step="0.01" inputmode="decimal" required value="${s && s.price != null ? Number(s.price) : ""}"></label>
-        <label>Regular price, if on sale ($)<input name="was" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Optional" value="${s && s.was_price != null ? Number(s.was_price) : ""}"></label>
-      </div>
-      <p class="err" hidden></p>
-      <div class="row"><button class="btn small primary" type="submit">Save price</button><button class="btn small ghost" data-act="price-cancel" type="button">Cancel</button></div>
-    </form>`;
-  }
-  const priceNote = (r) => { const s = storeOf(r); return storeOk(r) && s.checked_at ? `<span class="meta-line">Store price updated ${rel(s.checked_at)}</span>` : ""; };
-  function trendLine(r) {
-    if (!storeOk(r)) return "";
-    const ch = lastChange(r), h = hist(r), s = storeOf(r);
-    return `<div class="trend">${spark(r)}<span>${ch ? `<span class="chg ${ch.to < ch.from ? "down" : "up"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span> on ${fmtDate(ch.d, false)}` : h.length > 1 ? `No change since ${fmtDate(h[0].d, false)}` : `Tracking since ${fmtDate(h[0] ? h[0].d : s.checked_at, false)}`}</span></div>`;
-  }
   function confirmHtml(r) {
     if (!state.confirm || state.confirm.id !== r.id) return "";
     const onTruck = truckOn() ? `<button class="btn small" data-act="bought-truck" type="button">Move it + add to truck account</button>` : "";
@@ -1997,22 +1968,23 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const hidePaid = () => !!state.readonly && !(state.shareInfo && state.shareInfo.show_prices);
   function cardOwned(r, i) {
-    const now = nowPrice(r), src = priceSrc(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
+    const now = nowPrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
+    const mine = !state.readonly && !state.demo;
     const chips = (r.condition ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r);
     const badge = wasPrice(r) ? `<span class="chip tag">On sale</span>` : "";
     return `<article class="card${fresh(r)}${r.lent_to ? " lent" : ""}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
-        <div><span class="label">${state.readonly ? "Paid" : "You paid"}</span>${hidePaid() ? `<span class="no-price">Kept private</span>` : `<span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span>`}</div>
-        <div><span class="label">${src === "ebay" ? "eBay price now" : "Store price now"}</span>${now != null || !r.part_number || state.priceEdit === r.id
-          ? `<span class="price-big">${now != null ? money(now, now % 1) : "—"}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : src === "ebay" ? `<span class="src-tag">eBay</span> no store price yet` : now != null && paid ? "Same as you paid" : src === "store" ? "Snap-on store" : "&nbsp;"}</span>`
-          : `<span class="no-price">${canPrice() ? `Not priced yet.<br><button class="btn small" data-act="price" type="button">Add store price</button>` : "Not priced yet." + signInHint()}</span>`}</div>
+        <div><span class="label">${state.readonly ? "Paid" : "You paid"}</span>${hidePaid() ? `<span class="no-price">Kept private</span>` : paid || !mine ? `<span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span>` : `<span class="no-price">Not entered.<br><button class="btn small" data-act="edit" type="button">Add what you paid</button></span>`}</div>
+        <div><span class="label">eBay price now</span>${now != null
+          ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : `<span class="src-tag">eBay</span> typical new price`}</span>`
+          : `<span class="no-price">${r.part_number ? "No eBay listings found yet." : "Add a part number to get its eBay price."}</span>`}</div>
       </div>
-      ${trendLine(r)}${ebayLine(r)}${ownersLine(r)}${priceNote(r)}${r.part_number ? "" : storeStatus(r)}${priceForm(r)}
+      ${ebayLine(r)}${ownersLine(r)}
       ${r.location ? `<span class="meta-line">Kept in ${esc(r.location)}</span>` : ""}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
       ${lentLine(r)}${lendForm(r)}
-      <div class="actions">${storeOk(r) && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : src === "ebay" && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Add store price</button>` : ""}${lendBtn(r)}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      <div class="actions">${lendBtn(r)}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;
   }
   function cardWish(r, i) {
@@ -2024,13 +1996,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<article class="card ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
-        <div><span class="label">${storeOk(r) ? "Store price" : Number(r.price) ? "Your price" : ebayPrice(r) != null ? "eBay price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span>${wasPrice(r) ? `<span class="was">${money(wasPrice(r), true)}</span>` : `<span class="meta-line">&nbsp;</span>`}</div>
+        <div><span class="label">${!Number(r.price) && ebayPrice(r) != null ? "eBay price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span>${wasPrice(r) ? `<span class="was">${money(wasPrice(r), true)}</span>` : `<span class="meta-line">&nbsp;</span>`}</div>
         <div><span class="label">Left to save</span><span class="price-big">${cost ? money(left, left % 1) : "—"}</span><span class="meta-line">${cost ? (left ? `${money(saved)} saved` : "Ready to buy") : "&nbsp;"}</span></div>
       </div>
       ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
-      ${trendLine(r)}${ebayLine(r)}${ownersLine(r)}${priceNote(r)}${storeStatus(r)}${priceForm(r)}
+      ${ebayLine(r)}${ownersLine(r)}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
-      <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button>${storeOk(r) && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">Update price</button>` : ""}<span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button><span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;
   }
 
@@ -2040,9 +2012,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const pic = p ? `<button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${thumb(r)}</button>` : thumb(r);
     let price, sub;
     if (owned) {
-      const now = nowPrice(r), src = priceSrc(r), paid = Number(r.price) || 0, v = now ?? paid, diff = now != null && paid ? now - paid : null;
+      const now = nowPrice(r), paid = Number(r.price) || 0, v = now ?? paid, diff = now != null && paid ? now - paid : null;
       price = v ? money(v, v % 1) : "—";
-      sub = now != null ? (diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span>${src === "ebay" ? " eBay" : ""}` : src === "ebay" ? "eBay price" : "store price") : paid ? "you paid" : "";
+      sub = now != null ? (diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> eBay` : "eBay price") : paid ? "you paid" : "";
     } else {
       const cost = wishCost(r), left = Math.max(cost - (Number(r.saved) || 0), 0);
       price = cost ? money(cost, cost % 1) : "—";
@@ -2050,12 +2022,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const chips = (owned ? (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
       + (dropped ? `<span class="chip tag">Price dropped</span>` : wasPrice(r) ? `<span class="chip tag">On sale</span>` : "");
-    const priceBtn = r.part_number && canPrice() && state.priceEdit !== r.id ? `<button class="btn small ghost" data-act="price" type="button">${storeOk(r) ? "Update price" : "Add price"}</button>` : "";
     return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
       <div><h3>${esc(displayName(r))}</h3><div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(r.category || "Other")}</span>${chips}</div></div>
       <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span></div>
-      <div class="actions">${owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}${priceBtn}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
-      </div>${r.lent_to && !state.readonly ? `<span class="meta-line">Lent to ${esc(r.lent_to)} · ${lentDays(r)} days</span>` : ""}${priceForm(r)}${lendForm(r)}${confirmHtml(r)}</article>`;
+      <div class="actions">${owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      </div>${r.lent_to && !state.readonly ? `<span class="meta-line">Lent to ${esc(r.lent_to)} · ${lentDays(r)} days</span>` : ""}${lendForm(r)}${confirmHtml(r)}</article>`;
   }
 
   /* ---------- by drawer: tools grouped by "Where it's kept" ---------- */
@@ -2084,14 +2055,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const t = rowsOf("owned"), w = rowsOf("wishlist");
     const paid = t.reduce((s, r) => s + (Number(r.price) || 0), 0);
     const worth = t.reduce((s, r) => s + worthOf(r), 0);
-    const tracked = t.filter(storeOk).length, onEbay = t.filter((r) => priceSrc(r) === "ebay").length;
+    const onEbay = t.filter((r) => ebayPrice(r) != null).length;
     if (!state.loaded) {
       ["d-worth", "d-left"].forEach((k) => { $(k).textContent = "$…"; $(k).classList.add("loading-num"); });
       $("d-worth-sub").textContent = "Loading your box…"; $("d-left-sub").textContent = "Loading…";
     } else { ["d-worth", "d-left"].forEach((k) => $(k).classList.remove("loading-num")); }
     if (state.loaded) countTo($("d-worth"), Math.round(worth));
     if (state.loaded) $("d-worth-sub").innerHTML = t.length
-      ? `${t.length} tool${t.length === 1 ? "" : "s"}${hidePaid() || !paid ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}${tracked || onEbay ? `<br>${[tracked ? `${tracked} from Snap-on's store` : "", onEbay ? `${onEbay} from eBay` : ""].filter(Boolean).join(" · ")}${tracked + onEbay < t.length ? ` · ${t.length - tracked - onEbay} unpriced` : ""}` : ""}`
+      ? `${t.length} tool${t.length === 1 ? "" : "s"}${hidePaid() || !paid ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}<br>${onEbay} of ${t.length} priced from eBay${onEbay < t.length ? ", the rest at what you paid" : ""}`
       : "Add tools to see their value.";
     const cost = w.reduce((s, r) => s + wishCost(r), 0), saved = w.reduce((s, r) => s + Math.min(Number(r.saved) || 0, wishCost(r)), 0);
     if (state.loaded) countTo($("d-left"), Math.round(Math.max(cost - (state.readonly ? 0 : saved), 0)));
@@ -2133,8 +2104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     $("q-hint").textContent = state.demo ? "This is the sample box. Try adding, lending or deleting tools; nothing is saved."
       : !sb ? "Prices can't load right now. You can still add tools and fill in prices yourself."
-      : (signedIn() ? "Just the part number is enough. Anyone tracking it can add the store price, and you can add a photo of your own tool."
-        : "Just the part number is enough. Store prices other people have added show up automatically.") + " Paste several part numbers to add them all at once.";
+      : "Just the part number is enough. Its eBay price fills in automatically, and what you paid stays private to you." + " Paste several part numbers to add them all at once.";
     // suggestions for "Where it's kept" and "Who's borrowing it?"
     const opts = (vals) => [...new Set(vals.map((v) => String(v || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).slice(0, 80).map((v) => `<option value="${esc(v)}">`).join("");
     $("locList").innerHTML = opts(t.map((r) => r.location));
@@ -2148,7 +2118,7 @@ document.addEventListener("DOMContentLoaded", () => {
       list.innerHTML = state.readonly
         ? `<div class="empty"><strong>${state.shareInfo ? "Nothing here yet" : "Link not found"}</strong><span>${state.shareInfo ? "This box doesn't have any tools on this list yet." : "Ask whoever sent it for a new link."}</span></div>`
         : state.tab === "owned"
-        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool, or paste a whole list of them. Its store price fills in when someone tracking it adds one.</span>${demoBtn}</div>`
+        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool, or paste a whole list of them. Its eBay price fills in automatically within a day.</span>${demoBtn}</div>`
         : `<div class="empty"><strong>Wishlist is empty</strong><span>Find a tool in the Shop box above and add it by part number.</span>${demoBtn}</div>`;
     } else {
       const rows = filtered();
@@ -2289,7 +2259,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const line = pts.map((p, i) => `${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
     const first = pts[0], last = pts[pts.length - 1], diff = Math.round(last.v - first.v);
     const fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    return `<div class="panel"><h2>Box value over time</h2><svg class="valchart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Box value went from ${money(Math.round(first.v))} to ${money(Math.round(last.v))}"><polygon class="area" points="0,${H} ${line} ${W},${H}"/><polyline class="ln" points="${line}"/></svg><div class="valrow"><span>${fmt(first.d)} · ${money(Math.round(first.v))}</span><span>${diff ? `<span class="delta ${diff > 0 ? "up" : "down"}">${signed(diff)}</span> · ` : ""}today ${money(Math.round(last.v))}</span></div><span class="meta-line">Uses store prices people add; tools without one count at what you paid.</span></div>`;
+    return `<div class="panel"><h2>Box value over time</h2><svg class="valchart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Box value went from ${money(Math.round(first.v))} to ${money(Math.round(last.v))}"><polygon class="area" points="0,${H} ${line} ${W},${H}"/><polyline class="ln" points="${line}"/></svg><div class="valrow"><span>${fmt(first.d)} · ${money(Math.round(first.v))}</span><span>${diff ? `<span class="delta ${diff > 0 ? "up" : "down"}">${signed(diff)}</span> · ` : ""}today ${money(Math.round(last.v))}</span></div><span class="meta-line">Uses eBay prices; tools without one count at what you paid.</span></div>`;
   }
 
   /* ---------- warranty list: send to the dealer or print ---------- */
@@ -2327,31 +2297,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const trackedN = state.items.filter((r) => r.part_number).length;
     const wishN = rowsOf("wishlist").length;
     $("watch").innerHTML = changes.length
-      ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Prices are shared by people who track each tool.</span>`
-      : `<div class="watch-empty"><span class="note">${trackedN ? `Watching ${trackedN} part number${trackedN === 1 ? "" : "s"}. No price changes yet.` : "Nothing watched yet. Price drops on your tools show up here."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
+      ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Based on eBay prices.</span>`
+      : `<div class="watch-empty"><span class="note">${trackedN ? `eBay prices for your ${trackedN} part number${trackedN === 1 ? "" : "s"} refresh every day.` : "Add tools by part number and their eBay prices fill in every day."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
     $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
       ? `<label class="alert-opt"><input type="checkbox" id="alertDrops"${state.alerts && state.alerts.email_drops ? " checked" : ""}><span>Email me when something on my wishlist drops</span></label>` : "");
     $("sync").dataset.mode = signedIn() ? "account" : "local";
     $("syncText").textContent = !state.loaded ? "Loading…" : state.readonly ? "Shared box" : state.demo ? "Sample box · not saved" : state.offline ? "Offline · last saved copy" : signedIn() ? "Synced to your account" : sb ? "Saved in this browser" : "Offline";
   }
 
-  async function savePrice(form) {
-    const id = form.dataset.priceForm, item = state.items.find((r) => r.id === id);
-    if (!item) return;
-    const err = form.querySelector(".err"), btn = form.querySelector("button[type=submit]");
-    const price = Number(form.price.value), was = form.was.value ? Number(form.was.value) : null;
-    const fail = (m) => { err.textContent = m; err.hidden = false; };
-    if (!(price > 0)) return fail("Enter the price shown on Snap-on's store.");
-    if (was != null && !(was > price)) return fail("The regular price should be higher than the sale price, or leave it empty.");
-    btn.disabled = true; btn.textContent = "Saving…";
-    const at = btn.getBoundingClientRect();
-    const { error } = await sb.rpc("submit_price", { pn: item.part_number, new_price: price, regular_price: was });
-    if (error) { btn.disabled = false; btn.textContent = "Save price"; return fail(error.message || "Couldn't save that price. Try again."); }
-    state.priceEdit = null;
-    burst(at.left + at.width / 2, at.top + at.height / 2, 14);
-    await loadCatalog(); render();
-    toast(`Saved ${money(price, true)} for ${item.part_number}. Thanks, everyone tracking it sees it now.`);
-  }
 
   /* ---------- photos ---------- */
   async function shrink(file, max, quality) {
@@ -2897,9 +2850,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ? { list, name: "", part_number: "", category: "Other", price: 0, date_bought: today(), condition: "Good", location: "", notes: "", priority: null, saved: 0 }
     : { list, name: "", part_number: "", category: "Other", price: 0, date_bought: null, condition: null, location: "", notes: "", priority: "Want", saved: 0 };
   const addedMsg = (pn, where) => {
-    const s = state.catalog[pn];
-    if (s && s.status === "ok") return `Added ${pn} to your ${where}, with its store price.`;
-    return signedIn() ? `Added ${pn}. No store price yet: tap Add store price on its card after checking Snap-on's store.` : `Added ${pn} to your ${where}.`;
+    const e = state.ebay[pn];
+    return e && e.listings ? `Added ${pn} to your ${where}, with its eBay price.` : `Added ${pn} to your ${where}. Its eBay price fills in within a day.`;
   };
 
   async function addByPn(pn, list) {
@@ -3037,9 +2989,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const item = state.items.find((r) => r.id === id);
     if (item && act === "view") return openViewer(id); // anyone can look closer, even on a shared box
     if (!item || state.readonly) return;
-    if (state.demo && (act === "price" || act === "photo")) return toast("This is the sample box, so prices and photos are off. Tap \"Start my own box\" up top to make yours.");
-    if (act === "price") { state.priceEdit = id; render(); setTimeout(() => { const f = document.querySelector(`[data-price-form="${CSS.escape(id)}"] input[name=price]`); if (f) f.focus(); }, 0); return; }
-    if (act === "price-cancel") { state.priceEdit = null; return render(); }
+    if (state.demo && act === "photo") return toast("This is the sample box, so photos are off. Tap \"Start my own box\" up top to make yours.");
     if (act === "lend") { state.lendEdit = id; render(); setTimeout(() => { const f = document.querySelector(`[data-lend-form="${CSS.escape(id)}"] input`); if (f) f.focus(); }, 0); return; }
     if (act === "lend-cancel") { state.lendEdit = null; return render(); }
     if (act === "returned") return guard(() => saveItem({ ...item, lent_to: null, lent_at: null }), `${displayName(item)} is back in the box`);
@@ -3071,8 +3021,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   $("list").addEventListener("submit", (e) => {
-    const f = e.target.closest("[data-price-form]");
-    if (f) { e.preventDefault(); return savePrice(f); }
     const lf = e.target.closest("[data-lend-form]");
     if (lf) {
       e.preventDefault();
@@ -3092,13 +3040,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const csvText = (v) => { let s = String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const csvNum = (n) => (n == null || n === "" || !Number.isFinite(Number(n)) ? "" : String(Math.round(Number(n) * 100) / 100));
   function toCsv(rows) {
-    const head = ["List", "Tool", "Part number", "Category", "Condition", "Date bought", "Price paid / your price", "Store price", "eBay price", "Regular price (on sale)", "Store price updated", "Where it's kept", "Lent to", "Priority", "Saved so far", "Notes", "Store link"];
+    const head = ["List", "Tool", "Part number", "Category", "Condition", "Date bought", "Price paid / your price", "eBay price", "Where it's kept", "Lent to", "Priority", "Saved so far", "Notes", "Store link"];
     const lines = rows.map((r) => {
-      const s = storeOf(r), owned = r.list === "owned";
+      const owned = r.list === "owned";
       return [
         csvText(owned ? "Owned" : "Wishlist"), csvText(displayName(r)), csvText(r.part_number), csvText(r.category),
         csvText(owned ? r.condition : ""), csvText(owned ? r.date_bought || "" : ""), csvNum(Number(r.price) || ""),
-        csvNum(storePrice(r)), csvNum(ebayPrice(r)), csvNum(wasPrice(r)), csvText(storeOk(r) && s.checked_at ? String(s.checked_at).slice(0, 10) : ""),
+        csvNum(ebayPrice(r)),
         csvText(owned ? r.location : ""), csvText(owned ? r.lent_to || "" : ""), csvText(owned ? "" : r.priority || "Want"), csvNum(owned ? "" : Number(r.saved) || ""),
         csvText(r.notes), csvText(r.part_number ? storeLink(r.part_number) : ""),
       ].join(",");
@@ -3121,15 +3069,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const worth = owned.reduce((s, r) => s + worthOf(r), 0);
     const who = state.user ? state.user.user_metadata?.full_name || state.user.email || "" : "";
     const m = (n) => (n ? money(n, true) : "");
-    const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(nowPrice(r))}${priceSrc(r) === "ebay" ? " (eBay)" : ""}</td><td>${esc(r.location || "")}</td></tr>`).join("");
+    const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(nowPrice(r))}</td><td>${esc(r.location || "")}</td></tr>`).join("");
     const wishRows = wish.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.priority || "Want")}</td><td class="n">${m(wishCost(r))}</td><td class="n">${m(Number(r.saved) || 0)}</td></tr>`).join("");
     return `<h1>BoxTally</h1>
       <p class="meta">Tool list as of ${esc(fmtDate(today()))}${who ? ` · ${esc(who)}` : ""}</p>
       <h2>Owned tools</h2>
       ${owned.length ? `<p class="totals"><span>${owned.length} tool${owned.length === 1 ? "" : "s"}</span><span>Paid ${money(paid, true)}</span><span>Worth today ${money(worth, true)}</span></p>
-      <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Condition</th><th>Bought</th><th class="n">Paid</th><th class="n">Price now</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
+      <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Condition</th><th>Bought</th><th class="n">Paid</th><th class="n">eBay now</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
       ${wish.length ? `<h2>Wishlist</h2><table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Priority</th><th class="n">Price</th><th class="n">Saved</th></tr></thead><tbody>${wishRows}</tbody></table>` : ""}
-      <p class="foot">Store prices are added by people who track each tool and may be out of date. BoxTally is not affiliated with Snap-on.</p>`;
+      <p class="foot">Prices today are typical eBay asking prices for new tools, refreshed daily. BoxTally is not affiliated with Snap-on.</p>`;
   }
   $("exportPrint").onclick = () => {
     if (!state.items.length) { toast("Add some tools first, then you can print them."); return; }
@@ -3172,7 +3120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.editing = item; clearPf();
     const list = item ? item.list : state.tab;
     $("dlgTitle").textContent = item ? "Edit tool" : list === "owned" ? "Add tool" : "Add to wishlist";
-    $("l-price").textContent = list === "owned" ? "Price paid ($)" : "Your price ($)";
+    $("l-price").textContent = list === "owned" ? "Snap-on price you paid ($)" : "Your price ($)";
     document.querySelectorAll("[data-only]").forEach((el) => (el.hidden = el.dataset.only !== list));
     $("i-name").value = item?.name || "";
     $("i-name").placeholder = (item && storeOf(item)?.name) || '3/8" drive dual 80 ratchet';

@@ -561,3 +561,7 @@ begin
 end $$;
 revoke execute on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
+
+-- ===== Shared store prices retired (2026-10-18) =====
+-- Prices now come from eBay automatically; nobody can post a public price any more.
+revoke execute on function public.submit_price(text, numeric, numeric) from public, anon, authenticated;
