@@ -26,8 +26,10 @@ const brightChrome = mat.chrome.clone(); Object.assign(brightChrome, { roughness
 function bright(o) { o.traverse((m) => { if (m.material === mat.chrome) m.material = brightChrome; }); return o; }
 function turnTo(o, yaw) { o.userData.yaw = yaw; return o; }
 const MODELS = {
-  ratchet: () => ratchet(), "ratchet-long": () => ratchet({ len: 280 }), "ratchet-stubby": () => ratchet({ len: 115 }), "ratchet-flex": () => ratchet({ flex: true }),
-  "ratchet-hard": () => ratchet({ grip: false }), "ratchet-round": () => ratchet({ round: true }), "ratchet-thumbwheel": () => ratchet({ thumb: true }), "ratchet-long-flex": () => ratchet({ len: 280, flex: true }),
+  // Snap-on ratchets are hard-handle (chrome) unless the part is a soft grip one; "-soft" keys get the red grip.
+  ...Object.fromEntries([["ratchet", {}], ["ratchet-long", { len: 280 }], ["ratchet-stubby", { len: 115 }], ["ratchet-flex", { flex: true }], ["ratchet-long-flex", { len: 280, flex: true }],
+    ["ratchet-round", { round: true }], ["ratchet-thumbwheel", { thumb: true }]].flatMap(([k, o]) => [[k, () => ratchet({ ...o, grip: false })], [k + "-soft", () => ratchet({ ...o, grip: true })]])),
+  "ratchet-hard": () => ratchet({ grip: false }),
   socket: (o) => lying(socket(o)), "socket-12": (o) => lying(socket({ ...o, points: 12 })), "socket-deep": (o) => lying(socket({ ...o, deep: true })), "socket-impact": (o) => lying(socket({ ...o, impact: true, r: 12 })),
   "socket-spark": (o) => lying(socket({ ...o, deep: true, r: 11.5, spark: true })), "socket-o2": (o) => lying(socket({ ...o, deep: true, r: 13, slot: true }), 0.9, 0.2), "socket-swivel": (o) => lying(socket({ ...o, swivel: true })), "socket-bit": (o) => lying(socket({ ...o, h: 20, bit: true })),
   wrench: (o) => wrench(o), "wrench-open": (o) => wrench({ ...o, right: "open" }), "wrench-box": (o) => wrench({ ...o, left: "box" }), "wrench-ratchet": (o) => wrench({ ...o, ratcheting: true }), "wrench-flare": (o) => wrench({ ...o, left: "flare", right: "flare" }),

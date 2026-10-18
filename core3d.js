@@ -66,39 +66,65 @@ function pear(R, nx, nw, th = 0.62) {
   s.quadraticCurveTo(R * 1.12, -nw - 0.6, nx, -nw); s.lineTo(nx, nw); s.quadraticCurveTo(R * 1.12, nw + 0.6, ex, ey);
   return s;
 }
-// Head with its gear cover plate and screws, quick-release button, sculpted reversing lever and square drive.
+// Snap-on's head seen from above: a long oval round the gear (gear centre at x=0, near the front)
+// that flows into the neck toward +x, so the whole head reads as a teardrop.
+function ovalHead(nx = 40, nw = 8.2, cx = 5, a = 22, b = 16) {
+  return hull([...Array.from({ length: 96 }, (_, i) => [cx + a * Math.cos((i * 2 * PI) / 96), b * Math.sin((i * 2 * PI) / 96)]), [nx, -nw], [nx, nw]]);
+}
+const ellipse = (cx, a, b, n = 72) => poly(Array.from({ length: n }, (_, i) => [cx + a * Math.cos((i * 2 * PI) / n), b * Math.sin((i * 2 * PI) / n)]));
+// Head: the Snap-on oval with a raised polished crown and the sculpted reversing lever lying on top.
+// The round (sealed) head keeps its gear cover plate, screws and quick-release button.
 function ratchetHead({ round = false, thumb = false, drive = 9.5 } = {}) {
   const R = round ? 19.5 : 17.5, top = 7.8;
-  const g = group(slab(round ? pear(R, 32, 8.2, 0.42) : pear(R, 36, 8.2), 12, 1.8));
-  const pr = R - 3.4; // cover plate radius
-  if (thumb) { // knurled thumbwheel over the gear
-    g.add(at(lobed([[0.1, 0], [R - 1.2, 0], [R - 0.6, 0.6], [R - 0.6, 2.8], [R - 1.2, 3.4], [0.1, 3.4]], mat.satin, { lobes: 40, lobe: 0.025, along: "y", segs: 160 }), 0, top + 0.2, 0));
-  } else {
+  const g = group(slab(round ? pear(R, 32, 8.2, 0.42) : ovalHead(), 12, 1.8));
+  if (round) {
+    const pr = R - 3.4; // cover plate radius
     g.add(at(slab(circle(pr), 0.5, 0.3, mat.satin), 0, top + 0.25, 0));
     const seam = mesh(new THREE.TorusGeometry(pr + 0.35, 0.28, 6, 48), mat.hole); seam.rotation.x = PI / 2; seam.position.y = top + 0.1; g.add(seam);
     for (const a of [2.55, -2.55]) g.add(at(screw(1.7, mat.chrome, a), Math.cos(a) * (pr - 3.6), top + 0.8, Math.sin(a) * (pr - 3.6)));
-  }
-  const by = thumb ? top + 3.6 : top + 0.8; // quick-release button: collar, dark gap, domed chrome cap
-  g.add(at(turned([[4.6, 0], [6.6, 0], [6.6, 1], [5.8, 1.7], [4.6, 1.7]], mat.chrome, { along: "y" }), 0, by, 0));
-  const gapR = mesh(new THREE.TorusGeometry(4.65, 0.4, 6, 32), mat.hole); gapR.rotation.x = PI / 2; gapR.position.y = by + 1.6; g.add(gapR);
-  const btn = sphere(4.3, mat.chrome); btn.scale.y = 0.55; btn.position.y = by + 1.3; g.add(btn);
-  // reversing lever: a teardrop paddle on a pivot at the neck, with grip ridges
-  const lever = group(slab(hull([...ring(0, 0, 3.8, 16), ...ring(10.5, 0, 5.4, 20)]), 2, 0.7));
-  [7.5, 9.8, 12.1].forEach((x) => lever.add(at(box(0.7, 0.5, 6.4, mat.hole, 0.1), x, 1.6, 0)));
-  lever.add(at(screw(2.2, mat.satin, 1.2), 0, 1.4, 0));
-  lever.rotation.y = 0.32; lever.position.set(R + 1.8, top + 1.5, 0); g.add(lever, at(cyl(4.6, 1.2, mat.satin), R + 1.8, top + 0.4, 0));
+    g.add(at(turned([[4.6, 0], [6.6, 0], [6.6, 1], [5.8, 1.7], [4.6, 1.7]], mat.chrome, { along: "y" }), 0, top + 0.8, 0));
+    const gapR = mesh(new THREE.TorusGeometry(4.65, 0.4, 6, 32), mat.hole); gapR.rotation.x = PI / 2; gapR.position.y = top + 2.4; g.add(gapR);
+    const btn = sphere(4.3, mat.chrome); btn.scale.y = 0.55; btn.position.y = top + 2.1; g.add(btn);
+  } else g.add(at(slab(ellipse(4, 17.5, 11.5), 0.4, 0.6, brushed), 0, top + 0.2, 0)); // raised satin crown
+  if (thumb) // knurled thumbwheel over the gear
+    g.add(at(lobed([[0.1, 0], [10.8, 0], [11.4, 0.6], [11.4, 2.8], [10.8, 3.4], [0.1, 3.4]], mat.satin, { lobes: 32, lobe: 0.03, along: "y", segs: 128 }), -2, top + 0.6, 0));
+  // reversing lever: a teardrop paddle pivoting behind the gear, its wide end toward the handle, with grip ridges
+  const lever = group(slab(hull([...ring(0, 0, 4.2, 16), ...ring(12.5, 0, 6.6, 24)]), 1.8, 0.7));
+  [10, 12.6, 15.2].forEach((x) => lever.add(at(box(0.7, 0.5, 8, mat.hole, 0.1), x, 1.5, 0)));
+  lever.add(at(screw(2.2, mat.satin, 1.2), 0, 1.3, 0));
+  const lx = round ? R + 1.8 : 9, ly = top + (round ? 1.5 : 1.3);
+  lever.rotation.y = 0.3; lever.position.set(lx, ly, 0); g.add(lever, at(cyl(4.8, 1.2, mat.satin), lx, top + 0.4, 0));
   // underneath: collar, square drive and its detent ball
   g.add(at(cyl(8.2, 1.4, mat.satin), 0, -8.4, 0), at(box(drive, drive - 0.5, drive, mat.chrome, 0.8), 0, -8.3 - (drive - 0.5) / 2, 0), at(sphere(1.4, mat.chrome), drive / 2 + 0.2, -8.8 - drive / 2, 0));
   return g;
 }
-// Ratchet: chrome head and beam, red dipped grip with molded ribs, black end cap with a hang hole.
+// diamond knurling printed on a hard handle's grip panel
+let knurlMat = null;
+function knurling() {
+  if (knurlMat) return knurlMat;
+  const c = document.createElement("canvas"); c.width = 512; c.height = 128; const x = c.getContext("2d");
+  x.strokeStyle = "rgba(24,28,34,.8)"; x.lineWidth = 2.6;
+  for (let i = -128; i < 640; i += 9) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 128, 128); x.moveTo(i + 128, 0); x.lineTo(i, 128); x.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return (knurlMat = new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, opacity: 0.75 }));
+}
+// Ratchet: Snap-on oval head on a chrome beam. Most Snap-on ratchets have a hard handle: polished chrome
+// that swells a little toward the rounded end, with a knurled grip panel and a hang hole. Soft-grip ones
+// (FH80, FHK80...) get the red dipped grip with molded ribs and a black end cap.
 export function ratchet({ len = 200, grip = true, flex = false, round = false, thumb = false } = {}) {
   const head = ratchetHead({ round, thumb }), parts = [];
   const b0 = flex ? 50 : 28, gl = grip ? Math.min(100, len * 0.48) : 0, gx = len - gl - 20; // grip from gx to len+4
-  parts.push(slab(poly([[b0, -8], [b0 + 18, -6.2], [len - 6, -6], [len, -3.6], [len, 3.6], [len - 6, 6], [b0 + 18, 6.2], [b0, 8]]), 7, 1.4, mat.satin));
-  const pEnd = grip ? gx - 4 : len - 42, pLen = pEnd - (b0 + 16); // recessed satin panel with the drive size
+  const hl = Math.min(46, len * 0.3); // hard handle: the wider grip zone at the end
+  if (grip) parts.push(slab(poly([[b0, -8], [b0 + 18, -6.2], [len - 6, -6], [len, -3.6], [len, 3.6], [len - 6, 6], [b0 + 18, 6.2], [b0, 8]]), 7, 1.4, mat.satin));
+  else {
+    const s = new THREE.Shape(), e = 6.8, x1 = len - hl;
+    s.moveTo(b0, -8); s.lineTo(b0 + 18, -5.8); s.lineTo(x1 - 14, -5.6); s.quadraticCurveTo(x1 - 4, -5.6, x1, -e); s.lineTo(len - e, -e);
+    s.absarc(len - e, 0, e, -PI / 2, PI / 2, false); s.lineTo(x1, e); s.quadraticCurveTo(x1 - 4, 5.6, x1 - 14, 5.6); s.lineTo(b0 + 18, 5.8); s.lineTo(b0, 8);
+    parts.push(slab(s, 7, 1.4, mat.satin));
+  }
+  const pEnd = grip ? gx - 4 : len - hl - 16, pLen = pEnd - (b0 + 16); // recessed satin panel with the drive size
   if (pLen > 12) {
-    parts.push(at(slab(poly([[b0 + 16, -3.2], [pEnd, -3.6], [pEnd, 3.6], [b0 + 16, 3.2]]), 0.3, 0.25, brushed), 0, 5.1, 0));
+    parts.push(at(slab(poly([[b0 + 16, -3.2], [pEnd, -3.4], [pEnd, 3.4], [b0 + 16, 3.2]]), 0.3, 0.25, brushed), 0, 5.1, 0));
     if (pLen > 26) parts.push(decal('3/8" DR', Math.min(34, pLen - 6), 5, b0 + 16 + pLen / 2, 5.6, 0));
   }
   if (grip) {
@@ -107,10 +133,11 @@ export function ratchet({ len = 200, grip = true, flex = false, round = false, t
     const cap = turned([[0.1, 0], [11.5, 0], [11.7, 2], [11.5, 12], [10.5, 18], [8, 21.5], [4, 23.2], [0.1, 23.6]], mat.black, { segs: 40 });
     red.scale.y = cap.scale.y = 0.8; red.position.set(gx, 1, 0); cap.position.set(gx + Lr - 0.5, 1, 0);
     parts.push(red, cap, at(cyl(3, 1.2, mat.hole, { segs: 20 }), gx + Lr + 9, 1 + 11.6 * 0.8 - 0.75, 0));
-  } else { // hard handle: satin grip panel and a hang hole
-    parts.push(at(slab(poly([[len - 40, -4], [len - 9, -3.4], [len - 9, 3.4], [len - 40, 4]]), 0.3, 0.25, brushed), 0, 5.1, 0));
-    for (let x = len - 37; x < len - 12; x += 2.4) parts.push(at(box(0.5, 0.3, 6, mat.oxide, 0.05), x, 5.5, 0));
-    parts.push(at(cyl(2.6, 7.4, mat.hole, { segs: 20 }), len - 4.5, 1.4, 0));
+  } else { // hard handle: satin knurled grip panel and a hang hole
+    const k0 = len - hl + 2, k1 = len - 13;
+    parts.push(at(slab(poly([[k0, -4.6], [k1, -4.6], [k1, 4.6], [k0, 4.6]]), 0.3, 0.3, brushed), 0, 5.1, 0));
+    const kn = mesh(new THREE.PlaneGeometry(k1 - k0, 9.2), knurling(), false); kn.rotation.x = -PI / 2; kn.position.set((k0 + k1) / 2, 5.62, 0); parts.push(kn);
+    parts.push(at(cyl(2.6, 7.4, mat.hole, { segs: 20 }), len - 6, 1.4, 0));
   }
   if (flex) { // head on a pinned yoke, tipped up
     head.add(at(box(14, 8, 9, mat.chrome, 2.5), 38, 0, 0));
