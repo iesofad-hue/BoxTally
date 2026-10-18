@@ -527,3 +527,37 @@ language sql stable security definer set search_path = '' as $$
 $$;
 revoke execute on function public.shared_box(text) from public;
 grant execute on function public.shared_box(text) to anon, authenticated;
+
+-- ===== "N people own this" counts (already live; added to this file October 18, 2026) =====
+-- Only counts per part number, never who.
+create or replace function public.owner_counts(pns text[])
+returns table(part_number text, owners integer, wishers integer)
+language sql stable security definer set search_path = '' as $$
+  select i.part_number,
+         count(distinct i.user_id) filter (where i.list = 'owned')::int,
+         count(distinct i.user_id) filter (where i.list = 'wishlist')::int
+    from public.items i
+   where i.part_number = any (pns[1:300]) and i.part_number <> ''
+   group by i.part_number;
+$$;
+revoke execute on function public.owner_counts(text[]) from public;
+grant execute on function public.owner_counts(text[]) to anon, authenticated;
+
+-- ===== Private photos and self-serve account deletion (October 18, 2026) =====
+-- Photos are no longer reachable by a plain web address; the site asks for signed links that expire.
+-- The four "own tool photos" policies above already limit every read and write to the uploader's folder.
+update storage.buckets set public = false where id = 'tool-photos';
+
+-- "Delete my account": the site removes the photo files first (the database isn't allowed to delete
+-- storage files directly), then calls this. Deleting the sign-in row removes items, share link,
+-- alerts, price reports and photo reports with it (they all cascade from auth.users).
+create or replace function public.delete_my_account()
+returns void
+language plpgsql security definer set search_path = '' as $$
+declare uid uuid := auth.uid();
+begin
+  if uid is null then raise exception 'Sign in first.'; end if;
+  delete from auth.users where id = uid;
+end $$;
+revoke execute on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

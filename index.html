@@ -23,15 +23,14 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://ctteljhhjsfvyyiwzxiy.supabase.co" crossorigin>
 <!-- fonts and the database library load in the background, so the page shows up before they arrive -->
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"></noscript>
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
-<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
-<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js"></script>
+<script type="importmap">{ "imports": { "three": "./vendor/three-0.160.0.module.min.js", "three/addons/": "./vendor/three-addons/" } }</script>
+<script defer src="vendor/supabase-2.116.0.js"></script>
 <style>
 /* Layout: a graphite dashboard band with a photo rail of the latest tools, then drawer tabs over a photo-first card grid; one column on a phone */
 :root {
@@ -902,7 +901,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
   <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Store prices are added by people who track each tool and may be out of date. Check Snap-on's store before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a></footer>
+<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Store prices are added by people who track each tool and may be out of date. Check Snap-on's store before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a><span id="delWrap" hidden> · <a href="#" id="delAcct" style="color:inherit">Delete my account</a></span></footer>
 
 <div id="printSheet"></div>
 
@@ -947,6 +946,21 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
       <span class="spacer" style="flex:1"></span>
       <button class="btn" type="button" id="s-close">Close</button>
       <button class="btn primary" type="submit" id="s-save">Create link</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="delDlg">
+  <form id="delFrm" novalidate>
+    <h2>Delete my account</h2>
+    <p class="meta-line">This permanently deletes everything BoxTally keeps for your account: every tool in your box and wishlist, your photos, your share link and your price-drop alerts. It can't be undone.</p>
+    <p class="meta-line">Store prices you added stay on the shared price list, since other people use them. They never had your name on them.</p>
+    <label class="field"><span class="label">Type DELETE to confirm</span><input id="d-word" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+    <p class="err" id="d-err" hidden></p>
+    <div class="formfoot">
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" type="button" id="d-close">Keep my account</button>
+      <button class="btn primary danger" type="submit" id="d-go" disabled>Delete everything</button>
     </div>
   </form>
 </dialog>
@@ -1038,7 +1052,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const storeLink = (pn) => "https://shop.snapon.com/search?q=" + encodeURIComponent(pn);
   const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
-  const pub = (bucket, path) => `${SB_URL}/storage/v1/object/public/${bucket}/${String(path).split("/").map(encodeURIComponent).join("/")}`;
 
   const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, loaded: false, editing: null, confirm: null, priceEdit: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
   const signedIn = () => !!state.user;
@@ -1057,8 +1070,44 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- photos: your own photo of your own tool, otherwise a drawing ----------
      (Snap-on's product photos aren't shown on this site.) */
   const okData = (u) => typeof u === "string" && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u);
+  // Uploaded photos live in a private bucket, so each one is opened with a signed link that expires.
+  // Links are kept for a day (in this browser) so the same photo isn't downloaded again on every visit.
+  const BLANK = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  const SIGN_FOR = 24 * 3600;
+  const photoLinks = (() => { try { return JSON.parse(localStorage.getItem("bx-signed") || "{}"); } catch { return {}; } })();
+  const toSign = new Set();
+  let signTimer = null;
+  function signedUrl(path) {
+    const hit = photoLinks[path];
+    if (!hit || hit.exp < Date.now() + 3600e3) queueSign(path);
+    return hit && hit.exp > Date.now() ? hit.url : null;
+  }
+  function queueSign(path) {
+    if (!sb || !signedIn()) return;
+    toSign.add(path);
+    if (!signTimer) signTimer = setTimeout(signNow, 0);
+  }
+  async function signNow() {
+    const paths = [...toSign]; toSign.clear();
+    const { data, error } = await sb.storage.from("tool-photos").createSignedUrls(paths, SIGN_FOR).catch((e) => ({ error: e }));
+    signTimer = null;
+    if (error || !data) return;
+    const exp = Date.now() + SIGN_FOR * 1000;
+    let got = false;
+    for (const d of data) if (d.signedUrl && !d.error) { photoLinks[d.path] = { url: d.signedUrl, exp }; got = true; }
+      else if (d.path) photoLinks[d.path] = { url: null, exp }; // no such file (e.g. an old photo with no small copy)
+    for (const k of Object.keys(photoLinks)) if (photoLinks[k].exp < Date.now()) delete photoLinks[k];
+    try { localStorage.setItem("bx-signed", JSON.stringify(photoLinks)); } catch {}
+    if (got) render();
+  }
+  // Signing out forgets the photo links, so the next person on this browser can't reuse them.
+  function forgetSigned() { for (const k of Object.keys(photoLinks)) delete photoLinks[k]; try { localStorage.removeItem("bx-signed"); } catch {} }
   function minePhoto(r) {
-    if (r.photo_path && signedIn()) return { src: pub("tool-photos", r.photo_path), thumb: state.dbArt ? pub("tool-photos", thumbOf(r.photo_path)) : null, path: r.photo_path, mine: true };
+    if (r.photo_path && signedIn()) {
+      const src = signedUrl(r.photo_path), thumb = state.dbArt ? signedUrl(thumbOf(r.photo_path)) : null;
+      // Until its link arrives the photo shows blank for a moment, then the page redraws.
+      return src ? { src, thumb, path: r.photo_path, mine: true } : { src: BLANK, path: r.photo_path, mine: true };
+    }
     if (okData(r.photo_data)) return { src: r.photo_data, mine: true };
     return null;
   }
@@ -1731,6 +1780,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderAccount() {
     $("eyebrow").textContent = state.readonly ? "Shared toolbox" : greeting();
     const box = $("account");
+    $("delWrap").hidden = !(sb && state.user && !state.readonly);
     if (!sb) { box.innerHTML = ""; return; }
     if (state.readonly) { box.innerHTML = `<a class="btn-account" href="./">Make your own box</a>`; return; }
     if (state.user) {
@@ -1748,7 +1798,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("click", (e) => {
     const b = e.target.closest("button"); if (!b) return;
     if (b.id === "signIn" || b.id === "localSignIn") signIn();
-    if (b.id === "signOut") sb.auth.signOut().then(() => toast("Signed out"));
+    if (b.id === "signOut") sb.auth.signOut().then(() => { forgetSigned(); toast("Signed out"); });
     if (b.id === "shareBtn") openShare();
     if (b.id === "installBtn") installApp();
   });
@@ -2631,6 +2681,43 @@ document.addEventListener("DOMContentLoaded", () => {
     shareDlg.showModal();
   }
   $("s-close").onclick = () => shareDlg.close();
+
+  /* ---------- delete my account: photos first (the database can't remove files), then everything else ---------- */
+  const delDlg = $("delDlg");
+  $("delAcct").onclick = (e) => {
+    e.preventDefault();
+    if (!signedIn()) return;
+    $("d-word").value = ""; $("d-go").disabled = true; $("d-err").hidden = true;
+    delDlg.showModal();
+  };
+  $("d-close").onclick = () => delDlg.close();
+  $("d-word").oninput = () => { $("d-go").disabled = $("d-word").value.trim().toUpperCase() !== "DELETE"; };
+  $("delFrm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if ($("d-go").disabled || !signedIn()) return;
+    $("d-go").disabled = true; $("d-go").textContent = "Deleting…"; $("d-err").hidden = true;
+    try {
+      const bucket = sb.storage.from("tool-photos");
+      for (;;) {
+        const { data, error } = await bucket.list(state.user.id, { limit: 100 });
+        if (error) throw error;
+        if (!data.length) break;
+        const { error: rmErr } = await bucket.remove(data.map((f) => `${state.user.id}/${f.name}`));
+        if (rmErr) throw rmErr;
+      }
+      const { error } = await sb.rpc("delete_my_account");
+      if (error) throw error;
+      forgetSigned();
+      await sb.auth.signOut({ scope: "local" }).catch(() => {});
+      delDlg.close();
+      toast("Your account and everything in it has been deleted.");
+    } catch {
+      $("d-err").textContent = "Couldn't finish deleting. Try again, or email contact@boxtally.app and we'll do it for you.";
+      $("d-err").hidden = false;
+    } finally {
+      $("d-go").textContent = "Delete everything"; $("d-go").disabled = false;
+    }
+  });
   $("shareFrm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const body = { title: $("s-title").value.trim().slice(0, 60), show_prices: $("s-prices").checked, show_wishlist: $("s-wish").checked };
@@ -2814,7 +2901,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if ("BarcodeDetector" in window) {
       try { const codes = await new BarcodeDetector().detect(c); const hit = scanCands(codes.map((x) => x.rawValue).join(" ")); if (hit.length) return hit; } catch {}
     }
-    if (!window.Tesseract) await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js");
+    if (!window.Tesseract) await loadScript("vendor/tesseract-5.1.1.min.js");
     if (!tessWorker) { tessWorker = await Tesseract.createWorker("eng"); await tessWorker.setParameters({ tessedit_char_whitelist: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-./ " }); }
     const { data } = await tessWorker.recognize(c);
     return scanCands(data.text);

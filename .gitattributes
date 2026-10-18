@@ -2,3 +2,6 @@
 *.bat -text
 *.vbs -text
 *.ps1 -text
+
+# Copies of outside libraries, served from boxtally.app instead of a CDN.
+vendor/** linguist-vendored
