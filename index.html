@@ -739,6 +739,11 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
   .shot:hover .m3d { transform: translateY(-3px) scale(1.05); }
 }
 @keyframes m3dIn { from { opacity: 0; transform: scale(.96); } }
+/* a turning tool: its live canvas takes the place of the still picture, without replaying the fade-in */
+.turning img.m3d { visibility: hidden; }
+.m3d-turn { animation: none !important; }
+.photo .m3d-turn { width: 100%; height: 100%; padding: 14px 22px; object-fit: contain; } /* same box as .photo img */
+.shot .plate .m3d-turn { width: 100%; height: 100%; padding: 12px; object-fit: contain; } /* same box as .shot .plate img */
 .viewer .stage.is3d { cursor: grab; }
 .viewer .stage.is3d:active { cursor: grabbing; }
 .viewer .stage.is3d .art { visibility: hidden; }
@@ -2448,7 +2453,8 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!url || !el.isConnected) return;
           const art = el.querySelector(".art"); if (!art) return;
           const img = new Image(); img.className = "m3d"; img.alt = ""; img.src = url;
-          img.onload = () => { art.parentElement.appendChild(img); el.classList.add("has3d"); };
+          // once the picture shows, the card's tool slowly turns while it's on screen (see turn() in tool3d.js)
+          img.onload = () => { art.parentElement.appendChild(img); el.classList.add("has3d"); t.turn?.(el, img, key, size, square ? 360 : 720, square ? 360 : 450, drive, pn); };
         });
       }
     });

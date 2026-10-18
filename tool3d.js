@@ -127,21 +127,112 @@ function makeRenderer(canvas) {
 const disposeTree = (o) => o.traverse((m) => { if (m.geometry) m.geometry.dispose(); if (m.material && m.material !== brightChrome && !Object.values(mat).includes(m.material)) { m.material.map?.dispose(); m.material.dispose(); } });
 
 /* ---------- still pictures for cards, made one at a time with a single hidden renderer ---------- */
+// A card's tool sits on a turntable: a pivot under the middle of the tool, so turning it spins the tool
+// in place. The camera is framed to fit the tool at every angle, so the still and the turning card match.
+function turntable(key, size, drive, pn) {
+  const model = MODELS[key](opts(key, size, drive, pn)), pivot = new THREE.Group(); pivot.add(model);
+  model.rotation.y = model.userData.yaw ?? -0.32;
+  const b = new THREE.Box3().setFromObject(model), c = b.getCenter(new THREE.Vector3());
+  model.position.x -= c.x; model.position.z -= c.z; model.position.y -= b.min.y;
+  const fit = new THREE.Box3();
+  for (let i = 0; i < 16; i++) { pivot.rotation.y = (i * PI) / 8; pivot.updateMatrixWorld(true); fit.union(new THREE.Box3().setFromObject(pivot)); }
+  pivot.rotation.y = 0;
+  return { pivot, fit, r: Math.max(260, fit.getBoundingSphere(new THREE.Sphere()).radius * 1.3), cams: new Map() };
+}
+// the key light's shadow covers the whole tool, from a socket to a roll cab
+function light(st, r) {
+  st.key.position.set(-120, 300, 160).multiplyScalar(Math.max(1, r / 260)); st.key.target.position.set(0, 0, 0);
+  Object.assign(st.key.shadow.camera, { left: -r, right: r, top: r, bottom: -r, near: 1, far: Math.max(900, r * 4) }); st.key.shadow.camera.updateProjectionMatrix();
+}
+function camFor(t, w, h) {
+  const id = w + "x" + h;
+  if (!t.cams.has(id)) { const cam = new THREE.PerspectiveCamera(28, w / h); frame(cam, t.fit, w / h); t.cams.set(id, cam); }
+  return t.cams.get(id);
+}
 let still = null, queue = Promise.resolve();
 const cache = new Map();
+function studioOnce() { if (!still) { still = { r: makeRenderer(null), w: 0, h: 0 }; still.st = studio(still.r); } return still; }
+function draw(t, w, h, turn) {
+  const s = studioOnce();
+  if (s.w !== w || s.h !== h) { s.r.setPixelRatio(1); s.r.setSize(w, h, false); s.w = w; s.h = h; }
+  t.pivot.rotation.y = turn; light(s.st, t.r); s.st.scene.add(t.pivot);
+  s.r.render(s.st.scene, camFor(t, w, h));
+  s.st.scene.remove(t.pivot);
+  return s.r.domElement;
+}
 export function picture(key, size = "", w = 640, h = 400, drive = "", pn = "") {
   const id = [key, size, w, h, drive, pn].join("|");
   if (!MODELS[key]) return Promise.resolve(null);
   if (!cache.has(id)) cache.set(id, (queue = queue.then(() => new Promise((ok) => requestAnimationFrame(() => {
     try {
-      if (!still) { still = { r: makeRenderer(null) }; still.st = studio(still.r); still.cam = new THREE.PerspectiveCamera(28, 1.6); }
-      still.r.setPixelRatio(1); still.r.setSize(w, h, false);
-      const model = MODELS[key](opts(key, size, drive, pn)); frame(still.cam, stage(still.st, model), w / h);
-      still.r.render(still.st.scene, still.cam);
-      still.r.domElement.toBlob((b) => { still.st.scene.remove(model); disposeTree(model); ok(b ? URL.createObjectURL(b) : null); }, "image/png");
+      // the model built for the picture is kept for the card to turn, unless nothing is going to turn
+      const tid = [key, size, drive, pn].join("|"), t = tables.get(tid) || turntable(key, size, drive, pn);
+      draw(t, w, h, 0).toBlob((b) => { if (quiet()) { if (!tables.has(tid)) disposeTree(t.pivot); } else keep(tid, t); ok(b ? URL.createObjectURL(b) : null); }, "image/png");
     } catch (e) { console.error("3D picture failed", key, e); ok(null); }
   })))));
   return cache.get(id);
+}
+
+/* ---------- cards that turn by themselves ---------- */
+// Every tool on screen slowly turns, like an item on a showroom turntable. To stay light on phones:
+// - one hidden renderer draws each turning card in turn and copies the frame onto that card's own canvas
+//   (one 3D engine for the whole page instead of one per card);
+// - only cards on screen turn, about 30 times a second, and the page is left alone while a tab is hidden
+//   or the spin-around view is open;
+// - if frames start taking too long, fewer cards turn at once (the rest keep their still picture);
+// - nothing turns for people who ask their device for less motion, or who have data saver on.
+// A card always starts turning from the angle of its still picture, so the swap can't be seen.
+const TURN = 14000; // milliseconds for one full turn
+const calm = matchMedia("(prefers-reduced-motion: reduce)");
+const quiet = () => calm.matches || navigator.connection?.saveData;
+const cards = new Map(); // card element -> what it shows
+const tables = new Map(); // built turntables, reused by every card showing the same tool (newest last)
+let raf = 0, last = 0, avg = 0, most = matchMedia("(pointer: coarse)").matches ? 4 : 10, broken = false;
+const seen = typeof IntersectionObserver === "function" && new IntersectionObserver((list) => {
+  for (const e of list) { const c = cards.get(e.target); if (!c) continue; c.on = e.isIntersecting; if (!c.on) rest(c); }
+  wake();
+}, { threshold: 0.25 });
+function rest(c) { c.t0 = 0; c.el.classList.remove("turning"); if (c.canvas) { c.canvas.remove(); c.canvas = null; } }
+function keep(id, t) {
+  tables.delete(id); tables.set(id, t);
+  // keep the newest few dozen; older ones are rebuilt if their card comes back
+  for (const [old, o] of tables) { if (tables.size <= 24) break; if (old === id) continue; tables.delete(old); disposeTree(o.pivot); }
+  return t;
+}
+const tableFor = (c) => keep(c.id, tables.get(c.id) || turntable(c.key, c.size, c.drive, c.pn));
+function wake() { if (!raf && !broken && !quiet()) raf = requestAnimationFrame(tick); }
+function tick(now) {
+  raf = 0;
+  for (const [el, c] of cards) if (!el.isConnected) { seen.unobserve(el); rest(c); cards.delete(el); }
+  const on = [...cards.values()].filter((c) => c.on);
+  if (!on.length || quiet()) { on.forEach(rest); return; }
+  raf = requestAnimationFrame(tick);
+  if (now - last < 30 || document.querySelector("dialog[open] .m3d-live")) return;
+  last = now;
+  const t0 = performance.now();
+  let built = false;
+  on.forEach((c, i) => {
+    if (i >= most) { rest(c); return; }
+    if (!tables.has(c.id)) { if (built) return; built = true; } // build at most one new model per frame
+    try {
+      const t = tableFor(c);
+      if (!c.t0) c.t0 = now;
+      const src = draw(t, c.w, c.h, ((now - c.t0) / TURN) * PI * 2);
+      if (!c.canvas) { c.canvas = document.createElement("canvas"); c.canvas.className = "m3d m3d-turn"; c.canvas.width = c.w; c.canvas.height = c.h; c.ctx = c.canvas.getContext("2d"); }
+      c.ctx.clearRect(0, 0, c.w, c.h); c.ctx.drawImage(src, 0, 0);
+      if (!c.canvas.isConnected) { c.img.after(c.canvas); c.el.classList.add("turning"); }
+    } catch (e) { console.error("3D turn failed", c.key, e); broken = true; cards.forEach(rest); }
+  });
+  // keep each frame's work small: turn fewer cards if it grows, more again once there's room
+  avg = avg * 0.9 + (performance.now() - t0) * 0.1;
+  if (avg > 12 && most > 1) { most--; avg = 8; } else if (avg < 4 && on.length > most && most < 12) { most++; avg = 6; }
+}
+calm.addEventListener?.("change", () => { if (quiet()) cards.forEach(rest); else wake(); });
+// Called once a card's still picture is showing: from then on the card turns while it's on screen.
+export function turn(el, img, key, size = "", w = 640, h = 400, drive = "", pn = "") {
+  if (!seen || !MODELS[key] || cards.has(el)) return;
+  cards.set(el, { el, img, key, size, drive, pn, w, h, id: [key, size, drive, pn].join("|"), on: false, t0: 0, canvas: null });
+  seen.observe(el);
 }
 
 /* ---------- the spin-around view ---------- */
