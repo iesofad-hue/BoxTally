@@ -8,7 +8,7 @@
 // and z points at the camera.
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-import { THREE, mat, PI, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
+import { THREE, mat, PI, DRIVES, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
 
 import { ratchet, socket, openHead, boxHead, wrench, handle, screwdriver, nutdriver, pick, pliers, extension, breaker, adapter, hammer, prybar, punch, torque, hexkeys, socketRail, wrenchSet, JAWS } from "./core3d.js";
 
@@ -28,8 +28,8 @@ function turnTo(o, yaw) { o.userData.yaw = yaw; return o; }
 const MODELS = {
   // Snap-on ratchets are hard-handle (chrome) unless the part is a soft grip one; "-soft" keys get the red grip.
   ...Object.fromEntries([["ratchet", {}], ["ratchet-long", { len: 280 }], ["ratchet-stubby", { len: 115 }], ["ratchet-flex", { flex: true }], ["ratchet-long-flex", { len: 280, flex: true }],
-    ["ratchet-round", { round: true }], ["ratchet-thumbwheel", { thumb: true }]].flatMap(([k, o]) => [[k, () => ratchet({ ...o, grip: false })], [k + "-soft", () => ratchet({ ...o, grip: true })]])),
-  "ratchet-hard": () => ratchet({ grip: false }),
+    ["ratchet-round", { round: true }], ["ratchet-thumbwheel", { thumb: true }]].flatMap(([k, o]) => [[k, (x = {}) => ratchet({ ...o, drive: x.drive, pn: x.pn, grip: false })], [k + "-soft", (x = {}) => ratchet({ ...o, drive: x.drive, pn: x.pn, grip: true })]])),
+  "ratchet-hard": (x = {}) => ratchet({ drive: x.drive, pn: x.pn, grip: false }),
   socket: (o) => lying(socket(o)), "socket-12": (o) => lying(socket({ ...o, points: 12 })), "socket-deep": (o) => lying(socket({ ...o, deep: true })), "socket-impact": (o) => lying(socket({ ...o, impact: true, r: 12 })),
   "socket-spark": (o) => lying(socket({ ...o, deep: true, r: 11.5, spark: true })), "socket-o2": (o) => lying(socket({ ...o, deep: true, r: 13, slot: true }), 0.9, 0.2), "socket-swivel": (o) => lying(socket({ ...o, swivel: true })), "socket-bit": (o) => lying(socket({ ...o, h: 20, bit: true })),
   wrench: (o) => wrench(o), "wrench-open": (o) => wrench({ ...o, right: "open" }), "wrench-box": (o) => wrench({ ...o, left: "box" }), "wrench-ratchet": (o) => wrench({ ...o, ratcheting: true }), "wrench-flare": (o) => wrench({ ...o, left: "flare", right: "flare" }),
@@ -38,18 +38,22 @@ const MODELS = {
   insulated: () => screwdriver({ m: mat.yellow, insulated: true }), nutdriver: () => nutdriver(),
   pick: () => pick(), "pick-straight": () => pick({ shape: "straight" }), "pick-45": () => pick({ shape: "45" }), "pick-complex": () => pick({ shape: "complex" }),
   pliers: () => pliers(), "pliers-needle": () => pliers({ jaw: "needle" }), "pliers-diag": () => pliers({ jaw: "diag" }), "pliers-pump": () => pliers({ pump: true }), "pliers-strip": () => pliers({ jaw: "strip" }),
-  extension: () => bright(extension()), breaker: () => breaker(), adapter: () => turnTo(bright(adapter()), 1.05),
+  extension: (o = {}) => bright(extension({ drive: o.drive })), breaker: () => breaker(), adapter: () => turnTo(bright(adapter()), 1.05),
   hammer: () => hammer(), "hammer-ballpeen": () => hammer(), "hammer-deadblow": () => hammer({ kind: "deadblow" }), "hammer-mallet": () => hammer({ kind: "mallet" }), "hammer-sledge": () => hammer({ kind: "sledge" }),
   pry: () => prybar(), punch: () => punch({ chisel: true }), "punch-pin": () => punch(), torque: () => torque(), "torque-click": () => torque(), hexkeys: () => hexkeys(),
-  set: () => socketRail(), "socket-rail": () => socketRail(), "set-wrench": () => wrenchSet(),
+  set: (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "socket-rail": (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "set-wrench": () => wrenchSet(),
 };
 Object.assign(MODELS, ...EXTRA);
 export const has = (key) => key in MODELS;
 export const keys = () => Object.keys(MODELS);
 
 // The wrench gap and printed size come from the size the page already worked out ("13 mm", '9/16"').
-function opts(key, size) {
-  const o = {}; if (!size) return o;
+// The drive ('1/2"') sets a ratchet's square, length and stamp, a socket's drive hole and a cordless impact's anvil.
+// A ratchet also carries its part number stamped on the handle, like the real one.
+function opts(key, size, drive, pn) {
+  const o = {}; const d = String(drive || "").replace(/"/g, ""); if (DRIVES[d]) o.drive = d;
+  if (/^[A-Z0-9-]{2,14}$/.test(pn || "")) o.pn = pn;
+  if (!size) return o;
   const mm = String(size).match(/^(\d+(?:\.\d)?)\s*mm$/i), fr = String(size).match(/^(\d+)\/(\d+)"?$/);
   const gap = mm ? +mm[1] : fr ? (25.4 * fr[1]) / fr[2] : null;
   if (gap && gap > 4 && gap < 40) { o.gap = gap; if (/^socket/.test(key) && key !== "socket-bit") o.r = Math.max(7, gap * 0.6 + 3.2); }
@@ -125,14 +129,14 @@ const disposeTree = (o) => o.traverse((m) => { if (m.geometry) m.geometry.dispos
 /* ---------- still pictures for cards, made one at a time with a single hidden renderer ---------- */
 let still = null, queue = Promise.resolve();
 const cache = new Map();
-export function picture(key, size = "", w = 640, h = 400) {
-  const id = [key, size, w, h].join("|");
+export function picture(key, size = "", w = 640, h = 400, drive = "", pn = "") {
+  const id = [key, size, w, h, drive, pn].join("|");
   if (!MODELS[key]) return Promise.resolve(null);
   if (!cache.has(id)) cache.set(id, (queue = queue.then(() => new Promise((ok) => requestAnimationFrame(() => {
     try {
       if (!still) { still = { r: makeRenderer(null) }; still.st = studio(still.r); still.cam = new THREE.PerspectiveCamera(28, 1.6); }
       still.r.setPixelRatio(1); still.r.setSize(w, h, false);
-      const model = MODELS[key](opts(key, size)); frame(still.cam, stage(still.st, model), w / h);
+      const model = MODELS[key](opts(key, size, drive, pn)); frame(still.cam, stage(still.st, model), w / h);
       still.r.render(still.st.scene, still.cam);
       still.r.domElement.toBlob((b) => { still.st.scene.remove(model); disposeTree(model); ok(b ? URL.createObjectURL(b) : null); }, "image/png");
     } catch (e) { console.error("3D picture failed", key, e); ok(null); }
@@ -141,12 +145,12 @@ export function picture(key, size = "", w = 640, h = 400) {
 }
 
 /* ---------- the spin-around view ---------- */
-export function viewer(el, key, size = "") {
+export function viewer(el, key, size = "", drive = "", pn = "") {
   if (!MODELS[key]) return null;
   const canvas = document.createElement("canvas"); canvas.className = "m3d-live"; el.appendChild(canvas);
   const r = makeRenderer(canvas); r.setPixelRatio(Math.min(2, devicePixelRatio || 1));
   const st = studio(r), cam = new THREE.PerspectiveCamera(28, 1.6);
-  const model = MODELS[key](opts(key, size)); const bx = stage(st, model), radius = bx.getBoundingSphere(new THREE.Sphere()).radius;
+  const model = MODELS[key](opts(key, size, drive, pn)); const bx = stage(st, model), radius = bx.getBoundingSphere(new THREE.Sphere()).radius;
   const ctl = new OrbitControls(cam, canvas);
   Object.assign(ctl, { enableDamping: true, enablePan: false, autoRotate: !matchMedia("(prefers-reduced-motion: reduce)").matches, autoRotateSpeed: 1.6, minPolarAngle: 0.15, maxPolarAngle: PI / 2 - 0.06 });
   let raf = 0, alive = true;

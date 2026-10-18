@@ -170,11 +170,11 @@ function ratchetDriver() {
 }
 
 /* ---------- universal joint ---------- */
-function ujoint() {
+function ujoint(drive = "3/8") {
   const a = group(
     turned([[0.1, 0], [10.5, 0], [11.5, 1], [11.5, 17], [10.5, 19], [8, 21], [0.1, 21]], mat.chrome),
     at(box(0.6, 9.8, 9.8, mat.hole), 0.2, 0, 0),
-    decal("3/8", 9, 3.4, 9, 11.6, 0, {}, -PI / 2),
+    decal(drive, 9, 3.4, 9, 11.6, 0, {}, -PI / 2),
   );
   for (const s of [1, -1]) a.add(at(box(17, 13, 3.6, mat.satin, 1.2), 26, 0, 9.6 * s), at(cyl(6.5, 3.6, mat.satin, { along: "z" }), 34, 0, 9.6 * s), at(cyl(3.8, 1.2, mat.chrome, { along: "z" }), 34, 0, 11.9 * s));
   const cross = group(at(box(7, 7, 7, mat.oxide, 1.2), 0, 0, 0), cyl(2.8, 16, mat.oxide, { along: "z" }), cyl(2.8, 16, mat.oxide));
@@ -203,7 +203,7 @@ function speeder() {
 }
 
 /* ---------- crowfoot ---------- */
-function crowfoot({ gap = 13, size = "" } = {}) {
+function crowfoot({ gap = 13, size = "", drive = "3/8" } = {}) {
   const R = gap * 0.62 + 10, w = gap / 2, tip = Math.asin(Math.min(0.95, (w + 2.4) / R)), tw = 10.5, L = R + 14, a1 = Math.asin(tw / R);
   const s = new THREE.Shape();
   s.moveTo(-R * Math.cos(tip) + 0.8, w); s.lineTo(1.5, w); s.lineTo(1.5, -w); s.lineTo(-R * Math.cos(tip) + 0.8, -w);
@@ -214,7 +214,7 @@ function crowfoot({ gap = 13, size = "" } = {}) {
     at(turned([[6.8, 0], [8.4, 0], [8.4, 0.7], [6.8, 0.9]], mat.satin, { along: "y", segs: 48 }), L, T / 2 + 1.25, 0),
     at(box(9.4, 5, 9.4, mat.hole, 0.2), L, 0, 0),
     decal(size ? size.replace(/mm$/, "") : String(gap), 11, 5, R * 0.36, T / 2 + 1.35, R * 0.66, {}, 0),
-    decal("3/8 DR", 14, 3.4, L - 16, T / 2 + 1.35, 0, {}, PI / 2));
+    decal(`${drive} DR`, 14, 3.4, L - 16, T / 2 + 1.35, 0, {}, PI / 2));
   g.userData.yaw = -0.5; return g;
 }
 
@@ -666,9 +666,9 @@ export const MODELS = {
   "pliers-locking": () => lockingPliers(),
   "pliers-snap": () => snapRingPliers(),
   "screwdriver-ratchet": () => ratchetDriver(),
-  ujoint: () => ujoint(),
+  ujoint: (o = {}) => ujoint(o.drive || "3/8"),
   speeder: () => speeder(),
-  crowfoot: (o = {}) => crowfoot({ gap: o.gap || 13, size: o.size || "" }),
+  crowfoot: (o = {}) => crowfoot({ gap: o.gap || 13, size: o.size || "", drive: o.drive || "3/8" }),
   "filter-wrench": () => filterWrench(),
   "torque-angle": () => angleGauge(),
   "pliers-crimp": () => crimpers(),

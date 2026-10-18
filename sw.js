@@ -2,7 +2,7 @@
 // Keeps a copy of the page, its icons, fonts and the database library, so the site opens with no signal.
 // Your tools come from the copy the page itself saves in the browser; nothing about your box is stored here.
 // Bump VERSION whenever these files change in a way that needs old copies thrown away.
-const VERSION = "boxtally-v11";
+const VERSION = "boxtally-v12";
 const SHELL = ["./", "index.html", "tool3d.js", "kit3d.js", "core3d.js", "power3d.js", "storage3d.js", "shop3d.js", "hand3d.js", "vendor/supabase-2.116.0.js", "vendor/three-0.160.0.module.min.js", "vendor/three-addons/controls/OrbitControls.js", "vendor/three-addons/utils/BufferGeometryUtils.js", "privacy.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 const CDN = ["https://cdn.jsdelivr.net/", "https://fonts.googleapis.com/", "https://fonts.gstatic.com/"];
 

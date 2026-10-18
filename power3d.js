@@ -1,7 +1,7 @@
 // BoxTally 3D: power tools. Cordless tools (a generic line, a slim 14.4V line and a chunky 18V line), air tools and
 // shop electrics. Pistol-grip tools stand on their battery (or hose fitting) with the nose pointing +x; inline tools
 // (ratchets, die grinder, cut-off) lie on the bench with the head at the left.
-import { THREE, mat, PI, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
+import { THREE, mat, PI, DRIVES, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
 
 /* ---------- local materials ---------- */
 const M = {
@@ -63,6 +63,32 @@ function rest(model, [x1, y1], [x2, y2]) { const w = group(model); model.rotatio
 // helix of tube (springs, coil holders): along +x from the origin
 function helix(r, len, turns, wire, m) { const pts = []; for (let i = 0; i <= turns * 16; i++) { const a = (i / 16) * PI * 2; pts.push([(i / (turns * 16)) * len, Math.sin(a) * r, Math.cos(a) * r]); } return mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), turns * 24, wire, 8, false), m); }
 
+// Molded grip texture: a field of small raised diamonds, as a bump map on the rubber overmold. Extruded
+// side faces get UVs in millimetres, so one repeat of the canvas covers about 6 mm.
+const gripCache = new Map();
+function gripRubber(m = mat.rubber) {
+  if (gripCache.has(m)) return gripCache.get(m);
+  const c = document.createElement("canvas"); c.width = c.height = 64; const x = c.getContext("2d");
+  x.fillStyle = "#000"; x.fillRect(0, 0, 64, 64); x.fillStyle = "#fff";
+  for (const [cx, cy] of [[0, 0], [64, 0], [0, 64], [64, 64], [32, 32]]) { x.beginPath(); x.moveTo(cx, cy - 13); x.lineTo(cx + 13, cy); x.lineTo(cx, cy + 13); x.lineTo(cx - 13, cy); x.closePath(); x.fill(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1 / 6, 1 / 6); t.anisotropy = 4;
+  const r = m.clone(); r.bumpMap = t; r.bumpScale = 1.2; r.roughness = 0.9;
+  gripCache.set(m, r); return r;
+}
+// twist drill bit along +x from the origin: two spiral flutes up a ground shank, with a pointed tip
+function drillBit(len = 40, r = 3) {
+  const fl = len * 0.72, geo = new THREE.CylinderGeometry(r, r, fl, 24, 48); geo.rotateZ(-PI / 2);
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, y) + (x / fl) * PI * 5, rr = Math.hypot(y, z);
+    const k = rr < 0.01 ? 0 : 1 - 0.38 * Math.max(0, Math.cos(2 * (Math.atan2(z, y) - (x / fl) * PI * 5))) ** 3; // two flutes
+    const tip = x > fl / 2 - r * 1.1 ? Math.max(0.08, (fl / 2 - x) / (r * 1.1)) : 1; // conical point
+    p.setY(i, Math.cos(a) * rr * k * tip); p.setZ(i, Math.sin(a) * rr * k * tip);
+  }
+  geo.computeVertexNormals();
+  return group(at(cyl(r, len - fl, mat.steel, { along: "x", segs: 20 }), (len - fl) / 2, 0, 0), at(mesh(geo, mat.oxide), len - fl + fl / 2, 0, 0));
+}
+
 /* ---------- battery packs ---------- */
 const PACKS = {
   "18": { L: 120, W: 80, H: 62, v: "18V", lo: mat.redp, hi: mat.black, btn: mat.black, panel: true, leds: 4 },
@@ -83,7 +109,12 @@ function battery(kind = "18", { top = false } = {}) {
   if (p.lo === p.hi) g.add(at(rbox(L - 4, 3, W - 4, mat.redp, 1.5, 1), 0, yl + 3, 0)); // 14.4V: red stripe
   const lz = W / 2 + (p.panel ? 1.9 : 0.5), lx = p.panel ? -L * 0.1 : L * 0.1;
   g.add(print(p.v, 40, 15, lx + 4, yl * 0.52, lz), print(p.v, 40, 15, lx + 4, yl * 0.52, -lz, WHITE, "-z"));
-  g.add(print("Li-ion", 18, 5, lx + 4, yl * 0.52 - 10, lz, { color: "#9aa3ad" }));
+  g.add(print(kind === "14" ? "Li-ion · 2.5 Ah" : "Li-ion · 5.0 Ah", 30, 5, lx + 4, yl * 0.52 - 10, lz, { color: "#9aa3ad" }));
+  for (const s of [1, -1]) { // cooling slots along both sides of the top shell, and rubber bumpers on the corners
+    for (let i = 0; i < 5; i++) g.add(at(box(2, hh * 0.38, 1.2, mat.hole, 0.3), -L * 0.3 + i * 5.5, yl - 2 + hh * 0.5, s * ((W - 6) / 2 + 0.1)));
+    for (const e of [1, -1]) g.add(at(rbox(7, yl * 0.8, 7, mat.rubber, 3, 1.4), e * (L / 2 - 2.6), yl * 0.44, s * (W / 2 - 2.6)));
+  }
+  g.add(at(box(14, 0.4, 2, mat.hole, 0.1), L / 2 - 14, yl - 0.2, W / 2 - 0.4)); // latch slot
   // front: release button on the upper shell, fuel gauge window on the lower one
   const fx = L / 2;
   g.add(at(rbox(6, hh * 0.6, W * 0.44, p.btn, 2, 1.4), fx - 3.2, yl + hh * 0.45, 0));
@@ -120,7 +151,7 @@ function pistol(o = {}) {
   // grip, with a rubber overmold on the back half
   const gT = yb - R * 0.35, gb = gB - 6, mid = (gb + gT) / 2;
   g.add(ext(rp([[-hw, gb], [hw, gb], [hw + 1 + rake * 0.5, mid], [hw + rake + 2, gT], [-hw + rake - 12, gT], [-hw - 3 + rake * 0.45, mid + 6]], 9), gripT, 9, body));
-  g.add(ext(rp([[-hw - 1, gb + 9], [-1, gb + 9], [rake * 0.5, mid], [rake - 1, gT - 12], [-hw + rake - 13, gT - 12], [-hw - 4 + rake * 0.45, mid + 6]], 8), gripT + 1.8, 9.6, trim));
+  g.add(ext(rp([[-hw - 1, gb + 9], [-1, gb + 9], [rake * 0.5, mid], [rake - 1, gT - 12], [-hw + rake - 13, gT - 12], [-hw - 4 + rake * 0.45, mid + 6]], 8), gripT + 1.8, 9.6, gripRubber(trim)));
   for (const s of [1, -1]) for (let i = 0; i < 4; i++) { const y = gb + 20 + i * ((gT - gb - 40) / 3); g.add(at(rbox(14, 2.2, 1.4, mat.black, 0.8, 0.5), -hw * 0.45 + rake * (y - gb) / (gT - gb) * 0.5, y, s * (gripT / 2 + 0.6))); }
   g.add(screw(hw - 6 + rake * 0.4, mid + 6, gripT / 2 - 0.3), screw(hw - 6 + rake * 0.4, mid + 6, -gripT / 2 + 0.3, -1));
   // foot over the battery
@@ -130,6 +161,16 @@ function pistol(o = {}) {
     g.add(at(rbox(P.L - 8, 3, P.W - 9, trim, 1.4, 1), px, y0 + 1, 0)); // rubber skirt against the pack
     g.add(at(cyl(4.8, 2, mat.hole, { along: "x" }), fx1 + 0.6, y0 + footH * 0.42, 0), at(cyl(3.4, 2.4, M.ledW, { along: "x" }), fx1 + 0.9, y0 + footH * 0.42, 0)); // work light
     for (const s of [1, -1]) g.add(screw(fx1 - 14, y0 + 6, s * (P.W / 2 - 4.2), s), screw(fx0 + 12, y0 + 6, s * (P.W / 2 - 4.2), s));
+    // spring-steel belt hook on the right of the foot, pivoting on a screw, its curled tip past the back
+    const hz = (P.W - 8) / 2 + 1.6, hy = y0 + footH * 0.5;
+    g.add(at(cyl(4.6, 2.6, mat.black, { along: "z" }), fx0 + 32, hy, hz - 0.6), at(cyl(2.2, 3.2, mat.satin, { along: "z", segs: 16 }), fx0 + 32, hy, hz + 0.4));
+    g.add(at(ext(rp([[fx0 + 36, -3.6], [fx0 - 10, -3.6], [fx0 - 16, 0], [fx0 - 10, 3.6], [fx0 + 36, 3.6]], 2.4), 1.6, 0.5, mat.satin), 0, hy, hz + 1));
+    g.add(at(mesh(new THREE.TorusGeometry(3.4, 0.8, 8, 16, PI), mat.satin), fx0 - 14.5, hy, hz - 2.4)); g.children.at(-1).rotation.set(PI / 2, 0, PI / 2);
+    if (nose === "driver" || nose === "drill") { // magnetic bit holder on the left, with a spare bit
+      const bz = -(P.W - 8) / 2 - 2.6;
+      g.add(at(rbox(30, 9, 5, mat.black, 2.5, 1), fx0 + 26, hy, bz));
+      g.add(at(cyl(2.2, 22, mat.chrome, { along: "x", segs: 6 }), fx0 + 26, hy, bz - 3.4), at(cyl(1.2, 3, mat.chrome, { along: "x", segs: 4, r2: 0.3 }), fx0 + 38.5, hy, bz - 3.4));
+    }
     if (mode) { // mode button and three speed lamps on top of the foot
       const mx = fx1 - 20, my = y0 + footH + 0.4;
       g.add(at(rbox(30, 2, 20, mat.screen, 3, 0.8), mx - 4, my, 0), at(cyl(3.6, 2.4, mat.black), mx + 5, my + 1, 0));
@@ -155,6 +196,11 @@ function pistol(o = {}) {
     band(R + 0.9, xr + 19, xr + 20.4),
   );
   for (let i = 0; i < 5; i++) for (const s of [1, -1]) bod.add(slit(R + 0.25, 2.2, 0.8, s, xr + 27 + i * 5.4));
+  // the two halves of the housing meet in a fine seam along the top and bottom
+  const seamPts = [[xr + 20.5, R * 1.003], [xr + len * 0.42, R * 1.003], [xf - 12, R * 0.963], [xf - 4, R * 0.933]];
+  bod.add(mesh(new THREE.ExtrudeGeometry(poly([...seamPts, ...seamPts.map(([x, y]) => [x, -y]).reverse()]), { depth: 0.5, bevelEnabled: false }).translate(0, 0, -0.25), mat.hole, false));
+  // cooling slots across the rubber rear cap
+  for (let i = -2; i <= 2; i++) bod.add(at(box(1, 2, R * (1 - Math.abs(i) * 0.16), mat.hole, 0.3), xr - 0.2, i * 5.4, 0));
   bod.scale.set(1, sx, sz); bod.position.y = yb; g.add(bod);
   g.add(screw(xf - 18, yb - R * 0.5, zAt(-R * 0.5)), screw(xf - 18, yb - R * 0.5, -zAt(-R * 0.5), -1), screw(xr + 62, yb + R * 0.55, zAt(R * 0.55)), screw(xr + 62, yb + R * 0.55, -zAt(R * 0.55), -1));
   if (tag) g.add(print(tag, Math.min(34, len * 0.24), 10, xr + len * 0.64, yb + R * 0.12, zAt(R * 0.12) + 0.5));
@@ -165,7 +211,8 @@ function pistol(o = {}) {
   }
   // trigger and forward/reverse button
   const tx = hw + rake - 1, ty = yb - R * 0.72;
-  g.add(at(ext(rp([[0, 2], [12, 2], [17, -8], [14, -18], [15, -27], [6, -32], [0, -28]], [2, 3, 5, 6, 4, 3, 2]), 13, 3, mat.chrome), tx - 2, ty, 0));
+  g.add(at(ext(rp([[0, 2], [12, 2], [17, -8], [14, -18], [15, -27], [6, -32], [0, -28]], [2, 3, 5, 6, 4, 3, 2]), 13, 3, mat.gloss), tx - 2, ty, 0));
+  g.add(at(ext(rp([[1, -4], [12, -4], [14, -9], [12, -16], [3, -16]], 2), 13.4, 0.6, gripRubber(mat.black)), tx - 2, ty, 0)); // grippy face on the trigger
   const fr = 2 * zAt(-R * 0.66) + 12;
   g.add(at(cyl(4, fr, mat.chrome, { along: "z" }), tx - 4, yb - R * 0.66, 0), at(cyl(4.8, 3, mat.black, { along: "z" }), tx - 4, yb - R * 0.66, fr / 2), at(cyl(4.8, 3, mat.black, { along: "z" }), tx - 4, yb - R * 0.66, -fr / 2));
   // nose
@@ -201,7 +248,7 @@ function pistol(o = {}) {
     N.add(xturn([[R * 0.55, 14], [R * 0.6, 17], [R * 0.6, 36], [R * 0.55, 40], [R * 0.4, 42]], mat.rubber, { flutes: 18, flute: 0.06 }));
     N.add(xturn([[R * 0.42, 41], [R * 0.4, 48], [R * 0.3, 53], [R * 0.16, 54.5], [0.1, 54.5]], mat.chrome));
     for (let i = 0; i < 3; i++) { const a = (i * 2 * PI) / 3; N.add(at(cyl(1.6, 4, mat.steel, { along: "x", segs: 8 }), 55.5, Math.sin(a) * 3.6, Math.cos(a) * 3.6)); }
-    N.add(at(cyl(3, 34, mat.oxide, { along: "x", segs: 10 }), 72, 0, 0), at(cyl(3, 6, mat.oxide, { along: "x", segs: 10, r2: 0.3 }), 92, 0, 0));
+    N.add(at(drillBit(44, 3), 52, 0, 0));
     // two-speed slider on top
     g.add(at(rbox(24, 4, 13, mat.black, 2, 1.2), xf - 34, yb + R * sx - 0.5, 0), at(rbox(8, 4, 10, mat.redp, 1.5, 1), xf - 39, yb + R * sx + 1.6, 0));
     g.add(print("1    2", 20, 5, xf - 34, yb + R * sx + 1.7, 7.4, WHITE, "y"));
@@ -260,9 +307,9 @@ function rhead(r = 19, t = 15, drive = 9.5) {
   g.userData.bottom = -t / 2 - 2.6 - drive;
   return g;
 }
-function cratchet(kind = "gen") {
+function cratchet(kind = "gen", dr = "") {
   const K = { gen: { R: 20, hr: 19, drive: 9.5, len: 196 }, "14": { R: 18.5, hr: 18, drive: 9.5, len: 206 }, "18": { R: 22, hr: 21, drive: 9.5, len: 262 } }[kind];
-  const { R, hr, drive, len } = K, x1 = 64 + len, g = group(rhead(hr, 15, drive));
+  const { R, hr, len } = K, drive = DRIVES[dr] && DRIVES[dr] <= 12.7 ? DRIVES[dr] : K.drive, x1 = 64 + len, g = group(rhead(hr, 15, drive));
   g.add(xturn([[R * 0.6, 44], [R * 0.72, 50], [R * 0.78, 62], [R * 0.82, 66]], mat.satin));
   g.add(band(R * 0.84, 64.5, 66.5));
   g.add(xturn([[R * 0.82, 65], [R * 0.95, 70], [R, 90], [R * 0.95, 130], [R * 0.93, 200], [R * 0.98, x1 - 20], [R, x1 - 6], [R * 0.9, x1], [0.1, x1]], mat.redp, { segs: 48 }));
@@ -274,7 +321,7 @@ function cratchet(kind = "gen") {
   g.add(at(ext(rp([[0, -4], [10, 0.6], [80, 0.8], [83, 4.6], [10, 6], [0, 2]], 2), 17, 3, mat.chrome), 96, R * 0.98 - 1, 0));
   g.add(at(cyl(4.2, 20, mat.black, { along: "z" }), 98, R * 0.98, 0));
   g.add(at(sphere(2.6, M.ledW), 71, R * 0.62, 0));
-  g.add(print(drive > 9 ? "3/8" : "1/4", 16, 7, 26, 9.2, 0, { color: "#30363e" }, "y"));
+  g.add(print(drive > 11 ? "1/2" : drive > 9 ? "3/8" : "1/4", 16, 7, 26, 9.2, 0, { color: "#30363e" }, "y"));
   g.add(screw(150, R * 0.4, R * 0.9), screw(x1 - 22, R * 0.4, R * 0.94));
   let back;
   if (kind === "gen") { // small slide pack on the back, gauge on top
@@ -546,24 +593,26 @@ function solderingIron() {
 
 /* ---------- the catalog ---------- */
 const imp = (o) => pistol({ nose: "impact", mode: true, ...o });
+// the item's own drive (a 3/8" 18V impact) replaces the model's usual anvil and stamp
+const sized = (base, o = {}) => (o.drive && DRIVES[o.drive] ? { ...base, drive: DRIVES[o.drive], tag: o.drive } : base);
 export const MODELS = {
   // generic cordless line: grey/black packs, black overmold
-  power: () => imp({ pk: "gen", len: 120, R: 29, drive: 9.5, tag: "3/8", tag2: "BRUSHLESS", gearM: mat.oxide }),
-  "power-stubby": () => imp({ pk: "gen", len: 94, R: 28, drive: 9.5, tag: "3/8", gearM: mat.oxide, gripH: 88 }),
-  "power-12": () => imp({ pk: "gen", len: 142, R: 33, drive: 12.7, tag: "1/2", tag2: "HIGH TORQUE", gearM: mat.oxide, gripH: 96, gripT: 36, gripW: 48 }),
+  power: (o) => imp(sized({ pk: "gen", len: 120, R: 29, drive: 9.5, tag: "3/8", tag2: "BRUSHLESS", gearM: mat.oxide }, o)),
+  "power-stubby": (o) => imp(sized({ pk: "gen", len: 94, R: 28, drive: 9.5, tag: "3/8", gearM: mat.oxide, gripH: 88 }, o)),
+  "power-12": (o) => imp(sized({ pk: "gen", len: 142, R: 33, drive: 12.7, tag: "1/2", tag2: "HIGH TORQUE", gearM: mat.oxide, gripH: 96, gripT: 36, gripW: 48 }, o)),
   "power-driver": () => pistol({ pk: "gen", nose: "driver", len: 108, R: 27, tag: "1/4 HEX", gearM: mat.oxide, mode: true }),
   "power-drill": () => pistol({ pk: "gen", nose: "drill", len: 108, R: 28, tag2: "2-SPEED" }),
-  "power-ratchet": () => cratchet("gen"),
+  "power-ratchet": (o = {}) => cratchet("gen", o.drive),
   // 14.4V: slimmer tools, smaller black packs
-  "cl14-impact": () => imp({ pk: "14", len: 108, R: 26, drive: 9.5, tag: "3/8", tag2: "14.4V", gripH: 84, gripT: 31, gripW: 42, px: 6 }),
+  "cl14-impact": (o) => imp(sized({ pk: "14", len: 108, R: 26, drive: 9.5, tag: "3/8", tag2: "14.4V", gripH: 84, gripT: 31, gripW: 42, px: 6 }, o)),
   "cl14-driver": () => pistol({ pk: "14", nose: "driver", len: 100, R: 25, tag: "1/4", tag2: "14.4V", gripH: 82, gripT: 31, gripW: 42, px: 6 }),
-  "cl14-ratchet": () => cratchet("14"),
+  "cl14-ratchet": (o = {}) => cratchet("14", o.drive),
   "cl14-battery": () => batteryModel("14"),
   // 18V: chunky tools with rubber nose boots and a ring light
-  "cl18-impact": () => imp({ pk: "18", len: 126, R: 31, drive: 12.7, tag: "1/2", tag2: "18V BRUSHLESS", boot: true, ledRing: true, gripH: 94, gripT: 36, gripW: 48 }),
+  "cl18-impact": (o) => imp(sized({ pk: "18", len: 126, R: 31, drive: 12.7, tag: "1/2", tag2: "18V BRUSHLESS", boot: true, ledRing: true, gripH: 94, gripT: 36, gripW: 48 }, o)),
   "cl18-driver": () => pistol({ pk: "18", nose: "driver", len: 110, R: 29, tag: "1/4", tag2: "18V", boot: true, ledRing: true, mode: true, gripH: 92, gripT: 35 }),
   "cl18-drill": () => pistol({ pk: "18", nose: "drill", len: 112, R: 30, tag2: "18V 2-SPEED", gripH: 92, gripT: 35 }),
-  "cl18-ratchet": () => cratchet("18"),
+  "cl18-ratchet": (o = {}) => cratchet("18", o.drive),
   "cl18-grinder": () => rightAngle({ pk: "18", tag: "18V" }),
   "cl18-cutoff": () => rightAngle({ pk: "18", cut: true, disc: 38, R: 22, len: 150, handle: false, tag: "18V", yb0: 46 }),
   "cl18-saw": () => { const s = pistol({ pk: "18", nose: "saw", len: 250, R: 30, xr: -46, px: -6, tag: "18V", gripH: 92, gripT: 35 }); return s; },
@@ -571,7 +620,7 @@ export const MODELS = {
   battery: () => batteryModel("gen"),
   charger: () => charger(),
   // air tools: composite black housings, satin metal, hose fitting under the grip
-  "air-impact": () => pistol({ pk: null, nose: "impact", len: 130, R: 31, drive: 12.7, body: M.comp, trim: mat.rubber, rearCap: mat.satin, tag: "1/2", tag2: "AIR · 90 PSI", regulator: true, gripH: 98 }),
+  "air-impact": (o) => pistol(sized({ pk: null, nose: "impact", len: 130, R: 31, drive: 12.7, body: M.comp, trim: mat.rubber, rearCap: mat.satin, tag: "1/2", tag2: "AIR · 90 PSI", regulator: true, gripH: 98 }, o)),
   "air-hammer": () => pistol({ pk: null, nose: "hammer", len: 96, R: 26, body: M.comp, rearCap: mat.satin, tag2: "AIR HAMMER", gripH: 96, gripT: 32, gripW: 42 }),
   "air-ratchet": () => airRatchet(),
   "grinder-die": () => dieGrinder(),

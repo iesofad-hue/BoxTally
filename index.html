@@ -1492,6 +1492,23 @@ document.addEventListener("DOMContentLoaded", () => {
     if (/hard handle|chrome handle|steel handle|knurled/i.test(text)) return false;
     return /^[TFSL]H/.test(pn);
   }
+  // T/F/S/L at the start of a Snap-on drive tool's part number is its drive: 1/4", 3/8", 1/2", 3/4".
+  const CAT_DRIVE = { '1/4" Drive Tools': '1/4"', '3/8" Drive Tools': '3/8"', '1/2" Drive Tools': '1/2"', '3/4" & Larger Drive Tools': '3/4"' };
+  const PN_DRIVE = { T: '1/4"', F: '3/8"', S: '1/2"', L: '3/4"' };
+  const saidDrive = (text) => { const m = String(text || "").match(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?(?:drive|dr\b)/i); return m ? m[1] + '"' : null; };
+  function pnDrive(pn) {
+    pn = String(pn || "").toUpperCase();
+    const k = firstHit(ART_PN, pn);
+    return /^[TFSL]/.test(pn) && (DRIVE_KINDS.includes(k) || k === "set" || k === "set-kit") ? PN_DRIVE[pn[0]] : null;
+  }
+  // The drive category a tool belongs in. A hand-picked drive category that the name or part number
+  // contradicts (S80A filed under 3/8" Drive Tools) shows, filters and sorts as the right one.
+  function catOf(r) {
+    const c = r && r.category;
+    if (!CAT_DRIVE[c]) return c;
+    const d = saidDrive([r.name, storeOf(r) && storeOf(r).name].filter(Boolean).join(" ")) || pnDrive(r.part_number);
+    return d && d !== CAT_DRIVE[c] ? Object.keys(CAT_DRIVE).find((k) => CAT_DRIVE[k] === d) : c;
+  }
   function artOf(r) {
     const chosen = r.art === "ratchet-hard" ? "ratchet" : r.art && ART[r.art] ? r.art : null;
     const text = [r.name, storeOf(r) && storeOf(r).name].filter(Boolean).join(" ");
@@ -1507,10 +1524,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (key === "power") { const v = voltOf(text, pn); if (v && CORDLESS[v][kind]) kind = CORDLESS[v][kind]; }
     if (/^ratchet/.test(kind) && softGrip(text, pn) && ART[kind + "-soft"]) kind += "-soft";
     if (chosen) kind = chosen;
-    const said = text.match(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?drive/i);
-    const drive = said ? said[1] + '"' : { '1/4" Drive Tools': '1/4"', '3/8" Drive Tools': '3/8"', '1/2" Drive Tools': '1/2"', '3/4" & Larger Drive Tools': '3/4"' }[r.category]
-      || ((DRIVE_KINDS.includes(key) || key === "set" || key === "set-kit") && /^[TFSL]/.test(pn) && kind !== "socket-impact" ? { T: '1/4"', F: '3/8"', S: '1/2"', L: '3/4"' }[pn[0]] : null);
-    return { key: kind, drive, size: sizeOf(kind, text, pn, drive), nums: kind === "set" ? setNums(setRange(text)) : null, unit: kind === "set" ? (setRange(text) || {}).unit : null, label: ART_LABEL[kind] || "Drawing" };
+    // Drive size: what the name says, then the part number's drive letter, then the category. The part number
+    // beats the category because the add form starts on 3/8" Drive Tools, so an S80A saved without changing
+    // it would otherwise read as 3/8".
+    const drive = saidDrive(text) || ((DRIVE_KINDS.includes(key) || key === "set" || key === "set-kit") && kind !== "socket-impact" && pnDrive(pn)) || CAT_DRIVE[r.category] || null;
+    return { key: kind, drive, size: sizeOf(kind, text, pn, drive), nums: kind === "set" ? setNums(setRange(text)) : null, unit: kind === "set" ? (setRange(text) || {}).unit : null, label: ART_LABEL[kind] || "Drawing", pn };
   }
   /* ---------- the size printed on a drawing: 11mm, 9/16", T40, 1/2 × 9/16 ...
      Read from the tool's name first, then from Snap-on's part number when the
@@ -1894,7 +1912,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const addedAt = (r) => r.created_at || r.date_bought || "";
   function filtered() {
     const q = $("q").value.trim().toLowerCase(), cat = $("fCat").value;
-    const rows = rowsOf(state.tab).filter((r) => (!cat || r.category === cat) && (!q || [displayName(r), r.part_number, r.notes, r.location].some((f) => String(f || "").toLowerCase().includes(q))));
+    const rows = rowsOf(state.tab).filter((r) => (!cat || catOf(r) === cat) && (!q || [displayName(r), r.part_number, r.notes, r.location].some((f) => String(f || "").toLowerCase().includes(q))));
     const worth = (r) => (state.tab === "owned" ? worthOf(r) : wishCost(r));
     const chg = (r) => { const c = lastChange(r); return c ? c.to - c.from : 0; };
     const by = {
@@ -1903,7 +1921,7 @@ document.addEventListener("DOMContentLoaded", () => {
       change: (a, b) => Math.abs(chg(b)) - Math.abs(chg(a)),
       drop: (a, b) => chg(a) - chg(b),
       name: (a, b) => displayName(a).localeCompare(displayName(b)),
-      cat: (a, b) => String(a.category).localeCompare(String(b.category)) || displayName(a).localeCompare(displayName(b)),
+      cat: (a, b) => String(catOf(a)).localeCompare(String(catOf(b))) || displayName(a).localeCompare(displayName(b)),
       pri: (a, b) => PRIS.indexOf(a.priority || "Want") - PRIS.indexOf(b.priority || "Want") || wishCost(b) - wishCost(a),
       close: (a, b) => (wishCost(a) - (Number(a.saved) || 0)) - (wishCost(b) - (Number(b.saved) || 0)),
       lent: (a, b) => (b.lent_to ? 1 : 0) - (a.lent_to ? 1 : 0) || String(a.lent_at || "").localeCompare(String(b.lent_at || "")) || displayName(a).localeCompare(displayName(b)),
@@ -1915,7 +1933,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- cards ---------- */
   const condClass = { "New": "good", "Good": "", "Worn": "warn", "Needs warranty": "bad" };
   const fresh = (r) => (state.flash && state.flash.has(r.id) ? " fresh" : "");
-  const idRow = (r) => `<div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)} <span aria-hidden="true">↗</span></a>` : ""}<span>${esc(r.category || "Other")}</span></div>`;
+  const idRow = (r) => `<div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)} <span aria-hidden="true">↗</span></a>` : ""}<span>${esc(catOf(r) || "Other")}</span></div>`;
   // Lending: who has it, since when, and the buttons to lend it or mark it back
   const lentDays = (r) => { const t = toDate(r.lent_at); return t ? Math.max(0, Math.round((toDate(today()) - t) / 86400000)) : 0; };
   const lentChip = (r) => (r.lent_to ? `<span class="chip lent">Lent out</span>` : "");
@@ -1939,7 +1957,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!p) {
       // no photo of your own yet: BoxTally's drawing of this kind of tool
       const a = artOf(r);
-      return `<div class="photo art-bg" data-m3d="${esc(a.key + "|" + (a.size || ""))}"><button class="open" type="button" data-act="view" aria-label="See ${esc(displayName(r))} up close">${artTag(a, "", { refl: true })}</button>${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
+      return `<div class="photo art-bg" data-m3d="${esc([a.key, a.size || "", a.drive || "", a.pn || ""].join("|"))}"><button class="open" type="button" data-act="view" aria-label="See ${esc(displayName(r))} up close">${artTag(a, "", { refl: true })}</button>${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
     }
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
@@ -2023,7 +2041,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const chips = (owned ? (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
       + (dropped ? `<span class="chip tag">Price dropped</span>` : wasPrice(r) ? `<span class="chip tag">On sale</span>` : "");
     return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
-      <div><h3>${esc(displayName(r))}</h3><div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(r.category || "Other")}</span>${chips}</div></div>
+      <div><h3>${esc(displayName(r))}</h3><div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(catOf(r) || "Other")}</span>${chips}</div></div>
       <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span></div>
       <div class="actions">${owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       </div>${r.lent_to && !state.readonly ? `<span class="meta-line">Lent to ${esc(r.lent_to)} · ${lentDays(r)} days</span>` : ""}${lendForm(r)}${confirmHtml(r)}</article>`;
@@ -2180,7 +2198,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("railCount").textContent = `${owned.length} tool${owned.length === 1 ? "" : "s"}${withPh ? ` · ${withPh} with your photos` : ""}`;
     if (!state.railIntro) { state.railIntro = true; $("rail").classList.add("intro"); setTimeout(() => $("rail").classList.remove("intro"), 2200); }
     $("rail").innerHTML = rows.map((r, i) => { const p = photoOf(r), pr = worthOf(r);
-      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}"${p ? "" : ` data-m3d="${esc(artOf(r).key + "|" + (artOf(r).size || ""))}"`}>${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
+      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}"${p ? "" : ` data-m3d="${esc([artOf(r).key, artOf(r).size || "", artOf(r).drive || "", artOf(r).pn || ""].join("|"))}"`}>${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
   }
 
   function activity() {
@@ -2207,7 +2225,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const box = $("insights");
     if (state.tab === "owned") {
       const totals = {};
-      rowsOf("owned").forEach((r) => { const d = deptOf(r.category); totals[d] = (totals[d] || 0) + worthOf(r); });
+      rowsOf("owned").forEach((r) => { const d = deptOf(catOf(r)); totals[d] = (totals[d] || 0) + worthOf(r); });
       const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]), max = entries.length ? entries[0][1] : 0;
       const warranty = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
       const html = feedHtml()
@@ -2398,7 +2416,7 @@ document.addEventListener("DOMContentLoaded", () => {
       load3d().then((t) => {
         if (!t || !t.has(a.key) || viewing !== id || !viewer.open || !$("vStage")) return;
         showroomLight(false);
-        const stop = t.viewer($("vStage"), a.key, a.size || "");
+        const stop = t.viewer($("vStage"), a.key, a.size || "", a.drive || "", a.pn || "");
         if (!stop) return;
         $("vStage").classList.add("is3d"); $("vHint").textContent = "· Drag to spin it";
         viewer.addEventListener("close", stop, { once: true });
@@ -2423,10 +2441,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!t) return;
       for (const el of todo) {
         el.setAttribute("data-m3d-done", "");
-        const [key, size] = el.dataset.m3d.split("|");
+        const [key, size, drive, pn] = el.dataset.m3d.split("|");
         if (!t.has(key)) continue;
         const square = el.classList.contains("plate");
-        t.picture(key, size, square ? 360 : 720, square ? 360 : 450).then((url) => {
+        t.picture(key, size, square ? 360 : 720, square ? 360 : 450, drive, pn).then((url) => {
           if (!url || !el.isConnected) return;
           const art = el.querySelector(".art"); if (!art) return;
           const img = new Image(); img.className = "m3d"; img.alt = ""; img.src = url;
@@ -3034,7 +3052,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ---------- export: a spreadsheet, or a printable list (handy for insurance) ---------- */
-  const byCatName = (a, b) => String(a.category || "").localeCompare(String(b.category || "")) || displayName(a).localeCompare(displayName(b));
+  const byCatName = (a, b) => String(catOf(a) || "").localeCompare(String(catOf(b) || "")) || displayName(a).localeCompare(displayName(b));
   const exportRows = () => [...rowsOf("owned").sort(byCatName), ...rowsOf("wishlist").sort(byCatName)];
   // Text that starts like a formula is prefixed so spreadsheet apps show it as text instead of running it.
   const csvText = (v) => { let s = String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
@@ -3044,7 +3062,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const lines = rows.map((r) => {
       const owned = r.list === "owned";
       return [
-        csvText(owned ? "Owned" : "Wishlist"), csvText(displayName(r)), csvText(r.part_number), csvText(r.category),
+        csvText(owned ? "Owned" : "Wishlist"), csvText(displayName(r)), csvText(r.part_number), csvText(catOf(r)),
         csvText(owned ? r.condition : ""), csvText(owned ? r.date_bought || "" : ""), csvNum(Number(r.price) || ""),
         csvNum(ebayPrice(r)),
         csvText(owned ? r.location : ""), csvText(owned ? r.lent_to || "" : ""), csvText(owned ? "" : r.priority || "Want"), csvNum(owned ? "" : Number(r.saved) || ""),
@@ -3069,8 +3087,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const worth = owned.reduce((s, r) => s + worthOf(r), 0);
     const who = state.user ? state.user.user_metadata?.full_name || state.user.email || "" : "";
     const m = (n) => (n ? money(n, true) : "");
-    const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(nowPrice(r))}</td><td>${esc(r.location || "")}</td></tr>`).join("");
-    const wishRows = wish.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(r.category)}</td><td>${esc(r.priority || "Want")}</td><td class="n">${m(wishCost(r))}</td><td class="n">${m(Number(r.saved) || 0)}</td></tr>`).join("");
+    const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(catOf(r))}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(nowPrice(r))}</td><td>${esc(r.location || "")}</td></tr>`).join("");
+    const wishRows = wish.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(catOf(r))}</td><td>${esc(r.priority || "Want")}</td><td class="n">${m(wishCost(r))}</td><td class="n">${m(Number(r.saved) || 0)}</td></tr>`).join("");
     return `<h1>BoxTally</h1>
       <p class="meta">Tool list as of ${esc(fmtDate(today()))}${who ? ` · ${esc(who)}` : ""}</p>
       <h2>Owned tools</h2>
@@ -3111,6 +3129,8 @@ document.addEventListener("DOMContentLoaded", () => {
     $("pfRemove").hidden = !mine;
     $("pfNote").textContent = pf.url ? "Saves when you tap Save. Only you see it." : mine ? "Your photo of this tool. Only you see it." : `Drawing: ${$("pfPrev")._label || "tool"}. Words like flex, deep, impact, set, dead blow, crimper or Phillips in the name pick the right one, and sizes like 11mm or 9/16 print on it. Wrong one? Pick it under Drawing. Add a photo of your own tool to use it instead; only you see your photos.`;
   }
+  // typing a part number or name that says the drive moves a drive category to match (S80A → 1/2" Drive Tools)
+  ["i-name", "i-pn"].forEach((id) => $(id).addEventListener("input", () => { const c = catOf({ name: $("i-name").value, part_number: cleanPn($("i-pn").value), category: $("i-cat").value }); if (c && c !== $("i-cat").value) $("i-cat").value = c; }));
   ["i-name", "i-pn", "i-cat", "i-art"].forEach((id) => $(id).addEventListener("input", () => { if (dlg.open) renderPf(); }));
   $("pfPick").onclick = () => { $("pfFile").value = ""; $("pfFile").click(); };
   $("pfFile").addEventListener("change", () => { const f = $("pfFile").files[0]; if (!f) return; clearPf(); pf.file = f; pf.url = URL.createObjectURL(f); renderPf(); });
@@ -3125,7 +3145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("i-name").value = item?.name || "";
     $("i-name").placeholder = (item && storeOf(item)?.name) || '3/8" drive dual 80 ratchet';
     $("i-pn").value = item?.part_number || pn || "";
-    $("i-cat").value = CATS.includes(item?.category) ? item.category : '3/8" Drive Tools';
+    $("i-cat").value = CATS.includes(catOf(item)) ? catOf(item) : '3/8" Drive Tools';
     $("i-art").value = item?.art && ART[item.art] ? item.art : "";
     $("i-art").closest(".field").hidden = signedIn() && !state.dbArt;
     $("i-price").value = item?.price ? Number(item.price) : "";

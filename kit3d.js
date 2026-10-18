@@ -31,6 +31,8 @@ export const mat = {
 
 /* ---------- shape helpers ---------- */
 export const PI = Math.PI;
+// square drive sizes in mm, by the drive in inches
+export const DRIVES = { "1/4": 6.35, "3/8": 9.5, "1/2": 12.7, "3/4": 19 };
 export const mesh = (geo, m, castShadow = true) => { const o = new THREE.Mesh(geo, m); o.castShadow = castShadow; o.receiveShadow = true; return o; };
 // a 2D outline seen from above, given thickness and rounded edges, lying flat on the bench
 export function slab(shape, depth, bevel = 1, m = mat.chrome) {

@@ -1,5 +1,5 @@
 // BoxTally 3D: the core hand tools (ratchets, sockets, wrenches, screwdrivers, pliers, hammers...).
-import { THREE, mat, PI, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
+import { THREE, mat, PI, DRIVES, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
 
 /* ---------- small helpers shared by the tools ---------- */
 // a knurled grip band for a turned profile: fine rings from a to b at radius r
@@ -111,8 +111,13 @@ function knurling() {
 // Ratchet: Snap-on oval head on a chrome beam. Most Snap-on ratchets have a hard handle: polished chrome
 // that swells a little toward the rounded end, with a knurled grip panel and a hang hole. Soft-grip ones
 // (FH80, FHK80...) get the red dipped grip with molded ribs and a black end cap.
-export function ratchet({ len = 200, grip = true, flex = false, round = false, thumb = false } = {}) {
-  const head = ratchetHead({ round, thumb }), parts = [];
+// The drive sets the size: a 1/2" ratchet is a bigger tool all round than a 3/8" one (and a little longer for
+// its head), with a bigger square and its own drive stamped on the handle.
+const RATCHET_SIZE = { "1/4": [0.76, 0.94], "3/8": [1, 1], "1/2": [1.3, 1.06], "3/4": [1.8, 1.25] };
+export function ratchet({ len = 200, grip = true, flex = false, round = false, thumb = false, drive = "3/8", pn = "" } = {}) {
+  if (!RATCHET_SIZE[drive]) drive = "3/8";
+  const [k, stretch] = RATCHET_SIZE[drive]; len *= stretch;
+  const head = ratchetHead({ round, thumb, drive: DRIVES[drive] / k }), parts = [];
   const b0 = flex ? 50 : 28, gl = grip ? Math.min(100, len * 0.48) : 0, gx = len - gl - 20; // grip from gx to len+4
   const hl = Math.min(46, len * 0.3); // hard handle: the wider grip zone at the end
   if (grip) parts.push(slab(poly([[b0, -8], [b0 + 18, -6.2], [len - 6, -6], [len, -3.6], [len, 3.6], [len - 6, 6], [b0 + 18, 6.2], [b0, 8]]), 7, 1.4, mat.satin));
@@ -125,7 +130,8 @@ export function ratchet({ len = 200, grip = true, flex = false, round = false, t
   const pEnd = grip ? gx - 4 : len - hl - 16, pLen = pEnd - (b0 + 16); // recessed satin panel with the drive size
   if (pLen > 12) {
     parts.push(at(slab(poly([[b0 + 16, -3.2], [pEnd, -3.4], [pEnd, 3.4], [b0 + 16, 3.2]]), 0.3, 0.25, brushed), 0, 5.1, 0));
-    if (pLen > 26) parts.push(decal('3/8" DR', Math.min(34, pLen - 6), 5, b0 + 16 + pLen / 2, 5.6, 0));
+    if (pn && pLen > 70) parts.push(decal(`${drive}" DR`, 30, 5, b0 + 16 + pLen * 0.3, 5.6, 0), decal(pn, Math.min(34, pn.length * 5), 5, b0 + 16 + pLen * 0.74, 5.6, 0));
+    else if (pLen > 26) parts.push(decal(`${drive}" DR`, Math.min(34, pLen - 6), 5, b0 + 16 + pLen / 2, 5.6, 0));
   }
   if (grip) {
     const Lr = gl + 6;
@@ -145,14 +151,17 @@ export function ratchet({ len = 200, grip = true, flex = false, round = false, t
     parts.push(piv, at(box(16, 8.4, 3.2, mat.chrome, 1.2), 46, 0, 6.3), at(box(16, 8.4, 3.2, mat.chrome, 1.2), 46, 0, -6.3),
       at(cyl(3.2, 17.4, mat.satin, { along: "z" }), 42, 0, 0), at(cyl(1.4, 17.8, mat.hole, { along: "z", segs: 12 }), 42, 0, 0));
   } else parts.push(head);
-  return group(parts);
+  const out = group(parts); out.scale.setScalar(k);
+  return out;
 }
 
 /* ---------- sockets ---------- */
 // Socket: standing on its drive end with the opening up. Deep, impact (black), 12-point, spark plug,
 // slotted O2 sensor, swivel and bit sockets are variations. The size is printed on the barrel.
-export function socket({ h = 26, r = 10.5, deep = false, impact = false, points = 6, bit = false, size = "", spark = false, slot = false, swivel = false } = {}) {
+export function socket({ h = 26, r = 10.5, deep = false, impact = false, points = 6, bit = false, size = "", spark = false, slot = false, swivel = false, drive = "" } = {}) {
   if (deep) h = 54;
+  const dsq = DRIVES[drive]; // a bigger drive needs a fatter barrel round its square, and a taller one
+  if (dsq) { r = Math.max(r, dsq * 0.82 + 2.2); if (dsq > 10) h *= 1.18; if (dsq < 7) h *= 0.85; }
   const m = impact ? mat.oxide : mat.chrome, rIn = r * 0.66, J = swivel ? 28 : 0, top = h, sa = 1.05; // sa: where the O2 slot faces (right-front)
   const prof = [[0.1, 0], [r - 1.6, 0], [r - 0.8, 0.8], [r - 0.8, 10], [r, 12], ...(deep ? [[r, 16], [r - 0.6, 19], [r - 0.6, top - 8], [r, top - 5]] : []), [r, top - 1.2], [r - 0.9, top], [rIn + 1.2, top], [rIn, top - 1]];
   const g = group();
@@ -168,7 +177,7 @@ export function socket({ h = 26, r = 10.5, deep = false, impact = false, points 
     g.add(prism(hole, 9, mat.hole, top - 9.6));
   }
   if (!swivel) { // the square drive hole in the bottom, with a chamfered rim
-    const sq = Math.min(9.6, r * 0.95);
+    const sq = dsq ? Math.min(dsq, r * 1.2) : Math.min(9.6, r * 0.95);
     g.add(at(box(sq, 1.2, sq, mat.hole, 0.4), 0, 0.45, 0), at(mesh(new THREE.TorusGeometry(sq * 0.74, 0.5, 8, 40), mat.satin), 0, 0.1, 0));
     g.children.at(-1).rotation.x = PI / 2;
   }
@@ -347,10 +356,13 @@ export function pliers({ jaw = "slip", pump = false } = {}) {
 }
 
 /* ---------- drive accessories ---------- */
-export function extension({ len = 150 } = {}) {
-  return group(turned([[0.1, 0], [9.5, 0], [10, 1], [10, 4], ...knurl(10, 4, 18), [10, 20], [9.3, 21], [9.3, 22.2], [10, 23], [8, 25], [5.6, 28.5], [5.4, len - 12], [6.2, len - 10.5], [6.6, len - 8.5], [6.6, len - 1], [6, len], [0.1, len]], mat.chrome),
+export function extension({ len = 150, drive = "3/8" } = {}) {
+  const k = { "1/4": 0.7, "1/2": 1.32, "3/4": 1.9 }[drive] || 1;
+  const e = group(turned([[0.1, 0], [9.5, 0], [10, 1], [10, 4], ...knurl(10, 4, 18), [10, 20], [9.3, 21], [9.3, 22.2], [10, 23], [8, 25], [5.6, 28.5], [5.4, len - 12], [6.2, len - 10.5], [6.6, len - 8.5], [6.6, len - 1], [6, len], [0.1, len]], mat.chrome),
     at(box(9.6, 9.6, 9.6, mat.chrome, 0.8), len + 4.6, 0, 0), at(sphere(1.5, mat.chrome), len + 5.4, 0, 4.9), at(box(0.8, 8.6, 8.6, mat.hole, 0.3), 0.2, 0, 0),
     at(cyl(10.2, 1.2, mat.satin, { along: "x" }), 21.6, 0, 0));
+  e.scale.set(1, k, k); // thicker for a bigger drive, same length
+  return e;
 }
 // Breaker bar: flex head on a pinned yoke, long chrome bar, satin knurled grip.
 export function breaker() {
@@ -452,14 +464,18 @@ export function hexkeys() {
 }
 
 /* ---------- sets ---------- */
-export function socketRail({ n = 7 } = {}) {
-  const sizes = [8, 9, 10, 11, 12, 13, 14, 15, 17, 19].slice(0, n), rs = sizes.map((s) => s * 0.6 + 3.2), gap = 7;
+// The rail prints the set's own drive and SAE or metric, and carries sockets to match.
+export function socketRail({ n = 7, drive = "3/8", sae = false } = {}) {
+  if (!DRIVES[drive]) drive = "3/8";
+  const sizes = (sae ? ["1/4", "5/16", "3/8", "7/16", "1/2", "9/16", "5/8", "11/16", "3/4"] : [8, 9, 10, 11, 12, 13, 14, 15, 17, 19]).slice(0, n);
+  const mm = (s) => (typeof s === "number" ? s : (25.4 * s.split("/")[0]) / s.split("/")[1]);
+  const rs = sizes.map((s) => Math.max(mm(s) * 0.6 + 3.2, DRIVES[drive] * 0.82 + 2.2)), gap = 7;
   const W = rs.reduce((a, r) => a + 2 * r + gap, gap + 14);
   const rail = group(at(box(W, 6, 30, mat.red, 2), 0, 3, 0), at(box(W + 4, 3, 32, mat.black, 1), 0, -0.5, 0));
   for (const s of [-1, 1]) rail.add(at(box(9, 9, 32, mat.black, 2.5), s * (W / 2 - 2), 4, 0));
-  const t = mesh(new THREE.PlaneGeometry(W * 0.5, 4.2), label('3/8" DRIVE  ·  METRIC', W * 0.5, 4.2, { color: "#f1f3f5" }), false); t.position.set(0, 3, 15.08); rail.add(t);
+  const t = mesh(new THREE.PlaneGeometry(W * 0.5, 4.2), label(`${drive}" DRIVE  ·  ${sae ? "SAE" : "METRIC"}`, W * 0.5, 4.2, { color: "#f1f3f5" }), false); t.position.set(0, 3, 15.08); rail.add(t);
   let x = -W / 2 + 7 + gap;
-  sizes.forEach((sz, i) => { const r = rs[i]; x += r; rail.add(at(cyl(4.2, 2, mat.black), x, 6.5, -3), at(socket({ r, h: 20 + r * 0.55, size: String(sz) }), x, 6.8, -3)); x += r + gap; });
+  sizes.forEach((sz, i) => { const r = rs[i]; x += r; rail.add(at(cyl(4.2, 2, mat.black), x, 6.5, -3), at(socket({ r, h: 20 + r * 0.55, size: String(sz), drive }), x, 6.8, -3)); x += r + gap; });
   return rail;
 }
 export function wrenchSet() { const g = group(); [10, 11, 12, 13, 14].forEach((s, i) => { const w = wrench({ gap: s, size: s + "mm" }); w.position.set(0, i * 0.2, -i * 34); g.add(w); }); return g; }
