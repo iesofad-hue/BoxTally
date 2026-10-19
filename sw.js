@@ -2,7 +2,7 @@
 // Keeps a copy of the page, its icons, fonts and the database library, so the site opens with no signal.
 // Your tools come from the copy the page itself saves in the browser; nothing about your box is stored here.
 // Bump VERSION whenever these files change in a way that needs old copies thrown away.
-const VERSION = "boxtally-v14";
+const VERSION = "boxtally-v15";
 const SHELL = ["./", "index.html", "tool3d.js", "kit3d.js", "core3d.js", "power3d.js", "storage3d.js", "shop3d.js", "hand3d.js", "vendor/supabase-2.116.0.js", "vendor/three-0.160.0.module.min.js", "vendor/three-addons/controls/OrbitControls.js", "vendor/three-addons/utils/BufferGeometryUtils.js", "privacy.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 const CDN = ["https://cdn.jsdelivr.net/", "https://fonts.googleapis.com/", "https://fonts.gstatic.com/"];
 
@@ -22,12 +22,19 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(req.url);
 
   // The page itself: always try for the newest, fall back to the saved copy when offline.
+  // Addresses like /wishlist or /tool/... are all the same page, so they get index.html straight away.
   if (req.mode === "navigate") {
-    e.respondWith(
-      fetch(req)
-        .then((res) => { const copy = res.clone(); caches.open(VERSION).then((c) => c.put("index.html", copy)); return res; })
-        .catch(() => caches.match("index.html").then((r) => r || caches.match("./")))
-    );
+    const last = url.pathname.split("/").pop();
+    if (!last.includes(".") || last === "index.html") {
+      e.respondWith(
+        (url.pathname === "/" ? fetch(req) : fetch("/", { cache: "no-cache" }))
+          .then((res) => { if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put("index.html", copy)); } return res; })
+          .catch(() => caches.match("index.html").then((r) => r || caches.match("./")))
+      );
+    } else {
+      // other pages (privacy.html): the newest, or the saved copy offline
+      e.respondWith(fetch(req).catch(() => caches.match(req, { ignoreSearch: true })));
+    }
     return;
   }
 

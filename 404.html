@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>BoxTally</title>
+<script>
+// GitHub Pages only has one real page (index.html), so an address like boxtally.app/tool/... or /wishlist
+// lands here. Send it to the page with the address attached; index.html puts it back and opens that view.
+location.replace("/?to=" + encodeURIComponent(location.pathname + location.search + location.hash));
+</script>
+</head>
+<body style="background:#10151c;color:#e9edf2;font:16px system-ui,sans-serif;padding:24px">
+<noscript>BoxTally needs JavaScript. <a href="/" style="color:#ff4b53">Go to BoxTally</a></noscript>
+</body>
+</html>
