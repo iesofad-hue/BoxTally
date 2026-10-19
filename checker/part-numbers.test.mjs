@@ -104,6 +104,27 @@ const CASES = [
   // air
   ["FAR72A", "air-ratchet"], ["IM31", "air-impact"], ["IM6100", "air-impact"], ["MG725", "air-impact"], ["MG325", "air-impact"], ["PT850", "air-impact"], ["PT350", "air-impact"],
   ["PH3050", "air-hammer"], ["PTGR200", "grinder-die"],
+  // added from the full catalog sweep (checker/catalog-part-numbers.tsv)
+  ["T8", "socket", '1/4"', '1/4"'], ["L873", "ratchet", '1"'], ["L113H", "breaker", '1"'], ["L63", "extension", '1"'], ["IM62B", "extension", '1"'],
+  ["IM72", "ujoint", '3/4"'], ["IP800", "ujoint", '1/2"'], ["IP80D", "ujoint", '1/2"'], ["GU8", "ujoint", '1/2"'], ["L672B", "adapter", '3/4"'],
+  ["IMX52", "extension", '1/2"', '5"'], ["IMXL182", "extension", '1/2"', '18"'], ["IMSFXL24", "extension", '3/8"', '24"'], ["IMXA42", "adapter"],
+  ["IMFS200", "socket-impact", '1/2"', '5/8"'], ["SIMM302", "socket-impact", '1/2"', "30mm"], ["IM243P", "other"],
+  ["TTX25E2", "socket-bit", '3/8"', "T25"], ["TMA2E2", "socket-bit", '3/8"', '1/16"'], ["TMP21E2", "socket-bit", '3/8"'], ["FAM8E2", "socket-bit", '1/2"', "8mm"],
+  ["STX60E2", "socket-bit", '1/2"', "T60"], ["SAM12LE", "socket-bit", '1/2"', "12mm"], ["SADM10E", "socket-bit", '1/2"'], ["STSM12E", "socket-bit", '1/2"', "12mm"],
+  ["FTSM8E", "socket-bit", '3/8"', "8mm"], ["SP32E", "socket-bit", '1/2"'], ["SW28E2", "socket-bit", '1/2"'], ["FBSM8A", "socket-bit", '3/8"'],
+  ["SW412", "socket-12", '1/2"', '3/8"'], ["SW161A", "socket-12", '1/2"', '1/2"'], ["MGMM5.5", "socket", '1/4"', "5.5mm"], ["TMUSM5.5A", "socket-swivel", '1/4"', "5.5mm"],
+  ["A17", "socket", '1/2"'], ["A80A", "extractor"], ["BW626A", "socket", '3/4"'], ["WH280", "socket", '1/2"'], ["PP409A", "socket"],
+  ["GSP936", "ratchet", '1/2"'], ["PALMRAT", "ratchet", '3/8"'], ["BTWOS", "ratchet-stubby"], ["LRS70A", "speeder", '1/2"'], ["TM62B", "speeder", '1/4"'],
+  ["BLPSB12114", "socket", '1/2"', '1-1/4"'], ["BLPSM144.5", "socket", '1/4"', "4.5mm"], ["BLPEXTK126", "extension", '1/2"', '6"'], ["BLPEXTL1418", "extension", '1/4"', '18"'],
+  ["BLPH14316", "socket-bit", '1/4"', '3/16"'], ["BLPTS1430", "socket-bit", '1/4"', "T30"], ["BLPUJ12", "ujoint", '1/2"'], ["BLPBB146", "breaker", '1/4"'], ["BLPSD14", "speeder", '1/4"'],
+  ["R810C", "wrench-ratchet", null, "1/4 × 5/16"], ["RBM78SC", "wrench-ratchet", null, "7 × 8 mm"], ["RYAM910", "wrench-ratchet"], ["RTBM10", "wrench-ratchet", null, "10 mm"], ["RTB607", "set-wrench"],
+  ["XBM1214SA", "wrench-box"], ["VSM5210B", "wrench-open", null, "10 mm"], ["VS814A", "set-wrench"], ["OXI709SBK", "set-wrench"], ["BLPCW516", "wrench", null, '5/16"'], ["BLPCWS711", "set-wrench"],
+  ["96CF", "pliers-needle"], ["196CF", "pliers-needle"], ["411BCP", "pliers-needle"], ["912AEP", "pliers-needle"], ["91ACP", "pliers-pump"], ["47ACP", "pliers"], ["LP30A", "set-punch"],
+  ["SGDTX50BR", "set-screwdriver"], ["SGDTX320BR", "screwdriver-torx"], ["SGDET70", "set-screwdriver"], ["GSHDX80R", "set-screwdriver"], ["SGDMRC103A", "set-screwdriver"],
+  ["30SSD", "screwdriver"], ["120SSDP", "screwdriver-phillips"], ["SSM3", "screwdriver"], ["102NDL10", "nutdriver"], ["CSSC9", "insulated"],
+  ["PPC808A", "punch"], ["PPC12B", "punch"], ["BPPC1878", "punch"], ["PPC714B", "punch-pin"], ["PPC104A", "punch-pin"], ["PPC710A", "set-punch"], ["PPB20AK", "set-punch"], ["1210B", "punch-pin"],
+  ["1250", "pry"], ["BP8B", "hammer-ballpeen"], ["HLE24", "hammer-deadblow"], ["HD4SG", "hammer-sledge"], ["5NHRA", "file"], ["SGHF614BR", "file"],
+  ["PSLR4-1", "pick"], ["SGLASA204", "set-pick"], ["YA338", "pick"], ["GA294", "mirror"], ["GA265A", "pickup"], ["MS800", "scraper"], ["YA405A", "knife"], ["PIT160", "hand-impact"],
 ];
 
 let bad = 0;
@@ -119,6 +140,10 @@ for (const [pn, key, drive, size] of CASES) {
 const named = artOf({ part_number: "F80", name: "1/2\" Drive 9/16\" Deep Socket", category: "Other" });
 if (named.key !== "socket-deep" || named.drive !== '1/2"') { bad++; console.log("name should win:", named.key, named.drive); }
 // numbers we can't read get a plain drawing, not a wrong tool
-for (const pn of ["ZZ123", "YA480B", "A78"]) { const a = artOf({ part_number: pn, name: "", category: "Other" }); if (a.key !== "other") { bad++; console.log(`${pn} should be unknown, got ${a.key}`); } }
-console.log(bad ? `${bad} of ${CASES.length + 4} wrong` : `all ${CASES.length + 4} part numbers right`);
+for (const pn of ["ZZ123", "YA480B", "A78", "GA98A"]) { const a = artOf({ part_number: pn, name: "", category: "Other" }); if (a.key !== "other") { bad++; console.log(`${pn} should be unknown, got ${a.key}`); } }
+console.log(bad ? `${bad} of ${CASES.length + 5} wrong` : `all ${CASES.length + 5} part numbers right`);
+// how much of Snap-on's catalog we can read at all (catalog-part-numbers.tsv: number, catalog description)
+const rows = readFileSync(new URL("./catalog-part-numbers.tsv", import.meta.url), "utf8").trim().split("\n").slice(1);
+const known = rows.filter((l) => artOf({ part_number: l.split("\t")[0], name: "", category: "Other" }).key !== "other").length;
+console.log(`${known} of ${rows.length} catalog part numbers get a tool drawing`);
 process.exit(bad ? 1 : 0);

@@ -1,0 +1,4165 @@
+part_number	description
+TM6	3/16" 6-point shallow socket
+TM7	7/32" 6-point shallow socket
+TM8	1/4" 6-point shallow socket
+TM9	9/32" 6-point shallow socket
+TM10	5/16" 6-point shallow socket
+TM11	11/32" 6-point shallow socket
+TM12	3/8" 6-point shallow socket
+TM14	7/16" 6-point shallow socket
+TM16	1/2" 6-point shallow socket
+TM18	9/16" 6-point shallow socket
+STM6	3/16" 6-point deep socket
+STM7	7/32" 6-point deep socket
+STM8	1/4" 6-point deep socket
+STM9	9/32" 6-point deep socket
+STM10	5/16" 6-point deep socket
+STM11	11/32" 6-point deep socket
+STM12	3/8" 6-point deep socket
+STM14	7/16" 6-point deep socket
+STM16	1/2" 6-point deep socket
+STM18	9/16" 6-point deep socket
+TMM5	5mm 6-point shallow socket
+TMM5.5	5.5mm 6-point shallow socket
+TMM6	6mm 6-point shallow socket
+TMM7	7mm 6-point shallow socket
+TMM8	8mm 6-point shallow socket
+TMM9	9mm 6-point shallow socket
+TMM10	10mm 6-point shallow socket
+TMM11	11mm 6-point shallow socket
+TMM12	12mm 6-point shallow socket
+TMM13	13mm 6-point shallow socket
+TMM14	14mm 6-point shallow socket
+TMM15	15mm 6-point shallow socket
+TMM4	4mm 6-point shallow socket
+STMM5.5	5.5mm 6-point deep socket
+STMM6	6mm 6-point deep socket
+STMM7	7mm 6-point deep socket
+STMM8	8mm 6-point deep socket
+STMM9	9mm 6-point deep socket
+STMM10	10mm 6-point deep socket
+STMM11	11mm 6-point deep socket
+STMM12	12mm 6-point deep socket
+STMM13	13mm 6-point deep socket
+STMM14	14mm 6-point deep socket
+STMM15	15mm 6-point deep socket
+STMM4	4mm 6-point deep socket
+STMM4.5	4.5mm 6-point deep socket
+TM04	1/8" 6-point shallow socket
+TM05	5/32" 6-point shallow socket
+TM20	5/8" 6-point shallow socket
+STM04	1/8" 6-point deep socket
+STM05	5/32" 6-point deep socket
+TMM4.5	4.5mm 6-point shallow socket
+TMD6	3/16" 12-point shallow socket
+TMD7	7/32" 12-point shallow socket
+TMD8	1/4" 12-point shallow socket
+TMD9	9/32" 12-point shallow socket
+TMD10	5/16" 12-point shallow socket
+TMD11	11/32" 12-point shallow socket
+TMD12	3/8" 12-point shallow socket
+TMD14	7/16" 12-point shallow socket
+TMD16	1/2" 12-point shallow socket
+TMD18	9/16" 12-point shallow socket
+GTMD6	3/16" 12-point shallow socket (alternate)
+GTMD7	7/32" 12-point shallow socket (alternate)
+GTMD8	1/4" 12-point shallow socket (alternate)
+GTMD9	9/32" 12-point shallow socket (alternate)
+GTMD10	5/16" 12-point shallow socket (alternate)
+GTMD11	11/32" 12-point shallow socket (alternate)
+GTMD12	3/8" 12-point shallow socket (alternate)
+GTMD14	7/16" 12-point shallow socket (alternate)
+GTMD16	1/2" 12-point shallow socket (alternate)
+GTMD18	9/16" 12-point shallow socket (alternate)
+SFMD6	3/16" 12-point deep socket
+TMMD5	5mm 12-point shallow socket
+TMMD5.5	5.5mm 12-point shallow socket
+TMMD6	6mm 12-point shallow socket
+TMMD7	7mm 12-point shallow socket
+TMMD8	8mm 12-point shallow socket
+TMMD9	9mm 12-point shallow socket
+TMMD10	10mm 12-point shallow socket
+TMMD11	11mm 12-point shallow socket
+TMMD12	12mm 12-point shallow socket
+TMMD13	13mm 12-point shallow socket
+TMMD14	14mm 12-point shallow socket
+TMS6	3/16" 6-point semi deep socket
+TMS7	7/32" 6-point semi deep socket
+TMS8	1/4" 6-point semi deep socket
+TMS9	9/32" 6-point semi deep socket
+TMS10	5/16" 6-point semi deep socket
+TMS11	11/32" 6-point semi deep socket
+TMS12	3/8" 6-point semi deep socket
+TMS14	7/16" 6-point semi deep socket
+TMS16	1/2" 6-point semi deep socket
+TMS18	9/16" 6-point semi deep socket
+TMDS6	3/16" 12-point semi deep socket
+TMDS7	7/32" 12-point semi deep socket
+TMDS8	1/4" 12-point semi deep socket
+TMDS9	9/32" 12-point semi deep socket
+TMDS10	5/16" 12-point semi deep socket
+TMDS11	11/32" 12-point semi deep socket
+TMDS12	3/8" 12-point semi deep socket
+TMDS14	7/16" 12-point semi deep socket
+TMDS16	1/2" 12-point semi deep socket
+TMDS18	9/16" 12-point semi deep socket
+TMMS5	5mm 6-point semi deep socket
+TMMS5.5	5.5mm 6-point semi deep socket
+TMMS6	6mm 6-point semi deep socket
+TMMS7	7mm 6-point semi deep socket
+TMMS8	8mm 6-point semi deep socket
+TMMS9	9mm 6-point semi deep socket
+TMMS10	10mm 6-point semi deep socket
+TMMS11	11mm 6-point semi deep socket
+TMMS12	12mm 6-point semi deep socket
+TMMS13	13mm 6-point semi deep socket
+TMMS14	14mm 6-point semi deep socket
+TMMS15	15mm 6-point semi deep socket
+TMMDS5	5mm 12-point semi deep socket
+TMMDS5.5	5.5mm 12-point semi deep socket
+TMMDS6	6mm 12-point semi deep socket
+TMMDS7	7mm 12-point semi deep socket
+TMMDS8	8mm 12-point semi deep socket
+TMMDS9	9mm 12-point semi deep socket
+TMMDS10	10mm 12-point semi deep socket
+TMMDS11	11mm 12-point semi deep socket
+TMMDS12	12mm 12-point semi deep socket
+TMMDS13	13mm 12-point semi deep socket
+TMMDS14	14mm 12-point semi deep socket
+TMMDS15	15mm 12-point semi deep socket
+TMS04	1/8" 6-point semi deep socket
+TMU61A	3/16" 6-point shallow universal socket
+TMU71A	7/32" 6-point shallow universal socket
+GTMU71A	7/32" 6-point shallow universal socket (alternate)
+TMUS81A	1/4" 6-point shallow universal socket
+TMU81B	1/4" 12-point shallow universal socket
+TMU91A	9/32" shallow universal socket
+TMUS101A	5/16" 6-point shallow universal socket
+TMU101A	5/16" 12-point shallow universal socket
+TMU111A	11/32" shallow universal socket
+TMUS121A	3/8" 6-point shallow universal socket
+TMU121A	3/8" 12-point shallow universal socket
+TMUS141A	7/16" 6-point shallow universal socket
+TMU141A	7/16" 12-point shallow universal socket
+GTMU141A	7/16" shallow universal socket (alternate)
+TMUS161A	1/2" 6-point shallow universal socket
+TMU161A	1/2" 12-point shallow universal socket
+TMUS181A	9/16" 6-point shallow universal socket
+TMU181A	9/16" 12-point shallow universal socket
+TMUSM5A	5mm 6-point shallow universal socket
+TMUM5A	5mm 12-point shallow universal socket
+TMUSM5.5A	5.5mm 6-point shallow universal socket
+TMUSM6A	6mm 6-point shallow universal socket
+TMUM6A	6mm 12-point shallow universal socket
+TMUSM7A	7mm 6-point shallow universal socket
+TMUM7A	7mm 12-point shallow universal socket
+TMUSM8A	8mm 6-point shallow universal socket
+TMUM8A	8mm 12-point shallow universal socket
+TMUSM9A	9mm 6-point shallow universal socket
+TMUM9A	9mm 12-point shallow universal socket
+TMUSM10A	10mm 6-point shallow universal socket
+TMUM10A	10mm 12-point shallow universal socket
+TMUSM11A	11mm 6-point shallow universal socket
+TMUSM12A	12mm 6-point shallow universal socket
+TMUM12A	12mm 12-point shallow universal socket
+TMUSM13A	13mm 6-point shallow universal socket
+TMUM13A	13mm 12-point shallow universal socket
+TMUSM14A	14mm 6-point shallow universal socket
+TMUSM15A	15mm 6-point shallow universal socket
+GSTMU101A	5/16" deep universal socket
+STMUM10A	10mm deep universal socket
+TM408	1/4" double square socket
+TM410	5/16" double square socket
+TM412	3/8" double square socket
+STLE40	E4 deep external TORX socket
+STLE50	E5 deep external TORX socket
+TSE80	E8 universal TORX socket
+TSE100	E10 universal TORX socket
+TSE120	E12 universal TORX socket
+TLE40A	E4 shallow external TORX socket
+TLE50A	E5 shallow external TORX socket
+TLE60A	E6 shallow external TORX socket
+TLE70A	E7 shallow external TORX socket
+TLE80A	E8 shallow external TORX socket
+TLE100A	E10 shallow external TORX socket
+FLE110A	3/8" drive E11 external TORX socket
+FLE140A	3/8" drive E14 external TORX socket
+SLE160	1/2" drive E16 external TORX socket
+SLE240	1/2" drive E24 external TORX socket
+FLE100A	3/8" drive E10 external TORX socket
+FLE180A	3/8" drive E18 external TORX socket
+IMTM8A	1/4" impact shallow socket
+IMTM10A	5/16" impact shallow socket
+IMTM12A	3/8" impact shallow socket
+IMTM14A	7/16" impact shallow socket
+IMTM16A	1/2" impact shallow socket
+IMTM18A	9/16" impact shallow socket
+IMTLE40A	E4 impact shallow TORX socket
+IMTLE50A	E5 impact shallow TORX socket
+IMTLE60A	E6 impact shallow TORX socket
+IMTLE70A	E7 impact shallow TORX socket
+IMTLE80A	E8 impact shallow TORX socket
+SIMTM8	1/4" impact deep socket
+SIMTM10	5/16" impact deep socket
+SIMTM12	3/8" impact deep socket
+SIMTM14	7/16" impact deep socket
+SIMTM16	1/2" impact deep socket
+SIMTM18	9/16" impact deep socket
+IMTMM5	5mm impact shallow socket
+IMTMM5.5	5.5mm impact shallow socket
+IMTMM6	6mm impact shallow socket
+IMTMM7	7mm impact shallow socket
+IMTMM8	8mm impact shallow socket
+IMTMM9	9mm impact shallow socket
+IMTMM10	10mm impact shallow socket
+IMTMM11	11mm impact shallow socket
+IMTMM12	12mm impact shallow socket
+IMTMM13	13mm impact shallow socket
+IMTMM14	14mm impact shallow socket
+IMTMM15	15mm impact shallow socket
+SIMTMM5	5mm impact deep socket
+SIMTMM5.5	5.5mm impact deep socket
+SIMTMM6	6mm impact deep socket
+SIMTMM7	7mm impact deep socket
+SIMTMM8	8mm impact deep socket
+SIMTMM9	9mm impact deep socket
+SIMTMM10	10mm impact deep socket
+SIMTMM11	11mm impact deep socket
+SIMTMM12	12mm impact deep socket
+SIMTMM13	13mm impact deep socket
+SIMTMM14	14mm impact deep socket
+SIMTMM15	15mm impact deep socket
+IPTMM7	7mm impact swivel shallow socket
+IPTMM8	8mm impact swivel shallow socket
+IPTMM10	10mm impact swivel shallow socket
+IPTMM12	12mm impact swivel shallow socket
+IPTMM13	13mm impact swivel shallow socket
+IPTMM14	14mm impact swivel shallow socket
+IPTMM15	15mm impact swivel shallow socket
+TMAM2E	2mm metric standard hex driver
+TMAM2.5E	2.5mm metric standard hex driver
+TMAM3E	3mm metric standard hex driver
+TMAM4E	4mm metric standard hex driver
+TMAM5E	5mm metric standard hex driver
+TMAM6E	6mm metric standard hex driver
+TMAM2E2A	2mm metric standard hex driver, 3/8" drive
+TMAM2.5E2	2.5mm metric standard hex driver, 3/8" drive
+TMAM3E2	3mm metric standard hex driver, 3/8" drive
+FAM4E2	4mm metric standard hex driver, 3/8" drive
+FAM5E2	5mm metric standard hex driver, 3/8" drive
+FAM6E2	6mm metric standard hex driver, 3/8" drive
+FAM4E	4mm metric standard hex driver, 3/8" drive
+FAM10E	10mm metric standard hex driver, 3/8" drive
+TUAM5E	5mm universal stubby hex driver
+TUAM6E	6mm universal stubby hex driver
+TUAM5E3	5mm universal stubby hex driver, 3/8" drive
+TUAM6E3	6mm universal stubby hex driver, 3/8" drive
+TMA2E	1/16" standard hex driver
+TMA2E2	1/16" standard hex driver, 3/8" drive
+TMAL2E2	1/16" long standard hex driver, 3/8" drive
+TMA2.5E	5/64" standard hex driver
+GTMA2.5E	5/64" standard hex driver (alternate)
+TMA2.5E2	5/64" standard hex driver, 3/8" drive
+TMAL2.5E2	5/64" long standard hex driver, 3/8" drive
+TMA3E	3/32" standard hex driver
+GTMA3E	3/32" standard hex driver (alternate)
+TMA3E2	3/32" standard hex driver, 3/8" drive
+TMAL3E2	3/32" long standard hex driver, 3/8" drive
+TMA3.5E	7/64" standard hex driver
+TMA3.5E2	7/64" standard hex driver, 3/8" drive
+TMAL3.5E2	7/64" long standard hex driver, 3/8" drive
+TMA4E	1/8" standard hex driver
+GTMA4E	1/8" standard hex driver (alternate)
+TMA4E2	1/8" standard hex driver, 3/8" drive
+TMAL4E2	1/8" long standard hex driver, 3/8" drive
+TMA4.5E	9/64" standard hex driver
+TMA4.5E2	9/64" standard hex driver, 3/8" drive
+TMAL4.5E2	9/64" long standard hex driver, 3/8" drive
+TMA5E	5/32" standard hex driver
+GTMA5E	5/32" standard hex driver (alternate)
+FA5E2	5/32" standard hex driver, 3/8" drive
+TMA6E	3/16" standard hex driver
+GTMA6E	3/16" standard hex driver (alternate)
+FA6E2	3/16" standard hex driver, 3/8" drive
+TMA7E	7/32" standard hex driver
+GTMA7E	7/32" standard hex driver (alternate)
+FA7E2	7/32" standard hex driver, 3/8" drive
+TMA8E	1/4" standard hex driver
+GTMA8E	1/4" standard hex driver (alternate)
+FA8E2	1/4" standard hex driver, 3/8" drive
+FA4E	4mm standard hex driver, 3/8" drive
+FA10E	5/16" hex driver, 3/8" drive
+FA12E	3/8" hex driver, 3/8" drive
+TMAXS4E	1/8" stubby hex driver
+TMAXS4E2	1/8" stubby hex driver, 3/8" drive
+TMAXS4.5E	9/64" stubby hex driver
+TMASX4.5E2	9/64" stubby hex driver, 3/8" drive
+TMAXS5E	5/32" stubby hex driver
+TMAXS5E2	5/32" stubby hex driver, 3/8" drive
+TMAXS6E	3/16" stubby hex driver
+TMAXS6E2	3/16" stubby hex driver, 3/8" drive
+FAXS7E	7/32" stubby hex driver, 3/8" drive
+FAXS12E	3/8" stubby hex driver, 3/8" drive
+TMAMXS3E	3mm stubby hex driver
+TMAMXS3E2	3mm stubby hex driver, 3/8" drive
+TMAMXS4E	4mm stubby hex driver
+TMAMXS4E2	4mm stubby hex driver, 3/8" drive
+TMAMXS5E	5mm stubby hex driver
+TMAMXS5E2	5mm stubby hex driver, 3/8" drive
+TMAMXS6E	6mm stubby hex driver
+TMAMXS6E2	6mm stubby hex driver, 3/8" drive
+FAMXS7E	7mm stubby hex driver, 3/8" drive
+FAMXS10E	10mm stubby hex driver, 3/8" drive
+TMAB4E	1/8" ball hex driver
+TMAB4E2	1/8" ball hex driver, 3/8" drive
+TMAB4.5E	9/64" ball hex driver
+TMAB4.5E2	9/64" ball hex driver, 3/8" drive
+TMAB5E	5/32" ball hex driver
+TMAB5E2	5/32" ball hex driver, 3/8" drive
+TMAB6E	3/16" ball hex driver
+TMAB6E2	3/16" ball hex driver, 3/8" drive
+FAB7E	7/32" ball hex driver, 3/8" drive
+FAB12E	3/8" ball hex driver, 3/8" drive
+TMABM3E	3mm ball hex driver
+TMABM3E2	3mm ball hex driver, 3/8" drive
+TMABM4E	4mm ball hex driver
+TMABM4E2	4mm ball hex driver, 3/8" drive
+TMABM5E	5mm ball hex driver
+TMABM5E2	5mm ball hex driver, 3/8" drive
+TMABM6E	6mm ball hex driver
+TMABM6E2	6mm ball hex driver, 3/8" drive
+FABM7E	7mm ball hex driver, 3/8" drive
+FABM10E	10mm ball hex driver, 3/8" drive
+TTX8TPE	8IP TORX PLUS driver
+TTX8TPE2	8IP TORX PLUS driver, 3/8" drive
+TTX10TPE	10IP TORX PLUS driver
+TTX10TPE2	10IP TORX PLUS driver, 3/8" drive
+TTX15TPE	15IP TORX PLUS driver
+TTX15TPE2	15IP TORX PLUS driver, 3/8" drive
+TTX20TPE	20IP TORX PLUS driver
+TTX20TPE2	20IP TORX PLUS driver, 3/8" drive
+TTX25TPE	25IP TORX PLUS driver
+TTX25TPE2	25IP TORX PLUS driver, 3/8" drive
+FTX27TPE	27IP TORX PLUS driver, 3/8" drive
+FTX55TPE	55IP TORX PLUS driver, 3/8" drive
+TTXB15E	T15 heavy duty removal TORX driver
+TTXB15E2	T15 heavy duty removal TORX driver, 3/8" drive
+TTXB20E	T20 heavy duty removal TORX driver
+TTXB20E2	T20 heavy duty removal TORX driver, 3/8" drive
+TTXB25E	T25 heavy duty removal TORX driver
+TTXB25E2	T25 heavy duty removal TORX driver, 3/8" drive
+FTXB27E	T27 heavy duty removal TORX driver, 3/8" drive
+FTXB55E	T55 heavy duty removal TORX driver, 3/8" drive
+TMC104E	3/16" x .032 flat tip driver
+TMC104E2	3/16" x .032 flat tip driver, 3/8" drive
+TMC105E	1/4" x .032 flat tip driver
+TMC105E2	1/4" x .032 flat tip driver, 3/8" drive
+TMC106E	3/8" x .042 flat tip driver
+TMC106E2	3/8" x .042 flat tip driver, 3/8" drive
+TMP12E	#1 Phillips driver
+GTMP12E	#1 Phillips driver (alternate)
+TMP12E2	#1 Phillips driver, 3/8" drive
+TMP22E	#2 Phillips driver
+FP22E2	#2 Phillips driver, 3/8" drive
+TMP23E	#2 long Phillips driver
+TMP23E2	#2 long Phillips driver, 3/8" drive
+TMP21E	#2 short Phillips driver
+TMP21E2	#2 short Phillips driver, 3/8" drive
+TMP82E	#2 short Phillips driver
+TMP82E2	#2 short Phillips driver, 3/8" drive
+TM82	1/4" x .036 short flat tip driver
+TM82-2C	1/4" x .036 short flat tip driver
+ESD303	ESD short flat tip driver
+TTX8E	T8 TORX driver
+GTTX8E	T8 TORX driver (alternate)
+TTX8E2	T8 TORX driver, 3/8" drive
+TTX10E	T10 TORX driver
+GTTX10E	T10 TORX driver (alternate)
+TTX10E2	T10 TORX driver, 3/8" drive
+TTX15E	T15 TORX driver
+GTTX15E	T15 TORX driver (alternate)
+TTX15E2	T15 TORX driver, 3/8" drive
+TTX20E	T20 TORX driver
+GTTX20E	T20 TORX driver (alternate)
+TTX20E2	T20 TORX driver, 3/8" drive
+TTX25E	T25 TORX driver
+GTTX25E	T25 TORX driver (alternate)
+TTX25E2	T25 TORX driver, 3/8" drive
+TTX27E	T27 TORX driver
+FTX27E2	T27 TORX driver, 3/8" drive
+TTX30E	T30 TORX driver
+FTX30E2	T30 TORX driver, 3/8" drive
+TTX40E	T40 TORX driver
+FTX40E2	T40 TORX driver, 3/8" drive
+FTX47E	T47 GM-style TORX driver, 3/8" drive
+TTXL8E	T8 long TORX driver
+TTXL8E2	T8 long TORX driver, 3/8" drive
+TTXL10E	T10 long TORX driver
+TTXL10E2	T10 long TORX driver, 3/8" drive
+TTXL15E	T15 long TORX driver
+TTXL15E2	T15 long TORX driver, 3/8" drive
+TTXL20E	T20 long TORX driver
+TTXL20E2	T20 long TORX driver, 3/8" drive
+TTXL25E	T25 long TORX driver
+TTXL25E2	T25 long TORX driver, 3/8" drive
+TTXR8E	T8 tamper resistant TORX driver
+TTXR8E2	T8 tamper resistant TORX driver, 3/8" drive
+TTXR10E	T10 tamper resistant TORX driver
+TTXR10E2	T10 tamper resistant TORX driver, 3/8" drive
+TTXR15E	T15 tamper resistant TORX driver
+TTXR15E2	T15 tamper resistant TORX driver, 3/8" drive
+TTXR20E	T20 tamper resistant TORX driver
+TTXR20E2	T20 tamper resistant TORX driver, 3/8" drive
+TTXR25E	T25 tamper resistant TORX driver
+TTXR25E2	T25 tamper resistant TORX driver, 3/8" drive
+FTXR27E2	T27 tamper resistant TORX driver, 3/8" drive
+FTXR50E	T50 tamper resistant TORX driver, 3/8" drive
+TTXR8TPE	8IPR tamper resistant TORX PLUS driver
+TTXR8TPE2	8IPR tamper resistant TORX PLUS driver, 3/8" drive
+TTXR10TPE	10IPR tamper resistant TORX PLUS driver
+TTXR10TPE2	10IPR tamper resistant TORX PLUS driver, 3/8" drive
+TTXR15TPE	15IPR tamper resistant TORX PLUS driver
+TTXR15TPE2	15IPR tamper resistant TORX PLUS driver, 3/8" drive
+TTXR20TPE	20IPR tamper resistant TORX PLUS driver
+TTXR20TPE2	20IPR tamper resistant TORX PLUS driver, 3/8" drive
+TTXR25TPE	25IPR tamper resistant TORX PLUS driver
+TTXR25TPE2	25IPR tamper resistant TORX PLUS driver, 3/8" drive
+FTXR27TPE	27IPR tamper resistant TORX PLUS driver, 3/8" drive
+FTXR55TPE	55IPR tamper resistant TORX PLUS driver, 3/8" drive
+MGM8D	1/4" shallow magnetic socket, 8mm
+MGM10C	5/16" shallow magnetic socket, 10mm
+MGM12C	3/8" shallow magnetic socket, 12mm
+MGM14C	7/16" shallow magnetic socket, 14mm
+MGMMS7A	7mm deep magnetic spring-loaded socket
+MGMMS8A	8mm deep magnetic spring-loaded socket
+MGMMS10A	10mm deep magnetic spring-loaded socket
+MGMMS11B	11mm deep magnetic spring-loaded socket
+MGMMS12B	12mm deep magnetic spring-loaded socket
+MGMMS13A	13mm deep magnetic spring-loaded socket
+MGMS8A	1/4" deep magnetic spring-loaded socket
+MGMS10A	5/16" deep magnetic spring-loaded socket
+MGMM5.5	5.5mm shallow magnetic socket
+MGMM7	7mm shallow magnetic socket
+MGMM8	8mm shallow magnetic socket
+MGMM10	10mm shallow magnetic socket
+IPM80A	Swivel ball universal joint, lock button
+IPM800A	Swivel ball universal joint
+PTTX20E	T20 TORX power driver
+PTTX25E	T25 TORX power driver
+GMB3042	Friction ball hex shank, 2"
+GM3042A	Lock button hex shank, 2"
+GM3043	Lock button hex shank, 4"
+GM3046	Lock button hex shank, 6"
+TM27E	3/16" clutch-type driver
+TM30E	1/4" clutch-type driver
+TM31E	5/32" clutch-type driver
+TMIXL32	1/4" impact locking extension, 2 7/8"
+TMIXL62	1/4" impact locking extension, 5 7/8"
+TMIXL122	1/4" impact locking extension, 11 7/8"
+TMIXL182	1/4" impact locking extension, 17 3/4"
+TMIXL242	1/4" impact locking extension, 23 3/4"
+TMC105	1/4" x .032 flat tip driver
+TMP12	#1 Phillips driver
+TMXM17	1/4" magnetic adaptor
+TMXM114	1/4" magnetic adaptor
+TM77	1/4" ratchet adaptor
+TMS70A	1/4" ratchet spinner
+TMU8B	1/4" universal joint
+TMRT8	1/4" ratcheting T-handle driver
+TM40ASA	1/4" short shank stubby driver
+TM62B	1/4" flexible driver, low torque
+TM63A	1/4" flexible driver, low torque
+TM615	1/4" extra long shank flexible driver
+TMR4	1/4" ratcheting nut driver
+SGT4BR	1/4" long shank driver, female square drive
+TM9CSA	5/16" long shank driver, internal square drive
+TMX1	1/4" knurled extension, 1 1/4"
+TMXK2	1/4" knurled extension, 2"
+GTMX2	1/4" knurled extension, 2"
+TMXK4	1/4" knurled extension, 4"
+GTMX4	1/4" knurled extension, 4"
+TMXK60	1/4" knurled extension, 6"
+GTMX60	1/4" knurled extension, 6"
+TMXK80	1/4" knurled extension, 8"
+GTMXK80	1/4" knurled extension, 8"
+TMXK110	1/4" knurled extension, 11"
+GTMXK110	1/4" knurled extension, 11"
+TMXK140	1/4" knurled extension, 14"
+GTMX140	1/4" knurled extension, 14"
+TMX240	3/8" extension, 24"
+TMX360	3/8" extension, 36"
+TM61A	1/4" flexible extension, 6"
+TMXKL60	1/4" locking extension, 6"
+TMXKL110	1/4" locking extension, 11"
+TMXKL240	3/8" locking extension, 24"
+TMXKLP	Locking pins for TMXKLP extensions, pack of 5
+TMXKLRK	Repair kit for TMXKLP extensions
+TMXWP1	1/4" wobble plus extension, 1 1/4"
+TMXWP2	1/4" wobble plus extension, 2"
+TMXWP4	1/4" wobble plus extension, 4"
+TMXWP6	1/4" wobble plus extension, 6"
+TMXWP8	1/4" wobble plus extension, 8"
+TMXWP11	1/4" wobble plus extension, 11"
+TMXW1	1/4" wobble extension, 1 1/4"
+TMXWK2	1/4" wobble extension, 2"
+TMXWK4	1/4" wobble extension, 4"
+TMXWK60	1/4" wobble extension, 6"
+TMXWK80	1/4" wobble extension, 8"
+TMXWK110	1/4" wobble extension, 11"
+TMS4E	1/4" speeder
+TMS4EK	1/4" speeder with knob
+TZ1	1/4" extension connector
+TZ2	Extension connector set (two TZ1)
+TMXKV3	1/4" variable length extension, 3"
+TMXKV5	1/4" variable length extension, 5"
+TM10G	1/4" breaker bar, 6"
+TM5	1/4" sliding T-handle
+TM64	Rigid adjusting wrench
+TM65	Flexible adjusting wrench
+THBB10	1/4" breaker bar with comfort handle
+RKBB1	Repair kit for THBB10 breaker bar
+T6	3/32" 6-point socket
+T8	1/8" 6-point socket
+T10	5/32" 6-point socket
+T12	3/16" 6-point socket
+T40A	1/8" drive handle
+T72	1/4" high strength sealed ratchet, standard handle
+GT72	1/4" high strength sealed ratchet, standard handle (alternate)
+THL72	1/4" high strength sealed ratchet, long comfort handle
+TL72	1/4" high strength sealed ratchet, long handle
+TF72	1/4" high strength sealed ratchet, long flex head
+THLF72	1/4" high strength sealed ratchet, long flex comfort head
+TX72	1/4" high strength sealed ratchet, locking flex head
+TR936	1/4" quick release sealed ratchet
+TFY936	1/4" HY-LOK fastener ratchet, standard handle
+T936FOD	1/4" HY-LOK fastener ratchet, FOD-resistant
+TMR860	1/4" fingertip round ratchet, 60 tooth
+TK860	1/4" short handle round ratchet, 60 tooth
+T860	1/4" standard handle round ratchet, 60 tooth
+TH737	1/4" long flex head round comfort ratchet, 39 tooth
+RKRT860	Repair kit for 60-tooth round ratchets
+RKRTM739	Repair kit for TH737 ratchet
+RKRT72	Repair kit for 72-tooth sealed ratchets
+RKRTR936	Repair kit for TR936 ratchet
+RKRT841JT	Flex joint repair kit
+RKRT841LM	Locking mechanism repair kit
+GFAT1E	3/8" to 1/4" drive adaptor
+TA3	1/4" square drive adaptor
+GTA3	1/4" square drive adaptor (alternate)
+A2A	3/8" drive adaptor
+GSAF1E	3/8" drive adaptor
+GLA12B	1/2" drive adaptor
+GLAS1E	1/2" drive adaptor
+S8	1/2" drive universal joint
+FU8A	3/8" universal joint
+FX1	3/8" extension, 1 1/2"
+GFX1	3/8" friction ball extension, 1 1/2"
+FXK3	3/8" knurled extension, 3"
+GFXK3	3/8" friction ball knurled extension, 3"
+FXK4	3/8" knurled extension, 4"
+FXK6	3/8" knurled extension, 6"
+GFXK6	3/8" friction ball knurled extension, 6"
+FXK8	3/8" knurled extension, 8"
+GFXK8	3/8" friction ball knurled extension, 8"
+FXK11	3/8" knurled extension, 11"
+GFXK11	3/8" friction ball knurled extension, 11"
+FX18	3/8" extension, 18"
+FX24A	3/8" extension, 24"
+FX36	3/8" extension, 36"
+FXKL3	3/8" quick release locking extension, 3"
+FXKL6	3/8" quick release locking extension, 6"
+FXKL11	3/8" quick release locking extension, 11"
+FXKL24	3/8" quick release locking extension, 24"
+FXKLP	Locking pins for FXKL extensions, pack of 5
+FXKLRK	Repair kit for FXKL extensions
+FXWP1	3/8" wobble plus extension, 1 1/2"
+FXWP3	3/8" wobble plus extension, 3"
+FXWP4	3/8" wobble plus extension, 4"
+FXWP6	3/8" wobble plus extension, 6"
+FXWP8	3/8" wobble plus extension, 8"
+FXWP11	3/8" wobble plus extension, 11"
+FXW1	3/8" wobble extension, 1 1/2"
+FXWK3	3/8" wobble extension, 3"
+FXWK4	3/8" wobble extension, 4"
+FXWK6	3/8" wobble extension, 6"
+FXWK8	3/8" wobble extension, 8"
+FXWK11	3/8" wobble extension, 11"
+FXKV4	3/8" variable length extension, 4"
+FXKV7	3/8" variable length extension, 7"
+FX61A	3/8" flexible extension
+F4LB	3/8" speeder
+F5L	3/8" sliding T-handle
+F10LC	3/8" breaker bar, 6"
+F40B	3/8" short shank driver
+F80	3/8" high strength sealed ratchet, standard handle
+GF80	3/8" high strength sealed ratchet, standard handle (alternate)
+FL80	3/8" high strength sealed ratchet, long handle
+FLF80	3/8" high strength sealed ratchet, long flex head
+FBF80	3/8" high strength sealed ratchet, bent handle flex head
+FX80	3/8" high strength sealed ratchet, locking flex head
+FKF80	3/8" high strength sealed ratchet, stubby flex head
+FK80	3/8" high strength sealed ratchet, stubby handle
+FC936	3/8" short handle sealed ratchet
+FCF936	3/8" short flex head sealed ratchet
+FR936	3/8" quick release sealed ratchet
+F936FOD	3/8" FOD ratchet, standard handle
+F872	3/8" standard handle round ratchet, 72 tooth
+FZ936A	3/8" multi-purpose sealed ratchet
+F77	3/8" ratchet adaptor
+PALMRAT	3/8" palm style ratchet
+FRS70A	3/8" ratchet spinner
+FH80	3/8" standard length sealed comfort ratchet
+FHL80	3/8" long handle sealed comfort ratchet
+FHF80	3/8" flex head sealed comfort ratchet
+FHLF80	3/8" long flex head sealed comfort ratchet
+FHBF80	3/8" bent handle flex head sealed comfort ratchet
+FHOF80	3/8" offset flex head sealed comfort ratchet
+FHX80	3/8" locking flex head sealed comfort ratchet
+FHC737	3/8" swivel head compact round comfort ratchet
+FH747	3/8" long swivel head round comfort ratchet
+RKRF80	Repair kit for 80-tooth sealed ratchets
+RKRF936	Repair kit for 36-tooth sealed ratchets
+RKRF872B	Repair kit for F872 ratchet
+RKRF841JT	Flex joint repair kit
+RKRF841LM	Locking mechanism repair kit
+RKRF749	Repair kit for FH747 ratchet
+RKRPALMRAT	Repair kit for PALMRAT ratchet
+F081	1/4" 12-point shallow socket
+F101	5/16" 12-point shallow socket
+F111	11/32" 12-point shallow socket
+F121	3/8" 12-point shallow socket
+F141	7/16" 12-point shallow socket
+F161	1/2" 12-point shallow socket
+F181	9/16" 12-point shallow socket
+F201	5/8" 12-point shallow socket
+F221	11/16" 12-point shallow socket
+F241	3/4" 12-point shallow socket
+F261	13/16" 12-point shallow socket
+F281	7/8" 12-point shallow socket
+SF081	1/4" 12-point deep socket
+SF101	5/16" 12-point deep socket
+SF121	3/8" 12-point deep socket
+SF141	7/16" 12-point deep socket
+SF161	1/2" 12-point deep socket
+SF181	9/16" 12-point deep socket
+SF201	5/8" 12-point deep socket
+SF221	11/16" 12-point deep socket
+SF241	3/4" 12-point deep socket
+SF261	13/16" 12-point deep socket
+SF281	7/8" 12-point deep socket
+FU10A	5/16" 12-point universal socket
+FU12A	3/8" 12-point universal socket
+FU14A	7/16" 12-point universal socket
+FU16A	1/2" 12-point universal socket
+FU18A	9/16" 12-point universal socket
+FU20A	5/8" 12-point universal socket
+FU22A	11/16" 12-point universal socket
+FU24A	3/4" 12-point universal socket
+FU26A	13/16" 12-point universal socket
+FU28A	7/8" 12-point universal socket
+FU30A	15/16" 12-point universal socket
+FU32A	1" 12-point universal socket
+FSD14	3/8" to 1/4" spinner adaptor
+FSD38	1/4" to 3/8" spinner adaptor
+FSD1	Spinner adaptor
+FSD3KT	Spinner adaptor set
+F23E	1/4" flat tip socket driver
+F25E	5/16" flat tip socket driver
+F31E	3/8" flat tip socket driver
+F29A	3/8" clutch-type driver
+F30E	5/16" clutch-type driver
+FA5E	5/32" hex driver, 3/8" drive
+FA6E	3/16" hex driver, 3/8" drive
+FA7E	7/32" hex driver, 3/8" drive
+FA8E	1/4" hex driver, 3/8" drive
+FP22E	#2 Phillips driver, 3/8" drive
+FP32E	#3 Phillips driver, 3/8" drive
+FP42E	#4 Phillips driver, 3/8" drive
+PP409A	9/32" pipe plug socket
+PP410A	5/16" pipe plug socket
+PP412A	9/32" pipe plug socket
+S9704KFUA	13/16" spark plug universal socket
+S9704KA	13/16" spark plug socket
+S9706KA	5/8" spark plug socket
+GF22	Drag link socket
+FS081	1/4" 6-point shallow socket
+FS101	5/16" 6-point shallow socket
+FS121	3/8" 6-point shallow socket
+FS141	7/16" 6-point shallow socket
+FS161	1/2" 6-point shallow socket
+FS181	9/16" 6-point shallow socket
+FS201	5/8" 6-point shallow socket
+FS221	11/16" 6-point shallow socket
+FS241	3/4" 6-point shallow socket
+FS261	13/16" 6-point shallow socket
+FS281	7/8" 6-point shallow socket
+SFS121	3/8" 6-point deep socket
+SFS141	7/16" 6-point deep socket
+SFS161	1/2" 6-point deep socket
+SFS181	9/16" 6-point deep socket
+SFS201	5/8" 6-point deep socket
+SFS221	11/16" 6-point deep socket
+SFS241	3/4" 6-point deep socket
+FSM81	8mm 6-point shallow socket
+FSM91	9mm 6-point shallow socket
+FSM101	10mm 6-point shallow socket
+FSM111	11mm 6-point shallow socket
+FSM121	12mm 6-point shallow socket
+FSM131	13mm 6-point shallow socket
+FSM141	14mm 6-point shallow socket
+FSM151	15mm 6-point shallow socket
+FSM161	16mm 6-point shallow socket
+FSM171	17mm 6-point shallow socket
+FSM181	18mm 6-point shallow socket
+FSM191	19mm 6-point shallow socket
+SFSM10	10mm 6-point deep socket
+SFSM11	11mm 6-point deep socket
+SFSM13	13mm 6-point deep socket
+SFSM14	14mm 6-point deep socket
+SFSM15	15mm 6-point deep socket
+SFSM17	17mm 6-point deep socket
+SFSM19	19mm 6-point deep socket
+FM9	9mm 12-point shallow socket
+FM10	10mm 12-point shallow socket
+FM11	11mm 12-point shallow socket
+FM12	12mm 12-point shallow socket
+FM13	13mm 12-point shallow socket
+FM14	14mm 12-point shallow socket
+FM15	15mm 12-point shallow socket
+FM16	16mm 12-point shallow socket
+FM17	17mm 12-point shallow socket
+FM18	18mm 12-point shallow socket
+FM19	19mm 12-point shallow socket
+SFM8	8mm 12-point deep socket
+SFM9	9mm 12-point deep socket
+SFM10	10mm 12-point deep socket
+SFM11	11mm 12-point deep socket
+SFM12	12mm 12-point deep socket
+SFM13	13mm 12-point deep socket
+SFM14	14mm 12-point deep socket
+SFM15	15mm 12-point deep socket
+SFM16	16mm 12-point deep socket
+SFM17	17mm 12-point deep socket
+SFM18	18mm 12-point deep socket
+SFM19	19mm 12-point deep socket
+FSUM7	7mm 6-point shallow universal socket
+FSUM8	8mm 6-point shallow universal socket
+FSUM10	10mm 6-point shallow universal socket
+FSUM11	11mm 6-point shallow universal socket
+FSUM12	12mm 6-point shallow universal socket
+FSUM13	13mm 6-point shallow universal socket
+FSUM14	14mm 6-point shallow universal socket
+FSUM15	15mm 6-point shallow universal socket
+FSUM16	16mm 6-point shallow universal socket
+FSUM17	17mm 6-point shallow universal socket
+FSUM18	18mm 6-point shallow universal socket
+FSUM19	19mm 6-point shallow universal socket
+FSUM21	21mm 6-point shallow universal socket
+FSUM22	22mm 6-point shallow universal socket
+FSUM24	24mm 6-point shallow universal socket
+KRA229	Metal box (optional)
+KRA250B	Metal box (optional)
+KRA284B	Metal box (optional)
+PB99A	Storage box
+PB24A	Storage box
+PB16B	Storage case
+PB17B	Storage case
+BPRTR936	1/4" quick release ratchet, 36 tooth
+BPR703	Quick release ratchet set (1/4", 3/8", 1/2")
+BPRFR938	3/8" quick release ratchet
+BPRSR940	1/2" quick release ratchet
+BLPBB146	1/4" breaker bar, 6"
+BLPCGHD146	1/4" spinner handle, 6"
+BLPSD14	1/4" ratchet spinner
+BLPUJ14	1/4" universal joint
+BLPTXK1.5	1/4" knurled extension, 1 9/16"
+BLPTXK2	1/4" knurled extension, 2 3/32"
+BLPTXK3	1/4" knurled extension, 2 15/16"
+BLPTXK4	1/4" knurled extension, 4"
+BLPTXK6	1/4" knurled extension, 6"
+BLPEXTF146	1/4" flexible extension, 6"
+BLPEXTL1412	1/4" extra long locking extension, 12"
+BLPEXTL1418	1/4" extra long locking extension, 18"
+BLPEXTL1424	1/4" extra long locking extension, 24"
+BLPLLEXT103	Extra long locking extension set
+YA515A	1/4" set screw locking extension
+TURBOT103	Turbo T-handle speed driver set
+T9TURBO	1/4" square drive turbo T-handle
+TH10TURBO	1/4" hex turbo T-handle
+F11TURBO	3/8" drive turbo T-handle
+BLPS14316	3/16" 1/4" drive standard socket
+BLPS14732	7/32" 1/4" drive standard socket
+BLPS1414	1/4" 1/4" drive standard socket
+BLPS14932	9/32" 1/4" drive standard socket
+BLPS14516	5/16" 1/4" drive standard socket
+BLPS141132	11/32" 1/4" drive standard socket
+BLPS1438	3/8" 1/4" drive standard socket
+BLPS14716	7/16" 1/4" drive standard socket
+BLPS1412	1/2" 1/4" drive standard socket
+BLPS14916	9/16" 1/4" drive standard socket
+BLPS1458	5/8" 1/4" drive standard socket
+BLPSM144	4mm 1/4" drive standard socket
+BLPSM144.5	4.5mm 1/4" drive standard socket
+BLPSM145	5mm 1/4" drive standard socket
+BLPSM145.5	5.5mm 1/4" drive standard socket
+BLPSM146	6mm 1/4" drive standard socket
+BLPSM147	7mm 1/4" drive standard socket
+BLPSM148	8mm 1/4" drive standard socket
+BLPSM149	9mm 1/4" drive standard socket
+BLPSM1410	10mm 1/4" drive standard socket
+BLPSM1411	11mm 1/4" drive standard socket
+BLPSM1412	12mm 1/4" drive standard socket
+BLPSM1413	13mm 1/4" drive standard socket
+BLPSM1414	14mm 1/4" drive standard socket
+BLPLS14316	3/16" 1/4" drive deep socket
+BLPLS14732	7/32" 1/4" drive deep socket
+BLPLS1414	1/4" 1/4" drive deep socket
+BLPLS14932	9/32" 1/4" drive deep socket
+BLPLS14516	5/16" 1/4" drive deep socket
+BLPLS141132	11/32" 1/4" drive deep socket
+BLPLS1438	3/8" 1/4" drive deep socket
+BLPLS14716	7/16" 1/4" drive deep socket
+BLPLS1412	1/2" 1/4" drive deep socket
+BLPLS14916	9/16" 1/4" drive deep socket
+BLPLS1458	5/8" 1/4" drive deep socket
+BLPLSM144	4mm 1/4" drive deep socket
+BLPLSM145	5mm 1/4" drive deep socket
+BLPLSM146	6mm 1/4" drive deep socket
+BLPLSM147	7mm 1/4" drive deep socket
+BLPLSM148	8mm 1/4" drive deep socket
+BLPLSM149	9mm 1/4" drive deep socket
+BLPLSM1410	10mm 1/4" drive deep socket
+BLPLSM1411	11mm 1/4" drive deep socket
+BLPLSM1412	12mm 1/4" drive deep socket
+BLPLSM1413	13mm 1/4" drive deep socket
+BLPLSM1414	14mm 1/4" drive deep socket
+BLPFT14532	5/32" flat tip bit holder driver
+BLPFT14732	7/32" flat tip bit holder driver
+BLPFT14932	9/32" flat tip bit holder driver
+BLPH1418	1/8" hex socket driver
+BLPH14532	5/32" hex socket driver
+BLPH14316	3/16" hex socket driver
+BLPH14732	7/32" hex socket driver
+BLPH1414	1/4" hex socket driver
+BLPH14516	5/16" hex socket driver
+BLPP140	#0 Phillips socket driver
+BLPP141	#1 Phillips socket driver
+BLPP142	#2 Phillips socket driver
+BLPT148TP	T8 tamper resistant TORX socket driver
+BLPT1410TP	T10 tamper resistant TORX socket driver
+BLPT1415TP	T15 tamper resistant TORX socket driver
+BLPT1420TP	T20 tamper resistant TORX socket driver
+BLPT1425TP	T25 tamper resistant TORX socket driver
+BLPT1427TP	T27 tamper resistant TORX socket driver
+BLPTS1410	T10 TORX socket driver
+BLPTS1415	T15 TORX socket driver
+BLPTS1420	T20 TORX socket driver
+BLPTS1425	T25 TORX socket driver
+BLPTS1427	T27 TORX socket driver
+BLPTS1430	T30 TORX socket driver
+BLPTS1440	T40 TORX socket driver
+BLPTS1445	T45 TORX socket driver
+BLPTS1447	T47 TORX socket driver
+BLPTS1450	T50 TORX socket driver
+BLPTORX1410	TORX socket driver set
+BLPS81414	1/4" 8-point socket driver
+BLPS814516	5/16" 8-point socket driver
+BLPS81438	3/8" 8-point socket driver
+BLPTMBS1414	Bit holder for 1/4" hex bits
+BLPTMBS3814	Bit holder for 1/4" hex bits, 3/8" drive
+BLPHB18	1/8" hex bit
+BLPHB964	9/64" hex bit
+BLPHB532	5/32" hex bit
+BLPHB316	3/16" hex bit
+BLPHB732	7/32" hex bit
+BLPHB14	1/4" hex bit
+BLPHBM3	3mm metric hex bit
+BLPHBM4	4mm metric hex bit
+BLPHBM5	5mm metric hex bit
+BLPHBM6	6mm metric hex bit
+BLPTB10TP	T10 tamper resistant TORX bit
+BLPTB15TP	T15 tamper resistant TORX bit
+BLPTB20TP	T20 tamper resistant TORX bit
+BLPTB25TP	T25 tamper resistant TORX bit
+BLPTB30TP	T30 tamper resistant TORX bit
+BLPFB532	5/32" flat tip bit
+BLPFB732	7/32" flat tip bit
+BLPFB932	9/32" flat tip bit
+BLPFB316	3/16" flat tip bit
+BLPFB14	1/4" flat tip bit
+BLPPB0	#0 Phillips bit
+BLPPB1	#1 Phillips bit
+BLPPB2	#2 Phillips bit
+BLPPB3	#3 Phillips bit
+BLPSQB1	Square tip bit #1
+BLPSQB2	Square tip bit #2
+BLPGSS1462	1/4" general service set
+BLPGSSC155	1/4" and 3/8" general service set
+BLPGSS1451	1/4" general service set
+BLPGSSC100	1/4" and 3/8" general service set
+TMXLBP4	Locking extension, 4"
+TMXLBP6	Locking extension, 6"
+TMXLBP10	Locking extension, 10"
+103TMXLBP	Locking extension set (TMXLBP4, 6, 10)
+103TMXKL	Locking extension set (TMXKL60, 110, 240)
+103UFTS	Combination universal joint set
+1206GS	Combination drive adaptor set
+1605TA	1/8" drive general service set
+107ATMPB	Expandable general service set
+144TMPB	1/4" 6-point fractional/metric set
+117TMM	1/4" metric 6-point starter set
+134ATMP	1/4" 6-point fractional general service set
+114ATMP	1/4" 6-point fractional set
+120DTMPB	1/4" 6-point general service set
+113BTMP	1/4" 6-point fractional set
+120STTM	1/4" 6-point shallow/deep set
+124STTMM	Metric 6-point shallow/deep set
+110TMY	6-point shallow set
+110TMDY	12-point shallow set
+110TMSY	6-point semi deep set
+110TMDSY	12-point semi deep set
+110STMY	6-point deep set
+110STMDY	12-point deep set
+112TMMY	Metric 6-point shallow set
+111TMMDY	Metric 12-point shallow set
+112TMMSY	Metric 6-point semi deep set
+112TMMDSY	Metric 12-point semi deep set
+112STMMY	Metric 6-point deep set
+111STMMDY	Metric 12-point deep set
+106TMUSA	6-point shallow universal set
+106TMUA	12-point shallow universal set
+111TMUSMA	Metric 6-point shallow universal set
+106TMUSMA	Metric 6-point shallow universal set (partial)
+213AFLEY	Combination shallow TORX set
+210AFLEY	Combination shallow TORX set
+208EFTAXSY	Combination stubby hex set
+208EFTAMXSY	Metric combination stubby hex set
+208EFTABY	Metric ball hex combination set
+208EFTABMY	Combination metric ball hex set
+212EFTAY	Combination standard hex set
+210EFTAMY	Combination metric standard hex set
+110ETMAY	Standard hex set
+106ETMAMY	Metric standard hex set
+212EFTXY	Combination TORX set
+210EFTXRY	Tamper resistant combination TORX set
+211EFTXRTPY	Tamper resistant combination TORX PLUS set
+209EFTXBY	Heavy duty removal TORX set
+211EFTXTPY	Combination TORX PLUS set
+106IPTMMY	Metric 6-point shallow swivel set
+106BTMX	Knurled extension set
+106ATMXWP	Wobble plus extension set
+106ATMXW	Wobble extension set
+102TMXKV	Variable length extension set
+206AFSP	3/8" handle set
+210AFSP	3/8" 6-point general service set
+218AFSP	3/8" 6-point general service set
+222AFSP	3/8" 6-point general service set
+222AFSMP	Metric 6-point general service set
+218AFP	12-point general service set
+248F	12-point general service set
+292F	6/12-point general service set
+262MFB	Metric 6/12-point general service set
+211FSY	3/8" 6-point shallow set
+212FY	3/8" 6-point shallow set
+211SFSY	3/8" 6-point deep set
+211SFY	3/8" 12-point shallow set
+207FSU	3/8" 6-point deep universal set
+211FDSY	3/8" 12-point semi deep set
+212FSMY	Metric 6-point shallow set
+212SFSMY	Metric 6-point semi deep set
+212SFMY	Metric 12-point deep set
+212FSMSY	Metric 6-point semi deep set
+212FMSY	Metric 12-point semi deep set
+212FMY	Metric 12-point shallow set
+206AFX	3/8" extension set, FX1 thru FXK11
+208AFX	3/8" extension set, FX1 thru FX24A
+204FXKL	Locking extension set
+206AFXWP	Wobble plus extension set
+206AFXW	Wobble extension set
+202FXKV	Variable length extension set
+CT861	14.4 V 3/8" Drive MicroLithium Cordless Impact Wrench
+CDR9050	18 V 1/2" MonsterLithium Cordless Hammer Drill
+PT350	1/2" Drive Stubby Air Impact Wrench
+CTGRS8806AK1	18 V Cordless Inline Die Grinder Kit, 6,000 RPM (with battery/charger)
+CTGRS8825AK1	18 V Cordless Inline Die Grinder Kit, 25,000 RPM (with battery/charger)
+CTGRS8806ADB	18 V Cordless Inline Die Grinder, 6,000 RPM (tool only)
+CTGRS8825ADB	18 V Cordless Inline Die Grinder, 25,000 RPM (tool only)
+CGRR861K2	14.4 V MicroLithium Brushless Cordless Right Angle Die Grinder Kit (with battery/charger)
+CGRS861K2	14.4 V MicroLithium Brushless Cordless Inline Die Grinder Kit (with battery/charger)
+CGRR861DB	14.4 V MicroLithium Brushless Cordless Right Angle Die Grinder (tool only)
+CGRS861DB	14.4 V MicroLithium Brushless Cordless Inline Die Grinder (tool only)
+CTGR8850AK1	18 V Cordless Angle Grinder/Cut-Off Tool Kit, slide switch (with battery/charger)
+CTGR8855AK1	18 V Cordless Angle Grinder/Cut-Off Tool Kit, safety switch (with battery/charger)
+CTGR8850ADB	18 V Cordless Angle Grinder/Cut-Off Tool, slide switch (tool only)
+CTGR8855ADB	18 V Cordless Angle Grinder/Cut-Off Tool, safety switch (tool only)
+CTGR8845AK1	18 V 4-1/2" Cordless Standard Grinder Kit (with battery/charger)
+CTGR8845ADB	18 V 4-1/2" Cordless Standard Grinder (tool only)
+PT450-WH	4.5" replacement grinding wheel
+CTGR-CW50	5" abrasive cutting wheel, single
+CTGR-CW50MP	5" abrasive cutting wheel, 25 pack
+CT9100K2	18 V 3/4" Drive MonsterLithium Cordless Impact Wrench Kit
+CT9100DB	18 V 3/4" Drive Cordless Impact Wrench (tool only)
+CT9100BOOT	Optional protective boot for CT9100 impact wrench
+CT9080K2	18 V 1/2" Drive MonsterLithium Cordless Impact Wrench Kit
+CT9080DB	18 V 1/2" Drive Cordless Impact Wrench (tool only)
+CT9075BOOT	Optional protective boot for CT9080 impact wrench
+CT9050K2	18 V 1/2" Drive MonsterLithium Cordless Impact Wrench Kit (friction ring anvil)
+CT9050P	18 V 1/2" Drive Cordless Impact Wrench, pinned anvil
+CT9050DB	18 V 1/2" Drive Cordless Impact Wrench (tool only)
+CT9050BOOT	Optional protective boot for CT9050 impact wrench
+CT9015K2	18 V 1/2" Drive MonsterLithium Cordless Impact Wrench Kit
+CT9015DB	18 V 1/2" Drive Cordless Impact Wrench (tool only)
+CT9010K2	18 V 3/8" Drive MonsterLithium Cordless Impact Wrench Kit
+CT9010P	18 V 3/8" Drive Cordless Impact Wrench, pinned anvil
+CT9010QC	18 V 3/8" Drive Cordless Impact Wrench, quick-change chuck
+CT9010DB	18 V 3/8" Drive Cordless Impact Wrench (tool only)
+CT9010BOOT	Optional protective boot for CT9010/CT9015 impact wrenches
+CT861K2	14.4 V 3/8" Drive MicroLithium Cordless Impact Wrench Kit
+CT861DB	14.4 V 3/8" Drive Cordless Impact Wrench (tool only)
+CTQ861	14.4 V 1/4" quick-change chuck version of CT861
+CT825K2	14.4 V 1/4" Drive Brushless MicroLithium Cordless Impact Wrench Kit
+CT825DB	14.4 V 1/4" Drive Cordless Impact Wrench (tool only)
+CDR9015K2	18 V 1/2" MonsterLithium Cordless Drill Kit
+CDR9015DB	18 V 1/2" Cordless Drill (tool only)
+CDR9050K2	18 V 1/2" MonsterLithium Cordless Hammer Drill Kit
+CDR9050DB	18 V 3/8" Cordless Hammer Drill (tool only)
+CDR861K2	14.4 V 3/8" MicroLithium Cordless Drill Kit
+CDR861DB	14.4 V 3/8" Cordless Drill (tool only)
+CDRR2005360K2	14.4 V MicroLithium Cordless 360° Angle Head Mini Drill Kit
+CDRR2005360DB	14.4 V Cordless 360° Angle Head Mini Drill (tool only)
+CDRR200545K2	14.4 V MicroLithium Cordless 45° Angle Head Mini Drill Kit
+CDRR200545DB	14.4 V Cordless 45° Angle Head Mini Drill (tool only)
+CDRR2005K2	14.4 V MicroLithium Cordless Right Angle Mini Drill Kit
+CDRR2005DB	14.4 V Cordless Right Angle Mini Drill (tool only)
+CDRR761K2	14.4 V 3/8" MicroLithium Cordless Right Angle Screw Gun/Drill Kit
+CDRR761DB	14.4 V 3/8" Cordless Right Angle Drill (tool only)
+CDRS761K2	14.4 V 3/8" MicroLithium Cordless Inline Drill Kit
+CDRS761DB	14.4 V 3/8" Cordless Inline Drill (tool only)
+CTR814K2	14.4 V 1/4" Drive MicroLithium Cordless Ratchet Kit
+CTR814DB	14.4 V 1/4" Drive Cordless Ratchet (tool only)
+CTR817K2	14.4 V 1/4" Drive MicroLithium Cordless Long-Neck Ratchet Kit
+CTR817DB	14.4 V 1/4" Drive Cordless Long-Neck Ratchet (tool only)
+CTR861K2	14.4 V 3/8" Drive MicroLithium Cordless Ratchet Kit
+CTR861DB	14.4 V 3/8" Drive Cordless Ratchet (tool only)
+CTR867K2	14.4 V 3/8" Drive MicroLithium Cordless Long-Neck Ratchet Kit
+CTR867DB	14.4 V 3/8" Drive Cordless Long-Neck Ratchet (tool only)
+CTR762K2	14.4 V 3/8" Drive MicroLithium Cordless Ratchet Kit
+CTR762DB	14.4 V 3/8" Drive Cordless Ratchet (tool only)
+CTR768K2	14.4 V 3/8" Drive MicroLithium Cordless Long-Neck Ratchet Kit
+CTR768DB	14.4 V 3/8" Drive Cordless Long-Neck Ratchet (tool only)
+CTS861K2	14.4 V 1/4" Hex MicroLithium Cordless Toggle Screwdriver Kit
+CTS861DB	14.4 V 1/4" Hex Cordless Toggle Screwdriver (tool only)
+CTSR761K2	14.4 V 1/4" MicroLithium Cordless Right Angle Screwdriver Kit
+CTSR761DB	14.4 V 1/4" Cordless Right Angle Screwdriver (tool only)
+CTSS761K2	14.4 V MicroLithium Cordless Inline Screwdriver Kit
+CTSS761DB	14.4 V Cordless Inline Screwdriver (tool only)
+CTRS8850AK1	18 V MonsterLithium Cordless Reciprocating Saw Kit
+CTRS8850ADB	18 V Cordless Reciprocating Saw (tool only)
+CTRS761AK2	14.4 V MicroLithium Cordless Reciprocating Saw Kit
+CTRS761ADB	14.4 V Cordless Reciprocating Saw (tool only)
+CTCG8850K1	18 V MonsterLithium Cordless Caulk Gun Kit
+CTCG8850DB	18 V Cordless Caulk Gun (tool only)
+CGG8850AK1	18 V MonsterLithium Cordless Grease Gun Kit (with battery/charger)
+CGG8850ADB	18 V Cordless Grease Gun (tool only)
+CTBF8818K1	18 V 18" MonsterLithium Cordless Band File Sander Kit
+CTBF8818DB	18 V 18" Cordless Band File Sander (tool only)
+CTBFSA12	Band file sanding arm, 1/2"
+CTBFSA14	Band file sanding arm, 1/4"
+CTBFSA34	Band file sanding arm, 3/4"
+CTBFCA1412	Band file contour arm, 1/4-1/2"
+CTBFBC1240	Ceramic sanding belt, 1/2 x 1/8-3/4", 40 grit (10 pk)
+CTBFBC1260	Ceramic sanding belt, 1/2 x 1/8-3/4", 60 grit (10 pk)
+CTBFBC1280	Ceramic sanding belt, 1/2 x 1/8-3/4", 80 grit (10 pk)
+CTBFBC12120	Ceramic sanding belt, 1/2 x 1/8-3/4", 120 grit (10 pk)
+CTBFFB12COR	Fleeceband, 1/2 x 18-3/4", coarse (5 pk)
+CTBFFB12FNE	Fleeceband, 1/2 x 18-3/4", fine (5 pk)
+CTBFBBF12MED	Fleeceband, 1/2 x 18-3/4", medium (5 pk)
+CTBFFB14COR	Fleeceband, 1/4 x 18-3/4", coarse (5 pk)
+CTBFFB14FNE	Fleeceband, 1/4 x 18-3/4", fine (5 pk)
+CTBFFB14MED	Fleeceband, 1/4 x 18-3/4", medium (5 pk)
+CTBFFB34COR	Fleeceband, 3/4 x 18-3/4", coarse (5 pk)
+CTBFFB34FNE	Fleeceband, 3/4 x 18-3/4", fine (5 pk)
+CTBFBBF34MED	Fleeceband, 3/4 x 18-3/4", medium (5 pk)
+CTBFBZ1240	Zirconia sanding belt, 1/2 x 18-3/4", 40 grit (10 pk)
+CTBFBZ1260	Zirconia sanding belt, 1/2 x 18-3/4", 60 grit (10 pk)
+CTBFBZ1280	Zirconia sanding belt, 1/2 x 18-3/4", 80 grit (10 pk)
+CTBFBZ12120	Zirconia sanding belt, 1/2 x 18-3/4", 120 grit (10 pk)
+CTBFBZ1440	Zirconia sanding belt, 1/4 x 18-3/4", 40 grit (10 pk)
+CTBFBZ1460	Zirconia sanding belt, 1/4 x 18-3/4", 60 grit (10 pk)
+CTBFBZ1480	Zirconia sanding belt, 1/4 x 18-3/4", 80 grit (10 pk)
+CTBFBZ14120	Zirconia sanding belt, 1/4 x 18-3/4", 120 grit (10 pk)
+CTBFBZ3440	Zirconia sanding belt, 3/4 x 18-3/4", 40 grit (10 pk)
+CTBFBZ3460	Zirconia sanding belt, 3/4 x 18-3/4", 60 grit (10 pk)
+CTBFBZ3480	Zirconia sanding belt, 3/4 x 18-3/4", 80 grit (10 pk)
+CTBFBZ34120	Zirconia sanding belt, 3/4 x 18-3/4", 120 grit (10 pk)
+CTRG9050K1	18 V MonsterLithium Brushless Rivet Gun Kit
+CTRG9050DB	18 V Cordless Rivet Gun (tool only)
+CTG861K1	14.4 V MicroLithium Color Display Cordless Temperature Gun Kit
+CTG861DB	14.4 V Cordless Temperature Gun (tool only)
+CTLAR761	14.4 V MicroLithium 500 lumen cordless angular light (tool only)
+CTLZ761	14.4 V MicroLithium 200 lumen cordless work light with laser (tool only)
+CTLED9050	18 V MonsterLithium 800 lumen cordless work light (tool only)
+CTLED861	14.4 V MicroLithium 500 lumen cordless work light (tool only)
+CTLUV761	14.4 V MicroLithium cordless UV work light
+CTLUH861	14.4 V MicroLithium cordless underhood light (tool only)
+CTLU861	14.4 V MicroLithium 700 lumen cordless utility light (tool only)
+CTL8850	18 V MonsterLithium 750 lumen cordless floodlight (tool only)
+CTFL9050	18 V MonsterLithium 2,700 lumen cordless floodlight (tool only)
+CTBTSP861R	14.4 V MicroLithium cordless Bluetooth speaker (tool only)
+CTBTSR9050	18 V MonsterLithium cordless Bluetooth speaker radio (tool only)
+CTBTS9050	18 V MonsterLithium cordless Bluetooth speaker (tool only)
+CTLMAGBOOT	Optional magnetic mounting accessory for CTBTSP861R speaker
+CTAB9050	18 V MonsterLithium cordless blower (tool only)
+CTFAN9050	18 V MonsterLithium cordless heavy-duty fan (tool only)
+CTINF9050	18 V MonsterLithium cordless inflator (tool only)
+CTVAC9050A	18 V MonsterLithium cordless wet/dry vacuum (tool only)
+CTVAC9050-22	9" long crevice tool for CTVAC9050A vacuum
+CTVAC9050-23	Car nozzle (body) for CTVAC9050A vacuum
+CTVAC9050-24	Pet hair rake adaptor for CTVAC9050A vacuum
+CTVAC9050-25	Dust brush adaptor for CTVAC9050A vacuum
+CTVAC9050-26	1-1/4" extension wand for CTVAC9050A vacuum
+CTVAC9050-27	1-1/4" x 6' flexible hose for CTVAC9050A vacuum
+CTI8850	18 V cordless power inverter (175 W, 120 V AC)
+CTMS8850	18 V cordless memory saver
+CTUSB761	14.4 V MicroLithium USB power unit
+CTUSB8850	Cordless USB power unit (no description on page)
+CTB185	18 V 5.0 Ah lithium battery
+CTB8174	14.4 V 2.5 Ah lithium battery
+CTB8187	Battery (no description on page)
+CTB1856	Battery (no description on page)
+CTC131	18 V battery charger
+CTC772A	14.4 V battery charger
+EEBC12000USB	Battery/USB accessory (no description on page)
+YA409-6	Optional 1/4" collet for CDRR2005 series mini drills
+PPC808A	1/4" hex flat chisel, 1/4" edge, 5" long
+PPC812B	5/16" hex flat chisel, 3/8" edge, 5 1/2" long
+PPC816B	7/16" hex flat chisel, 1/2" edge, 6" long
+PPC820B	1/2" hex flat chisel, 5/8" edge, 6 1/2" long
+PPC824B	5/8" hex flat chisel, 3/4" edge, 7 1/4" long
+PPC828B	11/16" hex flat chisel, 7/8" edge, 8" long
+PPC832B	7/8" hex flat chisel, 1" edge, 9" long
+BPPC1878	7/8" hex flat chisel, 1" edge, 9" long
+PPC820LB	1/2" hex long flat chisel, 5/8" edge, 16" long
+PPC12B	3/8" hex half round nose cape chisel, 5/16" edge, 6" long
+PPC13B	5/16" hex cape chisel, 1/4" edge, 5 5/8" long
+PPC14B	3/8" hex cape chisel, 5/16" edge, 6" long
+PPC15B	7/16" hex diamond point chisel, 7/32" edge, 6" long
+PPC19B	3/8" hex diamond point chisel, 1/8" edge, 5 3/4" long
+PPC1A	Chisel gauge, 2 5/8" long
+PPC5A	Punch/chisel holder, 6 15/16" long
+PPC3A	5/16" hex center punch, 1/8" point, 5" long
+PPC4A	7/16" hex center punch, 3/16" point, 6" long
+PPC6B	5/8" hex center punch, 5/16" point, 7" long
+PPC714B	9/16" hex center punch, 5/32" point, 14" long
+PPC103A	9/32" hex pin punch, 3/32" point, 4 7/32" long
+PPC104A	5/16" hex pin punch, 1/8" point, 4 3/4" long
+PPC105A	3/8" hex pin punch, 5/32" point, 5" long
+PPC106A	3/8" hex pin punch, 3/16" point, 5 1/4" long
+PPC107A	3/8" hex pin punch, 7/32" point, 5 1/4" long
+PPC108A	7/16" hex pin punch, 1/4" point, 5 3/4" long
+PPC110A	1/2" hex pin punch, 5/16" point, 5 1/4" long
+PPC112	9/16" hex pin punch, 3/8" point, 5 1/4" long
+PPC203A	5/16" hex starter punch, 3/32" point, 5 1/2" long
+PPC204A	3/8" hex starter punch, 1/8" point, 5 3/4" long
+PPC205A	3/8" hex starter punch, 5/32" point, 6" long
+PPC206A	7/16" hex starter punch, 3/16" point, 6 1/4" long
+PPC208A	1/2" hex starter punch, 1/4" point, 6 3/4" long
+PPC210A	9/16" hex starter punch, 5/16" point, 7 1/4" long
+PPC250AK	Punch and chisel set, 25 pcs, C2700A kit bag
+PPC210AK	Punch and chisel set, 22 pcs, C2201A kit bag
+PPC715A	Punch and chisel set, 16 pcs, storage tray
+PPC710A	Punch and chisel set, 11 pcs, storage tray
+PPSD120K	Pin and starter punch set, 12 pcs, C1203 kit bag
+PPC100AK	Chisel set, 10 pcs, C104B kit bag
+PPC50AK	Flat chisel set, 5 pcs, C0500 kit bag
+PPCD70K	Pin punch set, 7 pcs, C0709 kit bag
+PPCS60K	Starter punch set, 6 pcs, C64B kit bag
+PPVP70AK	Midget punch and chisel set, 7 pcs, C0702 kit bag
+PPC402A	9/32" midget pin punch, 1/16" point, 3" long
+PPC403A	9/32" midget pin punch, 1/8" point, 3 1/4" long
+PPC404A	9/32" midget center punch, 3/32" point, 3 5/8" long
+PPC405A	9/32" midget starter punch, 1/16" point, 3 3/4" long
+PPC408B	Midget flat chisel, 5/16" edge, 4 1/8" long
+PPC406B	9/32" midget cape chisel, 3/16" edge, 3 7/8" long
+PPC407B	9/32" midget cape chisel, 5/32" edge, 4" long
+PPR708K	Roll pin punch set, 8 pcs, C0802A kit bag
+PPR2	Roll pin punch, 1/16" edge, 3 5/32" long
+PPR2-1/2	Roll pin punch, 5/64" edge, 3 1/2" long
+PPR3	Roll pin punch, 3/32" edge, 3 29/32" long
+PPR4	Roll pin punch, 1/8" edge, 4 1/4" long
+PPR5	Roll pin punch, 5/32" edge, 4 5/8" long
+PPR6	Roll pin punch, 3/16" edge, 5" long
+PPR7	Roll pin punch, 7/32" edge, 5 3/8" long
+PPR8	Roll pin punch, 1/4" edge, 5 3/4" long
+PPR10	Roll pin punch, 5/16" edge, 6 1/8" long
+PPR12	Roll pin punch, 3/8" edge, 6 1/8" long
+PPR14	Roll pin punch, 7/16" edge, 6 1/8" long
+PPR16	Roll pin punch, 1/2" edge, 6 1/8" long
+PPRG80	Roll pin punch guide set, companion to PPR708K
+PPCL60AK	Long pin punch set, 6 pcs, C0608 kit bag
+PPC104LA	5/16" hex long pin punch, 1/8" point, 5 5/16" long
+PPC105LA	3/8" hex long pin punch, 5/32" point, 6 1/2" long
+PPC106LA	3/8" hex long pin punch, 3/16" point, 7 1/16" long
+PPC107LB	3/8" hex long pin punch, 7/32" point, 7 5/8" long
+PPC108LA	7/16" hex long pin punch, 1/4" point, 8 3/16" long
+PPC110LA	1/2" hex long pin punch, 5/16" point, 8 3/4" long
+LP30A	Drift pin punch set, 3 pcs
+PPLT40AK	Drift pin punch set, 4 pcs, C0402 kit bag
+PPC905B	3/8" hex drift pin punch, 5/32" point, 8" long
+PPC908B	7/16" hex drift pin punch, 1/4" point, 8 1/2" long
+PPC910B	1/2" hex drift pin punch, 5/16" point, 9" long
+PPC912B	9/16" hex drift pin punch, 3/8" point, 9 1/2" long
+1210B	5/8" hex drift pin punch, 5/16" point, 12" long
+1512B	3/4" hex drift pin punch, 3/8" point, 15" long
+1816B	7/8" hex drift pin punch, 1/2" point, 18" long
+PPBL30AK	Bronze punch set, 3 pcs, C0301B kit bag
+PPB30AK	Bronze punch set, 3 pcs, C0300B kit bag
+PPB20AK	Bronze tapered punch set, 2 pcs, C0200B kit bag
+PPB408A	Bronze pin punch, 1/4" edge, 4" long
+PPB612A	Bronze pin punch, 3/8" edge, 6" long
+PPB816A	Bronze pin punch, 1/2" edge, 8" long
+PPB826A	Bronze drift punch, 13/16" edge, 8" long
+PPB1226A	Bronze drift punch, 13/16" edge, 12" long
+PPB1001A	Bronze tapered punch, 5/8" hex, 3/8" edge, 8" long
+PPB1012A	Bronze tapered punch, 3/8" edge, 10" long
+PPB1414A	Bronze tapered punch, 7/16" edge, 14" long
+PPB1002A	Bronze round punch, 3/4" edge, 10" long
+PPC6LB	7/16" hex oval bearing race punch, 15/64" oval point, 6" long
+PPC10LB	1/2" hex oval bearing race punch, 17/64" oval point, 10" long
+PPC14LB	9/16" hex oval bearing race punch, 19/64" oval point, 14" long
+PPC20LB	9/16" hex oval bearing race punch, 5/16" oval point, 20" long
+PPC704A	Oval bearing race punch set, 4 pcs
+GA1	Bushing cutter, 7 1/4" long
+YA900	Automatic center punch, 4 3/4" long
+YA879	Heavy duty automatic center punch, 5" long
+YA8290A	Revolving punch, six sizes 5/64" to 5/32"
+PGH8A	Gasket punch set, 10 punches 1/4" to 1" with mandrel
+DPFT528A	Transfer punch set, 3/32" to 1/2" plus 17/32", 4 7/8" long
+GA237	Steel stamp set, numbers 0-9, 3/16" figure, 2 7/16" long
+YA817	Steel stamp set, numbers 0-9, 1/8" figure, 2 3/8" long
+GA238	Steel stamp set, letters A-Z, 3/16" figure, 2 7/16" long
+YA818	Steel stamp set, letters A-Z, 1/8" figure, 2 3/8" long
+PPCSG710	Soft grip punch and chisel set, 10 pcs, storage tray
+PCSG812	Soft grip flat chisel, 3/8" edge, 6 1/8" long
+PCSG816	Soft grip flat chisel, 1/2" edge, 6 1/8" long
+PCSG820	Soft grip flat chisel, 5/8" edge, 6 1/8" long
+PPSG4	Soft grip center punch, 3/16" point, 6 1/8" long
+PPSG103	Soft grip pin punch, 3/32" point, 6 1/8" long
+PPSG105	Soft grip pin punch, 5/32" point, 6 1/2" long
+PPSG106	Soft grip pin punch, 3/16" point, 6 1/2" long
+PPSG203	Soft grip starter punch, 3/32" point, 6 1/8" long
+PPSG205	Soft grip starter punch, 5/32" point, 6 1/8" long
+PPSG206	Soft grip starter punch, 3/16" point, 6 1/8" long
+HBFE16	Dead blow hammer, 16 oz., 12" long
+HBFE24	Dead blow hammer, 24 oz., 12 3/4" long
+HBFE32	Dead blow hammer, 32 oz., 13 1/2" long
+HBFE48	Dead blow hammer, 48 oz., 15" long
+HBFE56	Dead blow hammer, 56 oz., 15 3/4" long
+HBFE103	Dead blow hammer set, HBFE24, HBFE32, HBFE48 (3 pcs)
+HBSE10	Slimline dead blow hammer, 10 oz., 10 5/8" long
+HBSE20	Slimline dead blow hammer, 20 oz., 11 1/8" long
+HBSE30	Slimline dead blow hammer, 30 oz., 12 3/8" long
+HBBD8	Dead blow ball peen hammer, 8 oz., 11 5/8" long
+HBBD16	Dead blow ball peen hammer, 16 oz., 12 1/4" long
+HBBD24	Dead blow ball peen hammer, 24 oz., 12 3/4" long
+HBBD32	Dead blow ball peen hammer, 32 oz., 13 5/8" long
+HBBD40	Dead blow ball peen hammer, 40 oz., 15 1/8" long
+BC7B	Sledge hammer, 5 lb., 20" long
+BC110B	Sledge hammer, 8 lb., 30" long
+BC114B	Sledge hammer, 11 lb. 8 oz., 36" long
+HLE24	Piston dead blow hammer, 24 oz., 12 3/4" long
+HSSD32	Dual face dead blow hammer, 32 oz., 11 1/2" long
+HSPD16	Combination steel and soft face dead blow hammer, 16 oz., 12" long
+BH232A	Soft face hammer, 32 oz., 13" long
+BH232-2	Soft tip for BH232A
+BH232-3	Hard tip for BH232A
+BH232-4	Optional nylon tip for BH232A
+HPTS16	Soft tip for HSPD16 and HBPT16
+HPTH16	Hard tip for HBPT16
+HPTS24A	Soft tip for HBPT24
+HPTH24A	Hard tip for HBPT24
+BF623	Soft blow hammer, blue, 12 1/2" long
+BF620C	Rubber head mallet, 11" hardwood handle
+HBBT16	Bronze faced hammer, 16 oz., 12" long
+HBBT24	Bronze faced hammer, 24 oz., 12" long
+HBBT32	Bronze faced hammer, 32 oz., 12 3/4" long
+HBR15	Brass hammer, fiberglass handle, 1 1/2 lb., 12" long
+HBR25	Brass hammer, fiberglass handle, 2 1/2 lb., 12" long
+HSPI6KT	Interchangeable head dead blow set, 7 pcs, storage case
+HSPI6KT1	Interchangeable hammer handle, 22" long
+HSPI6KT2	Interchangeable soft face hammer head, brown
+HSPI6KT3	Interchangeable medium face hammer head, red
+HSPI6KT4	Interchangeable medium hard face hammer head, cream
+HSPI6KT5	Interchangeable hard face hammer head, black
+HSPI6KT6	Interchangeable steel face hammer head
+HSPI6KT7	Interchangeable brass face hammer head
+HSPI6KT8	Plastic storage case for interchangeable heads
+HSPI6KT9	1" head extender for interchangeable heads
+HBPT16	Plastic tip hammer, 16 oz., 12" long
+HBPT24	Plastic tip hammer, 24 oz., 12 3/4" long
+BP2B	Ball peen hammer, hickory handle, 2 oz., 9 1/2" long
+BP4B	Ball peen hammer, hickory handle, 4 oz., 10 1/2" long
+BP8B	Ball peen hammer, hickory handle, 8 oz., 12 1/2" long
+BP12B	Ball peen hammer, hickory handle, 12 oz., 13 1/2" long
+BP16B	Ball peen hammer, hickory handle, 16 oz., 14 1/2" long
+BP20B	Ball peen hammer, hickory handle, 20 oz., 15" long
+BP24B	Ball peen hammer, hickory handle, 24 oz., 16" long
+BP32B	Ball peen hammer, hickory handle, 32 oz., 16" long
+BP40B	Ball peen hammer, hickory handle, 40 oz., 16 1/4" long
+BP48B	Ball peen hammer, hickory handle, 48 oz., 16 1/4" long
+BP1004S	Ball peen hammer set, BP8B, BP12B, BP16B, BP24B (4 pcs)
+BPH2C	Replacement hickory handle for BP2B
+BPH4C	Replacement hickory handle for BP4B
+BPH8C	Replacement hickory handle for BP8B
+BPH12C	Replacement hickory handle for BP12B
+BPH16C	Replacement hickory handle for BP16B
+BPH20C	Replacement hickory handle for BP20B, BP24B, BH141A
+BPH40C	Replacement hickory handle for BP32B through BP48B, BH122D, BH123D, BH142A, BH143A
+BPN8B	Fiberglass ball peen hammer, 8 oz., 11" handle
+BPN12B	Fiberglass ball peen hammer, 12 oz., 12" handle
+BPN16B	Fiberglass ball peen hammer, 16 oz., 13" handle
+BPN24B	Fiberglass ball peen hammer, 24 oz., 14" handle
+BPN32B	Fiberglass ball peen hammer, 32 oz., 16" handle
+BPNH8B	Replacement fiberglass handle for BPN8B
+BPNH12B	Replacement fiberglass handle for BPN12B, BPN16B
+BPNH24B	Replacement fiberglass handle for BPN24B, BPN32B
+BPN8-1	Previous model handle for BPN8B
+BPN12-1	Previous model handle for BPN12B
+BPN16-1	Previous model handle for BPN16B
+BPN24-1	Previous model handle for BPN24B, BPN32B
+BH122D	Engineer hammer, hickory handle, 40 oz., 15" long
+BH123D	Engineer hammer, hickory handle, 48 oz., 15" long
+BH141A	Cross peen hammer, hickory handle, 32 oz., 15" long
+BH142A	Cross peen hammer, hickory handle, 40 oz., 15" long
+BH143A	Cross peen hammer, hickory handle, 48 oz., 15" long
+BH133B	Hand drilling hammer, hickory handle, 48 oz., 10" long
+BPH133	Replacement hickory handle for BH133B
+BC4SG	Cross peen hammer, fiberglass handle, 4 lb., 14" long
+BD4SG	Engineer hammer, fiberglass handle, 4 lb., 14" long
+HD4SG	Hand drilling hammer, fiberglass handle, 4 lb., 10 3/4" long
+BD4SG-1	Replacement fiberglass handle for BC4SG, BD4SG
+HD4SG-1	Replacement fiberglass handle for HD4SG
+BD6ESG	Sledge hammer, fiberglass handle, 6 lb., 18" long
+BD10ESG	Sledge hammer, fiberglass handle, 10 lb., 32" long
+BD6ESG-1	Replacement fiberglass handle for BD6ESG
+BD8ESG-1	Replacement fiberglass handle for BD10ESG
+HS25	Combination hacksaw and bow saw, 12" bi-metal blade included
+HS51TW	Wood cutting blade for HS25 bow saw
+HSG319	Bi-mold soft grip hacksaw, 12" blades
+HS18A	Deluxe hacksaw, 12" blades, includes HSBM1224B
+HS20A	Professional hacksaw, 12" blades, includes HSBM1224B
+HS5A	Mini hacksaw, 10" blades, includes HSBM1024B
+HS151	Junior frame hacksaw, 6" blades
+HSBM1018B	Bi-metal hacksaw blade, 10", 18 TPI (pack of 10)
+HSBM1024B	Bi-metal hacksaw blade, 10", 24 TPI (pack of 10)
+HSBM1032B	Bi-metal hacksaw blade, 10", 32 TPI (pack of 10)
+HSBM1214B	Bi-metal hacksaw blade, 12", 14 TPI (pack of 10)
+HSBM1218B	Bi-metal hacksaw blade, 12", 18 TPI (pack of 10)
+HSBM1224B	Bi-metal hacksaw blade, 12", 24 TPI (pack of 10)
+HSBM1232B	Bi-metal hacksaw blade, 12", 32 TPI (pack of 10)
+HS50	Quick cutter hand saw, red handle, with three blades
+HS14X1	General purpose hand saw blade
+HS18X1	Fine metal cutting hand saw blade
+HS24X1	Heavy metal cutting hand saw blade
+HSM632	6" replacement hacksaw blade, 32 TPI (pack of 10)
+YA114	Stainless steel scissors, 3" long
+KER1120	Taskmaster shears, 9" long
+CRKBP1	M1 Lightfoot folding knife, 3 1/8" blade
+CRKBP11	M16 Carson tanto folding knife, 3" blade
+CRKBP6	Cruiser double flipper folding knife, 3 1/4" blade
+CRKBP16	M16 Carson spear point folding knife, 3 1/2" blade
+KER1004RDSO	Caribiner tool, 5-in-1, 3 1/4" blade
+KER1060ART	Black Horse II lock back knife, 3 3/4" blade
+KER1440	Chubby lock back knife, 2 1/2" blade
+KER1470	Storm lock back knife, 3" blade
+KER1470ST	Storm lock back knife, 3" partially serrated blade
+KER1475	Storm II lock back knife, 3 1/2" blade
+KER1475ST	Storm II lock back knife, 3 1/2" partially serrated blade
+KER1550	Black Out lock back knife, 3 1/4" blade
+KER1550ST	Black Out lock back knife, 3 1/4" partially serrated blade
+KER1595	Speed Bump re-curve knife, 3 5/8" blade
+KER1600	Chive lock back knife, 1 15/16" blade
+KER1600BR	Chive lock back knife, black and red, 1 15/16" blade
+KER1620RDSO	Scallion lock back knife, red handle, 2 1/4" blade
+KER1620BLSO	Scallion lock back knife, blue handle, 2 1/4" blade
+KER1620ST	Scallion lock back knife, black handle, 2 1/4" partially serrated blade
+KER1660BB	Leek lock back knife, black and blue, 3" blade
+KER1660BR	Leek lock back knife, black and red, 3" blade
+KER1660VIB	Rainbow Leek lock back knife, 3" blade
+KER1670RD	Blur lock back knife, red, 3 3/8" blade
+KER1670RDST	Blur lock back knife, red, 3 3/8" partially serrated blade
+KER1670BLK	Blur lock back knife, black, 3 3/8" blade
+KER1670BLKST	Blur lock back knife, black, 3 3/8" partially serrated blade
+KER1675BLKST	Rescue Blur lock back knife, black, 3 3/8" partially serrated blade
+KER1675RDST	Rescue Blur lock back knife, red, 3 3/8" partially serrated blade
+KER1720	JYD lock back knife, 3" blade
+KER1720ST	JYD lock back knife, 3" partially serrated blade
+KER1725	JYD II lock back knife, 3" blade
+KER1725ST	JYD II lock back knife, partially serrated blade
+KER1730	Groove lock back knife, 3 1/2" blade
+KER1740	NRG lock back knife, 2 13/16" blade
+KER1745	NRG II lock back knife, 3 1/2" blade
+KER1820	Needs Work lock back knife, 3" blade
+YA403A	Miniature utility knife, 3 1/8" long
+YA403A-1	Replacement blade for YA403A
+PK100	Retractable utility knife, red handle
+PK100SB	Self-retracting utility knife, orange handle
+PK100-1	Two notch utility blades (pack of 5)
+PK100-1SP	Two notch safety point utility blades (pack of 5)
+YA1860A	Two notch utility blades (100 pack)
+YA1850A	Three notch utility blades (100 pack)
+YA1800A	Single edge razor blades (100 pack)
+LBUK1	Lock back utility knife, hardwood handle, with pouch
+LBUK2	Lock back utility knife, with pouch
+LBUK3	Lock back utility knife, stainless steel handle, with pouch
+PK150	Auto-loading utility knife, high-viz yellow
+PK80	Utility knife kit, includes PK81 and saw blades
+PK81	Quick open utility knife
+PK82	Metal saw blades for PK81 (pack of 3)
+PK83	Wood saw blades for PK81 (pack of 3)
+PK84	Drywall saw blades for PK81 (pack of 3)
+PK85	Rotary saw blade for PK81 (pack of 1)
+PK86	Multi-pack saw blades for PK81 (drywall, metal, wood)
+YA580A	Multi-purpose cutter, auto locking, 5 3/8" long
+YA580A-1	Replacement blades for YA580A and YA584A (pack of 5)
+YA581A	Multi-purpose cutter, three blades, fully retractable
+YA581A-1	Replacement blades for YA581A (10 pack)
+YA405A	Hobby knife, 5 1/2" aluminum handle, with blades
+YA405-1	23° angle hobby knife blade
+YA405-2	50° angle hobby knife blade
+YA405-3	Curved edge hobby knife blade
+YA405-4	Straight chisel edge hobby knife blade
+CSA8C	Rigid carbon scraper, black, 7 5/8" long, 7/8" straight blade
+CSA8CO	Rigid carbon scraper, orange, 7 5/8" long, 7/8" straight blade
+CSA8CR	Rigid carbon scraper, red, 7 5/8" long, 7/8" straight blade
+CSA9C	Rigid carbon scraper, black, 12" long, 1/4" straight blade
+CSA10C	Rigid carbon scraper, black, 12" long, 1/2" straight blade
+CSA12C	Rigid carbon scraper, black, 12" long, 1" straight blade
+CSA12CO	Rigid carbon scraper, orange, 12" long, 1" straight blade
+CSA12CR	Rigid carbon scraper, red, 12" long, 1" straight blade
+CSA14C	Rigid carbon scraper, black, 14" long, 1 1/2" straight blade
+CSA14CO	Rigid carbon scraper, orange, 14" long, 1 1/2" straight blade
+CSA14CR	Rigid carbon scraper, red, 14" long, 1 1/2" straight blade
+CSB12C	Rigid carbon scraper, black, 12" long, 7/8" 45° angle blade
+CSA400B	Black handle scraper set, 4 pcs, storage tray
+CSA300A	Black handle scraper set, 3 pcs, storage tray
+CSA300AO	Orange handle scraper set, 3 pcs, storage tray
+CSA300AR	Red handle scraper set, 3 pcs, storage tray
+PKNC125C2	Striking scraper, dual bevel, 1 1/4" blade
+PKNC150	Striking scraper, single bevel, 1 1/2" blade
+PKNC200	Striking scraper, single bevel, 2" blade
+PKNC300	Striking scraper set, 3 pcs
+GAT10005	Professional knife sharpening system
+GAT10004	Diamond hone knife sharpening system
+GAT10003	Standard knife sharpening system
+GAT8T001	Tri hone knife sharpening system
+GAT80005	Stone knife sharpening kit, 5" and 3" Arkansas stones
+GAT60204	Pocket knife sharpener
+KER2535	Blade sharpener, 600 grit diamond, 8 1/2" long
+GAT60016	TRI-SEPS ceramic knife sharpener, 4 1/2" long
+GAT40001	Carbide knife sharpener
+GAT12001	Clamp mount for knife sharpening systems
+PKB50	Brass putty knife, 2" blade, stiff straight
+PKB52	Brass putty knife, 1 1/4" blade, stiff straight
+PKB53	Brass chisel/scraper, 1 1/4" blade, stiff single bevel
+PKB500	Brass blade scraper set, PKB50, PKB52, PKB53
+PK50	Red handle putty knife, 2" flexible blade
+PK52	Red handle putty knife, 1 1/4" flexible blade
+PK53	Red handle chisel scraper, 1 1/4" stiff single bevel blade
+PK500	Red handle putty knife set, PK50, PK52, PK53
+PK23A	Wooden handle putty knife, 1 1/4" heavy chisel blade
+US710	Knife blade scraper, spoon, 3 3/8" blade
+US711	Knife blade scraper, chisel tip, 2 1/2" blade
+US712	Knife blade scraper, oyster, 2 1/8" blade
+USS103	Knife blade scraper set, US710, US711, US712
+CS1	Flexible wire carbon scraper
+PK70	Multi-purpose tungsten carbide scraper
+PK70TRI	Triangle replacement blade for PK70
+PK70ROUND	Round replacement blade for PK70
+PK70DROP	Drop replacement blade for PK70
+PK70PEAR	Pear replacement blade for PK70
+MS400	Compact razor scraper, 4"
+MS800	Standard razor scraper, 8"
+MS1300	Long razor scraper, 13"
+MS3000	Razor scraper set, MS400, MS800, MS1300, MSRPACK5
+MSRPACK5	Razor blade pack for scraper set
+PKRS1	Ergo grip razor scraper
+6R	Bastard cut round file, 6" overall
+8R	Bastard cut round file, 8" overall
+10R	Bastard cut round file, 10" overall
+12R	Bastard cut round file, 12" overall
+4MA	Bastard cut mill file, 4" overall
+6MA	Bastard cut mill file, 6" overall
+8MA	Bastard cut mill file, 8" overall
+10MA	Bastard cut mill file, 10" overall
+12MA	Bastard cut mill file, 12" overall
+14MA	Bastard cut mill file, 14" overall
+6HR	Bastard cut half round file, 6" overall
+8HR	Bastard cut half round file, 8" overall
+10HR	Bastard cut half round file, 10" overall
+12HR	Bastard cut half round file, 12" overall
+SGHBF500A	Red handle mixed file set, soft grip handles, C0416B kit bag
+SGHBF300A	Red handle mill file set, 6" to 12", CO414A kit bag
+SGHBF200A	Red handle round file set, 6" to 12", CO413A kit bag
+SGHBF400A	Red handle half round file set, 6" to 12", CO415A kit bag
+SGHF614BR	Red soft grip file handle
+SGHF615BR	Red soft grip file handle
+SGHF616BR	Red soft grip file handle
+SGHF617BR	Red soft grip file handle
+HBF4MA	Miniature hand file, plastic handle
+HBF4W	Miniature warding file, plastic handle
+HBF4HR	Miniature half round file, plastic handle
+HBF4SQ	Miniature square file, plastic handle
+HBF4R	Miniature round file, plastic handle
+HBF4T	Miniature slim taper triangular file, plastic handle
+HBF100	Miniature file set, 6 pcs, plastic pouch
+6T	Three square file, 6" long
+10T	Three square file, 10" long
+6CR	Chain saw file, single cut, 6" long
+8CR	Chain saw file, single cut, 8" long
+10FMK	Multi-cut flat file, 10" long
+GA613	Wooden twist-on handle for 4MA, 6CR, 8CR, 6R
+GA614	Wooden twist-on handle for 6T, 6MA, 6HR, 8R
+GA615	Wooden twist-on handle for 8T, 8MA, 8HR, 10R
+GA616	Wooden twist-on handle for 10T, 10MA, 10HR, 12R
+GA617	Wooden twist-on handle for 12MA, 12HR
+GA618	Wooden twist-on handle for 14MA, 16MA
+GA98A	Wooden adjustable jaw file handle, 4" to 16" files
+YA337A	File cleaner, 7 5/8" long
+HBFN120A	Swiss needle file set, 12 pcs, plastic pouch
+5NRA	Swiss needle file, round, 5 1/2" long
+5NHRA	Swiss needle file, half round, 5 1/2" long
+5NFA	Swiss needle file, flat, 5 1/2" long
+5NCA	Swiss needle file, crossing, 5 1/2" long
+5NKA	Swiss needle file, knife, 5 1/2" long
+5NSQA	Swiss needle file, square, 5 1/2" long
+5NTSB	Swiss needle file, 3 square, 5 1/2" long
+5NEA	Swiss needle file, equaling, 5 1/2" long
+5NBA	Swiss needle file, barrette, 5 1/2" long
+5NJA	Swiss needle file, joint, 5 1/2" long
+5NSA	Swiss needle file, slitting, 5 1/2" long
+5NMA	Swiss needle file, marking, 5 1/2" long
+HF611A	File handle, plastic collet style, for HBFN120 set
+PTM143	Round pocket mirror, 1 1/4" diameter
+CF143MA	Round pocket magnifying mirror, 1 1/4" diameter
+PTM147	Round pocket mirror, 3/4" diameter
+PTM157	Oval pocket mirror, 1" x 2"
+YA5160A	Lighted adjustable mirror, 1 1/8" x 2 1/8"
+YA51601	Replacement mirror, 1X, for YA5160A
+YA51602	Replacement mirror, 2X, for YA5160A
+YA5160A3	Replacement bulb for YA5160A
+UIM125	Telescoping inspection mirror, 1 1/4" diameter, extends to 35"
+UIM225	Telescoping inspection mirror, 2 1/4" diameter, extends to 35"
+UIM325	Telescoping inspection mirror, 3 1/4" diameter, extends to 29 1/2"
+UIM2LM	Magnifying inspection mirror, 2 1/4", telescopes 11 1/2" to 51 1/2"
+TKSS01MIR	Telescoping hinged steel mirror, 3.12" x 2", extends to 28 1/2"
+UIM2FL	Flexible inspection mirror, 32" shaft, 2 1/4" mirror
+GA294	Rectangular hinged mirror, 2 1/8" x 3 1/2", 11 1/4" closed
+GA295	Round hinged mirror, 2 1/4" diameter, 10" closed
+GA51B	Mirror, 16 1/2" overall, 1 11/16" x 2 9/16"
+GA51B1	Glass replacement mirror for GA51B
+GA51B1P	Plastic replacement mirror for GA51B
+GA52B	Mirror, 11" overall, 1 3/16" x 1 1/2"
+GA52B1	Glass replacement mirror for GA52B
+GA53A	Mirror, 16 1/2" overall, 2 5/16" x 3 3/8"
+GA53A1	Glass replacement mirror for GA53A
+GA53A1P	Plastic replacement mirror for GA53A
+GA265A	Claw pick up tool, 2 claws, 17 3/4" overall
+YA837A	Claw pick up tool, 2 claws, 23 1/2" overall
+GA353B	Claw pick up tool, 4 claws, 17 1/2" overall
+DPTC24	Claw pick up tool, 4 claws, 24" flexible section
+PT30C	Pick up tool, lifts 6 1/2 lb., extends to 27 1/8"
+UPT15	Telescoping magnetic pick up tool, lifts 2 lb., extends to 33 1/4"
+UPT35	Telescoping magnetic pick up tool, lifts 4 1/2 lb., extends to 33 1/4"
+UPT50A	Telescoping magnetic pick up tool, lifts 10 lb., extends to 33 1/4"
+UPT65	Telescoping magnetic pick up tool, lifts 16 lb., 9" to 34 1/4"
+UPTM65K	Magnetic inspection kit, UPT65 and US225
+US225	Inspection mirror, 2 1/4" diameter, attaches to UPT65
+DPTM24	Flexible magnetic pick up tool, 24" shaft
+UPT2FL	Flexible magnetic pick up tool, 29" shaft, lifts 5 lb. with power cap
+PTS5	Magnetic pick up tool/scribe, 5" long
+PTIM5	Pick up and inspection tool, magnet and mirror, 5 7/8" closed
+PT5C	Telescopic magnetic pick up tool, chrome, 5 7/8" closed
+PT5CBL	Telescopic magnetic pick up tool, blue, 5 7/8" closed
+PHT5	Magnetic pick up tool, lifts 2.5 lb., 5 1/2" to 25 1/2"
+PT7B	Magnetic pick up tool, lifts 1 lb., 6" long
+ECFM20	Flexible LED magnetic pick up tool, 18" shaft
+PT40A	Flexible magnetic pick up tool, lifts 3 1/2 lb., 21" long
+PT10C	Pick up tool, lifts 1 lb., 8 5/8" long
+PT28E	Pick up tool, lifts 2 lb., extends to 26 3/4"
+UB222PK	Miniature utility bar, 5 3/8" long (pack of 10)
+KR294APV	Hang-on prybar rack
+650	Prybar, 5/16" stock, 6" long
+1250	Prybar, 7/16" stock, 12" long
+1650	Prybar, 9/16" stock, 16" long
+2050	Prybar, 11/16" stock, 20" long
+PBS704	Prybar set, 650 through 2050 (4 pcs)
+7030A	Close quarter bar, 3/8" stock, 9" long
+7031A	Close quarter bar, 1/2" stock, 16" long
+7032	Close quarter bar, 5/8" stock, 18" long
+7035	Die setter bar, 5/8" stock, 18" long
+7037	Die setter bar, 3/4" stock, 30" long
+NPB124B	Wrecking bar, 3/4" stock, 24" long
+1412A	Pinch bar, 1/2" stock, 14" long
+1658C	Pinch bar, 1/2" stock, 5/8" edge, 16" long
+2420A	Pinch bar, 3/4" stock, 15/16" edge, 20" long
+2430C	Pinch bar, 3/4" stock, 5/8" edge, 30" long
+2438C	Pinch bar, 3/4" stock, 7/8" edge, 38" long
+2842C	Pinch bar, 7/8" stock, 1" edge, 42" long
+BLPPB704	Prybar set, 1412A, 2420A, 7031A, BPPC1878
+3260B	Slate bar, 1 1/2" stock, 60" long
+SPBS8	Striking prybar, black, 8" long
+SPBS8R	Striking prybar, red, 8" long
+SPBS8O	Striking prybar, orange, 8" long
+SPBS8G	Striking prybar, green, 8" long
+SPBS12	Striking prybar, black, 12" long
+SPBS12R	Striking prybar, red, 12" long
+SPBS12O	Striking prybar, orange, 12" long
+SPBS12G	Striking prybar, green, 12" long
+SPBS18	Striking prybar, black, 18" long
+SPBS18R	Striking prybar, red, 18" long
+SPBS18O	Striking prybar, orange, 18" long
+SPBS18G	Striking prybar, green, 18" long
+SPBS24	Striking prybar, black, 24" long
+SPBS24R	Striking prybar, red, 24" long
+SPBS24O	Striking prybar, orange, 24" long
+SPBS24G	Striking prybar, green, 24" long
+SPBS36	Striking prybar, black, 36 5/8" long
+SPBS36R	Striking prybar, red, 36 5/8" long
+SPBS36O	Striking prybar, orange, 36 5/8" long
+SPBS36G	Striking prybar, green, 36 5/8" long
+SPBS704R	Striking prybar set, red, 8", 12", 18", 24"
+SPBS704O	Striking prybar set, orange, 8", 12", 18", 24"
+SPBS704G	Striking prybar set, green, 8", 12", 18", 24"
+SPBS704	Striking prybar set, black, 8", 12", 18", 24"
+PBMP8A	Multi position prybar, 8" long
+PBMP12A	Multi position prybar, 12" long
+PBMP16A	Multi position prybar, 16" long
+PBMP24A	Multi position prybar, 24" long
+PBMP703A	Multi position prybar set, 8", 12", 16"
+SG4ASABR	Red soft grip awl, 8" overall
+SG4ASHBR	Red soft grip hook tool, 8" overall
+SG5ASABR	Red soft grip awl, 9 5/8" overall
+SG7ASABR	Red soft grip awl, 10 5/8" overall
+SGASA104BR	Awl and hook set, SG4ASABR, SG4ASHBR, SG5ASABR, SG7ASABR
+SG3ASABR	Mini awl, red, 6" long
+SG3ASABO	Mini awl, orange, 6" long
+SG3ASABG	Mini awl, green, 6" long
+SG3ASHBR	Mini hook, red, 6" long
+SG3ASHBO	Mini hook, orange, 6" long
+SG3ASHBG	Mini hook, green, 6" long
+SG3ASH45BR	Mini pick, 45°, red, 6" long
+SG3ASH45BO	Mini pick, 45°, orange, 6" long
+SG3ASH45BG	Mini pick, 45°, green, 6" long
+SG3ASH90BR	Mini pick, 90°, red, 6" long
+SG3ASH90BO	Mini pick, 90°, orange, 6" long
+SG3ASH90BG	Mini pick, 90°, green, 6" long
+SGASA204A	Mini awl, hook and pick complete set, red
+SGASA204BO	Mini awl, hook and pick complete set, orange
+SGASA204BG	Mini awl, hook and pick complete set, green
+SGL3ASA	Long mini awl, red, 9 23/32" overall
+SGL3ASAO	Long mini awl, orange, 9 23/32" overall
+SGL3ASAG	Long mini awl, green, 9 23/32" overall
+SGL3ASH	Long mini hook, red, 9 23/32" overall
+SGL3ASHO	Long mini hook, orange, 9 23/32" overall
+SGL3ASHG	Long mini hook, green, 9 23/32" overall
+SGL3ASH45	Long mini pick, 45° tip, red
+SGL3ASH45O	Long mini pick, 45° tip, orange
+SGL3ASH45G	Long mini pick, 45° tip, green
+SGL3ASH90	Long mini pick, 90° tip, red
+SGL3ASH90O	Long mini pick, 90° tip, orange
+SGL3ASH90G	Long mini pick, 90° tip, green
+SGLASA204	Long mini awl, hook and pick complete set, red
+SGLASA204O	Long mini awl, hook and pick complete set, orange
+SGLASA204G	Long mini awl, hook and pick complete set, green
+SGSR1	Seal remover, spoon tip, 8" overall
+SGSR2	Seal remover, spoon tip, 5 11/32" overall
+SGSR3	Seal remover, contoured tip, 5 11/32" overall
+SGSR4	Seal remover, contoured tip, 8" overall
+SGSR104	Seal remover set, SGSR1 through SGSR4 (4 pcs)
+YA145	Pick set, 4 screw-in picks, pouch
+YA145-1	Straight tip pick
+YA145-2	O-ring 90° tip pick
+YA145-3	Hook tip pick
+YA145-4	Angle tip pick
+YA149	Pick and probe set, 7 pcs
+YA149-1	Straight pointed pick, 5 1/2" long
+YA149-2	Curved with 90° point pick, 5 1/2" long
+YA149-3	45° with flat tip pick, 5 1/2" long
+YA149-4	90° pointed pick, 5 1/2" long
+YA149-5	Double ended short pick, 7" long
+YA149-6	Double ended long curve pick, 7" long
+YA149-7	Half circle pointed pick, 5 1/2" long
+YA338	Scribe, hooked end, nickel-plated tips
+YA339	Scribe, 90° end, nickel-plated tips
+PSLR4-1	Extra long hook pick, 9 3/4" long
+PSLR4-2	Extra long 90° hook pick, 9 3/4" long
+PSLR4-3	Extra long straight pick, 9 3/4" long
+PSLR4-4	Extra long complex pick, 9 3/4" long
+PSLR4-5	Extra long combination pick, 9 3/4" long
+PSLR4-6	Extra long double angle pick, 9 3/4" long
+PSLR4	Extra long pick set, PSLR4-1 through PSLR4-4 (4 pcs)
+PSLR6	Extra long pick set, PSLR4-1 through PSLR4-6 (6 pcs)
+JCKS6A	Fender cover, 21" x 30"
+JCKS7A	Fender cover, 22.5" x 30"
+JCK7D	Fender cover, 26" x 36", red
+JCK7DBL	Fender cover, 26" x 36", blue
+JCK8	Fender cover, 26" x 36", non-slip
+JCK15D	Heavy duty fender cover, 29" x 52", red
+KAC1224TCA	Motorcycle gas tank cover
+SEATCOVER1	Seat cover, nylon, black with red trim
+CKM3020	Multi-purpose nylon mat, 31" x 18"
+JCW60BL	Standard creeper, 40", black
+JCW60R	Standard creeper, 40", red
+JCW65BL	Adjustable standard creeper, black
+JCW65R	Adjustable standard creeper, red
+JCW70BL	Heavy duty creeper, 40", black
+JCW70R	Heavy duty creeper, 40", red
+JCW75BL	Heavy duty adjustable creeper, black
+JCW75R	Heavy duty adjustable creeper, red
+JCW43A	Multi position adjustable creeper, 44"
+JCW42A	Folding creeper/seat creeper, 40"
+JCW1000	Racing creeper, 44 1/2"
+JCW8A	Oval tube creeper, 40"
+JCW9	Oval tube mechanic's seat creeper
+JCW80BL	Seat creeper with drawer, black
+JCW80R	Seat creeper with drawer, red
+KRJC23APV	Creeper hanger
+SGDXL80BR	Red Long Shank Combination Set, 8 tools
+SGDX40BG	Green Mini Tip Combination Set, 4 tools
+SGDX40BR	Red Mini Tip Combination Set, 4 tools
+SGDX40BO	Orange Mini Tip Combination Set, 4 tools
+SGDX60BR	Red Combination Set, 6 tools
+SGDX60BO	Orange Combination Set, 6 tools
+SGDX60BG	Green Combination Set, 6 tools
+SGDX80BR	Red Combination Set, 8 tools
+SGDX80BO	Orange Combination Set, 8 tools
+SGDX80BG	Green Combination Set, 8 tools
+SGDE70	Red Miniature Electronic Combination Set, 7 tools
+SGTX40BR	Red TORX Set, T8 to T20, 4 pcs
+SGD146BR	Red Flat Tip, .030" x 10 1/8"
+SGD480BR	Red Flat Tip, .032" x 12 3/4"
+SGD4120BR	Red Flat Tip, .032" x 16 3/4"
+SGD4160BR	Red Flat Tip, .032" x 20 3/4"
+SGD2BR	Red Flat Tip, .035" x 6 15/16"
+SGD2BO	Orange Flat Tip, .035" x 6 15/16"
+SGD2BG	Green Flat Tip, .035" x 6 15/16"
+SGD4BR	Red Flat Tip, .040" x 8 27/32"
+SGD4BO	Orange Flat Tip, .040" x 8 27/32"
+SGD4BG	Green Flat Tip, .040" x 8 27/32"
+SGD6BR	Red Flat Tip, .050" x 10 27/32"
+SGD6BO	Orange Flat Tip, .050" x 10 27/32"
+SGD6BG	Green Flat Tip, .050" x 10 27/32"
+SGD8BR	Red Flat Tip, .055" x 13 13/32"
+SGD8BO	Orange Flat Tip, .055" x 13 13/32"
+SGD8BG	Green Flat Tip, .055" x 13 13/32"
+SGD304BR	Red Mini Flat Tip, .020" x 5 3/4"
+SGD304BO	Orange Mini Flat Tip, .020" x 5 3/4"
+SGD304BG	Green Mini Flat Tip, .020" x 5 3/4"
+SGD306BR	Red Mini Flat Tip, .030" x 5 3/4"
+SGD306BO	Orange Mini Flat Tip, .030" x 5 3/4"
+SGD306BG	Green Mini Flat Tip, .030" x 5 3/4"
+SGDP61BR	Red Phillips #1 x 10 1/4"
+SGDP82BR	Red Phillips #2 x 12 7/8"
+SGDP101BR	Red Phillips #1 x 14"
+SGDP102BR	Red Phillips #2 x 14 1/2"
+SGDP122BR	Red Phillips #2 x 16 3/4"
+SGDP162BR	Red Phillips #2 x 20 3/4"
+SGDP300BR	Red Mini Phillips #0 x 6"
+SGDP300BO	Orange Mini Phillips #0 x 6"
+SGDP300BG	Green Mini Phillips #0 x 6"
+SGDP301BR	Red Mini Phillips #1 x 6"
+SGDP301BO	Orange Mini Phillips #1 x 6"
+SGDP301BG	Green Mini Phillips #1 x 6"
+SGDP31IRBR	Red Instinct Phillips #1 x 7 1/8"
+SGDP31IRBO	Orange Instinct Phillips #1 x 7 1/8"
+SGDP31IRBG	Green Instinct Phillips #1 x 7 1/8"
+SGDP42IRBR	Red Instinct Phillips #2 x 8 7/8"
+SGDP42IRBO	Orange Instinct Phillips #2 x 8 7/8"
+SGDP42IRBG	Green Instinct Phillips #2 x 8 7/8"
+SGDP63IRBR	Red Instinct Phillips #2 x 10 13/16"
+SGDP63IRBO	Orange Instinct Phillips #2 x 10 13/16"
+SGDP63IRBG	Green Instinct Phillips #2 x 10 13/16"
+SGDP64IRBR	Red Instinct Phillips #4 x 11 1/2"
+SGDP64IRBO	Orange Instinct Phillips #4 x 11 1/2"
+SGDP64IRBG	Green Instinct Phillips #4 x 11 1/2"
+SGDE215	Red Miniature Flat Tip, 1.5mm x 5 3/4"
+SGDE220	Red Miniature Flat Tip, 2.0mm x 5 3/4"
+SGDE225	Red Miniature Flat Tip, 2.5mm x 5 3/4"
+SGDE230	Red Miniature Flat Tip, 3.0mm x 5 3/4"
+SGDEP200	Miniature Phillips #00 x 5 3/4"
+SGDEP20	Miniature Phillips #0 x 5 3/4"
+SGDEP21	Miniature Phillips #1 x 5 3/4"
+SGDET26	Electronic Miniature TORX T6 x 5 1/2"
+SGDET27	Electronic Miniature TORX T7 x 5 1/2"
+SGDET28	Electronic Miniature TORX T8 x 5 1/2"
+SGDET29	Electronic Miniature TORX T9 x 5 1/2"
+SGDET210	Electronic Miniature TORX T10 x 5 1/2"
+SGDET215	Electronic Miniature TORX T15 x 6 1/2"
+SGDET220	Electronic Miniature TORX T20 x 6 1/2"
+SGDET70	Electronic Miniature TORX Set, 7 pcs (T6 to T20)
+SGDT308BR	Red Mini TORX T8 x 5 7/8"
+SGDT310BR	Red Mini TORX T10 x 5 7/8"
+SGDT315BR	Red Mini TORX T15 x 5 7/8"
+SGDT320BR	Red Mini TORX T20 x 5 7/8"
+SGDTRX608BR	Red Long Tamper Resistant TORX T8 x 10"
+SGDTRX610BR	Red Long Tamper Resistant TORX T10 x 10"
+SGDTRX615BR	Red Long Tamper Resistant TORX T15 x 10"
+SGDTRX620BR	Red Long Tamper Resistant TORX T20 x 10"
+SGDTRX825BR	Red Long Tamper Resistant TORX T25 x 12 3/4"
+SGDTRX827BR	Red Long Tamper Resistant TORX T27 x 12 3/4"
+SGDTRX830BR	Red Long Tamper Resistant TORX T30 x 12 3/4"
+SGDTRXL70BR	Red Long Tamper Resistant TORX Set, 7 pcs (T8 to T30)
+SGDTX38BR	Red TORX T8 x 7 1/4"
+SGDTX310BR	Red TORX T10 x 7 1/4"
+SGDTX315BR	Red TORX T15 x 7 1/4"
+SGDTX320BR	Red TORX T20 x 7 1/4"
+SGDTX425BR	Red TORX T25 x 8 7/8"
+SGDTX427BR	Red TORX T27 x 8 7/8"
+SGDTX430BR	Red TORX T30 x 8 7/8"
+SGDTX640BR	Red TORX T40 x 10 7/8"
+SGDTX645BR	Red TORX T45 x 10 7/8"
+SGDTX50BR	Red TORX Set, T15 to T30, 5 pcs
+SGDTX90BR	Red TORX Set, T8 to T45, 9 pcs
+SGDTRX315BR	Red Tamper Resistant TORX T15 x 7 1/4"
+SGDTRX320BR	Red Tamper Resistant TORX T20 x 7 1/4"
+SGDTRX425BR	Red Tamper Resistant TORX T25 x 7 1/4"
+SGDTRX427BR	Red Tamper Resistant TORX T27 x 7 1/4"
+SGDTRX430BR	Red Tamper Resistant TORX T30 x 8 7/8"
+SGDTRX50BR	Red Tamper Resistant TORX Set, T15 to T30, 5 pcs
+SGDTR608B	Red Mini Tamper Resistant TORX T8 x 8 7/8"
+SGDTR610B	Red Mini Tamper Resistant TORX T10 x 8 7/8"
+SGDTR615B	Red Mini Tamper Resistant TORX T15 x 8 7/8"
+SGDTR620B	Red Mini Tamper Resistant TORX T20 x 8 7/8"
+SGTRXL40BR	Red Mini Tamper Resistant TORX Set, T8 to T20, 4 pcs
+SGDMRC4-F7	Flat Tip Blade, 7/32" x 4"
+SGDMRC4-F8	Flat Tip Blade, 1/4" x 4"
+SGDMRC4-F10	Flat Tip Blade, 5/16" x 4"
+SGDMRC4-P1	Phillips #1 Blade x 4"
+SGDMRC4-P2	Phillips #2 Blade x 4"
+SGDMRC4-P3	Phillips #3 Blade x 4"
+SGDMRC60	Non-Magnetic Blade Set, 7/32" to 5/16" flat and #1 to #3 Phillips
+SGDMRC-T10	TORX T10 Interchangeable Blade x 5 1/8"
+SGDMRC-T15	TORX T15 Interchangeable Blade x 5 1/8"
+SGDMRC-T20	TORX T20 Interchangeable Blade x 5 1/8"
+SGDMRC-T25	TORX T25 Interchangeable Blade x 5 1/8"
+SGDMRC-T27	TORX T27 Interchangeable Blade x 5 1/8"
+SGDMRC-T30	TORX T30 Interchangeable Blade x 5 1/8"
+SGDMRCT60	TORX Interchangeable Blade Set, T10 to T30, 6 pcs
+SGDMRC1A	Red Stubby Soft Grip Handle
+SGDMRC1AO	Orange Stubby Soft Grip Handle
+SGDMRC1AG	Green Stubby Soft Grip Handle
+SGDMRC4A	Red Standard Soft Grip Handle
+SGDMRC4AO	Orange Standard Soft Grip Handle
+SGDMRC4AG	Green Standard Soft Grip Handle
+SGDMRCE4	Red 5 Position Soft Grip Handle
+SGDMRCE4O	Orange 5 Position Soft Grip Handle
+SGDMRCE4G	Green 5 Position Soft Grip Handle
+SGDMRC11A	Red Stubby Ratcheting Screwdriver, Flat/Phillips
+SGDMRC11AO	Orange Stubby Ratcheting Screwdriver
+SGDMRC11AG	Green Stubby Ratcheting Screwdriver
+SGDMRC44B	Red Standard Ratcheting Screwdriver
+SGDMRC44BO	Orange Standard Ratcheting Screwdriver
+SGDMRC44BG	Green Standard Ratcheting Screwdriver
+SGDR44C	Non-Magnetic Fixed Shank Ratcheting Screwdriver, Red
+SGDMRCE44	Red 5 Position Ratcheting Screwdriver
+SGDMRCE44O	Orange 5 Position Ratcheting Screwdriver
+SGDMRCE44G	Green 5 Position Ratcheting Screwdriver
+SGDMRC1	Stubby Ratcheting Handle, Red
+SGDMRC1O	Stubby Ratcheting Handle, Orange
+SGDMRC1G	Stubby Ratcheting Handle, Green
+SGDMRC4	Standard Ratcheting Handle, Red
+SGDMRC4O	Standard Ratcheting Handle, Orange
+SGDMRC4G	Standard Ratcheting Handle, Green
+SGDMRC1-10	Magnetic Bit Holder Shank, 3 1/4" x 2"
+SGDMRC4-40	Magnetic Bit Holder Shank, 5" x 3 3/4"
+SGDMRC4-80	Magnetic Bit Holder Shank, 9" x 7 3/4"
+SGDMRC4-TM4	1/4" Square Drive Shank, 5" x 3 3/4"
+SGDMRC4-TMF4	Flexible 1/4" Square Drive Shank, 6 1/4" x 5"
+SGDMRC4-C6	Composite Non-Conductive Magnetic Bit Holder, 7 1/4" x 6"
+SGDMRC-SP	1/4" Speeder Shank, 13"
+SGDMRC103A	Red Ratcheting Screwdriver Set
+SGDMRC103AO	Orange Ratcheting Screwdriver Set
+SGDMRC103AG	Green Ratcheting Screwdriver Set
+SGDMRC108A	Red Master Ratcheting Screwdriver Set
+SGDMRC108AO	Orange Master Ratcheting Screwdriver Set
+SGDMRC108AG	Green Master Ratcheting Screwdriver Set
+SGRMINI107	Red Electronic Miniature Ratcheting Set
+SGRMINI107O	Orange Electronic Miniature Ratcheting Set
+SGRMINI107G	Green Electronic Miniature Ratcheting Set
+SGRMINIO	Miniature Soft Grip Handle, Orange
+SGRMINIG	Miniature Soft Grip Handle, Green
+SGRMINI	Miniature Handle
+SGRM-F44	Miniature Flat Tip Blade, .144" x .022"
+SGRM-F64	Miniature Flat Tip Blade, .203" x .033"
+SGRM-P40	Miniature #0 Phillips Blade
+SGRM-P41	Miniature #1 Phillips Blade
+SGRM-T408	Miniature T8 TORX Blade
+SGRM-T410	Miniature T10 TORX Blade
+C0710	Storage Pouch
+SSDMRT1O	Orange Stubby T-Handle Ratchet
+SSDMRT1R	Red Stubby T-Handle Ratchet
+SSDMRT4R	Red Standard T-Handle Ratchet
+SSDMRT4O	Orange Standard T-Handle Ratchet
+SSDMRT8A	Black Long T-Handle Ratchet
+SSDMR8AO	Orange Long Ratchet Bit Driver
+SSDMR4BO	Orange Standard Ratchet Bit Driver
+SSDMR1A	Black Stubby Ratchet Bit Driver
+SSDMR1AO	Orange Stubby Ratchet Bit Driver
+SSDMR4B	Black Standard Ratchet Bit Driver
+SSDMR8A	Black Long Ratchet Bit Driver
+SDDMS1	Black Stubby Non-Ratcheting Driver
+RKRSSDMR4AC	Service Kit for Ratchet Drivers
+SHORTORX	TORX Bit Set with Bit Wrench, T15 to T45
+TM936SET	Magnetic Bit and Ratchet Set, Chrome
+RKRTM936	Ratchet Repair Kit for TM936SET
+DHW1	Reversible Ratcheting Bit Wrench
+SDMTAS15	TORX T15 Bit, 5/16" Hex
+SDMTAS20	TORX T20 Bit, 5/16" Hex
+SDMTAS25	TORX T25 Bit, 5/16" Hex
+SDMTAS27	TORX T27 Bit, 5/16" Hex
+SDMTAS30	TORX T30 Bit, 5/16" Hex
+SDMTAS40	TORX T40 Bit, 5/16" Hex
+SDMTAS45	TORX T45 Bit, 5/16" Hex
+BTWSMPK	Miniature Ratcheting Handle Set
+BTWOSK	Miniature Ratcheting Handle Set, Offset
+BTWS	Miniature Ratcheting Handle, Straight
+BTWOS	Miniature Ratcheting Handle, 25° Offset
+BTWROS	Miniature Ratcheting Handle, 25° Reverse Offset
+YA480B	Right Angle Ratcheting Screwdriver, 3 7/8"
+S6180	DZUS Fastener Driver
+SDDD101	Reversible Blade Screwdriver Set, 8 tip sizes plus nut drivers
+SDDD41	Reversible Blade Screwdriver Set, 4 tip sizes
+CM6551	Miniature Screwdriver Set, 4 flat blades with awl
+10SSD	Flat Tip Offset Screwdriver, .040" x 1/4"
+20SSD	Flat Tip Offset Screwdriver, .050" x 5/16"
+30SSD	Flat Tip Offset Screwdriver, .060" x 3/8"
+120SSDP	Offset Phillips #1 and #2 Screwdriver, 4 3/4"
+340SSDP	Offset Phillips #3 and #4 Screwdriver, 6"
+ST50A	Offset Screwdriver Set, 5 pcs
+SS5A	Aluminum Starter Screwdriver, 5/16" Flat Tip
+SSM3	Aluminum Starter Screwdriver, 5/16" Flat Tip, 2 1/2"
+SSM5A	Aluminum Starter Screwdriver, 5/16" Flat Tip, 5 1/4"
+SSM6A	Aluminum Starter Screwdriver, 9/32" Phillips #3
+GA199A	Combination Aluminum Starter, 9/32" Flat and #2 Phillips
+CSSC9	Non-Conductive Combination Screwdriver, 9/32" Flat/#2 Phillips
+CNDD106	Non-Conductive Nut Driver, 3/16"
+CNDD107	Non-Conductive Nut Driver, 7/32"
+CNDD108	Non-Conductive Nut Driver, 1/4"
+CNDD110	Non-Conductive Nut Driver, 5/16"
+CNDD112	Non-Conductive Nut Driver, 3/8"
+CNDD114	Non-Conductive Nut Driver, 7/16"
+CNDD116	Non-Conductive Nut Driver, 1/2"
+107CNDD	Non-Conductive Nut Driver Set, 3/16" to 1/2", 7 pcs
+NDD108AR	Red Nut Driver, 1/4"
+NDD109AO	Orange Nut Driver, 9/32"
+NDD110AY	Yellow Nut Driver, 5/16"
+NDD111AG	Green Nut Driver, 11/32"
+NDD112AB	Blue Nut Driver, 3/8"
+NDD114ABR	Brown Nut Driver, 7/16"
+NDD116AR	Red Nut Driver, 1/2"
+NDD1070A	Colored Nut Driver Set, 1/4" to 1/2", 7 pcs
+NDDM60	Metric Nut Driver, 6mm
+NDDM70	Metric Nut Driver, 7mm
+NDDM80	Metric Nut Driver, 8mm
+NDDM90	Metric Nut Driver, 9mm
+NDDM100	Metric Nut Driver, 10mm
+NDDM110	Metric Nut Driver, 11mm
+NDDM120	Metric Nut Driver, 12mm
+NDDM1070	Metric Nut Driver Set, 6mm to 12mm, 7 pcs
+BSGD3	Flat Tip Screw Starter, 1/8"
+BSGD4	Flat Tip Screw Starter, 7/32"
+BSGD5	Flat Tip Screw Starter, 1/4"
+BSGD6	Flat Tip Screw Starter, 5/16"
+BSGD7	Flat Tip Screw Starter, 3/8"
+BSGDP41	Phillips #1 Screw Starter
+BSGDP52	Phillips #2 Screw Starter
+BSGDX70	Screwdriver Set, 5 flat and 2 Phillips, 7 pcs
+SSR7	Recessed Screw and Nut Starter, 6 3/4"
+YA355	Handle Style Starter, 1/4"
+YA356	Handle Style Starter, 5/16"
+NDL1410	Locking Nut Driver, 1/4", 10"
+NDL51610	Locking Nut Driver, 5/16", 10"
+NDLM610	Locking Nut Driver, 6mm, 10"
+NDLM710	Locking Nut Driver, 7mm, 10"
+102NDL10	Locking Nut Driver Set, 2 pcs
+102NDLM10	Metric Locking Nut Driver Set, 2 pcs
+PL6711A	Needle Nose Pliers Set, 3 pcs
+PL300ACP	Pliers/Cutters Set, 3 pcs
+PL400B	Pliers/Cutters Set, 4 pcs
+PL403A	Combination Slip Joint Pliers Set, 3 pcs
+196CF	Long Needle Nose Pliers, 8"
+96CF	Long Needle Nose Pliers, 8"
+97CCP	Needle Nose Pliers, 8"
+95BCP	Needle Nose Pliers, 6"
+497CCP	Needle Nose Pliers, 90° Angle Jaws, 6 5/8"
+597CCP	Pin Gripping Needle Nose Pliers, 7 15/16"
+61ACP	Duck Bill Pliers, 7 3/4"
+911BCP	Long Handle Needle Nose Pliers, 11"
+915CP	Long Handle Needle Nose Pliers, 14 1/2"
+415CP	Long Handle 35° Bent Needle Nose Pliers, 14 5/16"
+912AEP	Pistol Grip Needle Nose Pliers, 10 5/8"
+490BCP	90° Bent Needle Nose Pliers, 9 3/4"
+408ACP	35° Mini Bent Needle Nose Pliers, 7 7/8"
+411BCP	35° Bent Needle Nose Pliers, 10 7/8"
+908ACP	Mini Needle Nose Pliers, 8 1/8"
+609ACP	Duck Bill Needle Nose Pliers, 9 1/4"
+102LHCP	Needle Nose Pliers Set
+C97CP	Non-Conductive Needle Nose Pliers, 8 1/2"
+44ACP	Combination Slip Joint Pliers, 4 1/2"
+46ACP	Combination Slip Joint Pliers, 6 7/16"
+47ACP	Combination Slip Joint Pliers, 7 1/2"
+49ACP	Combination Slip Joint Pliers, 9 1/4"
+91ACP	Adjustable Joint Pliers
+137ACP	Heavy Duty Combination Pliers, 7 1/2"
+HL138ACP	High Leverage Combination Pliers, 7 7/8"
+57AHLP	Lineman's Pliers, 7 3/8"
+59AHLP	Lineman's Pliers, 9 1/4"
+C59AHLP	Non-Conductive Lineman's Pliers, 10"
+87CF	Diagonal Cutters
+312CP	Heavy Duty Diagonal Cutter, 11"
+808ACP	Mini Diagonal Cutter, 6 15/16"
+SDM400A	Master Bit Kit, 37 pcs, 1/4" Hex
+SDM11	Magnetic Insert Bit Holder, 2 7/8"
+SDM12	Bit Holder, 1 1/8"
+SSDM10A	Pocket Bit Storage System with Quick Change Holder
+SSDM28	Magnetic Hex Bit Organizer
+TMBS8A	1/4" Hex Magnetic Socket, 1/4" Drive
+GTMBS8A	1/4" Hex Magnetic Socket, Black Industrial Finish
+TMUBS8	1/4" Hex Magnetic Socket, 1/4" Drive
+FBSM8A	1/4" Hex Magnetic Socket, 3/8" Drive
+FBS8	1/4" Hex Bit Socket, 3/8" Drive
+FBS9	5/16" Hex Bit Socket, 3/8" Drive
+CFSSB8	Insulating Universal Bit Socket, 1/4" Hex, 3/8" Drive
+TMC109A	Quick Change Coupler, 1/4" Drive
+SDM32KT	Ball Hex Bit Set, 32 pcs
+SDM11KT	TORX Ball Hex Bit Set, 11 pcs
+YA52PBSQC	Power Bit Set, 49 pcs
+PB90A	Storage Case
+PB146A	Storage Case
+C0612A	Kit Bag
+CO612A	Kit Bag
+SDMT6A	TORX T6 Bit
+SDMT7A	TORX T7 Bit
+SDMT8D	TORX T8 Bit
+SDMT9D	TORX T9 Bit
+SDMT10D	TORX T10 Bit
+SDMT15D	TORX T15 Bit
+SDMT20D	TORX T20 Bit
+SDMT25D	TORX T25 Bit
+SDMT27D	TORX T27 Bit
+SDMT30D	TORX T30 Bit
+SDMT40D	TORX T40 Bit
+SDMT150D	TORX T15 Bit
+BTS0	SCRULOX #0 Bit
+BTS1	SCRULOX #1 Bit
+BTS2	SCRULOX #2 Bit
+BTS3	SCRULOX #3 Bit
+BTW0A	TRI-WING #0 Bit
+BTW1A	TRI-WING #1 Bit
+BTW2A	TRI-WING #2 Bit
+BTW3A	TRI-WING #3 Bit
+BTW4A	TRI-WING #4 Bit
+BTW5A	TRI-WING #5 Bit
+BTW6A	TRI-WING #6 Bit
+SDM211B	Flat Tip Bit, .031" x .187"
+SDM212B	Flat Tip Bit, .035" x .219"
+SDM213B	Flat Tip Bit, .038" x .250"
+SDM214C	Flat Tip Bit, .046" x .312"
+SDM215C	Flat Tip Bit, .055" x .375"
+SDM221C	Phillips #1 Bit
+SDM222ZB	Phillips #2 Bit
+SDM222CZ	Phillips #2 Bit
+SDM223C	Phillips #3 Bit
+SDM231A	Reed & Prince #2 Bit
+SDM242	Clutch A Bit, 3/32"
+SDM243	Clutch A Bit, 1/8"
+SDM244	Clutch A Bit, 5/32"
+SDM245	Clutch A Bit, 3/16"
+SDM246	Clutch A Bit, 1/4"
+SDM247	Clutch A Bit, 5/16"
+SDM242G	Clutch G Bit, 3/32"
+SDM243G	Clutch G Bit, 1/8"
+SDM244G	Clutch G Bit, 5/32"
+SDM245G	Clutch G Bit, 3/16"
+SDM246G	Clutch G Bit, 1/4"
+SDM2704D	Hex Bit, 1/16"
+SDM2705D	Hex Bit, 5/64"
+SDM2706D	Hex Bit, 3/32"
+SDM2707D	Hex Bit, 7/64"
+SDM2708D	Hex Bit, 1/8"
+SDM2709D	Hex Bit, 9/64"
+SDM2710D	Hex Bit, 5/32"
+SDM2712D	Hex Bit, 3/16"
+SDM2714D	Hex Bit, 7/32"
+SDM2716D	Hex Bit, 1/4"
+SDM2720D	Hex Bit, 5/16"
+SDM2724D	Hex Bit, 3/8"
+SDMM2702B	Metric Hex Bit, 2mm
+SDMM2702.5B	Metric Hex Bit, 2.5mm
+SDMM2703B	Metric Hex Bit, 3mm
+SDMM2704C	Metric Hex Bit, 4mm
+SDMM2705C	Metric Hex Bit, 5mm
+SDMM2706C	Metric Hex Bit, 6mm
+SDMM2708B	Metric Hex Bit, 8mm
+SDMM2710B	Metric Hex Bit, 10mm
+SDM251C	POZIDRIV #1 Bit
+SDM252C	POZIDRIV #2 Bit
+SDM253C	POZIDRIV #3 Bit
+SDMTW8A	TORX Wobble T8 Bit
+SDMTW9A	TORX Wobble T9 Bit
+SDMTW10A	TORX Wobble T10 Bit
+SDMTW15A	TORX Wobble T15 Bit
+SDMTW20A	TORX Wobble T20 Bit
+SDMTW25A	TORX Wobble T25 Bit
+SDMTW27A	TORX Wobble T27 Bit
+SDMTW30A	TORX Wobble T30 Bit
+SDMTW40A	TORX Wobble T40 Bit
+SDMW221A	Phillips Wobble #1 Bit
+SDMW222A	Phillips Wobble #2 Bit
+SDMW223A	Phillips Wobble #3 Bit
+SDM221IRB	Phillips ACR #1 Bit
+SDM222IRB	Phillips ACR #2 Bit
+SDM223IRB	Phillips ACR #3 Bit
+SDM252IRA	Bit
+SDM251IRC	POZIDRIV ACR #1 Bit
+SDM252IRB	POZIDRIV ACR #2 Bit
+SDM253IRC	POZIDRIV ACR #3 Bit
+SDMTR8	TORX Tamper Resistant T8 Bit
+SDMTR10	TORX Tamper Resistant T10 Bit
+SDMTR15	TORX Tamper Resistant T15 Bit
+SDMTR20	TORX Tamper Resistant T20 Bit
+SDMTR25	TORX Tamper Resistant T25 Bit
+SDMTR27	TORX Tamper Resistant T27 Bit
+SDMTR30	TORX Tamper Resistant T30 Bit
+SDMTR40	TORX Tamper Resistant T40 Bit
+SDMTR45	TORX Tamper Resistant T45 Bit
+SDMTR50	TORX Tamper Resistant T50 Bit
+SDM311B	Flat Tip Bit, .026" x .122"
+SDM312B	Flat Tip Bit, .028" x .134"
+SDM313B	Flat Tip Bit, .032" x .154"
+SDM314B	Flat Tip Bit, .034" x .187"
+SDM315A	Flat Tip Bit, .036" x .215"
+SDM316A	Flat Tip Bit, .038" x .250"
+SDM317A	Flat Tip Bit, .042" x .275"
+SDM318A	Flat Tip Bit, .046" x .312"
+SDM319A	Flat Tip Bit, .050" x .360"
+SDM411B	Flat Tip Bit, .026" x .122"
+SDM412B	Flat Tip Bit, .028" x .134"
+SDM413B	Flat Tip Bit, .032" x .154"
+SDM414A	Flat Tip Bit, .034" x .187"
+SDM415A	Flat Tip Bit, .036" x .215"
+SDM416A	Flat Tip Bit, .038" x .250"
+SDM417A	Flat Tip Bit, .042" x .275"
+SDM418A	Flat Tip Bit, .046" x .312"
+SDM419A	Flat Tip Bit, .050" x .360"
+SDM511A	Flat Tip Bit, .026" x .122"
+SDM512A	Flat Tip Bit, .028" x .134"
+SDM513A	Flat Tip Bit, .032" x .154"
+SDM514A	Flat Tip Bit, .034" x .187"
+SDM515A	Flat Tip Bit, .036" x .215"
+SDM516A	Flat Tip Bit, .038" x .250"
+SDM517A	Flat Tip Bit, .042" x .275"
+SDM518A	Flat Tip Bit, .046" x .312"
+SDM519A	Flat Tip Bit, .050" x .360"
+SDM220A	Phillips #0 Bit, 1"
+SDM320A	Phillips #0 Bit, 1 15/16"
+SDM321B	Phillips #1 Bit, 1 15/16"
+SDM322B	Phillips #2 Bit, 1 15/16"
+SDM323A	Phillips #3 Bit, 1 15/16"
+SDM421B	Phillips #1 Bit, 2 3/4"
+SDM422B	Phillips #2 Bit, 2 3/4"
+SDM423B	Phillips #3 Bit, 2 3/4"
+SDM521A	Phillips #1 Bit, 3 1/2"
+SDM522A	Phillips #2 Bit, 3 1/2"
+SDM523A	Phillips #3 Bit, 3 1/2"
+SDM621A	Phillips #1 Bit, 6"
+SDM622A	Phillips #2 Bit, 6"
+SDM623A	Phillips #3 Bit, 6"
+SDMA421	Phillips #1 Bit, 3"
+SDMA422A	Phillips #2 Bit, 3"
+SDMA423A	Phillips #3 Bit, 3"
+SDMB422A	Phillips #2 Bit, 3"
+SDMB423A	Phillips #3 Bit, 3"
+SDMB424A	Phillips #4 Bit, 3"
+SDMB522A	Phillips #2 Bit, 4 1/2"
+SDMB523A	Phillips #3 Bit, 4 1/2"
+SDMB524A	Phillips #4 Bit, 4 1/2"
+SDMB622	Phillips #2 Bit, 6"
+SDMB623A	Phillips #3 Bit, 6"
+SDMB624A	Phillips #4 Bit, 6"
+SDM361IA	Phillips #1 Installer Bit, 1 15/16"
+SDM362IA	Phillips #2 Installer Bit, 1 15/16"
+SDM363IA	Phillips #3 Installer Bit, 1 15/16"
+SDM361RA	Phillips #1 Removal Bit, 1 15/16"
+SDM362RA	Phillips #2 Removal Bit, 1 15/16"
+SDM363RA	Phillips #3 Removal Bit, 1 15/16"
+SDM351B	Phillips #1 Bit, 1 15/16"
+SDM352B	Phillips #2 Bit, 1 15/16"
+SDM353B	Phillips #3 Bit, 1 15/16"
+SDM451A	Phillips #1 Bit, 2 3/4"
+SDM452A	Phillips #2 Bit, 2 3/4"
+SDM453A	Phillips #3 Bit, 2 3/4"
+SDM551A	Phillips #1 Bit, 3 1/2"
+SDM552A	Phillips #2 Bit, 3 1/2"
+SDM553A	Phillips #3 Bit, 3 1/2"
+SDM651A	Phillips #1 Bit, 6"
+SDM652A	Phillips #2 Bit, 6"
+SDM653A	Phillips #3 Bit, 6"
+SDMT307A	TORX T7 Power Bit, 1 15/16"
+SDMT308A	TORX T8 Power Bit, 1 15/16"
+SDMT309A	TORX T9 Power Bit, 1 15/16"
+SDMT310A	TORX T10 Power Bit, 1 15/16"
+SDMT315A	TORX T15 Power Bit, 1 15/16"
+SDMT320A	TORX T20 Power Bit, 1 15/16"
+SDMT325B	TORX T25 Power Bit, 1 15/16"
+SDMT327A	TORX T27 Power Bit, 1 15/16"
+SDMT330A	TORX T30 Power Bit, 1 15/16"
+SDMT340A	TORX T40 Power Bit, 1 15/16"
+SDMT407	TORX T7 Power Bit, 2 3/4"
+SDMT408	TORX T8 Power Bit, 2 3/4"
+SDMT409	TORX T9 Power Bit, 2 3/4"
+SDMT410	TORX T10 Power Bit, 2 3/4"
+SDMT415	TORX T15 Power Bit, 2 3/4"
+SDMT420	TORX T20 Power Bit, 2 3/4"
+SDMT425	TORX T25 Power Bit, 2 3/4"
+SDMT427	TORX T27 Power Bit, 2 3/4"
+SDMT430	TORX T30 Power Bit, 2 3/4"
+SDMT440	TORX T40 Power Bit, 2 3/4"
+SDMT507	TORX T7 Power Bit, 3 1/2"
+SDMT508	TORX T8 Power Bit, 3 1/2"
+SDMT509	TORX T9 Power Bit, 3 1/2"
+SDMT510	TORX T10 Power Bit, 3 1/2"
+SDMT515	TORX T15 Power Bit, 3 1/2"
+SDMT520	TORX T20 Power Bit, 3 1/2"
+SDMT525	TORX T25 Power Bit, 3 1/2"
+SDMT527	TORX T27 Power Bit, 3 1/2"
+SDMT530	TORX T30 Power Bit, 3 1/2"
+SDMT540	TORX T40 Power Bit, 3 1/2"
+SDMT607	TORX T7 Power Bit, 6"
+SDMT608	TORX T8 Power Bit, 6"
+SDMT609	TORX T9 Power Bit, 6"
+SDMT610	TORX T10 Power Bit, 6"
+SDMT615	TORX T15 Power Bit, 6"
+SDMT620	TORX T20 Power Bit, 6"
+SDMT625	TORX T25 Power Bit, 6"
+SDMT627	TORX T27 Power Bit, 6"
+SDMT630	TORX T30 Power Bit, 6"
+SDMT640	TORX T40 Power Bit, 6"
+SDMTA40	TORX T40 Power Bit, 1 1/4"
+SDMTA45	TORX T45 Power Bit, 1 1/4"
+SDMTA50	TORX T50 Power Bit, 1 1/4"
+SDMTA55	TORX T55 Power Bit, 1 1/4"
+SDM3704	Hex Power Bit, 1/16"
+SDM3705	Hex Power Bit, 5/64"
+SDM3706	Hex Power Bit, 3/32"
+SDM3707	Hex Power Bit, 7/64"
+SDM3708	Hex Power Bit, 1/8"
+SDM3709	Hex Power Bit, 9/64"
+SDM3710	Hex Power Bit, 5/32"
+SDM3712	Hex Power Bit, 3/16"
+SDM3714	Hex Power Bit, 7/32"
+SDM3716	Hex Power Bit, 1/4"
+SDMA4708	Hex Power Bit, 1/8", 3"
+SDMA4710	Hex Power Bit, 5/32", 3"
+SDMA4712	Hex Power Bit, 3/16", 3"
+SDMA4714	Hex Power Bit, 7/32", 3"
+SDMA4716	Hex Power Bit, 1/4", 3"
+SDMA4720	Hex Power Bit, 5/16", 3"
+SDMA4724	Hex Power Bit, 3/8", 3"
+IHT60K	Non-Conductive Composite Combination Screwdriver Set, 6 pcs
+IHTS3	Non-Conductive Flat Tip, 3/16" x 8 3/16"
+IHTS37	Non-Conductive Flat Tip, 7/32" x 8 3/16"
+IHTS38	Non-Conductive Flat Tip, 1/4" x 8 3/16"
+IHTS6	Non-Conductive Flat Tip, 1/4" x 11"
+IHTS610	Non-Conductive Flat Tip, 5/16" x 11"
+IHTS9	Non-Conductive Flat Tip, 5/16" x 14"
+IHTS912	Non-Conductive Flat Tip, 3/8" x 14"
+IHTP31	Non-Conductive Phillips #1 x 8 3/16"
+IHTP62	Non-Conductive Phillips #2 x 10 15/16"
+IHTP63	Non-Conductive Phillips #3 x 10 15/16"
+CNSGDX60	Non-Conductive Composite Combination Set, 6 pcs
+CNSGDF66	Non-Conductive Flat Tip, 3/16" x 6"
+CNSGDF68	Non-Conductive Flat Tip, 1/4" x 6"
+CNSGDF69	Non-Conductive Flat Tip, 9/32" x 6"
+CNSGDP61	Non-Conductive Phillips #1 x 6"
+CNSGDP62	Non-Conductive Phillips #2 x 6"
+CNSGDP63	Non-Conductive Phillips #3 x 6"
+GSHDX80R	Red Industrial Finish Shank Combination Set, 8 tools
+GSHD1R	Red Industrial Flat Tip, .037" x 3 3/4"
+GSHD2R	Red Industrial Flat Tip, .032" x 7"
+GSHD4R	Red Industrial Flat Tip, .037" x 8 7/8"
+GSHD6R	Red Industrial Flat Tip, .046" x 10 27/32"
+GSHD8R	Red Industrial Flat Tip, .050" x 13 13/32"
+GSHDP22IRR	Red Industrial Phillips #2 x 3 3/4"
+GSHDP31R	Red Industrial Phillips #1 x 7 1/4"
+GSHDP42R	Red Industrial Phillips #2 x 8 7/8"
+SHDX40R	Red Hard Handle Mini Tip Combination Set, 4 tools
+SHDX40O	Orange Hard Handle Mini Tip Combination Set, 4 tools
+SHDXL80O	Orange Hard Handle Long Shank Combination Set, 8 tools
+SHD146O	Orange Flat Tip, .030" x 10 1/8"
+SHD480O	Orange Flat Tip, .032" x 12 3/4"
+SHD4120O	Orange Flat Tip, .033" x 16 3/4"
+SHD4160O	Orange Flat Tip, .032" x 20 3/4"
+SHDP61O	Orange Phillips #1 x 10 1/4"
+SHDP82O	Orange Phillips #2 x 12 7/8"
+SHDP122O	Orange Phillips #2 x 16 3/4"
+SHDP162O	Orange Phillips #2 x 20 3/4"
+SHDP204O	Orange Pocket Phillips #1 x 4 7/8"
+SHD304R	Red Mini Flat Tip, .018" x 5 7/8"
+SHD304O	Orange Mini Flat Tip, .018" x 5 7/8"
+SHD306R	Red Mini Flat Tip, .030" x 5 7/8"
+SHD306O	Orange Mini Flat Tip, .030" x 5 7/8"
+SHDP300R	Red Mini Phillips #0 x 5 7/8"
+SHDP300O	Orange Mini Phillips #0 x 5 7/8"
+SHDP301R	Red Mini Phillips #1 x 5 7/8"
+SHDP301O	Orange Mini Phillips #1 x 5 7/8"
+SHDX60R	Red Hard Handle Combination Set, 6 tools
+SHDX60O	Orange Hard Handle Combination Set, 6 tools
+SHDX60G	Green Hard Handle Combination Set, 6 tools
+SHDX80R	Red Hard Handle Combination Set, 8 tools
+SHDX80O	Orange Hard Handle Combination Set, 8 tools
+SHDX80G	Green Hard Handle Combination Set, 8 tools
+SHD1R	Red Flat Tip, .040" x 3 3/4"
+SHD1O	Orange Flat Tip, .040" x 3 3/4"
+SHD1G	Green Flat Tip, .040" x 3 3/4"
+SHD2R	Red Flat Tip, .035" x 6 15/16"
+SHD2O	Orange Flat Tip, .035" x 6 15/16"
+SHD2G	Green Flat Tip, .035" x 6 15/16"
+SHD4R	Red Flat Tip, .040" x 8 27/32"
+SHD4O	Orange Flat Tip, .040" x 8 27/32"
+SHD4G	Green Flat Tip, .040" x 8 27/32"
+SHD6R	Red Flat Tip, .050" x 10 27/32"
+SHD6O	Orange Flat Tip, .050" x 10 27/32"
+SHD6G	Green Flat Tip, .050" x 10 27/32"
+SHD8R	Red Flat Tip, .055" x 13 13/32"
+SHD8O	Orange Flat Tip, .055" x 13 13/32"
+SHD8G	Green Flat Tip, .055" x 13 13/32"
+SHDP22IRR	Red Hard Handle Phillips #2 x 3 1/2"
+SHDP22IRO	Orange Hard Handle Phillips #2 x 3 1/2"
+SHDP22IRG	Green Hard Handle Phillips #2 x 3 1/2"
+SHDP31IRR	Red Hard Handle Phillips #1 x 7 1/8"
+SHDP31IRO	Orange Hard Handle Phillips #1 x 7 1/8"
+SHDP31IRG	Green Hard Handle Phillips #1 x 7 1/8"
+SHDP42IRR	Red Hard Handle Phillips #2 x 8 7/8"
+SHDP42IRO	Orange Hard Handle Phillips #2 x 8 7/8"
+SHDP42IRG	Green Hard Handle Phillips #2 x 8 7/8"
+SHDP63IRR	Red Hard Handle Phillips #3 x 10 13/16"
+SHDP63IRO	Orange Hard Handle Phillips #3 x 10 13/16"
+SHDP63IRG	Green Hard Handle Phillips #3 x 10 13/16"
+SHDP64IRR	Red Hard Handle Phillips #4 x 11 1/2"
+SHDP64IRO	Orange Hard Handle Phillips #4 x 11 1/2"
+SHDP64IRG	Green Hard Handle Phillips #4 x 11 1/2"
+SHDTX38O	Orange TORX T8 x 7 1/4"
+SHDTX310O	Orange TORX T10 x 7 1/4"
+SHDTX315O	Orange TORX T15 x 7 1/4"
+SHDTX320O	Orange TORX T20 x 7 1/4"
+SHDTX425O	Orange TORX T25 x 7 13/32"
+SHDTX427O	Orange TORX T27 x 8 7/8"
+SHDTX430O	Orange TORX T30 x 8 7/8"
+SHDTX640O	Orange TORX T40 x 10 7/8"
+SHDTX645O	Orange TORX T45 x 10 7/8"
+SHDTX90O	Orange TORX Set, T8 to T45, 9 pcs
+SHDZ22R	Red POZIDRIV #2 x 3 3/4"
+SHDZ31R	Red POZIDRIV #1 x 7 1/4"
+SHDZ42R	Red POZIDRIV #2 x 8 7/8"
+SHDZ63R	Red POZIDRIV #3 x 10 7/8"
+SHDZ84R	Red POZIDRIV #4 x 13 7/16"
+344AMB	1/2" dr. Chrome General Service Set, 44 pcs
+317MSPC	1/2" dr. Chrome 6-pt Shallow Socket Set in storage tray, 17 pcs
+317AMMPC	1/2" dr. Metric 6-pt Shallow General Service Set, 17 pcs
+345MMB	1/2" dr. Metric Chrome General Service Set, 45 pcs
+360MB	1/2" dr. Chrome General Service Set in KRA21G metal box, 60 pcs
+KRA280	Metal Box (not included in set)
+KRA21G	Metal Box (referenced for 360MB)
+KRA142	Metal Box (referenced for PIT3120EB)
+KRA226B	Metal Box (referenced for 434HDB)
+PAKPB063	Storage case (referenced for HDLUGSET2)
+434HDB	3/4" dr. 12-pt General Service Set with metal box, 26 pcs
+414AHD	3/4" dr. 12-pt General Service Set with storage tray, 12 pcs
+TW121A	1/2" dr. 6-pt shallow socket, 3/8"
+TW141A	1/2" dr. 6-pt shallow socket, 7/16"
+TW161A	1/2" dr. 6-pt shallow socket, 1/2"
+TW181A	1/2" dr. 6-pt shallow socket, 9/16"
+TW201	1/2" dr. 6-pt shallow socket, 5/8"
+TW221	1/2" dr. 6-pt shallow socket, 11/16"
+TW241	1/2" dr. 6-pt shallow socket, 3/4"
+TW261	1/2" dr. 6-pt shallow socket, 13/16"
+TW281	1/2" dr. 6-pt shallow socket, 7/8"
+TW301	1/2" dr. 6-pt shallow socket, 15/16"
+TW321	1/2" dr. 6-pt shallow socket, 1"
+TW341	1/2" dr. 6-pt shallow socket, 1 1/16"
+TW361	1/2" dr. 6-pt shallow socket, 1 1/8"
+TW381	1/2" dr. 6-pt shallow socket, 1 3/16"
+TW401	1/2" dr. 6-pt shallow socket, 1 1/4"
+TW421	1/2" dr. 6-pt shallow socket, 1 5/16"
+TW441	1/2" dr. 6-pt shallow socket, 1 3/8"
+TW461	1/2" dr. 6-pt shallow socket, 1 7/16"
+TW481	1/2" dr. 6-pt shallow socket, 1 1/2"
+SW121A	1/2" dr. 12-pt shallow socket, 3/8"
+SW141A	1/2" dr. 12-pt shallow socket, 7/16"
+SW161A	1/2" dr. 12-pt shallow socket, 1/2"
+SW181A	1/2" dr. 12-pt shallow socket, 9/16"
+SW201	1/2" dr. 12-pt shallow socket, 5/8"
+SW221	1/2" dr. 12-pt shallow socket, 11/16"
+SW241	1/2" dr. 12-pt shallow socket, 3/4"
+SW261	1/2" dr. 12-pt shallow socket, 13/16"
+SW281	1/2" dr. 12-pt shallow socket, 7/8"
+SW301	1/2" dr. 12-pt shallow socket, 15/16"
+SW321	1/2" dr. 12-pt shallow socket, 1"
+SW341	1/2" dr. 12-pt shallow socket, 1 1/16"
+SW361	1/2" dr. 12-pt shallow socket, 1 1/8"
+SW381	1/2" dr. 12-pt shallow socket, 1 3/16"
+SW401	1/2" dr. 12-pt shallow socket, 1 1/4"
+SW421	1/2" dr. 12-pt shallow socket, 1 5/16"
+SW441	1/2" dr. 12-pt shallow socket, 1 3/8"
+SW461	1/2" dr. 12-pt shallow socket, 1 7/16"
+SW481	1/2" dr. 12-pt shallow socket, 1 1/2"
+GTW121A	1/2" dr. 6-pt shallow industrial socket, 3/8"
+GTW141A	1/2" dr. 6-pt shallow industrial socket, 7/16"
+GTW161A	1/2" dr. 6-pt shallow industrial socket, 1/2"
+GTW181A	1/2" dr. 6-pt shallow industrial socket, 9/16"
+GTW201	1/2" dr. 6-pt shallow industrial socket, 5/8"
+GTW221	1/2" dr. 6-pt shallow industrial socket, 11/16"
+GTW241	1/2" dr. 6-pt shallow industrial socket, 3/4"
+GTW261	1/2" dr. 6-pt shallow industrial socket, 13/16"
+GTW281	1/2" dr. 6-pt shallow industrial socket, 7/8"
+GTW301	1/2" dr. 6-pt shallow industrial socket, 15/16"
+GTW321	1/2" dr. 6-pt shallow industrial socket, 1"
+GTW341	1/2" dr. 6-pt shallow industrial socket, 1 1/16"
+GTW361	1/2" dr. 6-pt shallow industrial socket, 1 1/8"
+GTW401	1/2" dr. 6-pt shallow industrial socket, 1 1/4"
+GSW121A	1/2" dr. 12-pt shallow industrial socket, 3/8"
+GSW141A	1/2" dr. 12-pt shallow industrial socket, 7/16"
+GSW161A	1/2" dr. 12-pt shallow industrial socket, 1/2"
+GSW181A	1/2" dr. 12-pt shallow industrial socket, 9/16"
+GSW201	1/2" dr. 12-pt shallow industrial socket, 5/8"
+GSW221	1/2" dr. 12-pt shallow industrial socket, 11/16"
+GSW241	1/2" dr. 12-pt shallow industrial socket, 3/4"
+GSW261	1/2" dr. 12-pt shallow industrial socket, 13/16"
+GSW281	1/2" dr. 12-pt shallow industrial socket, 7/8"
+GSW301	1/2" dr. 12-pt shallow industrial socket, 15/16"
+GSW321	1/2" dr. 12-pt shallow industrial socket, 1"
+GSW341	1/2" dr. 12-pt shallow industrial socket, 1 1/16"
+GSW361	1/2" dr. 12-pt shallow industrial socket, 1 1/8"
+GSW381	1/2" dr. 12-pt shallow industrial socket, 1 3/16"
+GSW401	1/2" dr. 12-pt shallow industrial socket, 1 1/4"
+GSW421	1/2" dr. 12-pt shallow industrial socket, 1 5/16"
+GSW441	1/2" dr. 12-pt shallow industrial socket, 1 3/8"
+GSW481	1/2" dr. 12-pt shallow industrial socket, 1 1/2"
+TS121A	1/2" dr. 6-pt deep socket, 3/8"
+TS141A	1/2" dr. 6-pt deep socket, 7/16"
+TS161A	1/2" dr. 6-pt deep socket, 1/2"
+TS181A	1/2" dr. 6-pt deep socket, 9/16"
+TS201	1/2" dr. 6-pt deep socket, 5/8"
+TS221	1/2" dr. 6-pt deep socket, 11/16"
+TS241	1/2" dr. 6-pt deep socket, 3/4"
+TS261	1/2" dr. 6-pt deep socket, 13/16"
+TS281	1/2" dr. 6-pt deep socket, 7/8"
+TS301	1/2" dr. 6-pt deep socket, 15/16"
+TS321	1/2" dr. 6-pt deep socket, 1"
+TS341	1/2" dr. 6-pt deep socket, 1 1/16"
+TS361	1/2" dr. 6-pt deep socket, 1 1/8"
+TS381	1/2" dr. 6-pt deep socket, 1 3/16"
+TS401	1/2" dr. 6-pt deep socket, 1 1/4"
+TS421	1/2" dr. 6-pt deep socket, 1 5/16"
+TS441	1/2" dr. 6-pt deep socket, 1 3/8"
+TS461	1/2" dr. 6-pt deep socket, 1 7/16"
+TS481	1/2" dr. 6-pt deep socket, 1 1/2"
+S121A	1/2" dr. 12-pt deep socket, 3/8"
+S141A	1/2" dr. 12-pt deep socket, 7/16"
+S161A	1/2" dr. 12-pt deep socket, 1/2"
+S181A	1/2" dr. 12-pt deep socket, 9/16"
+S201	1/2" dr. 12-pt deep socket, 5/8"
+S221	1/2" dr. 12-pt deep socket, 11/16"
+S241	1/2" dr. 12-pt deep socket, 3/4"
+S261	1/2" dr. 12-pt deep socket, 13/16"
+S281	1/2" dr. 12-pt deep socket, 7/8"
+S301	1/2" dr. 12-pt deep socket, 15/16"
+S321	1/2" dr. 12-pt deep socket, 1"
+S341	1/2" dr. 12-pt deep socket, 1 1/16"
+S361	1/2" dr. 12-pt deep socket, 1 1/8"
+S381	1/2" dr. 12-pt deep socket, 1 3/16"
+S401	1/2" dr. 12-pt deep socket, 1 1/4"
+S421	1/2" dr. 12-pt deep socket, 1 5/16"
+S441	1/2" dr. 12-pt deep socket, 1 3/8"
+S461	1/2" dr. 12-pt deep socket, 1 7/16"
+S481	1/2" dr. 12-pt deep socket, 1 1/2"
+GTS121A	1/2" dr. 6-pt deep industrial socket, 3/8"
+GTS141A	1/2" dr. 6-pt deep industrial socket, 7/16"
+GTS161A	1/2" dr. 6-pt deep industrial socket, 1/2"
+GTS181A	1/2" dr. 6-pt deep industrial socket, 9/16"
+GTS201	1/2" dr. 6-pt deep industrial socket, 5/8"
+GTS221	1/2" dr. 6-pt deep industrial socket, 11/16"
+GTS241	1/2" dr. 6-pt deep industrial socket, 3/4"
+GTS261	1/2" dr. 6-pt deep industrial socket, 13/16"
+GTS281	1/2" dr. 6-pt deep industrial socket, 7/8"
+GTS301	1/2" dr. 6-pt deep industrial socket, 15/16"
+GTS321	1/2" dr. 6-pt deep industrial socket, 1"
+GTS341	1/2" dr. 6-pt deep industrial socket, 1 1/16"
+GTS361	1/2" dr. 6-pt deep industrial socket, 1 1/8"
+GTS381	1/2" dr. 6-pt deep industrial socket, 1 3/16"
+GTS401	1/2" dr. 6-pt deep industrial socket, 1 1/4"
+GS161A	1/2" dr. 12-pt deep industrial socket, 1/2"
+GS181A	1/2" dr. 12-pt deep industrial socket, 9/16"
+GS201	1/2" dr. 12-pt deep industrial socket, 5/8"
+GS221	1/2" dr. 12-pt deep industrial socket, 11/16"
+GS241	1/2" dr. 12-pt deep industrial socket, 3/4"
+GS261	1/2" dr. 12-pt deep industrial socket, 13/16"
+GS281	1/2" dr. 12-pt deep industrial socket, 7/8"
+GS301	1/2" dr. 12-pt deep industrial socket, 15/16"
+GS321	1/2" dr. 12-pt deep industrial socket, 1"
+GS341	1/2" dr. 12-pt deep industrial socket, 1 1/16"
+GS361	1/2" dr. 12-pt deep industrial socket, 1 1/8"
+GS381	1/2" dr. 12-pt deep industrial socket, 1 3/16"
+GS401	1/2" dr. 12-pt deep industrial socket, 1 1/4"
+313TWYA	1/2" dr. 6-pt shallow socket set, 13 pcs (3/8"–1 1/8")
+314GTWYA	1/2" dr. 6-pt shallow industrial socket set, 14 pcs (3/8"–1 1/4")
+313SWYA	1/2" dr. 12-pt shallow socket set, 13 pcs (3/8"–1 1/8")
+313TSYA	1/2" dr. 6-pt deep socket set, 13 pcs (3/8"–1 1/8")
+313GTSYA	1/2" dr. 6-pt deep industrial socket set, 13 pcs (3/8"–1 1/8")
+313SYA	1/2" dr. 12-pt deep socket set, 13 pcs (3/8"–1 1/8")
+TWM10A	1/2" dr. metric 6-pt shallow socket, 10mm
+TWM11A	1/2" dr. metric 6-pt shallow socket, 11mm
+TWM12A	1/2" dr. metric 6-pt shallow socket, 12mm
+TWM13A	1/2" dr. metric 6-pt shallow socket, 13mm
+TWM14A	1/2" dr. metric 6-pt shallow socket, 14mm
+TWM15A	1/2" dr. metric 6-pt shallow socket, 15mm
+TWM16	1/2" dr. metric 6-pt shallow socket, 16mm
+TWM17	1/2" dr. metric 6-pt shallow socket, 17mm
+TWM18	1/2" dr. metric 6-pt shallow socket, 18mm
+TWM19	1/2" dr. metric 6-pt shallow socket, 19mm
+TWM20	1/2" dr. metric 6-pt shallow socket, 20mm
+TWM21	1/2" dr. metric 6-pt shallow socket, 21mm
+TWM22	1/2" dr. metric 6-pt shallow socket, 22mm
+TWM23	1/2" dr. metric 6-pt shallow socket, 23mm
+TWM24	1/2" dr. metric 6-pt shallow socket, 24mm
+TWM25	1/2" dr. metric 6-pt shallow socket, 25mm
+TWM26	1/2" dr. metric 6-pt shallow socket, 26mm
+TWM27	1/2" dr. metric 6-pt shallow socket, 27mm
+TWM28	1/2" dr. metric 6-pt shallow socket, 28mm
+TWM29	1/2" dr. metric 6-pt shallow socket, 29mm
+TWM30	1/2" dr. metric 6-pt shallow socket, 30mm
+TWM31	1/2" dr. metric 6-pt shallow socket, 31mm
+TWM32	1/2" dr. metric 6-pt shallow socket, 32mm
+SWM101A	1/2" dr. metric 12-pt shallow socket, 10mm
+SWM111A	1/2" dr. metric 12-pt shallow socket, 11mm
+SWM121A	1/2" dr. metric 12-pt shallow socket, 12mm
+SWM131A	1/2" dr. metric 12-pt shallow socket, 13mm
+SWM141A	1/2" dr. metric 12-pt shallow socket, 14mm
+SWM151A	1/2" dr. metric 12-pt shallow socket, 15mm
+SWM161	1/2" dr. metric 12-pt shallow socket, 16mm
+SWM171	1/2" dr. metric 12-pt shallow socket, 17mm
+SWM181	1/2" dr. metric 12-pt shallow socket, 18mm
+SWM191	1/2" dr. metric 12-pt shallow socket, 19mm
+SWM201	1/2" dr. metric 12-pt shallow socket, 20mm
+SWM211	1/2" dr. metric 12-pt shallow socket, 21mm
+SWM221	1/2" dr. metric 12-pt shallow socket, 22mm
+SWM231	1/2" dr. metric 12-pt shallow socket, 23mm
+SWM241	1/2" dr. metric 12-pt shallow socket, 24mm
+SWM251	1/2" dr. metric 12-pt shallow socket, 25mm
+SWM261	1/2" dr. metric 12-pt shallow socket, 26mm
+SWM271	1/2" dr. metric 12-pt shallow socket, 27mm
+SWM281	1/2" dr. metric 12-pt shallow socket, 28mm
+SWM291	1/2" dr. metric 12-pt shallow socket, 29mm
+SWM301	1/2" dr. metric 12-pt shallow socket, 30mm
+SWM311	1/2" dr. metric 12-pt shallow socket, 31mm
+SWM321	1/2" dr. metric 12-pt shallow socket, 32mm
+TSM10A	1/2" dr. metric 6-pt deep socket, 10mm
+TSM12A	1/2" dr. metric 6-pt deep socket, 12mm
+TSM13A	1/2" dr. metric 6-pt deep socket, 13mm
+TSM14A	1/2" dr. metric 6-pt deep socket, 14mm
+TSM15A	1/2" dr. metric 6-pt deep socket, 15mm
+TSM16	1/2" dr. metric 6-pt deep socket, 16mm
+TSM17	1/2" dr. metric 6-pt deep socket, 17mm
+TSM18	1/2" dr. metric 6-pt deep socket, 18mm
+TSM19	1/2" dr. metric 6-pt deep socket, 19mm
+TSM20	1/2" dr. metric 6-pt deep socket, 20mm
+TSM21	1/2" dr. metric 6-pt deep socket, 21mm
+TSM22	1/2" dr. metric 6-pt deep socket, 22mm
+TSM23	1/2" dr. metric 6-pt deep socket, 23mm
+TSM24	1/2" dr. metric 6-pt deep socket, 24mm
+TSM25	1/2" dr. metric 6-pt deep socket, 25mm
+TSM26	1/2" dr. metric 6-pt deep socket, 26mm
+TSM27	1/2" dr. metric 6-pt deep socket, 27mm
+TSM28	1/2" dr. metric 6-pt deep socket, 28mm
+TSM29	1/2" dr. metric 6-pt deep socket, 29mm
+TSM30	1/2" dr. metric 6-pt deep socket, 30mm
+TSM31	1/2" dr. metric 6-pt deep socket, 31mm
+TSM32	1/2" dr. metric 6-pt deep socket, 32mm
+SM10A	1/2" dr. metric 12-pt deep socket, 10mm
+SM11A	1/2" dr. metric 12-pt deep socket, 11mm
+SM12B	1/2" dr. metric 12-pt deep socket, 12mm
+SM13A	1/2" dr. metric 12-pt deep socket, 13mm
+SM14A	1/2" dr. metric 12-pt deep socket, 14mm
+SM15A	1/2" dr. metric 12-pt deep socket, 15mm
+SM16	1/2" dr. metric 12-pt deep socket, 16mm
+SM17	1/2" dr. metric 12-pt deep socket, 17mm
+SM18	1/2" dr. metric 12-pt deep socket, 18mm
+SM19	1/2" dr. metric 12-pt deep socket, 19mm
+SM20	1/2" dr. metric 12-pt deep socket, 20mm
+SM21	1/2" dr. metric 12-pt deep socket, 21mm
+SM22	1/2" dr. metric 12-pt deep socket, 22mm
+SM23	1/2" dr. metric 12-pt deep socket, 23mm
+SM24	1/2" dr. metric 12-pt deep socket, 24mm
+SM25	1/2" dr. metric 12-pt deep socket, 25mm
+SM26	1/2" dr. metric 12-pt deep socket, 26mm
+SM27	1/2" dr. metric 12-pt deep socket, 27mm
+SM28	1/2" dr. metric 12-pt deep socket, 28mm
+SM29	1/2" dr. metric 12-pt deep socket, 29mm
+SM30	1/2" dr. metric 12-pt deep socket, 30mm
+SM31	1/2" dr. metric 12-pt deep socket, 31mm
+SM32	1/2" dr. metric 12-pt deep socket, 32mm
+SU18	1/2" dr. universal deep socket, 9/16"
+SU20	1/2" dr. universal deep socket, 5/8"
+SU22	1/2" dr. universal deep socket, 11/16"
+SU24	1/2" dr. universal deep socket, 3/4"
+SU26	1/2" dr. universal deep socket, 13/16"
+SU28	1/2" dr. universal deep socket, 7/8"
+SU30	1/2" dr. universal deep socket, 15/16"
+313TWMYA	1/2" dr. metric 6-pt shallow set, 13 pcs (12–24mm)
+310TWMYA	1/2" dr. metric 6-pt shallow set, 10 pcs (10–19mm)
+313SWMYA	1/2" dr. metric 12-pt shallow set, 13 pcs (12–24mm)
+310SWMYA	1/2" dr. metric 12-pt shallow set, 10 pcs (10–19mm)
+313TSMYA	1/2" dr. metric 6-pt deep set, 13 pcs (12–24mm)
+310TSM	1/2" dr. metric 6-pt deep set, 10 pcs (10–19mm)
+313SMYA	1/2" dr. metric 12-pt deep set, 13 pcs (12–24mm)
+320TSWMA	1/2" dr. metric 6-pt shallow/deep set, 20 pcs (10–20mm)
+307SUY	1/2" dr. universal deep socket set, 7 pcs (9/16"–15/16")
+305ASX	1/2" dr. extension set, 5 pcs (2"–11")
+305ASXW	1/2" dr. wobble extension set, 5 pcs (2"–11")
+305SXWP	1/2" dr. wobble plus extension set, 5 pcs (2"–11")
+A3011A	1/2" dr. hex shank adaptor, 1/2" x 7/16"
+A17	1/2" dr. 15/16" blade width drag link socket
+A17A	1/2" dr. drag link socket, 15/16" blade width
+A15A	1/2" dr. drag link socket, 1 3/16" blade width
+A26A	1/2" dr. drag link socket, 3/4" blade width
+A80A	1/2" dr. stud remover, 1/4" to 1/2" capacity
+A172A	1/2" dr. drum plug socket
+B2191	1/2" dr. flank drive pentagon socket, 1 1/8"
+PPM516A	1/2" dr. pipe plug socket, 1/2" pipe
+S9705K	1/2" dr. 13/16" 6-pt spark plug socket
+SW412	1/2" dr. 12-pt socket driver, 3/8" (23/32" x 7/8")
+SW414	1/2" dr. 12-pt socket driver, 7/16"
+SW416	1/2" dr. 12-pt socket driver, 1/2"
+SW418	1/2" dr. 12-pt socket driver, 9/16"
+SW420	1/2" dr. 12-pt socket driver, 5/8"
+SW422	1/2" dr. 12-pt socket driver, 11/16"
+SW424	1/2" dr. 12-pt socket driver, 3/4"
+SW426	1/2" dr. 12-pt socket driver, 13/16"
+SW428	1/2" dr. 12-pt socket driver, 7/8"
+SW430	1/2" dr. 12-pt socket driver, 15/16"
+SW432	1/2" dr. 12-pt socket driver, 1"
+WH280	1/2" dr. weatherhead socket, 7/8"
+WH290	1/2" dr. weatherhead socket, 29/32"
+WH300	1/2" dr. weatherhead socket, 15/16"
+SRDM624	1/2" dr. 12-pt torque adaptor, 24mm
+SW28E	1/2" dr. special purpose socket, 7/16" x .050"
+SW32E	1/2" dr. special purpose socket, 1/2" x .075"
+SW40E	1/2" dr. special purpose socket, 5/8" x .093"
+SW28E2	1/2" dr. special purpose socket driver, 7/16" x .050"
+SW32E2A	1/2" dr. special purpose socket driver, 1/2" x .075"
+SW40E2	1/2" dr. special purpose socket driver, 5/8" x .093"
+SP32E	1/2" dr. #3 Phillips driver
+SP42E	1/2" dr. #4 Phillips driver
+SP32E2	1/2" dr. #3 Phillips driver
+SP42E2	1/2" dr. #4 Phillips driver
+SPDL10E	1/2" dr. #10 Polydrive socket driver
+SPDL10E2	1/2" dr. #10 Polydrive socket driver
+SAM12LE	1/2" dr. long hex socket driver, 12mm
+SADM10E	1/2" dr. 10mm double hex socket driver
+SADM10E2	1/2" dr. 10mm double hex socket driver
+STSM10E	1/2" dr. 10mm triple square driver
+STSM10E2	1/2" dr. 10mm triple square driver
+STSM12E	1/2" dr. 12mm triple square driver
+STSM12E2	1/2" dr. 12mm triple square driver
+STSM12LE	1/2" dr. 12mm long triple square driver
+STSM12LE2	1/2" dr. 12mm long triple square driver
+STSM14E	1/2" dr. 14mm triple square driver
+STSM14E2	1/2" dr. 14mm triple square driver
+STSM16E	1/2" dr. 16mm triple square driver, tamper resistant
+STSM16E2	1/2" dr. 16mm triple square driver, tamper resistant
+TSSKIT	1/2" dr. metric triple square driver set (12, 14, 16mm) with 3/8" drivers
+SAM6E	1/2" dr. 6mm metric hex socket driver
+SAM8E	1/2" dr. 8mm metric hex socket driver
+SAM10E	1/2" dr. 10mm metric hex socket driver
+SAM12E	1/2" dr. 12mm metric hex socket driver
+SAM14E	1/2" dr. 14mm metric hex socket driver
+SAM17E	1/2" dr. 17mm metric hex socket driver
+SAM19E	1/2" dr. 19mm metric hex socket driver
+FAM6E	3/8" dr. 6mm metric hex socket driver
+FAM8E2	1/2" dr. 8mm metric hex socket driver
+SAM10E2	1/2" dr. 10mm metric hex socket driver
+SAM12E2	1/2" dr. 12mm metric hex socket driver
+SAM14E2	1/2" dr. 14mm metric hex socket driver
+SAM17E2	1/2" dr. 17mm metric hex socket driver
+SAM19E2	1/2" dr. 19mm metric hex socket driver
+307ESAMY	1/2" dr. metric standard length hex driver set, 7 pcs (6–19mm)
+SA10E	1/2" dr. 5/16" hex socket driver
+SA12E	1/2" dr. 3/8" hex socket driver
+SA14E	1/2" dr. 7/16" hex socket driver
+SA16E	1/2" dr. 1/2" hex socket driver
+SA18E	1/2" dr. 9/16" hex socket driver
+SA20E	1/2" dr. 5/8" hex socket driver
+SA24E	1/2" dr. 3/4" hex socket driver
+GSA10E	1/2" dr. 5/16" hex socket driver, long
+GSA12E	1/2" dr. 3/8" hex socket driver, long
+GSA14E	1/2" dr. 7/16" hex socket driver, long
+GSA16E	1/2" dr. 1/2" hex socket driver, long
+GSA18E	1/2" dr. 9/16" hex socket driver, long
+GSA20E	1/2" dr. 5/8" hex socket driver, long
+GSA24E	1/2" dr. 3/4" hex socket driver, long
+FA10E2	3/8" dr. 5/16" hex socket driver
+SA12E2	1/2" dr. 3/8" hex socket driver
+SA14E2	1/2" dr. 7/16" hex socket driver
+SA16E2	1/2" dr. 1/2" hex socket driver
+SA18E2	1/2" dr. 9/16" hex socket driver
+LAW120E2	5/8" hex socket driver
+LAW124E2	3/4" hex socket driver
+307ESAY	1/2" dr. standard length hex driver set, 7 pcs (5/16"–3/4")
+STX55E	1/2" dr. T55 TORX driver, standard length
+STX60E	1/2" dr. T60 TORX driver, standard length
+STX70E	1/2" dr. T70 TORX driver, standard length
+FTX55E2	3/8" dr. T55 TORX driver
+STX60E2	1/2" dr. T60 TORX driver
+STX70E2	1/2" dr. T70 TORX driver
+STXL45E	1/2" dr. T45 TORX driver, long
+STXL50E	1/2" dr. T50 TORX driver, long
+STXL55E	1/2" dr. T55 TORX driver, long
+STXL60E	1/2" dr. T60 TORX driver, long
+STXL45E2	1/2" dr. T45 TORX driver, long
+STXL50E2	1/2" dr. T50 TORX driver, long
+STXL55E2	1/2" dr. T55 TORX driver, long
+STXL60E2	1/2" dr. T60 TORX driver, long
+FTX45E2	3/8" dr. T45 TORX driver
+FTX50E2	3/8" dr. T50 TORX driver
+FTSM6E	3/8" dr. 6mm triple square driver
+FTSM8E	3/8" dr. 8mm triple square driver
+FTSM10E	3/8" dr. 10mm triple square driver
+SLE140	1/2" dr. shallow TORX socket, E14
+SLE160A	1/2" dr. shallow TORX socket, E16
+SLE180A	1/2" dr. shallow TORX socket, E18
+SLE200A	1/2" dr. shallow TORX socket, E20
+307IMDYA	1/2" dr. 12-pt shallow impact set, 7 pcs (3/8"–3/4")
+IMM100A	1/2" dr. 10mm 6-pt shallow impact socket
+IMM110A	1/2" dr. 11mm 6-pt shallow impact socket
+IMM120A	1/2" dr. 12mm 6-pt shallow impact socket
+IMM130A	1/2" dr. 13mm 6-pt shallow impact socket
+IMM140A	1/2" dr. 14mm 6-pt shallow impact socket
+IMM150A	1/2" dr. 15mm 6-pt shallow impact socket
+IMM160A	1/2" dr. 16mm 6-pt shallow impact socket
+IMM170A	1/2" dr. 17mm 6-pt shallow impact socket
+IMM180	1/2" dr. 18mm 6-pt shallow impact socket
+IMM190	1/2" dr. 19mm 6-pt shallow impact socket
+IMM200	1/2" dr. 20mm 6-pt shallow impact socket
+IMM210	1/2" dr. 21mm 6-pt shallow impact socket
+IMM220	1/2" dr. 22mm 6-pt shallow impact socket
+IMM230	1/2" dr. 23mm 6-pt shallow impact socket
+IMM240	1/2" dr. 24mm 6-pt shallow impact socket
+IMM250	1/2" dr. 25mm 6-pt shallow impact socket
+IMM260	1/2" dr. 26mm 6-pt shallow impact socket
+IMM270	1/2" dr. 27mm 6-pt shallow impact socket
+IMM290	1/2" dr. 29mm 6-pt shallow impact socket
+IMM300	1/2" dr. 30mm 6-pt shallow impact socket
+IMM320	1/2" dr. 32mm 6-pt shallow impact socket
+IMM340	1/2" dr. 34mm 6-pt shallow impact socket
+IMM360	1/2" dr. 36mm 6-pt shallow impact socket
+IMM460	1/2" dr. 46mm 6-pt shallow impact socket
+IMDM100A	1/2" dr. 10mm 12-pt shallow impact socket
+IMDM110A	1/2" dr. 11mm 12-pt shallow impact socket
+IMDM120A	1/2" dr. 12mm 12-pt shallow impact socket
+IMDM130A	1/2" dr. 13mm 12-pt shallow impact socket
+IMDM140A	1/2" dr. 14mm 12-pt shallow impact socket
+IMDM150A	1/2" dr. 15mm 12-pt shallow impact socket
+IMDM160A	1/2" dr. 16mm 12-pt shallow impact socket
+IMDM170A	1/2" dr. 17mm 12-pt shallow impact socket
+IMDM180	1/2" dr. 18mm 12-pt shallow impact socket
+IMDM190	1/2" dr. 19mm 12-pt shallow impact socket
+IMDM200	1/2" dr. 20mm 12-pt shallow impact socket
+IMDM210	1/2" dr. 21mm 12-pt shallow impact socket
+IMDM220	1/2" dr. 22mm 12-pt shallow impact socket
+IMDM230	1/2" dr. 23mm 12-pt shallow impact socket
+IMDM240	1/2" dr. 24mm 12-pt shallow impact socket
+315IMMYA	1/2" dr. metric 6-pt shallow impact set, 15 pcs (10–24mm)
+310IMMYA	1/2" dr. metric 6-pt shallow impact set, 10 pcs (10–19mm)
+315IMDMYA	1/2" dr. metric 12-pt shallow impact set, 15 pcs (10–24mm)
+IM120A	1/2" dr. 3/8" 6-pt shallow impact socket
+IM140A	1/2" dr. 7/16" 6-pt shallow impact socket
+IM160A	1/2" dr. 1/2" 6-pt shallow impact socket
+IM180A	1/2" dr. 9/16" 6-pt shallow impact socket
+IM200	1/2" dr. 5/8" 6-pt shallow impact socket
+IM220	1/2" dr. 11/16" 6-pt shallow impact socket
+IM240	1/2" dr. 3/4" 6-pt shallow impact socket
+IM260	1/2" dr. 13/16" 6-pt shallow impact socket
+IM280	1/2" dr. 7/8" 6-pt shallow impact socket
+IM300	1/2" dr. 15/16" 6-pt shallow impact socket
+IM320	1/2" dr. 1" 6-pt shallow impact socket
+IM340	1/2" dr. 1 1/16" 6-pt shallow impact socket
+IM360	1/2" dr. 1 1/8" 6-pt shallow impact socket
+IM380	1/2" dr. 1 3/16" 6-pt shallow impact socket
+IM400	1/2" dr. 1 1/4" 6-pt shallow impact socket
+IM420H	1/2" dr. 1 5/16" 6-pt shallow impact socket
+IM440	1/2" dr. 1 3/8" 6-pt shallow impact socket
+IM460	1/2" dr. 1 7/16" 6-pt shallow impact socket
+IM480	1/2" dr. 1 1/2" 6-pt shallow impact socket
+IM500	1/2" dr. 1 9/16" 6-pt shallow impact socket
+IMD120A	1/2" dr. 3/8" 12-pt shallow impact socket
+IMD140A	1/2" dr. 7/16" 12-pt shallow impact socket
+IMD160A	1/2" dr. 1/2" 12-pt shallow impact socket
+IMD180A	1/2" dr. 9/16" 12-pt shallow impact socket
+IMD200	1/2" dr. 5/8" 12-pt shallow impact socket
+IMD220	1/2" dr. 11/16" 12-pt shallow impact socket
+IMD240	1/2" dr. 3/4" 12-pt shallow impact socket
+IMD260	1/2" dr. 13/16" 12-pt shallow impact socket
+IMD280	1/2" dr. 7/8" 12-pt shallow impact socket
+IMD300	1/2" dr. 15/16" 12-pt shallow impact socket
+IMD320	1/2" dr. 1" 12-pt shallow impact socket
+IMD360	1/2" dr. 1 1/8" 12-pt shallow impact socket
+IMD400	1/2" dr. 1 1/4" 12-pt shallow impact socket
+311IMYA	1/2" dr. 6-pt shallow impact set, 11 pcs (3/8"–1")
+313IMD	1/2" dr. 12-pt shallow impact set, 13 pcs (3/8"–1 1/4")
+IMFS120	1/2" dr. 3/8" 6-pt shallow thin wall impact socket
+IMFS140	1/2" dr. 7/16" 6-pt shallow thin wall impact socket
+IMFS160	1/2" dr. 1/2" 6-pt shallow thin wall impact socket
+IMFS180	1/2" dr. 9/16" 6-pt shallow thin wall impact socket
+IMFS200	1/2" dr. 5/8" 6-pt shallow thin wall impact socket
+IMFS220	1/2" dr. 11/16" 6-pt shallow thin wall impact socket
+IMFS240	1/2" dr. 3/4" 6-pt shallow thin wall impact socket
+IMFS260	1/2" dr. 13/16" 6-pt shallow thin wall impact socket
+IMFS280	1/2" dr. 7/8" 6-pt shallow thin wall impact socket
+IMFS300	1/2" dr. 15/16" 6-pt shallow thin wall impact socket
+IMFS320	1/2" dr. 1" 6-pt shallow thin wall impact socket
+IMFS340	1/2" dr. 1 1/16" 6-pt shallow thin wall impact socket
+IMFS360	1/2" dr. 1 1/8" 6-pt shallow thin wall impact socket
+IMFS380	1/2" dr. 1 3/16" 6-pt shallow thin wall impact socket
+IMFS400	1/2" dr. 1 1/4" 6-pt shallow thin wall impact socket
+IMFS420	1/2" dr. 1 5/16" 6-pt shallow thin wall impact socket
+IMFS440	1/2" dr. 1 3/8" 6-pt shallow thin wall impact socket
+IMFS460	1/2" dr. 1 7/16" 6-pt shallow thin wall impact socket
+IMFS480	1/2" dr. 1 1/2" 6-pt shallow thin wall impact socket
+311IMFSY	1/2" dr. 6-pt shallow thin wall impact set, 11 pcs (3/8"–1")
+SIM120A	1/2" dr. 3/8" 6-pt deep thin wall impact socket
+SIM140A	1/2" dr. 7/16" 6-pt deep thin wall impact socket
+SIM160A	1/2" dr. 1/2" 6-pt deep thin wall impact socket
+SIM180A	1/2" dr. 9/16" 6-pt deep thin wall impact socket
+SIM200	1/2" dr. 5/8" 6-pt deep thin wall impact socket
+SIM220	1/2" dr. 11/16" 6-pt deep thin wall impact socket
+SIM240	1/2" dr. 3/4" 6-pt deep thin wall impact socket
+SIM260	1/2" dr. 13/16" 6-pt deep thin wall impact socket
+SIM280	1/2" dr. 7/8" 6-pt deep thin wall impact socket
+SIM300	1/2" dr. 15/16" 6-pt deep thin wall impact socket
+SIM320	1/2" dr. 1" 6-pt deep thin wall impact socket
+SIM340	1/2" dr. 1 1/16" 6-pt deep thin wall impact socket
+SIM360	1/2" dr. 1 1/8" 6-pt deep thin wall impact socket
+SIM380	1/2" dr. 1 3/16" 6-pt deep thin wall impact socket
+SIM400	1/2" dr. 1 1/4" 6-pt deep thin wall impact socket
+SIM420H	1/2" dr. 1 5/16" 6-pt deep thin wall impact socket
+SIM440	1/2" dr. 1 3/8" 6-pt deep thin wall impact socket
+SIM460	1/2" dr. 1 7/16" 6-pt deep thin wall impact socket
+SIM480	1/2" dr. 1 1/2" 6-pt deep thin wall impact socket
+SIM500	1/2" dr. 1 9/16" 6-pt deep thin wall impact socket
+313SIMA	1/2" dr. 6-pt deep impact set, 13 pcs (1/2"–1 1/4")
+309SIMYA	1/2" dr. 6-pt deep impact set, 9 pcs (1/2"–1")
+320SIM	1/2" dr. 6-pt deep impact set, 20 pcs (3/8"–1 9/16")
+SIML160	1/2" dr. 1/2" 6-pt extra long impact socket, fuel tank strap nut
+SIML180	1/2" dr. 9/16" 6-pt extra long impact socket
+SIML200	1/2" dr. 5/8" 6-pt extra long impact socket
+SIML220	1/2" dr. 11/16" 6-pt extra long impact socket
+SIML240	1/2" dr. 3/4" 6-pt extra long impact socket
+SIML260	1/2" dr. 13/16" 6-pt extra long impact socket
+SIML280	1/2" dr. 7/8" 6-pt extra long impact socket
+SIML300	1/2" dr. 15/16" 6-pt extra long impact socket
+SIML320	1/2" dr. 1" 6-pt extra long impact socket
+SIML340	1/2" dr. 1 1/16" 6-pt extra long impact socket
+SIML360	1/2" dr. 1 1/8" 6-pt extra long impact socket
+SIMML150	1/2" dr. 15mm extra deep impact socket
+SIMMF14	1/2" dr. 14mm extra deep impact socket
+SIMMF17	1/2" dr. 17mm extra deep impact socket
+SIMMF19	1/2" dr. 19mm extra deep impact socket
+SIMMF21	1/2" dr. 21mm extra deep impact socket
+SIMMF22	1/2" dr. 22mm extra deep impact socket
+SIMM100A	1/2" dr. 10mm 6-pt deep thin wall impact socket
+SIMM110A	1/2" dr. 11mm 6-pt deep thin wall impact socket
+SIMM120A	1/2" dr. 12mm 6-pt deep thin wall impact socket
+SIMM130A	1/2" dr. 13mm 6-pt deep thin wall impact socket
+SIMM140A	1/2" dr. 14mm 6-pt deep thin wall impact socket
+SIMM150A	1/2" dr. 15mm 6-pt deep thin wall impact socket
+SIMM160A	1/2" dr. 16mm 6-pt deep thin wall impact socket
+SIMM170	1/2" dr. 17mm 6-pt deep thin wall impact socket
+SIMM180	1/2" dr. 18mm 6-pt deep thin wall impact socket
+SIMM190	1/2" dr. 19mm 6-pt deep thin wall impact socket
+SIMM200	1/2" dr. 20mm 6-pt deep thin wall impact socket
+SIMM210	1/2" dr. 21mm 6-pt deep thin wall impact socket
+SIMM220	1/2" dr. 22mm 6-pt deep thin wall impact socket
+SIMM230	1/2" dr. 23mm 6-pt deep thin wall impact socket
+SIMM240	1/2" dr. 24mm 6-pt deep thin wall impact socket
+SIMM250	1/2" dr. 25mm 6-pt deep thin wall impact socket
+SIMM260	1/2" dr. 26mm 6-pt deep thin wall impact socket
+SIMM270	1/2" dr. 27mm 6-pt deep thin wall impact socket
+SIMM290	1/2" dr. 29mm 6-pt deep thin wall impact socket
+SIMM300	1/2" dr. 30mm 6-pt deep thin wall impact socket
+SIMM320	1/2" dr. 32mm 6-pt deep thin wall impact socket
+SIMM330	1/2" dr. 33mm 6-pt deep thin wall impact socket
+SIMM340	1/2" dr. 34mm 6-pt deep thin wall impact socket
+SIMM350	1/2" dr. 35mm 6-pt deep thin wall impact socket
+SIMM360	1/2" dr. 36mm 6-pt deep thin wall impact socket
+SIMM302	1/2" dr. 30mm 6-pt deep thin wall impact socket
+SIMM322	1/2" dr. 32mm 6-pt deep thin wall impact socket
+SIMM332	1/2" dr. 33mm 6-pt deep thin wall impact socket
+SIMM352	1/2" dr. 35mm 6-pt deep thin wall impact socket
+SIMM362	1/2" dr. 36mm 6-pt deep thin wall impact socket
+SIMM382	1/2" dr. 38mm 6-pt deep thin wall impact socket
+SIMM412	1/2" dr. 41mm 6-pt deep thin wall impact socket, Budd-style wheels
+315SIMMYA	1/2" dr. metric 6-pt deep impact set, 15 pcs (10–24mm)
+310SIMMYA	1/2" dr. metric 6-pt deep impact set, 10 pcs (10–19mm)
+305SIMMY	1/2" dr. metric 6-pt deep impact set, 5 pcs (29, 30, 34, 35, 36mm)
+325SIMM	1/2" dr. metric 6-pt deep impact set, 25 pcs (10–36mm)
+SIP16A	1/2" dr. deep swivel impact socket, 9/16"
+SIP18A	1/2" dr. deep swivel impact socket, 5/8"
+SIP24A	1/2" dr. deep swivel impact socket, 3/4"
+TTWY241A	1/2" dr. shallow twist socket, 3/4"
+TTWY261A	1/2" dr. shallow twist socket, 13/16"
+TTWY281A	1/2" dr. shallow twist socket, 7/8"
+TTWY301A	1/2" dr. shallow twist socket, 15/16"
+TTWY321A	1/2" dr. shallow twist socket, 1"
+305TTWYA	1/2" dr. shallow twist set, 5 pcs (3/4"–1")
+IPLM10C	1/2" dr. 10mm 12-pt shallow swivel impact socket
+IPLM11C	1/2" dr. 11mm 12-pt shallow swivel impact socket
+IPDLM12	1/2" dr. 12mm 12-pt deep swivel impact socket
+IPLM12C	1/2" dr. 12mm 12-pt shallow swivel impact socket
+IPLM13C	1/2" dr. 13mm 12-pt shallow swivel impact socket
+IPLM14C	1/2" dr. 14mm 12-pt shallow swivel impact socket
+IPLM15C	1/2" dr. 15mm 12-pt shallow swivel impact socket
+IPDLM16A	1/2" dr. 16mm 12-pt deep swivel impact socket
+IPLM16C	1/2" dr. 16mm 12-pt shallow swivel impact socket
+IPLM17C	1/2" dr. 17mm 12-pt shallow swivel impact socket
+IPDLM17A	1/2" dr. 17mm 12-pt deep swivel impact socket
+IPLM18C	1/2" dr. 18mm 12-pt shallow swivel impact socket
+IPDLM18A	1/2" dr. 18mm 12-pt deep swivel impact socket
+IPLM19C	1/2" dr. 19mm 12-pt shallow swivel impact socket
+IPLM21C	1/2" dr. 21mm 12-pt shallow swivel impact socket
+IPLM22C	1/2" dr. 22mm 12-pt shallow swivel impact socket
+IPLM24C	1/2" dr. 24mm 12-pt shallow swivel impact socket
+307IPLMY	1/2" dr. metric 6-pt shallow swivel impact set, 7 pcs (14–24mm)
+IPSM21	1/2" dr. 21mm semi deep swivel impact socket
+IPL16C	1/2" dr. 1/2" 6-pt shallow swivel impact socket
+IPL18C	1/2" dr. 9/16" 6-pt shallow swivel impact socket
+IPL20C	1/2" dr. 5/8" 6-pt shallow swivel impact socket
+IPDL16	1/2" dr. 1/2" 6-pt deep swivel impact socket
+IPDL20	1/2" dr. 5/8" 6-pt deep swivel impact socket
+IPL22C	1/2" dr. 11/16" 6-pt shallow swivel impact socket
+IPL24C	1/2" dr. 3/4" 6-pt shallow swivel impact socket
+IPL26C	1/2" dr. 13/16" 6-pt shallow swivel impact socket
+IPL28C	1/2" dr. 7/8" 6-pt shallow swivel impact socket
+IPL30C	1/2" dr. 15/16" 6-pt shallow swivel impact socket
+IPL32C	1/2" dr. 1" 6-pt shallow swivel impact socket
+IPL34C	1/2" dr. 1 1/16" 6-pt shallow swivel impact socket
+IPL36C	1/2" dr. 1 1/8" 6-pt shallow swivel impact socket
+IPL38C	1/2" dr. 1 3/16" 6-pt shallow swivel impact socket
+IPL40C	1/2" dr. 1 1/4" 6-pt shallow swivel impact socket
+IPL42C	1/2" dr. 1 5/16" 6-pt shallow swivel impact socket
+307IPLY	1/2" dr. 6-pt shallow swivel impact set, 7 pcs (9/16"–1 1/8")
+IMX32B	1/2" dr. 3" impact extension
+IMX52	1/2" dr. 5" impact extension
+IMX112	1/2" dr. 11" impact extension
+IP80D	1/2" dr. pin type impact universal joint
+IP800	1/2" dr. ball type impact universal joint
+IMXA42	Locking extension adaptor, 3/8" x 1/2" drive
+IMSFXL18	3/8" dr. 18" snap ring extension
+IMSFXL24	3/8" dr. 24" snap ring extension
+IMSFXL33	3/8" dr. 33" snap ring extension
+IMXL32	1/2" dr. 3 1/2" locking impact extension
+IMXL52	1/2" dr. 5" locking impact extension
+IMXL102	1/2" dr. 10" locking impact extension
+IMXL182	1/2" dr. 18" locking impact extension
+IMXL242	1/2" dr. 24" locking impact extension
+IMXL312	1/2" dr. 31" locking impact extension
+304IMX	1/2" dr. impact extension set, 4 pcs (IMX32B, IMX52, IMX112, IP80D)
+303IMXL	1/2" dr. locking impact extension set, 3 pcs (3 1/2", 5", 10")
+303AIMXL	1/2" dr. locking impact extension set, 3 pcs (18", 24", 31")
+IP82	3/4" dr. deep swivel ball universal joint
+IM72	3/4" dr. swivel ball universal joint
+IM124B	3/4" dr. swivel universal joint adaptor
+IM243R	1" dr. rubber locking ring
+IM243P	1" dr. steel locking pin
+IM182R	3/4" dr. rubber locking ring
+IMR2	3/4" dr. socket retainer
+IMA283	Socket and ratchet accessory (impact)
+PIT160	1/2" dr. impact driver
+PIT3120EB	1/2" dr. impact driver set, 12 pcs in KRA142 box
+SXLBP3	1/2" dr. 3" knurled locking extension
+SXLBP6	1/2" dr. 6" knurled locking extension
+SXLBP10	1/2" dr. 10" knurled locking extension
+303SXLBP	1/2" dr. locking extension set, 3 pcs (3", 6", 10")
+BLPGSS1233	General service set (15 fractional, 12 metric sockets, breaker bar, U-joint, ratchet, 3 extensions)
+BLPEXTK123	3" knurled extension
+BLPEXTK126	6" knurled extension
+BLPEXTK1210	10" knurled extension
+BLPEXTL1212	12" extra long locking extension
+BLPEXTL1218	18" extra long locking extension
+BLPEXTL1224	24" extra long locking extension
+BLPLLEXT303	Extra long locking extension set, 3 pcs (12", 18", 24")
+S13TURBO	1/2" dr. turbo T-handle
+BLPBB1215	1/2" dr. telescoping breaker bar, 15"
+BLPBB1224	1/2" dr. telescoping breaker bar, 12"–24"
+BLPUJ12	1/2" dr. universal joint, 2 3/4"
+BLPS1238	1/2" dr. 3/8" standard socket
+BLPS12716	1/2" dr. 7/16" standard socket
+BLPS1212	1/2" dr. 1/2" standard socket
+BLPS12916	1/2" dr. 9/16" standard socket
+BLPS1258	1/2" dr. 5/8" standard socket
+BLPS121116	1/2" dr. 11/16" standard socket
+BLPS1234	1/2" dr. 3/4" standard socket
+BLPS121316	1/2" dr. 13/16" standard socket
+BLPS1278	1/2" dr. 7/8" standard socket
+BLPS121516	1/2" dr. 15/16" standard socket
+BLPS121	1/2" dr. 1" standard socket
+BLPSB121116	1/2" dr. 1 1/16" standard socket
+BLPSB12118	1/2" dr. 1 1/8" standard socket
+BLPSB121316	1/2" dr. 1 3/16" standard socket
+BLPSB12114	1/2" dr. 1 1/4" standard socket
+BLPSM1212	1/2" dr. 12mm standard socket
+BLPSM1213	1/2" dr. 13mm standard socket
+BLPSM1214	1/2" dr. 14mm standard socket
+BLPSM1215	1/2" dr. 15mm standard socket
+BLPSM1216	1/2" dr. 16mm standard socket
+BLPSM1217	1/2" dr. 17mm standard socket
+BLPSM1218	1/2" dr. 18mm standard socket
+BLPSM1219	1/2" dr. 19mm standard socket
+BLPSM1220	1/2" dr. 20mm standard socket
+BLPSM1221	1/2" dr. 21mm standard socket
+BLPSM1222	1/2" dr. 22mm standard socket
+BLPSM1224	1/2" dr. 24mm standard socket
+S80	1/2" dr. standard handle sealed ratchet, 10 5/16"
+GS80	1/2" dr. standard handle sealed ratchet, 10 5/16"
+SH80	1/2" dr. standard handle sealed comfort ratchet, 12"
+SL80	1/2" dr. long handle sealed ratchet, 15"
+SHL80	1/2" dr. long handle sealed comfort ratchet, 16 5/8"
+SF80	1/2" dr. flex head sealed ratchet, 17 21/32"
+SLF80	1/2" dr. long flex head sealed ratchet, 24 13/16"
+SHLF80	1/2" dr. long flex head sealed comfort ratchet, 25 3/4"
+SX80	1/2" dr. locking flex head sealed ratchet, 17 5/8"
+S936FOD	1/2" dr. FOD standard handle sealed ratchet, 17 5/8"
+SR936	1/2" dr. quick release ratchet, 10 5/16"
+SA936A	1/2" dr. scaffold sealed ratchet, 10 5/16"
+GSP936	1/2" dr. spud sealed ratchet, 15 5/8"
+S77A	1/2" dr. ratcheting adaptor
+LRS70A	1/2" dr. 1 19/32" ratchet spinner
+S4	1/2" dr. 18 7/8" speeder
+SN4B	1/2" dr. 17 1/4" speeder
+S12L	1/2" dr. 12" sliding T-handle
+GU8	1/2" dr. 2" universal joint
+SN15B	1/2" dr. 15 5/8" breaker bar
+SN18B	1/2" dr. 18 5/8" breaker bar
+GSN18B	1/2" dr. 18 5/8" breaker bar
+SN24C	1/2" dr. 24 5/8" breaker bar
+SHBB24	1/2" dr. 24 5/8" breaker bar
+SN25A	1/2" dr. 24 5/8" breaker bar
+CSN24B	1/2" dr. non-conductive composite breaker bar, 24 1/2"
+CSS949A	1/2" dr. non-conductive composite ratchet, 8 3/4"
+CA1MF	3/8" x 1/2" non-conductive composite adaptor
+CA2A	1/2" x 3/8" non-conductive composite adaptor
+CSX5	1/2" dr. non-conductive composite speeder, 5"
+CSX10	1/2" dr. non-conductive composite speeder, 10"
+RKRS80	Repair kit for S80, GS80, SH80, SL80, SHL80, SF80, SLF80, SHLF80, SX80
+RKRS936	Repair kit for sealed ratchets
+RKRSR936	Repair kit for SR936
+RKRSA936	Repair kit for SA936A
+RKRGSP936-1	Repair kit for GSP936
+RKRCSS949	Repair kit for CSS949A
+RKRS77	Repair kit for S77A
+RKRQC4	Repair kit for GL872
+RKRBPRSR940	Repair kit for BPRSR940
+RKRSX936JT	Flex joint repair kit
+RKRSX936LM	Locking mechanism repair kit
+RKBB3	1/2" dr. breaker bar repair kit
+RKR881B	Repair kit for L672B
+RKRS936FOD	Repair kit for S936FOD
+GAX5	1/2" x 3/8" extension adaptor, 5"
+GAX12	1/2" x 3/8" extension adaptor, 12"
+GAX24	1/2" x 3/8" extension adaptor, 23 1/4"
+GAX36	1/2" x 3/8" extension adaptor, 36"
+GALX3	1/2" x 1/2" locking adaptor, 3 1/8"
+GSXK3	1/2" dr. 3 1/2" knurled extension
+GSXK5	1/2" dr. 5" knurled extension
+GSXK11	1/2" dr. 11" knurled extension
+SX2	1/2" dr. 2" extension
+SXK3	1/2" dr. 3 1/2" extension
+SXK5	1/2" dr. 5" extension
+SXK8	1/2" dr. 8" extension
+SXK11	1/2" dr. 11" extension
+SX15	1/2" dr. 15" extension
+SX20	1/2" dr. 20" extension
+SX24	1/2" dr. 24" extension
+SX36	1/2" dr. 36" extension
+SXW2	1/2" dr. 2" wobble extension
+GSXW2	1/2" dr. 2" wobble extension
+SXWK3	1/2" dr. 3 1/2" wobble extension
+SXWK5	1/2" dr. 5" wobble extension
+GSXWK5	1/2" dr. 5" wobble extension
+SXWK8	1/2" dr. 8" wobble extension
+SXWK11	1/2" dr. 11" wobble extension
+GSXWK11	1/2" dr. 11" wobble extension
+SXWP2	1/2" dr. 2" wobble plus extension
+SXWP3	1/2" dr. 3" wobble plus extension
+SXWP5	1/2" dr. 5" wobble plus extension
+SXWP8	1/2" dr. 8" wobble plus extension
+SXWP11	1/2" dr. 11" wobble plus extension
+GAF2A	3/8" x 1/2" flank drive adaptor
+GLA72A	3/4" x 1" adaptor
+GLA124A	1" x 3/4" adaptor
+GLD138	3/4" dr. drag link socket, 13/64" x 1 3/8"
+GLD139	3/4" dr. drag link socket, 1/4" x 1 11/16"
+L672B	3/4" dr. ratchet adaptor
+L82A	3/4" dr. universal joint, 3 7/8"
+L32	3/4" dr. 3" extension
+GL32	3/4" dr. 3" extension
+L42	3/4" dr. 5" extension
+GL42	3/4" dr. 5" extension
+L62	3/4" dr. 8" extension
+GL62	3/4" dr. 8" extension
+L122	3/4" dr. 16" extension
+GL122	3/4" dr. 16" extension
+L872	3/4" dr. 32-tooth sealed ratchet head
+GL872	3/4" dr. sealed ratchet head
+L872H	3/4" dr. plain ratchet handle, 19 1/4"
+L872RJ	3/4" dr. knurled ratchet handle, 19 1/4"
+L872RM	3/4" dr. knurled ratchet handle, 36"
+L52B	3/4" dr. sliding T-head
+L8112A	3/4" dr. breaker bar head
+LAW120E	5/8" dr. hex socket driver
+LAW124E	3/4" dr. hex socket driver
+LS342	3/4" dr. 1 1/16" 6-pt deep socket
+LDH242	3/4" dr. 3/4" 12-pt shallow socket
+LDH262	3/4" dr. 13/16" 12-pt shallow socket
+LDH282	3/4" dr. 7/8" 12-pt shallow socket
+LDH302	3/4" dr. 15/16" 12-pt shallow socket
+LDH312	3/4" dr. 31/32" 12-pt shallow socket
+LDH322	3/4" dr. 1" 12-pt shallow socket
+LDH342	3/4" dr. 1 1/16" 12-pt shallow socket
+LDH362	3/4" dr. 1 1/8" 12-pt shallow socket
+LDH382	3/4" dr. 1 3/16" 12-pt shallow socket
+LDH402	3/4" dr. 1 1/4" 12-pt shallow socket
+LDH422A	3/4" dr. 1 5/16" 12-pt shallow socket
+LDH442	3/4" dr. 1 3/8" 12-pt shallow socket
+LDH462	3/4" dr. 1 7/16" 12-pt shallow socket
+LDH482	3/4" dr. 1 1/2" 12-pt shallow socket
+LDH502	3/4" dr. 1 9/16" 12-pt shallow socket
+LDH522	3/4" dr. 1 5/8" 12-pt shallow socket
+LDH542	3/4" dr. 1 11/16" 12-pt shallow socket
+LDH562	3/4" dr. 1 3/4" 12-pt shallow socket
+LDH582	3/4" dr. 1 13/16" 12-pt shallow socket
+LDH602	3/4" dr. 1 7/8" 12-pt shallow socket
+LDH642	3/4" dr. 2" 12-pt shallow socket
+LDH662	3/4" dr. 2 1/16" 12-pt shallow socket
+LDH682	3/4" dr. 2 1/8" 12-pt shallow socket
+LDH702	3/4" dr. 2 3/16" 12-pt shallow socket
+LDH722	3/4" dr. 2 1/4" 12-pt shallow socket
+LDH762	3/4" dr. 2 3/8" 12-pt shallow socket
+LDHM222	3/4" dr. 22mm 6-pt shallow socket
+LDHM242	3/4" dr. 24mm 6-pt shallow socket
+LDHM272	3/4" dr. 27mm 6-pt shallow socket
+LDHM302	3/4" dr. 30mm 6-pt shallow socket
+LDHM362	3/4" dr. 36mm 6-pt shallow socket
+LDHM412	3/4" dr. 41mm 6-pt shallow socket
+IM182A	3/4" dr. 9/16" 6-pt shallow impact socket
+IM202A	3/4" dr. 5/8" 6-pt shallow impact socket
+IMD202A	3/4" dr. 5/8" 12-pt shallow impact socket
+IM222A	3/4" dr. 11/16" 6-pt shallow impact socket
+IM242A	3/4" dr. 3/4" 6-pt shallow impact socket
+IMD242A	3/4" dr. 3/4" 12-pt shallow impact socket
+IM262A	3/4" dr. 13/16" 6-pt shallow impact socket
+IM282A	3/4" dr. 7/8" 6-pt shallow impact socket
+IM302A	3/4" dr. 15/16" 6-pt shallow impact socket
+IMD302A	3/4" dr. 15/16" 12-pt shallow impact socket
+IM322A	3/4" dr. 1" 6-pt shallow impact socket
+IMD322A	3/4" dr. 1" 12-pt shallow impact socket
+IM342A	3/4" dr. 1 1/16" 6-pt shallow impact socket
+IM362	3/4" dr. 1 1/8" 6-pt shallow impact socket
+IM382	3/4" dr. 1 3/16" 6-pt shallow impact socket
+IM402	3/4" dr. 1 1/4" 6-pt shallow impact socket
+IM422	3/4" dr. 1 5/16" 6-pt shallow impact socket
+IM442	3/4" dr. 1 3/8" 6-pt shallow impact socket
+IM462	3/4" dr. 1 7/16" 6-pt shallow impact socket
+IM482	3/4" dr. 1 1/2" 6-pt shallow impact socket
+IM502	3/4" dr. 1 9/16" 6-pt shallow impact socket
+IM522	3/4" dr. 1 5/8" 6-pt shallow impact socket
+IM542	3/4" dr. 1 11/16" 6-pt shallow impact socket
+IM562	3/4" dr. 1 3/4" 6-pt shallow impact socket
+IM582	3/4" dr. 1 13/16" 6-pt shallow impact socket
+IM602	3/4" dr. 1 7/8" 6-pt shallow impact socket
+IM642A	3/4" dr. 2" 6-pt shallow impact socket
+IM662A	3/4" dr. 2 1/16" 6-pt shallow impact socket
+IM702A	3/4" dr. 2 3/16" 6-pt shallow impact socket
+IM722A	3/4" dr. 2 1/4" 6-pt shallow impact socket
+IM762A	3/4" dr. 2 3/8" 6-pt shallow impact socket
+IMM172A	3/4" dr. 17mm 6-pt shallow impact socket
+IMM192A	3/4" dr. 19mm 6-pt shallow impact socket
+IMM202A	3/4" dr. 20mm 6-pt shallow impact socket
+IMM222A	3/4" dr. 22mm 6-pt shallow impact socket
+IMM242A	3/4" dr. 24mm 6-pt shallow impact socket
+IMM272A	3/4" dr. 27mm 6-pt shallow impact socket
+IMM302	3/4" dr. 30mm 6-pt shallow impact socket
+IMM312	3/4" dr. 31mm 6-pt shallow impact socket
+IMM322	3/4" dr. 32mm 6-pt shallow impact socket
+IMM342	3/4" dr. 34mm 6-pt shallow impact socket
+IMM352	3/4" dr. 35mm 6-pt shallow impact socket
+IMM362	3/4" dr. 36mm 6-pt shallow impact socket
+IMM382	3/4" dr. 38mm 6-pt shallow impact socket
+IMM402	3/4" dr. 40mm 6-pt shallow impact socket
+IMM462	3/4" dr. 46mm 6-pt shallow impact socket
+IMFD242	3/4" dr. 3/4" 6-pt shallow thin wall impact socket
+SIM242	3/4" dr. 3/4" 6-pt deep impact socket
+SIM262	3/4" dr. 13/16" 6-pt deep impact socket
+SIM282	3/4" dr. 7/8" 6-pt deep impact socket
+SIM302	3/4" dr. 15/16" 6-pt deep impact socket
+SIM322	3/4" dr. 1" 6-pt deep impact socket
+SIM342	3/4" dr. 1 1/16" 6-pt deep impact socket
+SIM362	3/4" dr. 1 1/8" 6-pt deep impact socket
+SIM382	3/4" dr. 1 3/16" 6-pt deep impact socket
+SIM402	3/4" dr. 1 1/4" 6-pt deep impact socket
+SIM422	3/4" dr. 1 5/16" 6-pt deep impact socket
+SIM442	3/4" dr. 1 3/8" 6-pt deep impact socket
+SIM462	3/4" dr. 1 7/16" 6-pt deep impact socket
+SIM482	3/4" dr. 1 1/2" 6-pt deep impact socket
+SIM502	3/4" dr. 1 9/16" 6-pt deep impact socket
+SIM522	3/4" dr. 1 5/8" 6-pt deep impact socket
+SIM542	3/4" dr. 1 11/16" 6-pt deep impact socket
+SIM562	3/4" dr. 1 3/4" 6-pt deep impact socket
+SIM582	3/4" dr. 1 13/16" 6-pt deep impact socket
+SIM602	3/4" dr. 1 7/8" 6-pt deep impact socket
+SIM642A	3/4" dr. 2" 6-pt deep impact socket
+DW402C	3/4" dr. 1 1/4" 6-pt extra deep thin wall heavy duty lug socket
+BW626A	3/4" dr. 13/16" square inner nut socket
+BWD482	3/4" dr. 1 1/2" hex x 13/16" square dual opening socket
+BWDM412	3/4" dr. 41mm hex x 21mm square dual opening socket
+BW726A	3/4" dr. heavy duty lug socket (referenced on HDLUGSET1)
+BWD48	3/4" dr. heavy duty lug socket (partial number as shown)
+SIM383	3/4" dr. 6-pt deep heavy duty lug socket (referenced)
+SIM403	3/4" dr. 6-pt deep heavy duty lug socket (referenced)
+SIM483B	3/4" dr. 6-pt deep heavy duty lug socket (referenced)
+SIMM333	3/4" dr. 33mm 6-pt deep heavy duty lug socket (referenced)
+SIMM383	3/4" dr. 38mm 6-pt deep heavy duty lug socket (referenced)
+HDLUGSET2	3/4" dr. heavy duty lug socket set in PAKPB063 case
+HDLUGSET1	3/4" dr. heavy duty lug socket set
+IM122A	1" dr. 1/2" extension (referenced)
+IM132A	1" dr. 1 3/8" extension
+IM62B	1" dr. 7" extension
+IM92B	1" dr. 10" extension
+IM122B	1" dr. 13" extension
+L873	1" dr. ratchet head
+GL873	1" dr. ratchet head
+L53HB	1" dr. plain handle, 29"
+L853HA1	1" dr. knurled handle extension, 36"
+L113H	1" dr. breaker bar
+L53A	1" dr. sliding T-handle
+L63	1" dr. 8" extension
+SOEXRM8	Reversible ratcheting box/open end combination wrench, 8mm
+SOEXRM9	Reversible ratcheting box/open end combination wrench, 9mm
+SOEXRM10	Reversible ratcheting box/open end combination wrench, 10mm
+SOEXRM11	Reversible ratcheting box/open end combination wrench, 11mm
+SOEXRM12	Reversible ratcheting box/open end combination wrench, 12mm
+SOEXRM13	Reversible ratcheting box/open end combination wrench, 13mm
+SOEXRM14	Reversible ratcheting box/open end combination wrench, 14mm
+SOEXRM15	Reversible ratcheting box/open end combination wrench, 15mm
+SOEXRM16	Reversible ratcheting box/open end combination wrench, 16mm
+SOEXRM17	Reversible ratcheting box/open end combination wrench, 17mm
+SOEXRM18	Reversible ratcheting box/open end combination wrench, 18mm
+SOEXRM19	Reversible ratcheting box/open end combination wrench, 19mm
+SOEXRM710	12-point metric set, 10-19mm (10 pcs), reversible ratcheting box/open end
+SOEXR12	Reversible ratcheting box/open end combination wrench, 3/8"
+SOEXR14	Reversible ratcheting box/open end combination wrench, 7/16"
+SOEXR16	Reversible ratcheting box/open end combination wrench, 1/2"
+SOEXR18	Reversible ratcheting box/open end combination wrench, 9/16"
+SOEXR20	Reversible ratcheting box/open end combination wrench, 5/8"
+SOEXR22	Reversible ratcheting box/open end combination wrench, 11/16"
+SOEXR24	Reversible ratcheting box/open end combination wrench, 3/4"
+SOEXR707	12-point fractional set, 3/8"-3/4" (7 pcs), reversible ratcheting box/open end
+OEXR12	Ratcheting box/open end combination wrench, 3/8"
+OEXR14	Ratcheting box/open end combination wrench, 7/16"
+OEXR16	Ratcheting box/open end combination wrench, 1/2"
+OEXR18	Ratcheting box/open end combination wrench, 9/16"
+OEXR20	Ratcheting box/open end combination wrench, 5/8"
+OEXR22	Ratcheting box/open end combination wrench, 11/16"
+OEXR24	Ratcheting box/open end combination wrench, 3/4"
+OEXR707	12-point fractional set, 3/8"-3/4" (7 pcs), ratcheting box/open end
+OEXRM8	Ratcheting box/open end combination wrench, 8mm
+OEXRM9	Ratcheting box/open end combination wrench, 9mm
+OEXRM10	Ratcheting box/open end combination wrench, 10mm
+OEXRM11	Ratcheting box/open end combination wrench, 11mm
+OEXRM12	Ratcheting box/open end combination wrench, 12mm
+OEXRM13	Ratcheting box/open end combination wrench, 13mm
+OEXRM14	Ratcheting box/open end combination wrench, 14mm
+OEXRM15	Ratcheting box/open end combination wrench, 15mm
+OEXRM16	Ratcheting box/open end combination wrench, 16mm
+OEXRM17	Ratcheting box/open end combination wrench, 17mm
+OEXRM18	Ratcheting box/open end combination wrench, 18mm
+OEXRM19	Ratcheting box/open end combination wrench, 19mm
+OEXRM710	12-point metric set, 10-19mm (10 pcs), ratcheting box/open end
+RWA1FR	Ratcheting wrench adaptor, 1/4" drive to 1/2" wrench
+RWA2FR	Ratcheting wrench adaptor, 3/8" drive to 5/8" wrench
+RWA3FR	Ratcheting wrench adaptor, 1/2" drive to 3/4" wrench
+RWA4FR	Ratcheting wrench adaptor, 1/4" hex to 1/2" wrench
+RWA1	Ratcheting wrench adaptor, 1/4" drive to 13mm wrench
+RWA2	Ratcheting wrench adaptor, 3/8" drive to 16mm wrench
+RWA3	Ratcheting wrench adaptor, 1/2" drive to 19mm wrench
+RWA4	Ratcheting wrench adaptor, 1/4" hex to 13mm wrench
+RWA404	Metric ratcheting wrench adaptor set (RWA1, RWA2, RWA3, RWA4)
+RWA404FR	Fractional ratcheting wrench adaptor set (RWA1FR, RWA2FR, RWA3FR, RWA4FR)
+OXIRM8	Short handle ratcheting box/open end combination wrench, 8mm
+OXIRM9	Short handle ratcheting box/open end combination wrench, 9mm
+OXIRM10	Short handle ratcheting box/open end combination wrench, 10mm
+OXIRM11	Short handle ratcheting box/open end combination wrench, 11mm
+OXIRM12	Short handle ratcheting box/open end combination wrench, 12mm
+OXIRM13	Short handle ratcheting box/open end combination wrench, 13mm
+OXIRM14	Short handle ratcheting box/open end combination wrench, 14mm
+OXIRM15	Short handle ratcheting box/open end combination wrench, 15mm
+OXIRM16	Short handle ratcheting box/open end combination wrench, 16mm
+OXIRM17	Short handle ratcheting box/open end combination wrench, 17mm
+OXIRM18	Short handle ratcheting box/open end combination wrench, 18mm
+OXIRM19	Short handle ratcheting box/open end combination wrench, 19mm
+OXIRM707	12-point metric set, 8-14mm (7 pcs), short handle ratcheting box/open end
+OXIRM705	12-point metric set, 15-19mm (5 pcs), short handle ratcheting box/open end
+OXIR12	Short handle ratcheting box/open end combination wrench, 3/8"
+OXIR14	Short handle ratcheting box/open end combination wrench, 7/16"
+OXIR16	Short handle ratcheting box/open end combination wrench, 1/2"
+OXIR18	Short handle ratcheting box/open end combination wrench, 9/16"
+OXIR20	Short handle ratcheting box/open end combination wrench, 5/8"
+OXIR22	Short handle ratcheting box/open end combination wrench, 11/16"
+OXIR24	Short handle ratcheting box/open end combination wrench, 3/4"
+OXIR707	12-point fractional set, 3/8"-3/4" (7 pcs), short handle ratcheting box/open end
+BOERM712	12-point metric set, 8-19mm (12 pcs), reversible ratcheting box/open end
+BOERM704	12-point metric set, 21-25mm (4 pcs), reversible ratcheting box/open end
+BOER8	Reversible ratcheting box/open end wrench, 1/4"
+BOER10	Reversible ratcheting box/open end wrench, 5/16"
+BOER12	Reversible ratcheting box/open end wrench, 3/8"
+BOER14	Reversible ratcheting box/open end wrench, 7/16"
+BOER16	Reversible ratcheting box/open end wrench, 1/2"
+BOER18	Reversible ratcheting box/open end wrench, 9/16"
+BOER20	Reversible ratcheting box/open end wrench, 5/8"
+BOER22	Reversible ratcheting box/open end wrench, 11/16"
+BOER24	Reversible ratcheting box/open end wrench, 3/4"
+BOER26	Reversible ratcheting box/open end wrench, 13/16"
+BOER28	Reversible ratcheting box/open end wrench, 7/8"
+BOER30	Reversible ratcheting box/open end wrench, 15/16"
+BOER32	Reversible ratcheting box/open end wrench, 1"
+BOER708	12-point fractional set, 5/16"-3/4" (8 pcs), reversible ratcheting box/open end
+BOER704	12-point fractional set, 13/16"-1" (4 pcs), reversible ratcheting box/open end
+BOERM6	Reversible ratcheting box/open end wrench, 6mm
+BOERM7	Reversible ratcheting box/open end wrench, 7mm
+BOERM8	Reversible ratcheting box/open end wrench, 8mm
+BOERM9	Reversible ratcheting box/open end wrench, 9mm
+BOERM10	Reversible ratcheting box/open end wrench, 10mm
+BOERM11	Reversible ratcheting box/open end wrench, 11mm
+BOERM12	Reversible ratcheting box/open end wrench, 12mm
+BOERM13	Reversible ratcheting box/open end wrench, 13mm
+BOERM14	Reversible ratcheting box/open end wrench, 14mm
+BOERM15	Reversible ratcheting box/open end wrench, 15mm
+BOERM16	Reversible ratcheting box/open end wrench, 16mm
+BOERM17	Reversible ratcheting box/open end wrench, 17mm
+BOERM18	Reversible ratcheting box/open end wrench, 18mm
+BOERM19	Reversible ratcheting box/open end wrench, 19mm
+BOERM21	Reversible ratcheting box/open end wrench, 21mm
+BOERM22	Reversible ratcheting box/open end wrench, 22mm
+BOERM24	Reversible ratcheting box/open end wrench, 24mm
+BOERM25	Reversible ratcheting box/open end wrench, 25mm
+BOERF10A	Flex head reversible ratcheting box end wrench, 5/16"
+BOERF12A	Flex head reversible ratcheting box end wrench, 3/8"
+BOERF14A	Flex head reversible ratcheting box end wrench, 7/16"
+BOERF16A	Flex head reversible ratcheting box end wrench, 1/2"
+BOERF18A	Flex head reversible ratcheting box end wrench, 9/16"
+BOERF20A	Flex head reversible ratcheting box end wrench, 5/8"
+BOERF22A	Flex head reversible ratcheting box end wrench, 11/16"
+BOERF24A	Flex head reversible ratcheting box end wrench, 3/4"
+BOERF708A	12-point flex head fractional set, 5/16"-3/4" (8 pcs)
+BOERS10	Short handle 15° offset reversible ratcheting box wrench, 5/16"
+BOERS12	Short handle 15° offset reversible ratcheting box wrench, 3/8"
+BOERS14	Short handle 15° offset reversible ratcheting box wrench, 7/16"
+BOERS16	Short handle 15° offset reversible ratcheting box wrench, 1/2"
+BOERS18	Short handle 15° offset reversible ratcheting box wrench, 9/16"
+BOERS20	Short handle 15° offset reversible ratcheting box wrench, 5/8"
+BOERS22	Short handle 15° offset reversible ratcheting box wrench, 11/16"
+BOERS24	Short handle 15° offset reversible ratcheting box wrench, 3/4"
+BOERS708	12-point short handle fractional set, 5/16"-3/4" (8 pcs)
+BOERMS8	Short handle 15° offset reversible ratcheting box wrench, 8mm
+BOERMS9	Short handle 15° offset reversible ratcheting box wrench, 9mm
+BOERMS10	Short handle 15° offset reversible ratcheting box wrench, 10mm
+BOERMS11	Short handle 15° offset reversible ratcheting box wrench, 11mm
+BOERMS12	Short handle 15° offset reversible ratcheting box wrench, 12mm
+BOERMS13	Short handle 15° offset reversible ratcheting box wrench, 13mm
+BOERMS14	Short handle 15° offset reversible ratcheting box wrench, 14mm
+BOERMS15	Short handle 15° offset reversible ratcheting box wrench, 15mm
+BOERMS16	Short handle 15° offset reversible ratcheting box wrench, 16mm
+BOERMS17	Short handle 15° offset reversible ratcheting box wrench, 17mm
+BOERMS18	Short handle 15° offset reversible ratcheting box wrench, 18mm
+BOERMS19	Short handle 15° offset reversible ratcheting box wrench, 19mm
+BOERMS712	12-point short handle metric set, 8-19mm (12 pcs)
+BOERMF8A	Standard flex head reversible ratcheting box wrench, 8mm
+BOERMF9A	Standard flex head reversible ratcheting box wrench, 9mm
+BOERMF10A	Standard flex head reversible ratcheting box wrench, 10mm
+BOERMF11A	Standard flex head reversible ratcheting box wrench, 11mm
+BOERMF12A	Standard flex head reversible ratcheting box wrench, 12mm
+BOERMF13A	Standard flex head reversible ratcheting box wrench, 13mm
+BOERMF14A	Standard flex head reversible ratcheting box wrench, 14mm
+BOERMF15A	Standard flex head reversible ratcheting box wrench, 15mm
+BOERMF16A	Standard flex head reversible ratcheting box wrench, 16mm
+BOERMF17A	Standard flex head reversible ratcheting box wrench, 17mm
+BOERMF18A	Standard flex head reversible ratcheting box wrench, 18mm
+BOERMF19A	Standard flex head reversible ratcheting box wrench, 19mm
+BOERMF712A	12-point flex head metric set, 8-19mm (12 pcs)
+SOEXM7	Ratcheting box/open end combination wrench, 7mm
+SOEXM8	Ratcheting box/open end combination wrench, 8mm
+SOEXM9	Ratcheting box/open end combination wrench, 9mm
+SOEXM10	Ratcheting box/open end combination wrench, 10mm
+SOEXM11	Ratcheting box/open end combination wrench, 11mm
+SOEXM12	Ratcheting box/open end combination wrench, 12mm
+SOEXM13	Ratcheting box/open end combination wrench, 13mm
+SOEXM14	Ratcheting box/open end combination wrench, 14mm
+SOEXM15	Ratcheting box/open end combination wrench, 15mm
+SOEXM16	Ratcheting box/open end combination wrench, 16mm
+SOEXM17	Ratcheting box/open end combination wrench, 17mm
+SOEXM18	Ratcheting box/open end combination wrench, 18mm
+SOEXM19	Ratcheting box/open end combination wrench, 19mm
+SOEXM20	Ratcheting box/open end combination wrench, 20mm
+SOEXM21	Ratcheting box/open end combination wrench, 21mm
+SOEXM22	Ratcheting box/open end combination wrench, 22mm
+SOEXM23	Ratcheting box/open end combination wrench, 23mm
+SOEXM24	Ratcheting box/open end combination wrench, 24mm
+SOEXM25	Ratcheting box/open end combination wrench, 25mm
+SOEXM710	12-point metric set, 10-19mm (10 pcs), storage tray
+SOEXM707	12-point metric set, 10-17mm except 16mm (7 pcs), storage tray
+SOEX8	FLANK DRIVE Plus combination wrench, 1/4"
+SOEX10	FLANK DRIVE Plus combination wrench, 5/16"
+SOEX11	FLANK DRIVE Plus combination wrench, 11/32"
+SOEX12	FLANK DRIVE Plus combination wrench, 3/8"
+SOEX14	FLANK DRIVE Plus combination wrench, 7/16"
+SOEX16	FLANK DRIVE Plus combination wrench, 1/2"
+SOEX18	FLANK DRIVE Plus combination wrench, 9/16"
+SOEX20	FLANK DRIVE Plus combination wrench, 5/8"
+SOEX22	FLANK DRIVE Plus combination wrench, 11/16"
+SOEX24	FLANK DRIVE Plus combination wrench, 3/4"
+SOEX26	FLANK DRIVE Plus combination wrench, 13/16"
+SOEX28	FLANK DRIVE Plus combination wrench, 7/8"
+SOEX30	FLANK DRIVE Plus combination wrench, 15/16"
+SOEX32	FLANK DRIVE Plus combination wrench, 1"
+SOEX34	FLANK DRIVE Plus combination wrench, 1 1/16"
+SOEX36	FLANK DRIVE Plus combination wrench, 1 1/8"
+SOEX38	FLANK DRIVE Plus combination wrench, 1 3/16"
+SOEX40	FLANK DRIVE Plus combination wrench, 1 1/4"
+SOEX42	FLANK DRIVE Plus combination wrench, 1 5/16"
+SOEX710	12-point fractional set, 5/16"-7/8" (10 pcs), storage tray
+SOEX707	12-point fractional set, 3/8"-3/4" (7 pcs), storage tray
+SOEXM100	FLANK DRIVE Plus short handle combination wrench, 10mm
+SOEXM110	FLANK DRIVE Plus short handle combination wrench, 11mm
+SOEXM120	FLANK DRIVE Plus short handle combination wrench, 12mm
+SOEXM130	FLANK DRIVE Plus short handle combination wrench, 13mm
+SOEXM140	FLANK DRIVE Plus short handle combination wrench, 14mm
+SOEXM150	FLANK DRIVE Plus short handle combination wrench, 15mm
+SOEXM160	FLANK DRIVE Plus short handle combination wrench, 16mm
+SOEXM170	FLANK DRIVE Plus short handle combination wrench, 17mm
+SOEXM180	FLANK DRIVE Plus short handle combination wrench, 18mm
+SOEXM190	FLANK DRIVE Plus short handle combination wrench, 19mm
+SOEXSM710	12-point short handle metric set, 10-19mm (10 pcs), storage tray
+OSH10B	FLANK DRIVE 6-point combination wrench, 5/16"
+OSH11B	FLANK DRIVE 6-point combination wrench, 11/32"
+OSH12B	FLANK DRIVE 6-point combination wrench, 3/8"
+OSH14B	FLANK DRIVE 6-point combination wrench, 7/16"
+OSH16B	FLANK DRIVE 6-point combination wrench, 1/2"
+OSH18B	FLANK DRIVE 6-point combination wrench, 9/16"
+OSH20B	FLANK DRIVE 6-point combination wrench, 5/8"
+OSH22B	FLANK DRIVE 6-point combination wrench, 11/16"
+OSH24B	FLANK DRIVE 6-point combination wrench, 3/4"
+OSH26B	FLANK DRIVE 6-point combination wrench, 13/16"
+OSH28B	FLANK DRIVE 6-point combination wrench, 7/8"
+OSH30B	FLANK DRIVE 6-point combination wrench, 15/16"
+OSH32B	FLANK DRIVE 6-point combination wrench, 1"
+OSH711B	6-point fractional set, 3/8"-1" (11 pcs), storage tray
+OSH707B	6-point fractional set, 3/8"-3/4" (7 pcs), storage tray
+OEX8B	FLANK DRIVE combination wrench, 1/4"
+OEX10B	FLANK DRIVE combination wrench, 5/16"
+OEX11B	FLANK DRIVE combination wrench, 11/32"
+OEX12B	FLANK DRIVE combination wrench, 3/8"
+OEX14B	FLANK DRIVE combination wrench, 7/16"
+OEX16B	FLANK DRIVE combination wrench, 1/2"
+OEX18B	FLANK DRIVE combination wrench, 9/16"
+OEX20B	FLANK DRIVE combination wrench, 5/8"
+OEX22B	FLANK DRIVE combination wrench, 11/16"
+OEX24B	FLANK DRIVE combination wrench, 3/4"
+OEX26B	FLANK DRIVE combination wrench, 13/16"
+OEX28B	FLANK DRIVE combination wrench, 7/8"
+OEX30B	FLANK DRIVE combination wrench, 15/16"
+OEX32B	FLANK DRIVE combination wrench, 1"
+OEX34B	FLANK DRIVE combination wrench, 1 1/16"
+OEX36B	FLANK DRIVE combination wrench, 1 1/8"
+OEX38B	FLANK DRIVE combination wrench, 1 3/16"
+OEX40B	FLANK DRIVE combination wrench, 1 1/4"
+OEX42B	FLANK DRIVE combination wrench, 1 5/16"
+OEX44B	FLANK DRIVE combination wrench, 1 3/8"
+OEX46B	FLANK DRIVE combination wrench, 1 7/16"
+OEX48B	FLANK DRIVE combination wrench, 1 1/2"
+OEX50B	FLANK DRIVE combination wrench, 1 9/16"
+OEX52B	FLANK DRIVE combination wrench, 1 5/8"
+OEX54A	FLANK DRIVE combination wrench, 1 11/16" (satin chrome)
+OEX56A	FLANK DRIVE combination wrench, 1 3/4" (satin chrome)
+OEX58A	FLANK DRIVE combination wrench, 1 13/16" (satin chrome)
+OEX60A	FLANK DRIVE combination wrench, 1 7/8" (satin chrome)
+OEX64A	FLANK DRIVE combination wrench, 2" (satin chrome)
+OEX724K	12-point chrome set, 1/4"-1 5/8" (24 pcs), C2400A kit bag
+OEX714K	12-point chrome set, 3/8"-1 1/4" (14 pcs), C1401 kit bag
+OEX710	12-point chrome set, 5/16"-7/8" (10 pcs), storage tray
+OEX709B	12-point chrome set, 3/8"-7/8" (9 pcs), storage tray
+OEX707B	12-point chrome set, 3/8"-3/4" (7 pcs), storage tray
+GOEX10B	12-point industrial combination wrench, 5/16"
+GOEX12B	12-point industrial combination wrench, 3/8"
+GOEX14B	12-point industrial combination wrench, 7/16"
+GOEX16B	12-point industrial combination wrench, 1/2"
+GOEX18B	12-point industrial combination wrench, 9/16"
+GOEX20B	12-point industrial combination wrench, 5/8"
+GOEX22B	12-point industrial combination wrench, 11/16"
+GOEX24B	12-point industrial combination wrench, 3/4"
+GOEX26B	12-point industrial combination wrench, 13/16"
+GOEX28B	12-point industrial combination wrench, 7/8"
+GOEX30B	12-point industrial combination wrench, 15/16"
+GOEX32B	12-point industrial combination wrench, 1"
+GOEX34B	12-point industrial combination wrench, 1 1/16"
+GOEX36B	12-point industrial combination wrench, 1 1/8"
+GOEX38B	12-point industrial combination wrench, 1 3/16"
+GOEX40B	12-point industrial combination wrench, 1 1/4"
+GOEX42B	12-point industrial combination wrench, 1 5/16"
+GOEX44B	12-point industrial combination wrench, 1 3/8"
+GOEX46B	12-point industrial combination wrench, 1 7/16"
+GOEX48B	12-point industrial combination wrench, 1 1/2"
+GOEX50B	12-point industrial combination wrench, 1 9/16"
+GOEX52B	12-point industrial combination wrench, 1 5/8"
+GOEX56A	12-point industrial combination wrench, 1 3/4"
+GOEX58A	12-point industrial combination wrench, 1 13/16"
+GOEX60A	12-point industrial combination wrench, 1 7/8"
+GOEX64A	12-point industrial combination wrench, 2"
+GOEX722K	12-point industrial set, 5/16"-1 5/8" (22 pcs), C2200 kit bag
+GOEX714K	12-point industrial set, 3/8"-1 3/16" (14 pcs), C1401 kit bag
+GOEX711B	12-point industrial set, 3/8"-1" (11 pcs), storage tray
+GOEX707B	12-point industrial set, 3/8"-3/4" (7 pcs), storage tray
+OSHM70B	6-point metric combination wrench, 7mm
+OSHM80B	6-point metric combination wrench, 8mm
+OSHM90B	6-point metric combination wrench, 9mm
+OSHM100B	6-point metric combination wrench, 10mm
+OSHM110B	6-point metric combination wrench, 11mm
+OSHM120B	6-point metric combination wrench, 12mm
+OSHM130B	6-point metric combination wrench, 13mm
+OSHM140B	6-point metric combination wrench, 14mm
+OSHM150B	6-point metric combination wrench, 15mm
+OSHM160B	6-point metric combination wrench, 16mm
+OSHM170B	6-point metric combination wrench, 17mm
+OSHM180B	6-point metric combination wrench, 18mm
+OSHM190B	6-point metric combination wrench, 19mm
+OSHM713	6-point metric set, 7-19mm (13 pcs)
+OSHM707B	6-point metric set, 10-17mm except 16mm (7 pcs), storage tray
+OEXM80B	12-point combination wrench, 8mm
+OEXM90B	12-point combination wrench, 9mm
+OEXM100B	12-point combination wrench, 10mm
+OEXM110B	12-point combination wrench, 11mm
+OEXM120B	12-point combination wrench, 12mm
+OEXM130B	12-point combination wrench, 13mm
+OEXM140B	12-point combination wrench, 14mm
+OEXM150B	12-point combination wrench, 15mm
+OEXM160B	12-point combination wrench, 16mm
+OEXM170B	12-point combination wrench, 17mm
+OEXM180B	12-point combination wrench, 18mm
+OEXM190B	12-point combination wrench, 19mm
+OEXM200B	12-point combination wrench, 20mm
+OEXM210B	12-point combination wrench, 21mm
+OEXM220B	12-point combination wrench, 22mm
+OEXM230B	12-point combination wrench, 23mm
+OEXM240B	12-point combination wrench, 24mm
+OEXM250B	12-point combination wrench, 25mm
+OEXM260B	12-point combination wrench, 26mm
+OEXM270B	12-point combination wrench, 27mm
+OEXM290B	12-point combination wrench, 29mm
+OEXM300B	12-point combination wrench, 30mm
+OEXM320B	12-point combination wrench, 32mm
+OEXM340B	12-point combination wrench, 34mm
+OEXM360B	12-point combination wrench, 36mm
+OEXM725	12-point chrome metric set, 8-36mm (25 pcs)
+OEXM723K	12-point chrome metric set, 8-32mm (23 pcs), C2301A kit bag
+OEXM713B	12-point chrome metric set, 10-22mm (13 pcs), storage tray
+OEXM710B	12-point chrome metric set, 10-19mm (10 pcs), storage tray
+OEXM707B	12-point chrome metric set, 10-15mm and 17mm (7 pcs), storage tray
+GOEXM100B	12-point industrial combination wrench, 10mm
+GOEXM110B	12-point industrial combination wrench, 11mm
+GOEXM120B	12-point industrial combination wrench, 12mm
+GOEXM130B	12-point industrial combination wrench, 13mm
+GOEXM140B	12-point industrial combination wrench, 14mm
+GOEXM150B	12-point industrial combination wrench, 15mm
+GOEXM160B	12-point industrial combination wrench, 16mm
+GOEXM170B	12-point industrial combination wrench, 17mm
+GOEXM180B	12-point industrial combination wrench, 18mm
+GOEXM190B	12-point industrial combination wrench, 19mm
+GOEXM200B	12-point industrial combination wrench, 20mm
+GOEXM210B	12-point industrial combination wrench, 21mm
+GOEXM220B	12-point industrial combination wrench, 22mm
+GOEXM230B	12-point industrial combination wrench, 23mm
+GOEXM240B	12-point industrial combination wrench, 24mm
+GOEXM715	12-point industrial metric set, 10-24mm (15 pcs)
+OEXM6B	12-point combination wrench, 6mm
+GOEXM6B	12-point industrial combination wrench, 6mm
+OEXM7B	12-point combination wrench, 7mm
+GOEXM7B	12-point industrial combination wrench, 7mm
+OEXM8B	12-point combination wrench, 8mm
+GOEXM8B	12-point industrial combination wrench, 8mm
+OEXM9B	12-point combination wrench, 9mm
+GOEXM9B	12-point industrial combination wrench, 9mm
+OEXM10B	12-point combination wrench, 10mm
+GOEXM10B	12-point industrial combination wrench, 10mm
+OEXM11B	12-point combination wrench, 11mm
+GOEXM11B	12-point industrial combination wrench, 11mm
+OEXM12B	12-point combination wrench, 12mm
+GOEXM12B	12-point industrial combination wrench, 12mm
+OEXM13B	12-point combination wrench, 13mm
+GOEXM13B	12-point industrial combination wrench, 13mm
+OEXM14B	12-point combination wrench, 14mm
+GOEXM14B	12-point industrial combination wrench, 14mm
+OEXM15B	12-point combination wrench, 15mm
+GOEXM15B	12-point industrial combination wrench, 15mm
+OEXM16B	12-point combination wrench, 16mm
+GOEXM16B	12-point industrial combination wrench, 16mm
+OEXM17B	12-point combination wrench, 17mm
+GOEXM17B	12-point industrial combination wrench, 17mm
+OEXM18B	12-point combination wrench, 18mm
+GOEXM18B	12-point industrial combination wrench, 18mm
+OEXM19B	12-point combination wrench, 19mm
+GOEXM19B	12-point industrial combination wrench, 19mm
+OEXM20B	12-point combination wrench, 20mm
+OEXM21B	12-point combination wrench, 21mm
+OEXM22B	12-point combination wrench, 22mm
+OEXM23B	12-point combination wrench, 23mm
+OEXM24B	12-point combination wrench, 24mm
+OEXSM719	12-point metric set, 6-24mm (19 pcs)
+OEXSM714K	12-point metric set, 6-19mm (14 pcs), C1402 kit bag
+OEXSM710B	12-point metric set, 10-19mm (10 pcs), storage tray
+OEX080B	Short handle combination wrench, 1/4"
+GOEX080B	Short handle industrial combination wrench, 1/4"
+OEX090B	Short handle combination wrench, 9/32"
+OEX100B	Short handle combination wrench, 5/16"
+GOEX100B	Short handle industrial combination wrench, 5/16"
+OEX110B	Short handle combination wrench, 11/32"
+GOEX110B	Short handle industrial combination wrench, 11/32"
+OEX120B	Short handle combination wrench, 3/8"
+GOEX120B	Short handle industrial combination wrench, 3/8"
+OEX140B	Short handle combination wrench, 7/16"
+GOEX140B	Short handle industrial combination wrench, 7/16"
+OEX160B	Short handle combination wrench, 1/2"
+GOEX160B	Short handle industrial combination wrench, 1/2"
+OEX180B	Short handle combination wrench, 9/16"
+GOEX180B	Short handle industrial combination wrench, 9/16"
+OEX200B	Short handle combination wrench, 5/8"
+GOEX200B	Short handle industrial combination wrench, 5/8"
+OEX220B	Short handle combination wrench, 11/16"
+GOEX220B	Short handle industrial combination wrench, 11/16"
+OEX240B	Short handle combination wrench, 3/4"
+GOEX240B	Short handle industrial combination wrench, 3/4"
+OEX260B	Short handle combination wrench, 13/16"
+GOEX260B	Short handle industrial combination wrench, 13/16"
+OEX280B	Short handle combination wrench, 7/8"
+GOEX280B	Short handle industrial combination wrench, 7/8"
+OEX300B	Short handle combination wrench, 15/16"
+GOEX300B	Short handle industrial combination wrench, 15/16"
+OEX320B	Short handle combination wrench, 1"
+GOEX320B	Short handle industrial combination wrench, 1"
+OEX340B	Short handle combination wrench, 1 1/16"
+GOEX340B	Short handle industrial combination wrench, 1 1/16"
+OEX360B	Short handle combination wrench, 1 1/8"
+GOEX360B	Short handle industrial combination wrench, 1 1/8"
+OEX380B	Short handle combination wrench, 1 3/16"
+OEX400B	Short handle combination wrench, 1 1/4"
+OEX420B	Short handle combination wrench, 1 5/16"
+OEX440B	Short handle combination wrench, 1 3/8"
+OEXS721	12-point short handle set, 1/4"-1 3/8" (21 pcs)
+OEXS715K	12-point short handle set, 1/4"-1" (15 pcs), C1505 kit bag
+OEXS709B	12-point short handle set, 5/16"-3/4" (9 pcs), storage tray
+OEXLM10B	Long handle combination wrench, 10mm
+OEXLM11B	Long handle combination wrench, 11mm
+OEXLM12B	Long handle combination wrench, 12mm
+OEXLM13B	Long handle combination wrench, 13mm
+OEXLM14B	Long handle combination wrench, 14mm
+OEXLM15B	Long handle combination wrench, 15mm
+OEXLM16B	Long handle combination wrench, 16mm
+OEXLM17B	Long handle combination wrench, 17mm
+OEXLM18B	Long handle combination wrench, 18mm
+OEXLM19B	Long handle combination wrench, 19mm
+OEXLM710B	12-point long handle metric set, 10-19mm (10 pcs), storage tray
+OEXL12B	Long handle combination wrench, 3/8"
+OEXL14B	Long handle combination wrench, 7/16"
+OEXL16B	Long handle combination wrench, 1/2"
+OEXL18B	Long handle combination wrench, 9/16"
+OEXL20B	Long handle combination wrench, 5/8"
+OEXL22B	Long handle combination wrench, 11/16"
+OEXL24B	Long handle combination wrench, 3/4"
+OEXL26B	Long handle combination wrench, 13/16"
+OEXL28B	Long handle combination wrench, 7/8"
+OEXL30B	Long handle combination wrench, 15/16"
+OEXL32B	Long handle combination wrench, 1"
+OEXL707B	12-point long handle set, 3/8"-3/4" (7 pcs), storage tray
+OXI4SB	Midget 6-point combination wrench, 1/8" (conventional hex)
+OXI5SB	Midget 6-point combination wrench, 5/32" (conventional hex)
+OXI6SB	Midget 6-point combination wrench, 3/16" (conventional hex)
+OXI6B	Midget 12-point combination wrench, 3/16"
+OXI7SB	Midget 6-point combination wrench, 7/32"
+OXI7B	Midget 12-point combination wrench, 7/32"
+OXI8SB	Midget 6-point combination wrench, 1/4"
+OXI8B	Midget 12-point combination wrench, 1/4"
+OXI9SB	Midget 6-point combination wrench, 9/32"
+OXI9B	Midget 12-point combination wrench, 9/32"
+OXI10SB	Midget 6-point combination wrench, 5/16"
+OXI10B	Midget 12-point combination wrench, 5/16"
+OXI11SB	Midget 6-point combination wrench, 11/32"
+OXI11B	Midget 12-point combination wrench, 11/32"
+OXI12SB	Midget 6-point combination wrench, 3/8"
+OXI12B	Midget 12-point combination wrench, 3/8"
+OXI14B	Midget 12-point combination wrench, 7/16"
+OXI16B	Midget 12-point combination wrench, 1/2"
+OXI18B	Midget 12-point combination wrench, 9/16"
+OXI20B	Midget 12-point combination wrench, 5/8"
+OXI22B	Midget 12-point combination wrench, 11/16"
+OXI24B	Midget 12-point combination wrench, 3/4"
+OXI709SBK	6-point midget set, 1/8"-3/8" (9 pcs), C0900A kit bag
+OXI707BK	12-point midget set, 3/16"-3/8" (7 pcs), C0700 kit bag
+OXI715	6/12-point midget set, 1/8"-3/4" (15 pcs)
+OXI706B	12-point midget set, 7/16"-3/4" (6 pcs), storage tray
+OXIM4SB	Midget metric 6-point combination wrench, 4mm
+OXIM5SB	Midget metric 6-point combination wrench, 5mm
+OXIM55SB	Midget metric 6-point combination wrench, 5.5mm
+OXIM6SB	Midget metric 6-point combination wrench, 6mm (6-point)
+OXIM6B	Midget metric 12-point combination wrench, 6mm
+OXIM7SB	Midget metric 6-point combination wrench, 7mm
+OXIM7B	Midget metric 12-point combination wrench, 7mm
+OXIM8SB	Midget metric 6-point combination wrench, 8mm
+OXIM8B	Midget metric 12-point combination wrench, 8mm
+OXIM9SB	Midget metric 6-point combination wrench, 9mm
+OXIM9B	Midget metric 12-point combination wrench, 9mm
+OXIM10B	Midget metric 12-point combination wrench, 10mm
+OXIM11B	Midget metric 12-point combination wrench, 11mm
+OXIM12B	Midget metric 12-point combination wrench, 12mm
+OXIM13B	Midget metric 12-point combination wrench, 13mm
+OXIM14B	Midget metric 12-point combination wrench, 14mm
+OXIM15B	Midget metric 12-point combination wrench, 15mm
+OXIM16B	Midget metric 12-point combination wrench, 16mm
+OXIM17B	Midget metric 12-point combination wrench, 17mm
+OXIM18B	Midget metric 12-point combination wrench, 18mm
+OXIM19B	Midget metric 12-point combination wrench, 19mm
+OXIM717	6/12-point midget metric set, 4-5.5mm and 6-19mm (17 pcs)
+OXIM707SBK	6-point midget metric set, 4-9mm (7 pcs), C0700 kit bag
+OXIM710B	12-point midget metric set, 10-19mm (10 pcs), storage tray
+WOEX6B	British Standard combination wrench, 3/16"
+WOEX70B	British Standard combination wrench, 1BA
+WOEX80B	British Standard combination wrench, 0BA
+WOEX90B	British Standard combination wrench, 1/4"
+WOEX100B	British Standard combination wrench, 5/16"
+WOEX110B	British Standard combination wrench, 3/8"
+WOEX120B	British Standard combination wrench, 7/16"
+BLPCW14	Standard combination wrench, 1/4", 5 1/32" length
+BLPCW516	Standard combination wrench, 5/16", 5 7/32" length
+BLPCW38	Standard combination wrench, 3/8", 6 9/16" length
+BLPCW716	Standard combination wrench, 7/16", 7 11/32" length
+BLPCW12	Standard combination wrench, 1/2", 8 1/16" length
+BLPCW916	Standard combination wrench, 9/16", 8 25/32" length
+BLPCW58	Standard combination wrench, 5/8", 9 9/16" length
+BLPCW1116	Standard combination wrench, 11/16", 10 5/16" length
+BLPCW34	Standard combination wrench, 3/4", 11 1/16" length
+BLPCW1316	Standard combination wrench, 13/16", 11 27/32" length
+BLPCW78	Standard combination wrench, 7/8", 12 9/16" length
+BLPCW1516	Standard combination wrench, 15/16", 13 11/32" length
+BLPCW1	Standard combination wrench, 1", 14 3/32" length
+BLPCWS711	Standard combination wrench set, 3/8"-1" (11 pcs), storage tray
+BLPCWM8	Standard metric combination wrench, 8mm, 148mm length
+BLPCWM9	Standard metric combination wrench, 9mm, 160mm length
+BLPCWM10	Standard metric combination wrench, 10mm, 167mm length
+BLPCWM11	Standard metric combination wrench, 11mm, 186mm length
+BLPCWM12	Standard metric combination wrench, 12mm, 196mm length
+BLPCWM13	Standard metric combination wrench, 13mm, 205mm length
+BLPCWM14	Standard metric combination wrench, 14mm, 223mm length
+BLPCWM15	Standard metric combination wrench, 15mm, 233mm length
+BLPCWM16	Standard metric combination wrench, 16mm, 243mm length
+BLPCWM17	Standard metric combination wrench, 17mm, 262mm length
+BLPCWM18	Standard metric combination wrench, 18mm, 272mm length
+BLPCWM19	Standard metric combination wrench, 19mm, 281mm length
+BLPCWSM712	Metric combination wrench set, 8-19mm (12 pcs), storage tray
+XID604KA	12-point offset box wrench set, 3/16"-11/32" (4 pcs), C41E kit bag
+XID1213A	Offset box wrench, 5/16"-11/32" range
+XID1415A	Offset box wrench, 3/8" range
+XID1618A	Offset box wrench, 13/32"-7/16" range
+XID2022A	Offset box wrench, 15/32"-1/2" range
+XLE56	Midget 10° offset TORX box wrench, E5-E6
+XLE78	Midget 10° offset TORX box wrench, E7-E8
+XLE1012A	Midget 10° offset TORX box wrench, E10-E12
+XLE1416	Midget 10° offset TORX box wrench, E14-E16
+XLE1820	Midget 10° offset TORX box wrench, E18-E20
+XLE605	TORX midget set, E5-E20 (5 pcs), storage tray
+XBM810A	Offset box wrench, 8-10mm, 10° offset
+XBM1011A	Offset box wrench, 10-11mm, 10° offset
+XBM1012A	Offset box wrench, 10-12mm, 10° offset
+XBM1113A	Offset box wrench, 11-13mm, 10° offset
+XBM1214SA	Short handle offset box wrench, 12-14mm, 10° offset
+XBM1214A	Offset box wrench, 12-14mm, 10° offset
+XBM1315SA	Short handle offset box wrench, 13-15mm, 10° offset
+XBM1315A	Offset box wrench, 13-15mm, 10° offset
+XBM1417A	Offset box wrench, 14-17mm, 10° offset
+XBM1618A	Offset box wrench, 16-18mm, 10° offset
+XBM1719A	Offset box wrench, 17-19mm, 10° offset
+XBM1821A	Offset box wrench, 18-21mm, 10° offset
+XBM2224A	Offset box wrench, 22-24mm, 10° offset
+XBM2730A	Offset box wrench, 27-30mm, 10° offset
+XBM605A	Metric 12-point offset box set, 10-19mm (5 pcs), storage tray
+XSM67A	Short handle offset box wrench, 6-7mm, 10° offset
+XSM89A	Short handle offset box wrench, 8-9mm, 10° offset
+XSM810	Short handle offset box wrench, 8-10mm, 10° offset
+XSM910A	Short handle offset box wrench, 9-10mm, 10° offset
+XSM1112A	Short handle offset box wrench, 11-12mm, 10° offset
+XSM1314A	Short handle offset box wrench, 13-14mm, 10° offset
+XSM1516A	Short handle offset box wrench, 15-16mm, 10° offset
+XSM1719A	Short handle offset box wrench, 17-19mm, 10° offset
+XSM1820A	Short handle offset box wrench, 18-20mm, 10° offset
+XSM608A	Metric 12-point short handle offset box set, 6-20mm (8 pcs)
+XS67A	Short handle offset box wrench, 3/16"-7/32", 10° offset
+XS810A	Short handle offset box wrench, 1/4"-5/16", 10° offset
+XS1012A	Short handle offset box wrench, 5/16"-3/8", 10° offset
+XS1214A	Short handle offset box wrench, 3/8"-7/16", 10° offset
+XS1416A	Short handle offset box wrench, 7/16"-1/2", 10° offset
+XS1618A	Short handle offset box wrench, 1/2"-9/16", 10° offset
+XS1820A	Short handle offset box wrench, 9/16"-5/8", 10° offset
+XS2024A	Short handle offset box wrench, 5/8"-3/4", 10° offset
+XS2226A	Short handle offset box wrench, 11/16"-13/16", 10° offset
+XS609A	12-point short handle offset box set, 3/16"-13/16" (9 pcs), storage tray
+XB1214A	Offset box wrench, 3/8"-7/16", 10° offset
+XB1416A	Offset box wrench, 7/16"-1/2", 10° offset
+XB1618A	Offset box wrench, 1/2"-9/16", 10° offset
+XB1820A	Offset box wrench, 9/16"-5/8", 10° offset
+XB2022A	Offset box wrench, 5/8"-11/16", 10° offset
+XB2224A	Offset box wrench, 11/16"-3/4", 10° offset
+XB2426A	Offset box wrench, 3/4"-13/16", 10° offset
+XB2830A	Offset box wrench, 7/8"-15/16", 10° offset
+XB3032A	Offset box wrench, 15/16"-1", 10° offset
+XB3234A	Offset box wrench, 1"-1 1/16", 10° offset
+XB3440A	Offset box wrench, 1 1/16"-1 1/4", 10° offset
+XB3638A	Offset box wrench, 1 1/8"-1 3/16", 10° offset
+XB4042A	Offset box wrench, 1 1/4"-1 5/16", 10° offset
+XB4446A	Offset box wrench, 1 3/8"-1 7/16", 10° offset
+XB4852A	Offset box wrench, 1 1/2"-1 5/8", 10° offset
+XB605A	12-point offset box set, 3/8"-15/16" (5 pcs), storage tray
+XSO810A	Short handle offset box wrench, 1/4"-5/16", 10° offset
+XSO1214A	Short handle offset box wrench, 3/8"-7/16", 10° offset
+XSO1618A	Short handle offset box wrench, 1/2"-9/16", 10° offset
+XSO2024A	Short handle offset box wrench, 5/8"-3/4", 10° offset
+XSO2226A	Short handle offset box wrench, 11/16"-13/16", 10° offset
+XSO605	12-point short handle offset box set, 1/4"-13/16" (5 pcs), storage tray
+XO810	Deep 60° offset box wrench, 1/4"-5/16"
+XO1012	Deep 60° offset box wrench, 5/16"-3/8"
+XO1214	Deep 60° offset box wrench, 3/8"-7/16"
+XO1618	Deep 60° offset box wrench, 1/2"-9/16"
+XO1820	Deep 60° offset box wrench, 9/16"-5/8"
+XO2022	Deep 60° offset box wrench, 5/8"-11/16"
+XO2024	Deep 60° offset box wrench, 5/8"-3/4"
+XO2226	Deep 60° offset box wrench, 11/16"-13/16"
+XO2428	Deep 60° offset box wrench, 3/4"-7/8"
+XO2830	Deep 60° offset box wrench, 7/8"-15/16"
+XO3032	Deep 60° offset box wrench, 15/16"-1"
+XO605	12-point deep offset box set, 3/8"-7/8" (5 pcs), storage tray
+XOM810	Deep 60° offset metric box wrench, 8-10mm
+XOM1011	Deep 60° offset metric box wrench, 10-11mm
+XOM1214	Deep 60° offset metric box wrench, 12-14mm
+XOM1315	Deep 60° offset metric box wrench, 13-15mm
+XOM1618	Deep 60° offset metric box wrench, 16-18mm
+XOM1719	Deep 60° offset metric box wrench, 17-19mm
+XOM2021	Deep 60° offset metric box wrench, 20-21mm
+XOM2224	Deep 60° offset metric box wrench, 22-24mm
+XOM605	Metric 12-point deep offset box set, 10-19mm (5 pcs), storage tray
+CRB1824	Non-conductive composite box wrench, 9/16"-3/4"
+BXOR1012	Ratcheting box wrench, 25° offset, 5/16"-3/8"
+BXOR1416	Ratcheting box wrench, 25° offset, 7/16"-1/2"
+BXOR1820	Ratcheting box wrench, 25° offset, 9/16"-5/8"
+BXOR2224	Ratcheting box wrench, 25° offset, 11/16"-3/4"
+BXOR704	12-point ratcheting box set, 5/16"-3/4" (4 pcs), storage tray
+BXORM89	Metric ratcheting box wrench, 25° offset, 8-9mm
+BXORM1011	Metric ratcheting box wrench, 25° offset, 10-11mm
+BXORM1213	Metric ratcheting box wrench, 25° offset, 12-13mm
+BXORM1415	Metric ratcheting box wrench, 25° offset, 14-15mm
+BXORM1617	Metric ratcheting box wrench, 25° offset, 16-17mm
+BXORM1819	Metric ratcheting box wrench, 25° offset, 18-19mm
+BXORM706	Metric 12-point ratcheting box set, 8-19mm (6 pcs), storage tray
+RTB8	T-handle ratcheting box wrench, 1/4"
+RTB10	T-handle ratcheting box wrench, 5/16"
+RTB11	T-handle ratcheting box wrench, 11/32"
+RTB12	T-handle ratcheting box wrench, 3/8"
+RTB14	T-handle ratcheting box wrench, 7/16"
+RTB16	T-handle ratcheting box wrench, 1/2"
+RTB18	T-handle ratcheting box wrench, 9/16"
+RTB607	12-point T-handle set, 1/4"-9/16" (7 pcs), storage tray
+RTBM8	Metric T-handle ratcheting box wrench, 8mm
+RTBM10	Metric T-handle ratcheting box wrench, 10mm
+RTBM12	Metric T-handle ratcheting box wrench, 12mm
+RTBM13	Metric T-handle ratcheting box wrench, 13mm
+RTBM14	Metric T-handle ratcheting box wrench, 14mm
+RTBM15	Metric T-handle ratcheting box wrench, 15mm
+RTBM16	Metric T-handle ratcheting box wrench, 16mm
+RTBM17	Metric T-handle ratcheting box wrench, 17mm
+RTBM18	Metric T-handle ratcheting box wrench, 18mm
+RTBM19	Metric T-handle ratcheting box wrench, 19mm
+RTBM605	Metric 12-point T-handle set, 8-14mm (5 pcs), storage tray
+RTBM505	Metric 12-point T-handle set, 15-19mm (5 pcs), storage tray
+R810SC	Short handle ratcheting box wrench, 1/4"-5/16"
+R810C	Ratcheting box wrench, 1/4"-5/16"
+R1011C	Ratcheting box wrench, 5/16"-11/32"
+R1012C	Ratcheting box wrench, 5/16"-3/8"
+R1214SC	Short handle ratcheting box wrench, 3/8"-7/16"
+R1214C	Ratcheting box wrench, 3/8"-7/16"
+R1618SC	Short handle ratcheting box wrench, 1/2"-9/16"
+R1618C	Ratcheting box wrench, 1/2"-9/16"
+R2022C	Ratcheting box wrench, 5/8"-11/16"
+R2024C	Ratcheting box wrench, 5/8"-3/4"
+R2426C	Ratcheting box wrench, 3/4"-13/16"
+R2428C	Ratcheting box wrench, 3/4"-7/8"
+R2630C	Ratcheting box wrench, 13/16"-15/16"
+R2830C	Ratcheting box wrench, 7/8"-15/16"
+R3032C	Ratcheting box wrench, 15/16"-1"
+R3436A	Ratcheting box wrench, 1 1/16"-1 1/8"
+R3640SA	Short handle ratcheting box wrench, 1 1/8"-1 1/4"
+R3840A	Ratcheting box wrench, 1 3/16"-1 1/4"
+RB604C	12-point ratcheting box set, 3/8"-7/8" (4 pcs), storage tray
+RBM78SC	Short handle metric ratcheting box wrench, 7-8mm
+RBM78C	Metric ratcheting box wrench, 7-8mm
+RBM810C	Metric ratcheting box wrench, 8-10mm
+RBM910C	Metric ratcheting box wrench, 9-10mm
+RBM1011SC	Short handle metric ratcheting box wrench, 10-11mm
+RBM1011C	Metric ratcheting box wrench, 10-11mm
+RBM1012C	Metric ratcheting box wrench, 10-12mm
+RBM1213SC	Short handle metric ratcheting box wrench, 12-13mm
+RBM1213C	Metric ratcheting box wrench, 12-13mm
+RBM1214C	Metric ratcheting box wrench, 12-14mm
+RBM1415C	Metric ratcheting box wrench, 14-15mm
+RBM1618C	Metric ratcheting box wrench, 16-18mm
+RBM1719C	Metric ratcheting box wrench, 17-19mm
+RBM604C	Metric 12-point ratcheting box set, 10-19mm (4 pcs), storage tray
+RBZ810	Latch-On ratcheting box wrench, 1/4"-5/16"
+RBZ1214	Latch-On ratcheting box wrench, 3/8"-7/16"
+RBZ1618	Latch-On ratcheting box wrench, 1/2"-9/16"
+RBZ2022	Latch-On ratcheting box wrench, 5/8"-11/16"
+RBZ2428	Latch-On ratcheting box wrench, 3/4"-7/8"
+RBZ605	Latch-On 12-point set, 1/4"-5/16" to 3/4"-7/8" (5 pcs), storage tray
+RBZM78	Latch-On metric ratcheting box wrench, 7-8mm
+RBZM910	Latch-On metric ratcheting box wrench, 9-10mm
+RBZM1112	Latch-On metric ratcheting box wrench, 11-12mm
+RBZM1314	Latch-On metric ratcheting box wrench, 13-14mm
+RBZM1517	Latch-On metric ratcheting box wrench, 15-17mm
+RBZM1618	Latch-On metric ratcheting box wrench, 16-18mm
+RBZM1921	Latch-On metric ratcheting box wrench, 19-21mm
+RBZM605	Latch-On metric 12-point set, 7-8mm to 15-17mm (5 pcs), storage tray
+RYA810	Ratcheting box wrench, 1/4"-5/16", 25° offset
+RYA1011	Ratcheting box wrench, 5/16"-11/32", 25° offset
+RYA1214	Ratcheting box wrench, 3/8"-7/16", 25° offset
+RYA1618	Ratcheting box wrench, 1/2"-9/16", 25° offset
+RYA2022	Ratcheting box wrench, 5/8"-11/16", 25° offset
+RYA2428	Ratcheting box wrench, 3/4"-7/8", 25° offset
+RBYA605	12-point ratcheting box set, 1/4"-7/8" (except 11/32"-5/16"-type size RYA1011) (5 pcs)
+RYAM78	Metric ratcheting box wrench, 25° offset, 7-8mm
+RYAM910	Metric ratcheting box wrench, 25° offset, 9-10mm
+RYAM1112	Metric ratcheting box wrench, 25° offset, 11-12mm
+RYAM1314	Metric ratcheting box wrench, 25° offset, 13-14mm
+RYAM1517	Metric ratcheting box wrench, 25° offset, 15-17mm
+RYAM1618	Metric ratcheting box wrench, 25° offset, 16-18mm
+RYAM1921	Metric ratcheting box wrench, 25° offset, 19-21mm
+RBYAM605	Metric 12-point ratcheting box set, 7-17mm (5 pcs), storage tray
+CX1012	Crowfoot wrench, 5/16"-3/8"
+CX1416	Crowfoot wrench, 7/16"-1/2"
+CX1820	Crowfoot wrench, 9/16"-5/8"
+CX2024	Crowfoot wrench, 5/8"-3/4"
+CX2226	Crowfoot wrench, 11/16"-13/16"
+CX2830	Crowfoot wrench, 7/8"-15/16"
+CX605	12-point crowfoot set, 7/16"-15/16" (5 pcs), storage tray
+CXM1012	Metric half moon crowfoot wrench, 10-12mm
+CXM1113	Metric half moon crowfoot wrench, 11-13mm
+CXM1417	Metric half moon crowfoot wrench, 14-17mm
+CXM1519	Metric half moon crowfoot wrench, 15-19mm
+CXM1821	Metric half moon crowfoot wrench, 18-21mm
+CXM605	Metric 12-point half moon crowfoot set, 10-21mm (5 pcs)
+SBX1012	Flank Drive specialty box wrench, 5/16"-3/8"
+SBX1416	Flank Drive specialty box wrench, 7/16"-1/2"
+SBX1820	Flank Drive specialty box wrench, 9/16"-5/8"
+SBX2224	Flank Drive specialty box wrench, 11/16"-3/4"
+SBX2628	Flank Drive specialty box wrench, 13/16"-7/8"
+SBX605	12-point specialty box set, 5/16"-7/8" (5 pcs), storage tray
+SBXM1012	Metric S-shaped specialty box wrench, 10-12mm
+SBXM1113	Metric S-shaped specialty box wrench, 11-13mm
+SBXM1415	Metric S-shaped specialty box wrench, 14-15mm
+SBXM1618	Metric S-shaped specialty box wrench, 16-18mm
+SBXM1719	Metric S-shaped specialty box wrench, 17-19mm
+SBXM605	Metric 12-point S-shaped specialty box set, 7-17mm (5 pcs)
+LTAM67	Metric low torque slimline wrench, 6-7mm
+LTAM810	Metric low torque slimline wrench, 8-10mm
+LTAM1011	Metric low torque slimline wrench, 10-11mm
+LTAM1214	Metric low torque slimline wrench, 12-14mm
+LTAM1315	Metric low torque slimline wrench, 13-15mm
+LTAM1618	Metric low torque slimline wrench, 16-18mm
+LTAM1719	Metric low torque slimline wrench, 17-19mm
+LTAM1922	Metric low torque slimline wrench, 19-22mm
+LTAM2124	Metric low torque slimline wrench, 21-24mm
+LTAM2730	Metric low torque slimline wrench, 27-30mm
+LTAM3236	Metric low torque slimline wrench, 32-36mm
+LTAM811	Metric low torque slimline set, 6-36mm (11 pcs)
+LTA1214	Low torque slimline wrench, 3/8"-7/16", 15° offset
+LTA1416	Low torque slimline wrench, 7/16"-1/2", 15° offset
+LTA1618	Low torque slimline wrench, 1/2"-9/16", 15° offset
+LTA2022	Low torque slimline wrench, 5/8"-11/16", 15° offset
+LTA2426	Low torque slimline wrench, 3/4"-13/16", 15° offset
+LTA2428	Low torque slimline wrench, 3/4"-7/8", 15° offset
+LTA3032	Low torque slimline wrench, 15/16"-1", 15° offset
+LTA3436	Low torque slimline wrench, 1 1/16"-1 1/8", 15° offset
+LTA4042	Low torque slimline wrench, 1 1/4"-1 5/16", 15° offset
+LTA4446	Low torque slimline wrench, 1 3/8"-1 7/16", 15° offset
+LTA4852	Low torque slimline wrench, 1 1/2"-1 5/8", 15° offset
+LTA5460	Low torque slimline wrench, 1 11/16"-1 7/8", 15° offset
+LTA812	Low torque slimline set, 3/8"-1 7/8" (12 pcs)
+LTA805K	Low torque slimline set, 7/16"-1" (5 pcs), C0507 kit bag
+DSM3.25.5	Metric open end wrench, 3.2 x 5.5mm
+DSM5.53.2	Metric open end wrench, 5.5 x 3.2mm
+DSM45	Metric open end wrench, 4 x 5mm
+DSM54	Metric open end wrench, 5 x 4mm
+DSM67	Metric open end wrench, 6 x 7mm
+DSM76	Metric open end wrench, 7 x 6mm
+DSM89	Metric open end wrench, 8 x 9mm
+DSM98	Metric open end wrench, 9 x 8mm
+DSM1011	Metric open end wrench, 10 x 11mm
+DSM1110	Metric open end wrench, 11 x 10mm
+DSM810K	Metric open end set, 3.2-11mm (10 pcs), C1003A kit bag
+VOM67B	Ignition open end wrench, 6-7mm, 15°/60° offsets
+VOM78B	Ignition open end wrench, 7-8mm, 15°/60° offsets
+VOM810B	Ignition open end wrench, 8-10mm, 15°/60° offsets
+VOM1011B	Ignition open end wrench, 10-11mm, 15°/60° offsets
+VOM1113B	Ignition open end wrench, 11-13mm, 15°/60° offsets
+VOM1213B	Ignition open end wrench, 12-13mm, 15°/60° offsets
+VOM1214B	Ignition open end wrench, 12-14mm, 15°/60° offsets
+VOM1415B	Ignition open end wrench, 14-15mm, 15°/60° offsets
+VOM1618B	Ignition open end wrench, 16-18mm, 15°/60° offsets
+VOM1719B	Ignition open end wrench, 17-19mm, 15°/60° offsets
+VOM1922B	Ignition open end wrench, 19-22mm, 15°/60° offsets
+VOM2124B	Ignition open end wrench, 21-24mm, 15°/60° offsets
+VOM2224B	Ignition open end wrench, 22-24mm, 15°/60° offsets
+VOM2730B	Ignition open end wrench, 27-30mm, 15°/60° offsets
+VOM3032B	Ignition open end wrench, 30-32mm, 15°/60° offsets
+VO810B	Open end wrench, 1/4"-5/16", 15°/60° offsets
+VO1012B	Open end wrench, 5/16"-3/8", 15°/60° offsets
+VO1214B	Open end wrench, 3/8"-7/16", 15°/60° offsets
+VO1416B	Open end wrench, 7/16"-1/2", 15°/60° offsets
+VO1618B	Open end wrench, 1/2"-9/16", 15°/60° offsets
+VO1820B	Open end wrench, 9/16"-5/8", 15°/60° offsets
+VO2022B	Open end wrench, 5/8"-11/16", 15°/60° offsets
+VO2024B	Open end wrench, 5/8"-3/4", 15°/60° offsets
+VO2224B	Open end wrench, 11/16"-3/4", 15°/60° offsets
+VO2426B	Open end wrench, 3/4"-13/16", 15°/60° offsets
+VO2428B	Open end wrench, 3/4"-7/8", 15°/60° offsets
+VO2628B	Open end wrench, 13/16"-7/8", 15°/60° offsets
+VO2830B	Open end wrench, 7/8"-15/16", 15°/60° offsets
+VO3032B	Open end wrench, 15/16"-1", 15°/60° offsets
+VO3234B	Open end wrench, 1"-1 1/16", 15°/60° offsets
+VO3440B	Open end wrench, 1 1/16"-1 1/4", 15°/60° offsets
+VO3638B	Open end wrench, 1 1/8"-1 3/16", 15°/60° offsets
+VO4042B	Open end wrench, 1 1/4"-1 5/16", 15°/60° offsets
+VO4446B	Open end wrench, 1 3/8"-1 7/16", 15°/60° offsets
+VO4852B	Open end wrench, 1 1/2"-1 5/8", 15°/60° offsets
+VO820K	Open end set, 1/4"-1 5/8" (20 pcs), C200 kit bag
+VO806B	Open end set, 1/4"-15/16" (6 pcs), storage tray
+DS88A	Open end wrench, 1/8" x 1/8"
+DS1010A	Open end wrench, 5/32" x 5/32"
+DS1212A	Open end wrench, 3/16" x 3/16"
+DS1516A	Open end wrench, 15/64" x 1/4"
+DS1615A	Open end wrench, 1/4" x 15/64"
+DS1820A	Open end wrench, 5/16" x 9/32"
+DS2018A	Open end wrench, 9/32" x 5/16"
+DS2224A	Open end wrench, 11/32" x 3/8"
+DS2422A	Open end wrench, 3/8" x 11/32"
+DS809K	Open end set, 1/8"-3/8" (9 pcs), C0900A kit bag
+DS806AK	Open end set, 15/64"-3/8" (6 pcs), C0605 kit bag
+VS8B	Four way angle head open end wrench, 1/4"
+VS10B	Four way angle head open end wrench, 5/16"
+VS11B	Four way angle head open end wrench, 11/32"
+VS12B	Four way angle head open end wrench, 3/8"
+VS14B	Four way angle head open end wrench, 7/16"
+VS16B	Four way angle head open end wrench, 1/2"
+GVS16B	Four way angle head industrial wrench, 1/2"
+VS18B	Four way angle head open end wrench, 9/16"
+GVS18B	Four way angle head industrial wrench, 9/16"
+VS20B	Four way angle head open end wrench, 5/8"
+GVS20B	Four way angle head industrial wrench, 5/8"
+VS22B	Four way angle head open end wrench, 11/16"
+GVS22B	Four way angle head industrial wrench, 11/16"
+VS24B	Four way angle head open end wrench, 3/4"
+GVS24B	Four way angle head industrial wrench, 3/4"
+VS26B	Four way angle head open end wrench, 13/16"
+GVS26B	Four way angle head industrial wrench, 13/16"
+VS28B	Four way angle head open end wrench, 7/8"
+GVS28B	Four way angle head industrial wrench, 7/8"
+VS30B	Four way angle head open end wrench, 15/16"
+GVS30B	Four way angle head industrial wrench, 15/16"
+VS32B	Four way angle head open end wrench, 1"
+GVS32B	Four way angle head industrial wrench, 1"
+VS34B	Four way angle head open end wrench, 1 1/16"
+GVS34B	Four way angle head industrial wrench, 1 1/16"
+VS36B	Four way angle head open end wrench, 1 1/8"
+VS38B	Four way angle head open end wrench, 1 3/16"
+VS40B	Four way angle head open end wrench, 1 1/4"
+GVS40B	Four way angle head industrial wrench, 1 1/4"
+VS42B	Four way angle head open end wrench, 1 5/16"
+VS44B	Four way angle head open end wrench, 1 3/8"
+VS46B	Four way angle head open end wrench, 1 7/16"
+VS48B	Four way angle head open end wrench, 1 1/2"
+VS52B	Four way angle head open end wrench, 1 5/8"
+VS54B	Four way angle head open end wrench, 1 11/16"
+VS56B	Four way angle head open end wrench, 1 3/4"
+VS58B	Four way angle head open end wrench, 1 13/16"
+VS60B	Four way angle head open end wrench, 1 7/8"
+VS64B	Four way angle head open end wrench, 2"
+VS828A	Four way angle head set, 1/4"-2" (28 pcs)
+VS814A	Four way angle head set, 3/8"-1 1/4" (14 pcs)
+VS807B	Four way angle head metric set, 10-15mm and 17mm (7 pcs)
+VSM5210B	Four way angle head metric open end wrench, 10mm
+VSM5211B	Four way angle head metric open end wrench, 11mm
+VSM5212B	Four way angle head metric open end wrench, 12mm
+VSM5213B	Four way angle head metric open end wrench, 13mm
+VSM5214B	Four way angle head metric open end wrench, 14mm
+VSM5215B	Four way angle head metric open end wrench, 15mm
+VSM5216B	Four way angle head metric open end wrench, 16mm
+VSM5217B	Four way angle head metric open end wrench, 17mm
+VSM5218B	Four way angle head metric open end wrench, 18mm
+VSM5219B	Four way angle head metric open end wrench, 19mm
+VSM5221B	Four way angle head metric open end wrench, 21mm
+VSM5222B	Four way angle head metric open end wrench, 22mm
+VSM5224B	Four way angle head metric open end wrench, 24mm
+VSM5227B	Four way angle head metric open end wrench, 27mm
+VSM814	Four way angle head metric set, 10-27mm (14 pcs)
+VSM807B	Four way angle head metric set, 10-15mm and 17mm (7 pcs), storage tray
+FHOM8B	Flex combination wrench, 8mm
+FHOM9B	Flex combination wrench, 9mm
+FHOM10B	Flex combination wrench, 10mm
+FHOM11B	Flex combination wrench, 11mm
+FHOM12B	Flex combination wrench, 12mm
+FHOM13B	Flex combination wrench, 13mm
+FHOM14B	Flex combination wrench, 14mm
+FHOM15B	Flex combination wrench, 15mm
+FHOM16B	Flex combination wrench, 16mm
+FHOM17B	Flex combination wrench, 17mm
+FHOM18B	Flex combination wrench, 18mm
+FHOM19B	Flex combination wrench, 19mm
+FHOM612B	Metric 12-point flex combination set, 8-19mm (12 pcs)
+FHOM606B	Metric 12-point flex combination set, 10-17mm (6 pcs), storage tray
+ANWR3	Aluminum AN open end wrench, No. 3 (1/2")
+ANWR4	Aluminum AN open end wrench, No. 4 (9/16")
+ANWR6	Aluminum AN open end wrench, No. 6 (11/16")
+ANWR8	Aluminum AN open end wrench, No. 8 (7/8")
+ANWR10	Aluminum AN open end wrench, No. 10 (1")
+ANWR12	Aluminum AN open end wrench, No. 12 (1 1/4")
+ANWR16	Aluminum AN open end wrench, No. 16 (1 1/2")
+ANWR20	Aluminum AN open end wrench, No. 20 (1 13/16")
+ANWR708	Aluminum AN wrench set, No. 3 to No. 20 (8 pcs), vinyl pouch
+COE12	Non-conductive composite open end wrench, 3/8"
+COE14	Non-conductive composite open end wrench, 7/16"
+COE16	Non-conductive composite open end wrench, 1/2"
+COE18	Non-conductive composite open end wrench, 9/16"
+COEH	Non-conductive composite open end head (image label)

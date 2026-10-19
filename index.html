@@ -1508,10 +1508,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const p = pairOf(m.groups.n); if (!p) return "";
     return m.groups.m ? `${p[0]} × ${p[1]} mm` : `${inch32(p[0]).replace('"', "")} × ${inch32(p[1]).replace('"', "")}`;
   };
-  // Blue-Point writes the fraction out: BLPS14316 is 1/4" drive 3/16", BLPCW58 is 5/8"
+  // Blue-Point writes the fraction out: BLPS14316 is 1/4" drive 3/16", BLPCW58 is 5/8", BLPSB12118 1-1/8"
   function fracDigits(s) {
     if (s === "1") return '1"';
     for (const den of ["64", "32", "16", "8", "4", "2"]) if (s.endsWith(den) && s.length > den.length && +s.slice(0, -den.length) < +den) return s.slice(0, -den.length) + "/" + den + '"';
+    if (/^1\d\d/.test(s)) { const f = fracDigits(s.slice(1)); if (f && f !== '1"') return "1-" + f; } // BLPSB12114 = 1-1/4"
     return "";
   }
   const tooth = "72|80|100|720|737|747|830|860|870|872|880|936|940|949";
@@ -1525,6 +1526,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // which socket drawing: deep or semi-deep, 12-point, else 6-point
   const sockKind = (deep, twelve) => (deep ? "socket-deep" : twelve ? "socket-12" : "socket");
   const D = (m) => PN_DRIVE[m.groups.d];
+  // bit sockets ending E2 sit on the next drive up: TTX25E2 is 3/8" drive, FAM8E2 1/2" (S... stays 1/2")
+  const BLP_DR = { 14: '1/4"', 38: '3/8"', 12: '1/2"', 34: '3/4"' };
+  const DE = (m) => (/E2A?$/.test(m.input) && m.groups.d !== "S" ? { T: '3/8"', F: '1/2"' }[m.groups.d] : D(m));
   const at = (drive) => () => drive;
   // [pattern, kind (or kind from the match), drive, size, unless]
   const PN_RULES = [
@@ -1533,25 +1537,29 @@ document.addEventListener("DOMContentLoaded", () => {
     [/(SET|KIT)\d*[A-Z]?$/, "set", (m) => PN_DRIVE[m.input[0]]],
     // pliers are numbers with letters after: 47ACF slip joint, 96CF needle nose, 87CF diagonal, PL400B a set
     [/^PL\d{3}/, "set-pliers"],
-    [/^[A-Z]{0,2}9\d{1,2}[A-Z]{0,2}(CF|CP)[A-Z]?$/, "pliers-needle"],
+    [/^91ACP$/, "pliers-pump"],
+    [/^[A-Z]{0,2}(1?9[2-9]|9\d\d|4[019]\d|597|609)[A-Z]{0,2}(CF|CP|EP)[A-Z]?$/, "pliers-needle"], // 96CF, 911BCP, 411BCP bent, 609ACP duck bill
     [/^[A-Z]{0,2}(8\d{1,2}|3\d\d)[A-Z]{0,2}(CF|CP)[A-Z]?$/, "pliers-diag"],
     [/^[A-Z]{0,2}\d{2,3}[A-Z]{0,3}(CF|CP|LP)[A-Z]?$/, "pliers"],
-    [/^LP\d/, "pliers-locking"], [/^AWP/, "pliers-pump"], [/^SRP/, "pliers-snap"],
+    [/^LP\d{2}A$/, "set-punch"], [/^LP\d/, "pliers-locking"], [/^AWP/, "pliers-pump"], [/^SRP/, "pliers-snap"],
     // hammers: HBFE dead blow, HBBD dead blow ball peen, BP ball peen, BC/BD sledge, HBPT/HBR soft face
-    [/^(HBFE|HBSE|HBBD|HSSD|HSPD|HSPI)\d/, "hammer-deadblow"], [/^(HBPT|HBBT|HBR|BF6)\d/, "hammer-mallet"],
-    [/^BPN?\d{2}[A-Z]?$/, "hammer-ballpeen"], [/^B[CD]\d/, "hammer-sledge"], [/^(BH|HLE|HBB)\d/, "hammer"],
-    // files: 8MA mill, 10R round, 6HR half round; HBF needle files
-    [/^(\d{1,2}(MA|R|HR|T|CR|FMK)|HBF(?!E)[A-Z0-9]*|SGHBF[A-Z0-9]*|5N[A-Z]{2})$/, "file"],
+    [/^(HBFE|HBSE|HBBD|HSSD|HSPD|HSPI|HLE)\d/, "hammer-deadblow"], [/^(HBPT|HBBT|HBR|BF6)\d/, "hammer-mallet"],
+    [/^BPN?\d{1,2}[A-Z]?$/, "hammer-ballpeen"], [/^(B[CD]|HD)\d/, "hammer-sledge"], [/^(BH|HBB)\d/, "hammer"],
+    // files: 8MA mill, 10R round, 6HR half round; HBF and 5N needle files, SGHF handles
+    [/^(\d{1,2}(MA|R|HR|T|CR|FMK)|HBF(?!E)[A-Z0-9]*|SGHBF[A-Z0-9]*|5N[A-Z]{2,3}|SGHF\d{3}[A-Z]*)$/, "file"],
     // socket sets start with the drive and piece count: 211SFSY is 3/8" 11 pieces, 310IMMYA 1/2"
     [/^([1-4])\d{2}(?!CN|ND|SSD)([A-Z]+)$/, (m) => (/TX|AM|LE|FA|TMA|TMP/.test(m[2]) ? "set-bit" : "set"), (m) => ({ 1: '1/4"', 2: '3/8"', 3: '1/2"', 4: '3/4"' })[m[1]]],
+    [/^\d{3}C?NDL?M?\d*$/, "nutdriver"], [/^\d{2,3}SSDP$/, "screwdriver-phillips"], [/^\d{2,3}SSD$/, "screwdriver"], // 102NDL10 nut drivers, 30SSD/120SSDP offset screwdrivers
     // wrenches
-    [/^(S?OEX[LSR]?S?M?|GOEXM?|OXIR?M?|OSHM?|SOEXRM?|BOER[MFS]*|BLPCWS?M?|FHOM)[5-8]\d\d[A-Z]{0,2}$/, "set-wrench"],
+    [/^(S?OEX[LSR]?S?M?|GOEXM?|OXIR?M?|OSHM?|SOEXRM?|BOER[MFS]*|FHOM|G?VSM?)[5-8]\d\d[A-Z]{0,3}$/, "set-wrench"],
+    [/^BLPCWSM?\d{3}$/, "set-wrench"], [/^RTBM?\d{3}$/, "set-wrench"], [/^RTB(?<m>M)?(?<n>\d{1,2})$/, "wrench-ratchet", null, wrenchSize], // T-handle ratcheting box
+    [/^VSM52(?<n>\d{2})B$/, "wrench-open", null, (m) => m.groups.n + " mm"], // four way angle head
     [/^(SOEXR|OEXR|OXIR|BOER)(?<m>M)?[FS]?(?<n>\d{1,3})[A-Z]*$/, "wrench-ratchet", null, wrenchSize],
     [/^(S?OEX[LS]?|GOEX|WOEX|OSH|OXI|FHO)(?<m>M)?(?<n>\d{1,3})[A-Z]*$/, "wrench", null, wrenchSize],
     [/^BLPCW(?<m>M)?(?<n>\d{1,4})$/, "wrench", null, (m) => (m.groups.m ? m.groups.n + " mm" : fracDigits(m.groups.n))],
     [/^(X[A-Z]{0,2}|CXM?|SBXM?|LTAM?|DSM?|VOM?|RB[MYAZ]*|R|RYAM?|BXORM?|CRB)(?<n>\d{3})(?<k>K?[A-Z]?)$/, (m) => (/K/.test(m.groups.k) || !pairOf(m.groups.n) ? "set-wrench" : null)],
-    [/^(?:R|RB|RYA|RBZ|BXOR)(?<m>M)?(?<n>\d{4})[A-Z]?$/, "wrench-ratchet", null, pairSize],
-    [/^(XID|XB|XS|XSO|XO|XDH|XLE|SBX|LTA|CRB)(?<m>M)?(?<n>\d{2,4})[A-Z]?$/, "wrench-box", null, pairSize],
+    [/^(?:R|RB|RYA|RBZ|BXOR)(?<m>M)?(?<n>\d{2,4})[A-Z]{0,2}$/, "wrench-ratchet", null, pairSize], // R810C, RBM78SC, R3640SA
+    [/^(XID|XB|XS|XSO|XO|XDH|XLE|SBX|LTA|CRB)(?<m>M)?(?<n>\d{2,4})[A-Z]{0,2}$/, "wrench-box", null, pairSize],
     [/^CX(?<m>M)?(?<n>\d{2,4})[A-Z]?$/, "crowfoot", null, pairSize],
     [/^(DS|VO)(?<m>M)?(?<n>\d{2,4})[A-Z]?$/, "wrench-open", null, pairSize],
     [/^G?VS(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "wrench-open", null, wrenchSize], [/^(COE|ANWR)\d/, "wrench-open"],
@@ -1559,16 +1567,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // torque wrenches (ahead of the drive letters: TQFR is a torque wrench, not a 1/4" tool)
     [/^(A?TECH|CTECH)/, "torque"], [/^(QD|QJR|QJFR|QJ|QC|QE|TQ[A-Z]*\d)/, "torque-click"],
     // screwdrivers, nut drivers, hex keys
-    [/^(CN)?S[GH]DXL?\d/, "set-screwdriver"], [/^(IHT|CNSGD)/, "insulated"], [/^(C?NDD|NDL)/, "nutdriver"],
-    [/^(G?S[GSDH]D|BSGD|SGR|SSDM)/, "screwdriver"], [/^AW(?!P)/, "hexkeys"],
+    [/^(CN)?G?S[GH]D(X|TX|TRX|ET?)L?\d0[A-Z]{0,2}$/, "set-screwdriver"], [/^(CN)?S[GH]DXL?\d/, "set-screwdriver"], // SGDX60BR, SGDTX50BR (SGDTX320BR is one driver)
+    [/^(SGDMRC10\d|SGRMINI|SGT(X|RX)L?\d|SDDD\d)/, "set-screwdriver"],
+    [/^(IHT|CNSGD|CSSC)/, "insulated"], [/^(C?NDD|NDL)/, "nutdriver"],
+    [/^(G?S[GSDH]D|BSGD|SGR|SSDM|SSM?\d[A-Z]?$)/, "screwdriver"], [/^AW(?!P)/, "hexkeys"], // SS5A, SSM3 starters
     // picks, punches, pry bars
-    [/^(SGASA|PSLR|YA14[59])/, "set-pick"], [/^SGSR/, "seal-puller"], [/^SGL?\d/, "pick"],
-    [/^(PP[A-Z]*\d{3}[A-Z]*K|PPC7\d\dA?|PPCSG\d|PPVP|PPSD)/, "set-punch"], [/^PCSG/, "punch"], [/^(PPC|PPR|PPB|PPSG)\d/, "punch-pin"],
-    [/^(SPBS|PBMP|PBS7|NPB|BLPPB)/, "pry"], [/^703\d[A-Z]?$/, "pry"],
+    [/^(PSLR\d|YA14[59])-\d$/, "pick"], [/^(SGL?ASA|PSLR|YA14[59])/, "set-pick"], [/^SGSR/, "seal-puller"], [/^(SGL?\d|YA33[89])/, "pick"],
+    // punches: PPC8xx/PPC12B cape chisels are chisels; PPC7xxA and ...K are sets
+    [/^(PP[A-Z]*\d{2,3}[A-Z]*K|PPC7\d\dA$|PPCSG\d|PPVP|PPSD|PGH\d|DPFT)/, "set-punch"], [/^(PCSG|BPPC\d|PPC(8\d\d|1[2-9]B|40[6-8]B))/, "punch"],
+    [/^(PPC|PPR|PPB|PPSG)\d/, "punch-pin"], [/^(YA879|YA900|1210B|1512B|1816B)$/, "punch-pin"],
+    [/^(SPBS|PBMP|PBS7|NPB|BLPPB)/, "pry"], [/^703\d[A-Z]?$/, "pry"], [/^(6|12|16|20)50$/, "pry"],
     // magnetic pickups and mirrors (PT5C is a pickup; PT850 is an air impact)
-    [/^(PTM\d|UIM\d|TKSS\d|CF143)/, "mirror"], [/^(PT|PHT|PTS|PTIM|UPTM?|DPTM|ECFM)\d{1,2}[A-Z]{0,3}$/, "pickup"],
+    [/^(PTM\d|UIM\d|TKSS\d|CF143|GA29[45]|GA5[123][AB]|US225|YA516)/, "mirror"], [/^(PT|PHT|PTS|PTIM|UPTM?|DPTM|ECFM)\d{1,2}[A-Z]{0,3}$/, "pickup"],
+    [/^(DPTC\d|GA265|GA353|YA837)/, "pickup"], // claw pick-ups
     // knives, scrapers, saws
-    [/^(KER\d|CRKBP|LBUK|PK(1\d\d|8\d))/, "knife"], [/^(PK(5\d|500|70)|PKB|PKNC|PKRS|CSA\d|CSB\d|US7\d)/, "scraper"],
+    [/^(KER\d|CRKBP|LBUK|PK(1\d\d|8\d)|YA40[35]A)/, "knife"], [/^(PK(5\d|500|70)|PKB|PKNC|PKRS|CSA\d|CSB\d|CS\d$|US7\d|MS\d{3,4}$)/, "scraper"],
     [/^HS(G|M|BM)?\d/, "hacksaw"],
     // shop equipment
     [/^JCW/, "creeper"], [/^FJ\d/, "floor-jack"], [/^CGG\d/, "grease-gun"], [/^CGR[RS]\d/, "grinder-die"], [/^(CG|CJ)\d/, "puller"],
@@ -1584,11 +1597,23 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^CT(Q|J)?\d/, "power"],
     // air tools (FAR72 is an air ratchet, not a 72-tooth 3/8" ratchet)
     [/^(FAR|PTR)\d/, "air-ratchet"], [/^(IM(3\d|\d{4})[A-Z]?|MG\d{3,4}[A-Z]*|PT\d{3}[A-Z]?)$/, "air-impact"], [/^PH\d{3,4}/, "air-hammer"], [/^PTGR\d/, "grinder-die"],
+    [/^PIT\d/, "hand-impact"],
     // ---- drive tools ----
+    // 1" drive: L873 ratchet head, L113H breaker bar, L63 / L853HA1 extensions; IM62B 1" impact extension
+    [/^G?L873$/, "ratchet", at('1"')], [/^L113H$/, "breaker", at('1"')], [/^L(63|853HA\d?)$/, "extension", at('1"')],
+    [/^IM(62|92|122)B$|^IM132A$/, "extension", at('1"')], [/^(IM72|IP82|IM124B)$/, "ujoint", at('3/4"')], [/^IP80[0D]$/, "ujoint", at('1/2"')],
+    [/^L672B$/, "adapter", at('3/4"')], [/^GU8$/, "ujoint", at('1/2"')], [/^TZ\d$/, "extension", at('1/4"')],
+    [/^IMXA\d/, "adapter"], [/^IMXL?(?<n>\d{2,3})[A-Z]?$/, "extension", at('1/2"'), (m) => m.groups.n.slice(0, -1) + '"'], // IMX52 = 5", IMXL182 = 18"
+    [/^IMSFXL(?<n>\d{2})$/, "extension", at('3/8"'), (m) => m.groups.n + '"'],
+    [/^BTW[A-Z]*K$|^BTWSMPK$/, "set-kit"], [/^BTW(R?O)?S$/, "ratchet-stubby", at('1/4"')], [/^PALMRAT$/, "ratchet", at('3/8"')], [/^G?SP936/, "ratchet", at('1/2"')],
+    [/^TM6[23][AB]$/, "speeder", at('1/4"')], [/^TMR4$/, "nutdriver"], [/^TMXM\d/, "adapter", at('1/4"')], [/^GAF\d/, "adapter"],
+    // special sockets: A17 drag link, BW/DW 3/4" lug, WH weatherhead, PP pipe plug, TTWY twist, B2191 pentagon
+    [/^A80A?$/, "extractor"], [/^A(15|17|26|172)A?$/, "socket", at('1/2"')], [/^IM\d{3}[PR]$/, "other"], [/^GLD\d{3}$/, "socket", at('3/4"')],
+    [/^(BWDM?|BW|DW)\d{3,4}[A-Z]?$/, "socket", at('3/4"')], [/^(WH\d{3}|TTWY\d{3}A?|B\d{4})$/, "socket", at('1/2"')], [/^PPM?\d{3}A$/, "socket"],
     [/^BPR(?<d>[TFSL])R?\d{3}/, "ratchet", D],
     [new RegExp(`^C?(?<d>[TFSL])(?<mods>[ABCFHKLMORSXYZ]{0,4})(?<teeth>${tooth})(?!\\d)[A-Z]{0,4}$`), ratchetKind, D, null, /^C?[TFSL]M?I?X[A-Z]/],
     [/^(?<d>[TFSL])M?[67]7A?$/, "adapter", D], // TM77, F77, S77A ratchet adaptors
-    [/^(?<d>[TFL])R?S70A?$|^TMS70A?$/, "speeder", (m) => PN_DRIVE[m.input[0]]], // ratchet spinners
+    [/^(?<d>[TFL])R?S70A?$|^TMS70A?$/, "speeder", (m) => ({ T: '1/4"', F: '3/8"', L: '1/2"' })[m.input[0]]], // ratchet spinners (LRS70A is 1/2")
     [/^(?<d>[TFSL])(MS|N)?4[A-Z]{0,2}$/, "speeder", D], // TMS4E, F4LB, S4, SN4B
     [/^(?<d>[TFL])(M5|5L|52B|9TURBO|11TURBO|MRT8)$/, "speeder", D],
     [/^C?(?<d>[TFS])H?BB\d/, "breaker", D], [/^C?(?<d>[TFS])H?N\d{2}[A-Z]?$/, "breaker", D], [/^(?<d>[TFSL])([6-9]|1\d|2\d)L[A-Z]$/, "breaker", D],
@@ -1600,23 +1625,28 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^TA3$/, "adapter", at('1/4"')], [/^(?<d>F)AT\d|^(?<d2>S)AF\d|^(?<d3>L)AS?\d/, "adapter", (m) => PN_DRIVE[m.input[0]]], [/^(?<d>F)SD\d/, "adapter", D],
     [/^(PA\d[A-Z]$|CA\d|A2A$|A3011A$|RWA\d)/, "adapter"],
     // bit sockets: TTX25E/FTX40E Torx, TMA8E/FAM6E hex, TMP22E Phillips, FBS8 bit holder
-    [/^P?(?<d>[TFS])TX[BRL]?(?<n>\d{1,2})(TP)?E?\d?$/, "socket-bit", D, (m) => "T" + +m.groups.n],
-    [/^(?<d>[TFS])M?A(?<x>[BLMXS]*)(?<n>\d{1,2}(\.\d)?)[AE]\d?$/, "socket-bit", D, (m) => (/M/.test(m.groups.x) ? m.groups.n + "mm" : inch32(+m.groups.n))],
-    [/^(?<d>[TF])M?[PC]\d{2,3}E\d?$/, "socket-bit", D], [/^(?<d>[TF])M?BS\d/, "socket-bit", D],
+    [/^P?(?<d>[TFS])TX[BRL]?(?<n>\d{1,2})(TP)?E?\d?$/, "socket-bit", DE, (m) => "T" + +m.groups.n],
+    [/^(?<d>[TFS])M?A(?<x>[BDLMXS]*)(?<n>\d{1,2}(\.\d)?)L?[AE]\d?$/, "socket-bit", DE, (m) => (/M/.test(m.groups.x) ? m.groups.n + "mm" : inch32(+m.groups.n))],
+    [/^(?<d>[TF])M?[PC]\d{2,3}E\d?$/, "socket-bit", DE], [/^(?<d>[TF])M?U?BSM?\d/, "socket-bit", D],
+    [/^(?<d>[FS])TSM(?<n>\d{1,2})L?E2?$/, "socket-bit", D, (m) => m.groups.n + "mm"], // triple square
+    [/^SP(DL)?\d{2}E2?$|^SW\d{2}E2?A?$/, "socket-bit", at('1/2"')], [/^LAW\d{3}E2?$/, "socket-bit", at('3/4"')],
+    [/^SW4(?<n>[1-3][02468])$/, "socket-12", at('1/2"'), (m) => inch32(+m.groups.n)], // SW412 = 3/8" 12-pt socket driver
     // E-Torx sockets: TLE40A is E4, FLE180A E18, SLE160 E16; STLE deep, TSE/FSE swivel, IMTLE impact
     [/^(?<im>IM)?(?<deep>S)?(?<d>[TFS])(?<u>L|S)E(P|PL)?(?<n>\d{2,3})[A-Z]?$/, (m) => (m.groups.im ? "socket-impact" : m.groups.u === "S" ? "socket-swivel" : m.groups.deep ? "socket-deep" : "socket"), D, (m) => { const n = +m.groups.n; return "E" + (n >= 40 ? n / 10 : n); }],
     [/^S97\d\d/, "socket-spark", at('3/8"')], [/^TM4\d\d$/, "socket", at('1/4"')],
     // impact sockets: IMTM 1/4", IMF 3/8", IM/IMM 1/2" (a trailing 2 is 3/4": IM182A), S... deep, IP swivel
     [/^S?IMT(?<m>M)?M(?<n>\d{1,3}(\.\d)?)[A-Z]?$/, "socket-impact", at('1/4"'), sockSize],
     [/^IPT(M)?(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "socket-swivel", at('1/4"'), sockSize],
+    [/^IMFS(?<n>\d{3})[A-Z]?$/, "socket-impact", at('1/2"'), sockSize], // 1/2" thin wall
     [/^S?IMD?F(?<m>M)?S?(?<n>\d{1,3})[A-Z]?$/, "socket-impact", at('3/8"'), sockSize],
     [/^IP[SL]?F(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "socket-swivel", at('3/8"'), sockSize],
     [/^S?IP[SD]?L?(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "socket-swivel", at('1/2"'), sockSize],
-    [/^S?IM(?<fd>D|FD)?(?<m>M)?[DLF]?(?<n>\d{2,3})[A-Z]?$/, "socket-impact", (m) => (/^\d\d2$/.test(m.groups.n) || m.groups.fd === "FD" ? '3/4"' : '1/2"'), sockSize],
+    [/^S?IM(?<fd>D|FD)?(?<m>M)?[DLF]?(?<n>\d{2,3})[A-Z]?$/, "socket-impact", (m) => ((/^\d\d2$/.test(m.groups.n) && !/^SIMM/.test(m.input)) || m.groups.fd === "FD" ? '3/4"' : '1/2"'), sockSize],
     // 1/4": TM 6-pt, TMD 12-pt, TMM metric, TMS semi-deep, STM deep, TMU swivel, MGM magnetic
-    [/^S?TMU(S)?(?<m>M)?(?<n>\d{1,3})[A-Z]?$/, "socket-swivel", at('1/4"'), sockSize],
+    [/^S?TMU(S)?(?<m>M)?(?<n>\d{1,3}(\.\d)?)[A-Z]?$/, "socket-swivel", at('1/4"'), sockSize],
+    [/^T(?<n>\d{1,2})$/, "socket", at('1/4"'), sockSize], // older 1/4" sockets: T8 = 1/4"
     [/^(?<deep>S)?TM(?<m>M)?(?<dd>D)?(?<semi>S)?(?<n>\d{1,3}(\.\d)?)[A-Z]?$/, (m) => sockKind(m.groups.deep || m.groups.semi, m.groups.dd), at('1/4"'), sockSize],
-    [/^MGM(?<m>M)?(?<deep>S)?(?<n>\d{1,2})[A-Z]?$/, (m) => sockKind(m.groups.deep), at('1/4"'), sockSize],
+    [/^MGM(?<m>M)?(?<deep>S)?(?<n>\d{1,2}(\.\d)?)[A-Z]?$/, (m) => sockKind(m.groups.deep), at('1/4"'), sockSize],
     // 3/8": F 12-pt, FS 6-pt, FM/FSM metric, SF deep, FMS/FSMS/FDS semi-deep, FU/FSU swivel
     [/^F(S)?U(?<m>M)?(?<n>\d{1,3})[A-Z]?$/, "socket-swivel", at('3/8"'), sockSize],
     [/^(?<deep>S)?F(?<dd>D)?(?<six>S)?(?<m>M)?(?<semi>S)?(?<n>\d{1,3})[A-Z]?$/, (m) => sockKind(m.groups.deep || m.groups.semi || (m.groups.dd && m.groups.six), m.groups.dd || !m.groups.six), at('3/8"'), sockSize],
@@ -1626,7 +1656,16 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3/4": LDH 12-pt, LS deep
     [/^L(?<k>DH|S)(?<m>M)?(?<n>\d{2,3})[A-Z]?$/, (m) => (m.groups.k === "S" ? "socket-deep" : "socket-12"), at('3/4"'), sockSize],
     // Blue-Point sockets: BLPS14316 1/4" drive 3/16", BLPSM1412 12 mm, BLPLS deep
-    [/^BLP(?<deep>L)?S(?<m>M)?8?(?<dr>14|38|12|34)(?<n>\d{1,4})$/, (m) => sockKind(m.groups.deep), (m) => ({ 14: '1/4"', 38: '3/8"', 12: '1/2"', 34: '3/4"' })[m.groups.dr], (m) => (m.groups.m ? m.groups.n + "mm" : fracDigits(m.groups.n))],
+    [/^BLP(?<deep>L)?SB?(?<m>M)?8?(?<dr>14|38|12|34)(?<n>\d{1,4}(\.\d)?)$/, (m) => sockKind(m.groups.deep), (m) => ({ 14: '1/4"', 38: '3/8"', 12: '1/2"', 34: '3/4"' })[m.groups.dr], (m) => (m.groups.m ? m.groups.n + "mm" : fracDigits(m.groups.n))],
+    // Blue-Point: the drive is written 14/38/12 and the size spelled out (BLPEXTK126 = 1/2" drive 6", BLPH14316 3/16")
+    [/^BLP(GSS|LLEXT|TORX)/, "set"],
+    [/^BLPEXT[KLF]?(?<dr>14|38|12)(?<n>\d{1,2})$/, "extension", (m) => BLP_DR[m.groups.dr], (m) => m.groups.n + '"'],
+    [/^BLPTXK(?<n>[\d.]+)$/, "extension", at('1/4"')],
+    [/^BLPH(?<dr>14|38|12)(?<n>\d{1,4})$/, "socket-bit", (m) => BLP_DR[m.groups.dr], (m) => fracDigits(m.groups.n)],
+    [/^BLPTS?(?<dr>14|38|12)(?<n>\d{1,2})(TP)?$/, "socket-bit", (m) => BLP_DR[m.groups.dr], (m) => "T" + m.groups.n],
+    [/^BLPP(?<dr>14|38|12)\d$/, "socket-bit", (m) => BLP_DR[m.groups.dr]],
+    [/^BLPUJ(?<dr>14|38|12)$/, "ujoint", (m) => BLP_DR[m.groups.dr]], [/^BLPBB(?<dr>14|38|12)\d+$/, "breaker", (m) => BLP_DR[m.groups.dr]],
+    [/^BLP(CGHD|SD)(?<dr>14|38|12)/, "speeder", (m) => BLP_DR[m.groups.dr]],
   ];
   // The best guess for a part number: { key, drive, size } or null. "GF80", "GTW261"... are the
   // industrial-finish versions of F80 and TW261, so a leading G is tried without it too.
