@@ -1463,22 +1463,194 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
   const DRIVE_CATS = ['1/4" Drive Tools', '3/8" Drive Tools', '1/2" Drive Tools', '3/4" & Larger Drive Tools'];
   const ART_CAT = { "Wrenches": "wrench", "Torque": "torque", "Screwdrivers": "screwdriver", "Pliers": "pliers", "Awls, Hooks and Picks": "pick", "Prybars": "pry", "Punches/Chisels": "punch", "Hammers": "hammer", "Non-Conductive Composite": "insulated", "General Hand Tools": "general", "Service Tools - Sets": "set", "Power Tools": "power", "Tool Storage": "storage", "Shop & Tech": "shop", "Diagnostics": "diag" };
-  // Part number prefixes are a best guess at Snap-on's numbering; the name always wins when there is one.
-  const ART_PN = [
-    [/^[TFSL][A-Z]*(72|80|720|830|936|880)[A-Z]*(SET|KIT)/, "set-kit"], [/(SET|KIT)\d*[A-Z]?$/, "set"],
-    [/^(A?TECH|CTECH|QD|QJR|QJFR)/, "torque"], [/^S[GSDH]D/, "screwdriver"], [/^(SPBS?|PBS?)\d/, "pry"],
-    [/^(S?OEX|S?OXI|S?OXR|S?XDH?|SRX|R?XF|RXH|RXS|SOXR|GOEX|VSM?\d|V\d|AD\d|FAD)/, "wrench"],
-    [/^(IM[A-Z]|SIM|IPM|IPS)/, "socket"], [/^(CTJ?|CDR|CTR|CTB|CTC|IM\d|MG\d|PT\d|PH\d|FAR\d|PTR)/, "power"],
-    [/^[TFSL]X[WKL]?\d{1,2}[A-Z]?$/, "extension"], [/^[TFSL]U\d{1,2}[A-Z]?$/, "ujoint"], [/^AW/, "hexkeys"],
-    [/^(KR|KMP|KCP|KHP|KER|KTL|KSL|KHD)/, "storage"], [/^(ZEE|EE)/, "diag"],
-    [/^(\d{2,3}(ACF|ACP|BCP|CP|CF)|LN\d|PL\d|AWP|SRP)/, "pliers"], [/^(HBB|HBFE|BPN|HB)\d/, "hammer"],
-    // Ratchet numbers end in the tooth count (72, 80, 100...) and can carry a letter after it: S80A, FH80A.
-    [/^[TFSL][A-Z]*(72|80|100|720|830|880|936)[A-Z]{0,2}$/, "ratchet"],
-    // Metric, bit and swivel sockets say so in their letters. Plain SAE sockets are a size in 32nds
-    // (F12 is 12/32 = 3/8"), with a 1 on the end for 6-point (F121), so 80 or 100 can't be a socket.
-    [/^[TFSL]{1,2}(S?M{1,2}S?|TXE?|ATX|AM|AB|S?U)\d/, "socket"], [/^[TFSL]{1,2}S?(0?[4-9]|[1-5]\d|6[0-4])1?[A-Z]?$/, "socket"],
-    [/^[TFSL][A-Z]*\d/, "ratchet"],
+  /* ---------- Snap-on part numbers: what tool, which drive, what size ----------
+     Read from Snap-on's own catalogs. Letters say the family (OEX combination wrench, SGD soft grip
+     screwdriver, PPC punch...). On drive tools T/F/S/L say the drive (1/4", 3/8", 1/2", 3/4") and the
+     digits the size: inches in 32nds (F12 = 12/32 = 3/8") or mm (FSM12), sometimes with a trailing
+     style digit (FS121 is still 3/8"). Ratchets end in their tooth count instead (F80, TL72, F936).
+     The tool's name always wins when there is one; a number we can't read gets a plain drawing
+     rather than a wrong tool. */
+  const PN_DRIVE = { T: '1/4"', F: '3/8"', S: '1/2"', L: '3/4"' };
+  const SAE_MAX = { '1/4"': 20, '3/8"': 32, '1/2"': 48, '3/4"': 80 }; // biggest socket, in 32nds
+  const MM_MAX = { '1/4"': 15, '3/8"': 24, '1/2"': 36, '3/4"': 60 };
+  // 12 -> 3/8", 34 -> 1-1/16", 2.5 -> 5/64"
+  function inch32(n) {
+    const w = Math.floor(n / 32); let num = Math.round((n - w * 32) * 2), den = 64;
+    if (!num) return w + '"';
+    while (num % 2 === 0) { num /= 2; den /= 2; }
+    return (w ? w + "-" : "") + num + "/" + den + '"';
+  }
+  // "12" -> 12, "121"/"120"/"122" -> 12 (style digit), "81" on a 1/4" socket -> 8
+  function sizeDigits(d, max) {
+    const n = parseFloat(d);
+    if (/^\d{3}$/.test(d) && /[012]$/.test(d)) return Math.floor(n / 10);
+    if (/^\d{2}$/.test(d) && n > max && /[012]$/.test(d)) return Math.floor(n / 10);
+    return n;
+  }
+  const sockSize = (m, drive) => {
+    const d = m.groups.n; if (!d) return "";
+    if (m.groups.m) return sizeDigits(d, MM_MAX[drive] || 36) + "mm";
+    const n = sizeDigits(d, SAE_MAX[drive] || 48);
+    return n >= 3 && n <= (SAE_MAX[drive] || 48) ? inch32(n) : "";
+  };
+  // wrenches: OEX12B 3/8", OEX080B short 1/4", OEXM150B 15 mm, SOEXM10 10 mm, OXIM55SB 5.5 mm
+  const wrenchSize = (m) => {
+    const d = m.groups.n, n = d.length === 3 ? Number(d) / 10 : Number(d);
+    if (m.groups.m) return (n > 40 ? n / 10 : n) + " mm";
+    return n >= 2 && n <= 80 ? inch32(n) : "";
+  };
+  // pairs on box, open-end and ratcheting box wrenches: XB1214A 3/8 × 7/16, XBM1214A 12 × 14 mm
+  function pairOf(d) {
+    const s = d.length === 4 ? [d.slice(0, 2), d.slice(2)] : d.length === 3 ? [d.slice(0, 1), d.slice(1)] : d.length === 2 ? [d[0], d[1]] : null;
+    return s && +s[0] < +s[1] ? s.map(Number) : null;
+  }
+  const pairSize = (m) => {
+    const p = pairOf(m.groups.n); if (!p) return "";
+    return m.groups.m ? `${p[0]} × ${p[1]} mm` : `${inch32(p[0]).replace('"', "")} × ${inch32(p[1]).replace('"', "")}`;
+  };
+  // Blue-Point writes the fraction out: BLPS14316 is 1/4" drive 3/16", BLPCW58 is 5/8"
+  function fracDigits(s) {
+    if (s === "1") return '1"';
+    for (const den of ["64", "32", "16", "8", "4", "2"]) if (s.endsWith(den) && s.length > den.length && +s.slice(0, -den.length) < +den) return s.slice(0, -den.length) + "/" + den + '"';
+    return "";
+  }
+  const tooth = "72|80|100|720|737|747|830|860|870|872|880|936|940|949";
+  // Ratchets: letters between the drive and the tooth count say the shape. L long, F or X flex,
+  // K or C stubby, H soft grip (softGrip below); 8xx/7x7 teeth and the TS72/TMR fingertips are round heads.
+  function ratchetKind(m) {
+    const t = m.groups.mods, round = /^(8[67]\d|7[34]7)$/.test(m.groups.teeth) || /MR/.test(t) || (m.groups.d === "T" && t === "S");
+    const flex = /[FX]/.test(t), long = /L/.test(t);
+    return round ? "ratchet-round" : flex && long ? "ratchet-long-flex" : flex ? "ratchet-flex" : long ? "ratchet-long" : /[KC]/.test(t) ? "ratchet-stubby" : "ratchet";
+  }
+  // which socket drawing: deep or semi-deep, 12-point, else 6-point
+  const sockKind = (deep, twelve) => (deep ? "socket-deep" : twelve ? "socket-12" : "socket");
+  const D = (m) => PN_DRIVE[m.groups.d];
+  const at = (drive) => () => drive;
+  // [pattern, kind (or kind from the match), drive, size, unless]
+  const PN_RULES = [
+    // sets and kits
+    [/^[TFSL][A-Z]*(72|80|720|830|936|880)[A-Z]*(SET|KIT)/, "set-kit", (m) => PN_DRIVE[m.input[0]]],
+    [/(SET|KIT)\d*[A-Z]?$/, "set", (m) => PN_DRIVE[m.input[0]]],
+    // pliers are numbers with letters after: 47ACF slip joint, 96CF needle nose, 87CF diagonal, PL400B a set
+    [/^PL\d{3}/, "set-pliers"],
+    [/^[A-Z]{0,2}9\d{1,2}[A-Z]{0,2}(CF|CP)[A-Z]?$/, "pliers-needle"],
+    [/^[A-Z]{0,2}(8\d{1,2}|3\d\d)[A-Z]{0,2}(CF|CP)[A-Z]?$/, "pliers-diag"],
+    [/^[A-Z]{0,2}\d{2,3}[A-Z]{0,3}(CF|CP|LP)[A-Z]?$/, "pliers"],
+    [/^LP\d/, "pliers-locking"], [/^AWP/, "pliers-pump"], [/^SRP/, "pliers-snap"],
+    // hammers: HBFE dead blow, HBBD dead blow ball peen, BP ball peen, BC/BD sledge, HBPT/HBR soft face
+    [/^(HBFE|HBSE|HBBD|HSSD|HSPD|HSPI)\d/, "hammer-deadblow"], [/^(HBPT|HBBT|HBR|BF6)\d/, "hammer-mallet"],
+    [/^BPN?\d{2}[A-Z]?$/, "hammer-ballpeen"], [/^B[CD]\d/, "hammer-sledge"], [/^(BH|HLE|HBB)\d/, "hammer"],
+    // files: 8MA mill, 10R round, 6HR half round; HBF needle files
+    [/^(\d{1,2}(MA|R|HR|T|CR|FMK)|HBF(?!E)[A-Z0-9]*|SGHBF[A-Z0-9]*|5N[A-Z]{2})$/, "file"],
+    // socket sets start with the drive and piece count: 211SFSY is 3/8" 11 pieces, 310IMMYA 1/2"
+    [/^([1-4])\d{2}(?!CN|ND|SSD)([A-Z]+)$/, (m) => (/TX|AM|LE|FA|TMA|TMP/.test(m[2]) ? "set-bit" : "set"), (m) => ({ 1: '1/4"', 2: '3/8"', 3: '1/2"', 4: '3/4"' })[m[1]]],
+    // wrenches
+    [/^(S?OEX[LSR]?S?M?|GOEXM?|OXIR?M?|OSHM?|SOEXRM?|BOER[MFS]*|BLPCWS?M?|FHOM)[5-8]\d\d[A-Z]{0,2}$/, "set-wrench"],
+    [/^(SOEXR|OEXR|OXIR|BOER)(?<m>M)?[FS]?(?<n>\d{1,3})[A-Z]*$/, "wrench-ratchet", null, wrenchSize],
+    [/^(S?OEX[LS]?|GOEX|WOEX|OSH|OXI|FHO)(?<m>M)?(?<n>\d{1,3})[A-Z]*$/, "wrench", null, wrenchSize],
+    [/^BLPCW(?<m>M)?(?<n>\d{1,4})$/, "wrench", null, (m) => (m.groups.m ? m.groups.n + " mm" : fracDigits(m.groups.n))],
+    [/^(X[A-Z]{0,2}|CXM?|SBXM?|LTAM?|DSM?|VOM?|RB[MYAZ]*|R|RYAM?|BXORM?|CRB)(?<n>\d{3})(?<k>K?[A-Z]?)$/, (m) => (/K/.test(m.groups.k) || !pairOf(m.groups.n) ? "set-wrench" : null)],
+    [/^(?:R|RB|RYA|RBZ|BXOR)(?<m>M)?(?<n>\d{4})[A-Z]?$/, "wrench-ratchet", null, pairSize],
+    [/^(XID|XB|XS|XSO|XO|XDH|XLE|SBX|LTA|CRB)(?<m>M)?(?<n>\d{2,4})[A-Z]?$/, "wrench-box", null, pairSize],
+    [/^CX(?<m>M)?(?<n>\d{2,4})[A-Z]?$/, "crowfoot", null, pairSize],
+    [/^(DS|VO)(?<m>M)?(?<n>\d{2,4})[A-Z]?$/, "wrench-open", null, pairSize],
+    [/^G?VS(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "wrench-open", null, wrenchSize], [/^(COE|ANWR)\d/, "wrench-open"],
+    [/^(R?XF|RXH|RXS|SRXF)/, "wrench-flare"], [/^(F?ADH?\d|AD\d)/, "wrench-adjust"],
+    // torque wrenches (ahead of the drive letters: TQFR is a torque wrench, not a 1/4" tool)
+    [/^(A?TECH|CTECH)/, "torque"], [/^(QD|QJR|QJFR|QJ|QC|QE|TQ[A-Z]*\d)/, "torque-click"],
+    // screwdrivers, nut drivers, hex keys
+    [/^(CN)?S[GH]DXL?\d/, "set-screwdriver"], [/^(IHT|CNSGD)/, "insulated"], [/^(C?NDD|NDL)/, "nutdriver"],
+    [/^(G?S[GSDH]D|BSGD|SGR|SSDM)/, "screwdriver"], [/^AW(?!P)/, "hexkeys"],
+    // picks, punches, pry bars
+    [/^(SGASA|PSLR|YA14[59])/, "set-pick"], [/^SGSR/, "seal-puller"], [/^SGL?\d/, "pick"],
+    [/^(PP[A-Z]*\d{3}[A-Z]*K|PPC7\d\dA?|PPCSG\d|PPVP|PPSD)/, "set-punch"], [/^PCSG/, "punch"], [/^(PPC|PPR|PPB|PPSG)\d/, "punch-pin"],
+    [/^(SPBS|PBMP|PBS7|NPB|BLPPB)/, "pry"], [/^703\d[A-Z]?$/, "pry"],
+    // magnetic pickups and mirrors (PT5C is a pickup; PT850 is an air impact)
+    [/^(PTM\d|UIM\d|TKSS\d|CF143)/, "mirror"], [/^(PT|PHT|PTS|PTIM|UPTM?|DPTM|ECFM)\d{1,2}[A-Z]{0,3}$/, "pickup"],
+    // knives, scrapers, saws
+    [/^(KER\d|CRKBP|LBUK|PK(1\d\d|8\d))/, "knife"], [/^(PK(5\d|500|70)|PKB|PKNC|PKRS|CSA\d|CSB\d|US7\d)/, "scraper"],
+    [/^HS(G|M|BM)?\d/, "hacksaw"],
+    // shop equipment
+    [/^JCW/, "creeper"], [/^FJ\d/, "floor-jack"], [/^CGG\d/, "grease-gun"], [/^CGR[RS]\d/, "grinder-die"], [/^(CG|CJ)\d/, "puller"],
+    [/^EC(?!FM)[A-Z]/, "shop"],
+    // diagnostics
+    [/^EEDM/, "multimeter"], [/^EE(TH|SC)/, "diag-handheld"], [/^(ZEE|EE)/, "diag-tablet"],
+    // storage (KER above is a knife)
+    [/^KR(SC|BC)/, "storage-cart"], [/^K[A-Z]{1,4}\d/, "storage"],
+    // cordless: CT impact, CTR ratchet, CDR drill, CTS screwdriver, CTGR grinder, CTB battery, CTC charger
+    [/^CTB\d/, "battery"], [/^CTC\d/, "charger"], [/^CTRS\d/, "cl18-saw"], [/^CTRG\d/, "rivet"], [/^CTR\d/, "power-ratchet"],
+    [/^C?TGRS\d/, "grinder-die"], [/^CTGR\d/, "grinder-angle"], [/^CTS[RS]?\d/, "power-driver"], [/^CDR[RS]?\d/, "power-drill"],
+    [/^CT(BF|PP)\d/, "polisher"], [/^CT(L|FL|LED|LAR|LZ|LUV|LUH|LU)\d/, "shop"], [/^CTG\d/, "thermometer"], [/^CTINF/, "tire-inflator"],
+    [/^CT(Q|J)?\d/, "power"],
+    // air tools (FAR72 is an air ratchet, not a 72-tooth 3/8" ratchet)
+    [/^(FAR|PTR)\d/, "air-ratchet"], [/^(IM(3\d|\d{4})[A-Z]?|MG\d{3,4}[A-Z]*|PT\d{3}[A-Z]?)$/, "air-impact"], [/^PH\d{3,4}/, "air-hammer"], [/^PTGR\d/, "grinder-die"],
+    // ---- drive tools ----
+    [/^BPR(?<d>[TFSL])R?\d{3}/, "ratchet", D],
+    [new RegExp(`^C?(?<d>[TFSL])(?<mods>[ABCFHKLMORSXYZ]{0,4})(?<teeth>${tooth})(?!\\d)[A-Z]{0,4}$`), ratchetKind, D, null, /^C?[TFSL]M?I?X[A-Z]/],
+    [/^(?<d>[TFSL])M?[67]7A?$/, "adapter", D], // TM77, F77, S77A ratchet adaptors
+    [/^(?<d>[TFL])R?S70A?$|^TMS70A?$/, "speeder", (m) => PN_DRIVE[m.input[0]]], // ratchet spinners
+    [/^(?<d>[TFSL])(MS|N)?4[A-Z]{0,2}$/, "speeder", D], // TMS4E, F4LB, S4, SN4B
+    [/^(?<d>[TFL])(M5|5L|52B|9TURBO|11TURBO|MRT8)$/, "speeder", D],
+    [/^C?(?<d>[TFS])H?BB\d/, "breaker", D], [/^C?(?<d>[TFS])H?N\d{2}[A-Z]?$/, "breaker", D], [/^(?<d>[TFSL])([6-9]|1\d|2\d)L[A-Z]$/, "breaker", D],
+    [/^TM10G$/, "breaker", at('1/4"')], [/^L8112A?$/, "breaker", at('3/4"')],
+    [/^P?(?<d>[TFS])M?U8[A-Z]?$/, "ujoint", D], [/^S8$/, "ujoint", at('1/2"')], [/^L82A?$/, "ujoint", at('3/4"')], [/^IPM80{1,2}A?$/, "ujoint", at('1/4"')],
+    [/^(?<d>[TF])M?X?61A$/, "extension", D],
+    [/^C?(?<d>[TFSL])M?I?X(K|W|WK|WP|KL|KV|L|LBP)?(?<n>\d{1,3})[A-Z]?$/, "extension", D, (m) => { const n = +m.groups.n; return n >= 20 && n % 10 === 0 ? n / 10 + '"' : n < 40 ? n + '"' : ""; }],
+    [/^GAL?X(?<n>\d{1,2})$/, "extension"], [/^L(?<n>\d{1,2})2$/, "extension", at('3/4"')],
+    [/^TA3$/, "adapter", at('1/4"')], [/^(?<d>F)AT\d|^(?<d2>S)AF\d|^(?<d3>L)AS?\d/, "adapter", (m) => PN_DRIVE[m.input[0]]], [/^(?<d>F)SD\d/, "adapter", D],
+    [/^(PA\d[A-Z]$|CA\d|A2A$|A3011A$|RWA\d)/, "adapter"],
+    // bit sockets: TTX25E/FTX40E Torx, TMA8E/FAM6E hex, TMP22E Phillips, FBS8 bit holder
+    [/^P?(?<d>[TFS])TX[BRL]?(?<n>\d{1,2})(TP)?E?\d?$/, "socket-bit", D, (m) => "T" + +m.groups.n],
+    [/^(?<d>[TFS])M?A(?<x>[BLMXS]*)(?<n>\d{1,2}(\.\d)?)[AE]\d?$/, "socket-bit", D, (m) => (/M/.test(m.groups.x) ? m.groups.n + "mm" : inch32(+m.groups.n))],
+    [/^(?<d>[TF])M?[PC]\d{2,3}E\d?$/, "socket-bit", D], [/^(?<d>[TF])M?BS\d/, "socket-bit", D],
+    // E-Torx sockets: TLE40A is E4, FLE180A E18, SLE160 E16; STLE deep, TSE/FSE swivel, IMTLE impact
+    [/^(?<im>IM)?(?<deep>S)?(?<d>[TFS])(?<u>L|S)E(P|PL)?(?<n>\d{2,3})[A-Z]?$/, (m) => (m.groups.im ? "socket-impact" : m.groups.u === "S" ? "socket-swivel" : m.groups.deep ? "socket-deep" : "socket"), D, (m) => { const n = +m.groups.n; return "E" + (n >= 40 ? n / 10 : n); }],
+    [/^S97\d\d/, "socket-spark", at('3/8"')], [/^TM4\d\d$/, "socket", at('1/4"')],
+    // impact sockets: IMTM 1/4", IMF 3/8", IM/IMM 1/2" (a trailing 2 is 3/4": IM182A), S... deep, IP swivel
+    [/^S?IMT(?<m>M)?M(?<n>\d{1,3}(\.\d)?)[A-Z]?$/, "socket-impact", at('1/4"'), sockSize],
+    [/^IPT(M)?(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "socket-swivel", at('1/4"'), sockSize],
+    [/^S?IMD?F(?<m>M)?S?(?<n>\d{1,3})[A-Z]?$/, "socket-impact", at('3/8"'), sockSize],
+    [/^IP[SL]?F(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "socket-swivel", at('3/8"'), sockSize],
+    [/^S?IP[SD]?L?(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "socket-swivel", at('1/2"'), sockSize],
+    [/^S?IM(?<fd>D|FD)?(?<m>M)?[DLF]?(?<n>\d{2,3})[A-Z]?$/, "socket-impact", (m) => (/^\d\d2$/.test(m.groups.n) || m.groups.fd === "FD" ? '3/4"' : '1/2"'), sockSize],
+    // 1/4": TM 6-pt, TMD 12-pt, TMM metric, TMS semi-deep, STM deep, TMU swivel, MGM magnetic
+    [/^S?TMU(S)?(?<m>M)?(?<n>\d{1,3})[A-Z]?$/, "socket-swivel", at('1/4"'), sockSize],
+    [/^(?<deep>S)?TM(?<m>M)?(?<dd>D)?(?<semi>S)?(?<n>\d{1,3}(\.\d)?)[A-Z]?$/, (m) => sockKind(m.groups.deep || m.groups.semi, m.groups.dd), at('1/4"'), sockSize],
+    [/^MGM(?<m>M)?(?<deep>S)?(?<n>\d{1,2})[A-Z]?$/, (m) => sockKind(m.groups.deep), at('1/4"'), sockSize],
+    // 3/8": F 12-pt, FS 6-pt, FM/FSM metric, SF deep, FMS/FSMS/FDS semi-deep, FU/FSU swivel
+    [/^F(S)?U(?<m>M)?(?<n>\d{1,3})[A-Z]?$/, "socket-swivel", at('3/8"'), sockSize],
+    [/^(?<deep>S)?F(?<dd>D)?(?<six>S)?(?<m>M)?(?<semi>S)?(?<n>\d{1,3})[A-Z]?$/, (m) => sockKind(m.groups.deep || m.groups.semi || (m.groups.dd && m.groups.six), m.groups.dd || !m.groups.six), at('3/8"'), sockSize],
+    // 1/2": TW 6-pt, SW 12-pt, TS 6-pt deep, S 12-pt deep, ...M metric, SU swivel
+    [/^SU(?<m>M)?(?<n>\d{1,3})[A-Z]?$/, "socket-swivel", at('1/2"'), sockSize],
+    [/^(?:(?<six>T)(?<w>W|S)|S(?<w2>W)?)(?<m>M)?(?<n>\d{1,3})[A-Z]?$/, (m) => sockKind(!(m.groups.w === "W" || m.groups.w2), !m.groups.six), at('1/2"'), sockSize],
+    // 3/4": LDH 12-pt, LS deep
+    [/^L(?<k>DH|S)(?<m>M)?(?<n>\d{2,3})[A-Z]?$/, (m) => (m.groups.k === "S" ? "socket-deep" : "socket-12"), at('3/4"'), sockSize],
+    // Blue-Point sockets: BLPS14316 1/4" drive 3/16", BLPSM1412 12 mm, BLPLS deep
+    [/^BLP(?<deep>L)?S(?<m>M)?8?(?<dr>14|38|12|34)(?<n>\d{1,4})$/, (m) => sockKind(m.groups.deep), (m) => ({ 14: '1/4"', 38: '3/8"', 12: '1/2"', 34: '3/4"' })[m.groups.dr], (m) => (m.groups.m ? m.groups.n + "mm" : fracDigits(m.groups.n))],
   ];
+  // The best guess for a part number: { key, drive, size } or null. "GF80", "GTW261"... are the
+  // industrial-finish versions of F80 and TW261, so a leading G is tried without it too.
+  const pnCache = new Map();
+  function pnGuess(pn) {
+    pn = String(pn || "").toUpperCase().replace(/\s+/g, "");
+    if (!pn) return null;
+    if (pnCache.has(pn)) return pnCache.get(pn);
+    let out = null;
+    for (const s of /^G[A-Z]/.test(pn) ? [pn, pn.slice(1)] : [pn]) {
+      for (const [re, kind, drive, size, unless] of PN_RULES) {
+        const m = s.match(re);
+        if (!m || (unless && unless.test(s))) continue;
+        const key = typeof kind === "function" ? kind(m) : kind;
+        if (!key) continue;
+        const dr = (drive && drive(m)) || null;
+        out = { key, drive: dr, size: (size && size(m, dr)) || "" };
+        break;
+      }
+      if (out) break;
+    }
+    pnCache.set(pn, out);
+    return out;
+  }
   // Then the kind of ratchet, socket, wrench, pliers, pick or screwdriver.
   const VARIANT_WORDS = {
     ratchet: [[/(long|extra).{0,24}flex|flex.{0,24}long/i, "ratchet-long-flex"], [/thumb ?wheel/i, "ratchet-thumbwheel"], [/round[- ]?head|sealed head/i, "ratchet-round"], [/flex/i, "ratchet-flex"], [/stubby|stubbie|short|compact/i, "ratchet-stubby"], [/long|\bxl\b/i, "ratchet-long"]],
@@ -1497,18 +1669,10 @@ document.addEventListener("DOMContentLoaded", () => {
     shop: [[/creeper/i, "creeper"], [/tray|dish|bowl/i, "magtray"], [/mirror/i, "mirror"], [/head ?lamp|head ?light/i, "headlamp"]],
     pick: [[/complex|double|o-?ring/i, "pick-complex"], [/45/, "pick-45"], [/straight/i, "pick-straight"]],
   };
-  const VARIANT_PN = {
-    torque: [[/^(A?TECH|CTECH)/, "torque"]],
-    power: [[/^CTR/, "power-ratchet"], [/^(FAR|PTR)/, "air-ratchet"], [/^(MG|IM)\d/, "air-impact"], [/^PH\d/, "air-hammer"], [/^CDR/, "power-drill"], [/^CTB/, "battery"], [/^CTC/, "charger"]],
-    ratchet: [[/^[TFSL]H?L?F\d|^(FHLF|FLF|THLF|SHLF|FHF|THF)/, "ratchet-flex"], [/^[TFSL]H?LL?\d|^(FHL|THL|SHL)\d/, "ratchet-long"], [/^[TFSL]H?K\d|^TMK/, "ratchet-stubby"]],
-    socket: [[/^(IM[A-Z]|SIM|IPM|IPS)/, "socket-impact"], [/^[TFSL]{1,2}(TXE?|ATX|AM|AB)/, "socket-bit"], [/^[TFSL]S?U/, "socket-swivel"], [/^[TFSL]S?M{1,2}S\d/, "socket-deep"], [/^[TFSL]M\d|^[TFSL]\d{1,2}[A-Z]?$/, "socket-12"]],
-    wrench: [[/^(AD\d|FAD)/, "wrench-adjust"], [/^(R?XF|RXH|RXS|SRXF)/, "wrench-flare"], [/^(S?OXRR?|OXRM|SRX?R|SOXRR)/, "wrench-ratchet"], [/^(S?XDH?|SXD)/, "wrench-box"], [/^(VSM?\d|V\d)/, "wrench-open"]],
-    pliers: [[/^(LN|9\d|19\d)/, "pliers-needle"], [/^(8[4-9]|18[4-9])/, "pliers-diag"], [/^(PL\d|AWP)/, "pliers-pump"], [/^SRP/, "pliers-snap"]],
-  };
   const VARIANT_DEFAULT = { diag: "diag-tablet", torque: "torque-click" };
   // Cordless tools get a drawing for their battery platform. The name says it (14.4 V, 18V) or, failing
-  // that, the part number: a best guess that 14.4V tools carry 7xx/86x numbers (CT761, CTR767, CT861),
-  // 18V tools 885x/90xx/91xx (CT8850, CT9075, CDR9010), and packs CTB817x (14.4V) or CTB818x (18V).
+  // that, the part number: 14.4V tools carry 7xx/8xx numbers (CT761, CTR814, CT861, CTR867), 18V tools
+  // 88xx/90xx/91xx (CT8850, CT9075, CDR9015), and packs CTB817x (14.4V) or CTB185/CTB818x (18V).
   const CORDLESS = {
     14: { "power-ratchet": "cl14-ratchet", power: "cl14-impact", "power-stubby": "cl14-impact", "power-12": "cl14-impact", "power-driver": "cl14-driver", battery: "cl14-battery" },
     18: { "power-ratchet": "cl18-ratchet", power: "cl18-impact", "power-stubby": "cl18-impact", "power-12": "cl18-impact", "power-driver": "cl18-driver", "power-drill": "cl18-drill", battery: "cl18-battery", "grinder-angle": "cl18-grinder", cutoff: "cl18-cutoff" },
@@ -1517,9 +1681,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (/\b14\.4\s*-?\s*v(olt)?\b/i.test(text)) return 14;
     if (/\b18\s*-?\s*v(olt)?\b/i.test(text)) return 18;
     if (/^CTB817\d/.test(pn)) return 14;
-    if (/^CTB818\d/.test(pn)) return 18;
-    if (/^C[A-Z]{0,3}(7\d\d|86\d)[A-Z]?\d?$/.test(pn)) return 14;
-    if (/^C[A-Z]{0,3}(885\d|9[01]\d\d)[A-Z]?\d?$/.test(pn)) return 18;
+    if (/^CTB(818\d|18\d)/.test(pn)) return 18;
+    if (/^CTB[678]17\d/.test(pn)) return 14;
+    if (/^C[A-Z]{0,4}(7\d\d|8[0-7]\d)(?!\d)/.test(pn)) return 14;
+    if (/^C[A-Z]{0,4}(88\d\d|9[01]\d\d)(?!\d)/.test(pn)) return 18;
     return null;
   }
   const ART_LABEL = {
@@ -1558,8 +1723,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const DRIVE_KINDS = ["ratchet", "socket", "extension", "breaker", "ujoint", "adapter", "speeder"];
   const firstHit = (list, s) => (list.find(([re]) => re.test(s)) || [])[1];
   function screwdriverKind(text, pn) {
-    if (/ratchet|multi.?bit|interchangeable/i.test(text) || /^S[GSD]DM?R/.test(pn)) return "screwdriver-ratchet";
-    const tip = /phillips|\bph\s?\d|#\s?[0-4]\b/i.test(text) || /^S[GSDH]DP/.test(pn) ? "phillips" : /torx|\bt\d{1,2}\b|star/i.test(text) || /TX/.test(pn) ? "torx" : "flat";
+    if (/ratchet|multi.?bit|interchangeable/i.test(text) || /^(S[GSD]DM?R|SGRM|SSDMR)/.test(pn)) return "screwdriver-ratchet";
+    const tip = /phillips|\bph\s?\d|#\s?[0-4]\b/i.test(text) || /^(G?S[GSDH]DE?P|BSGDP|IHTP|CNSGDP)/.test(pn) ? "phillips" : /torx|\bt\d{1,2}\b|star/i.test(text) || /^G?S[GH]DE?T|TX/.test(pn) ? "torx" : "flat";
     if (/stubby|stubbie|short/i.test(text)) return tip === "phillips" ? "screwdriver-stubby-phillips" : "screwdriver-stubby";
     return tip === "flat" ? "screwdriver" : "screwdriver-" + tip;
   }
@@ -1570,15 +1735,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (/hard handle|chrome handle|steel handle|knurled/i.test(text)) return false;
     return /^[TFSL]H/.test(pn);
   }
-  // T/F/S/L at the start of a Snap-on drive tool's part number is its drive: 1/4", 3/8", 1/2", 3/4".
   const CAT_DRIVE = { '1/4" Drive Tools': '1/4"', '3/8" Drive Tools': '3/8"', '1/2" Drive Tools': '1/2"', '3/4" & Larger Drive Tools': '3/4"' };
-  const PN_DRIVE = { T: '1/4"', F: '3/8"', S: '1/2"', L: '3/4"' };
   const saidDrive = (text) => { const m = String(text || "").match(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?(?:drive|dr\b)/i); return m ? m[1] + '"' : null; };
-  function pnDrive(pn) {
-    pn = String(pn || "").toUpperCase();
-    const k = firstHit(ART_PN, pn);
-    return /^[TFSL]/.test(pn) && (DRIVE_KINDS.includes(k) || k === "set" || k === "set-kit") ? PN_DRIVE[pn[0]] : null;
-  }
+  const pnDrive = (pn) => (pnGuess(pn) || {}).drive || null;
+  // The family a kind of tool belongs to: socket-deep is a socket, air-impact a power tool.
+  const POWER_KINDS = ["air-impact", "air-ratchet", "air-hammer", "grinder-die", "grinder-angle", "battery", "charger", "rivet", "polisher", "cutoff", "heatgun"];
+  const familyOf = (k) => (POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "mirror", "headlamp"].includes(k) ? "shop" : k.split("-")[0]);
   // The drive category a tool belongs in. A hand-picked drive category that the name or part number
   // contradicts (S80A filed under 3/8" Drive Tools) shows, filters and sorts as the right one.
   function catOf(r) {
@@ -1591,21 +1753,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const chosen = r.art === "ratchet-hard" ? "ratchet" : r.art && ART[r.art] ? r.art : null;
     const text = [r.name, storeOf(r) && storeOf(r).name].filter(Boolean).join(" ");
     const pn = String(r.part_number || "").toUpperCase();
-    let key = firstHit(ART_WORDS, text) || ART_CAT[r.category];
-    if (!key) {
-      const fromPn = firstHit(ART_PN, pn);
-      key = DRIVE_CATS.includes(r.category) ? (DRIVE_KINDS.includes(fromPn) ? fromPn : "ratchet") : fromPn || "other";
-    }
-    let kind = key;
-    if (key === "screwdriver") kind = screwdriverKind(text, pn);
-    else if (VARIANT_WORDS[key]) kind = firstHit(VARIANT_WORDS[key], text) || (VARIANT_PN[key] && firstHit(VARIANT_PN[key], pn)) || VARIANT_DEFAULT[key] || key;
-    if (key === "power") { const v = voltOf(text, pn); if (v && CORDLESS[v][kind]) kind = CORDLESS[v][kind]; }
+    const g = pnGuess(pn);
+    // The name decides first, then a category the owner picked. The drive categories don't count here: the
+    // add form starts on 3/8" Drive Tools, so the part number knows better (OEX18 is a wrench either way).
+    const key = firstHit(ART_WORDS, text) || ART_CAT[r.category];
+    let kind;
+    if (key === "screwdriver" || (!key && g && g.key === "screwdriver")) kind = screwdriverKind(text, pn);
+    else if (key) kind = (VARIANT_WORDS[key] && firstHit(VARIANT_WORDS[key], text)) || (g && familyOf(g.key) === key && g.key) || VARIANT_DEFAULT[key] || key;
+    else kind = g ? g.key : DRIVE_CATS.includes(r.category) ? "ratchet" : "other";
+    { const v = voltOf(text, pn); if (v && CORDLESS[v][kind]) kind = CORDLESS[v][kind]; }
     if (/^ratchet/.test(kind) && softGrip(text, pn) && ART[kind + "-soft"]) kind += "-soft";
     if (chosen) kind = chosen;
     // Drive size: what the name says, then the part number's drive letter, then the category. The part number
     // beats the category because the add form starts on 3/8" Drive Tools, so an S80A saved without changing
     // it would otherwise read as 3/8".
-    const drive = saidDrive(text) || ((DRIVE_KINDS.includes(key) || key === "set" || key === "set-kit") && kind !== "socket-impact" && pnDrive(pn)) || CAT_DRIVE[r.category] || null;
+    const drive = saidDrive(text) || ((DRIVE_KINDS.includes(familyOf(kind)) || /^set/.test(kind)) && g && g.drive) || CAT_DRIVE[r.category] || null;
     return { key: kind, drive, size: sizeOf(kind, text, pn, drive), nums: kind === "set" ? setNums(setRange(text)) : null, unit: kind === "set" ? (setRange(text) || {}).unit : null, label: ART_LABEL[kind] || "Drawing", pn };
   }
   /* ---------- the size printed on a drawing: 11mm, 9/16", T40, 1/2 × 9/16 ...
@@ -1620,7 +1782,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "cl14-ratchet": "3/8", "cl14-impact": "3/8", "cl18-impact": "1/2", "cl18-ratchet": "3/8",
   };
   const gcd = (a, b) => (b ? gcd(b, a % b) : a);
-  const frac32 = (n) => { const w = Math.floor(n / 32), r = n % 32, g = gcd(r, 32); return (w ? w + (r ? "-" : "") : "") + (r ? r / g + "/" + 32 / g : ""); };
   const FR = String.raw`(?:\d-)?\d{1,2}\/\d{1,2}`;
   const SET_KINDS = ["set", "set-wrench", "set-kit", "set-bit"];
   const fracVal = (f) => { const m = f.match(/^(?:(\d)-)?(\d{1,2})\/(\d{1,2})$/); return m ? (Number(m[1] || 0) + m[2] / m[3]) : NaN; };
@@ -1647,10 +1808,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (kind.startsWith("power") || kind === "air-impact" || kind.startsWith("cl1")) return drive ? drive.replace('"', "") + (kind === "air-impact" ? " AIR" : "") : kind === "air-impact" ? "AIR" : "";
     // drop the drive size so "3/8 drive 9/16 socket" reads as 9/16
     const t = text.replace(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?(?:dr\b|drive)/gi, " ");
-    if (kind === "extension") { const m = t.match(/(\d{1,2}(?:\.\d)?)\s*(?:"|″|in\b|inch)/i); return m ? m[1] + '"' : null; }
+    const fromPn = ((g) => (g && familyOf(g.key) === familyOf(kind) && g.size) || "")(pnGuess(pn));
+    if (kind === "extension") { const m = t.match(/(\d{1,2}(?:\.\d)?)\s*(?:"|″|in\b|inch)/i); return m ? m[1] + '"' : fromPn || null; }
     if (kind === "socket-bit") {
       const m = t.match(/\b(E?T\d{1,2})\b/i) || t.match(/\b(\d{1,2}(?:\.\d)?)\s*mm\b/i) || t.match(new RegExp(`(${FR})`));
-      return m ? (/^\d/.test(m[1]) && !m[1].includes("/") ? m[1] + "mm" : m[1].toUpperCase()) : null;
+      return m ? (/^\d/.test(m[1]) && !m[1].includes("/") ? m[1] + "mm" : m[1].toUpperCase()) : fromPn || null;
     }
     // two sizes: 13 x 15 mm, 1/2 x 9/16
     let m = t.match(/\b(\d{1,2})\s*(?:mm)?\s*[x×]\s*(\d{1,2})\s*mm\b/i);
@@ -1662,10 +1824,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (m) return isSocket ? m[1] + "mm" : m[1] + " mm";
     m = t.match(new RegExp(`(?:^|[^\\d/])(${FR})(?![\\d/])`));
     if (m) return m[1] + '"';
-    // Snap-on part numbers: metric sockets carry the mm (FSM11, TMM10, SIMFM13); OEXM110 is 11 mm; OEX18 is 18/32" = 9/16"
-    if (isSocket && (m = pn.match(/^(?:S?IM)?[TFSL]{1,2}[A-Z]*M[A-Z]?(\d{1,2})[A-Z]?$/))) return m[1] + "mm";
-    if (isWrench && (m = pn.match(/^S?(?:OEX|OXI|SRX|OXR)M(\d{2,3})[A-Z]*$/))) { const v = Number(m[1]); return (v >= 60 ? v / 10 : v) + " mm"; }
-    if (isWrench && (m = pn.match(/^S?(?:OEX|OXI|SRX|OXR)(\d{1,2})[A-Z]*$/))) return frac32(Number(m[1])) + '"';
+    // then the part number: FSM11 is 11mm, TW181 9/16", OEXM150B 15 mm, XB1214A 3/8 × 7/16
+    if (fromPn) return fromPn;
     return isSocket || isWrench ? "" : null; // unknown: no number beats a wrong one
   }
   // Where each drawing's bottom edge is and how wide it is, so its shadow (and reflection) sit right under it
