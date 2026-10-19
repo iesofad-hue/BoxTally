@@ -565,3 +565,40 @@ grant execute on function public.delete_my_account() to authenticated;
 -- ===== Shared store prices retired (2026-10-18) =====
 -- Prices now come from eBay automatically; nobody can post a public price any more.
 revoke execute on function public.submit_price(text, numeric, numeric) from public, anon, authenticated;
+
+-- ===== Tool insurance (2026-10-19) =====
+-- Each person records the policy they bought from their own insurer. BoxTally doesn't sell insurance;
+-- this is a private note of the policy so it can be compared with what the box is worth.
+-- Only the owner can read or change their row. Share links never read this table.
+create table if not exists public.insurance_policies (
+  user_id       uuid primary key default auth.uid() references auth.users(id) on delete cascade,
+  provider      text not null check (char_length(provider) between 1 and 60),
+  policy_type   text not null default '' check (char_length(policy_type) <= 40),
+  policy_number text not null default '' check (char_length(policy_number) <= 40),
+  coverage      numeric(10,2) check (coverage >= 0 and coverage < 10000000),
+  deductible    numeric(10,2) check (deductible >= 0 and deductible < 1000000),
+  premium       numeric(10,2) check (premium >= 0 and premium < 1000000),
+  premium_every text not null default 'year' check (premium_every in ('month', 'year')),
+  renews_on     date,
+  agent         text not null default '' check (char_length(agent) <= 80),
+  notes         text not null default '' check (char_length(notes) <= 500),
+  updated_at    timestamptz not null default now()
+);
+alter table public.insurance_policies enable row level security;
+create policy "Read own policy"   on public.insurance_policies for select to authenticated using ((select auth.uid()) = user_id);
+create policy "Add own policy"    on public.insurance_policies for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "Change own policy" on public.insurance_policies for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "Delete own policy" on public.insurance_policies for delete to authenticated using ((select auth.uid()) = user_id);
+revoke all on public.insurance_policies from anon;
+grant select, insert, update, delete on public.insurance_policies to authenticated;
+revoke truncate, references, trigger on public.insurance_policies from authenticated;
+create or replace function public.insurance_policies_fill() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  if tg_op = 'UPDATE' then new.user_id := old.user_id; end if;
+  new.updated_at := now();
+  return new;
+end $$;
+revoke execute on function public.insurance_policies_fill() from public, anon, authenticated;
+create trigger insurance_policies_fill before insert or update on public.insurance_policies
+  for each row execute function public.insurance_policies_fill();

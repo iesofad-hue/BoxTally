@@ -122,9 +122,9 @@ h1 em { font-style: normal; color: var(--band-accent); }
 @media (prefers-reduced-motion: reduce) { .pbar.indet > span { width: 100%; opacity: .45; } }
 @keyframes indet { from { transform: translateX(-110%); } to { transform: translateX(340%); } }
 
-.dash { display: grid; grid-template-columns: 1.1fr 1fr 1.05fr 1.35fr; gap: 12px; }
+.dash { display: grid; grid-template-columns: 1.05fr 1fr 1fr 1fr 1.3fr; gap: 12px; }
 .readonly .dash { grid-template-columns: 1.15fr 1fr 1.5fr; }
-@media (max-width: 1100px) { .dash, .readonly .dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .readonly .dash .watch { grid-column: 1 / -1; } }
+@media (max-width: 1100px) { .dash, .readonly .dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .dash .watch { grid-column: 1 / -1; } }
 @media (max-width: 560px) {
   /* phone: box worth and wishlist side by side, price watch as one compact row underneath */
   .band { padding-block: calc(18px + env(safe-area-inset-top, 0px)) 16px; }
@@ -752,6 +752,15 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .readonly .viewer .v-cap .actions { display: flex !important; }
 /* phone: the truck account gets the full width so its button fits */
 @media (max-width: 560px) { .dash .truck, .dash .watch { grid-column: 1 / -1; } }
+/* tool insurance tile + dialog */
+.ins .warn { color: #ffb38a; }
+.ins .bar.done > span { background: #4fc58a; }
+.ins a.btn-watch { text-decoration: none; display: inline-block; }
+.ins-tip { margin: -4px 0 0; }
+.ins-tip a { color: inherit; }
+.ins-prem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+.ins-print { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+#insDlg .full { grid-column: 1 / -1; }
 </style>
 </head>
 <body>
@@ -823,6 +832,10 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
       <div class="tile truck" id="truckTile">
         <span class="label">Truck account</span>
         <div id="truck"></div>
+      </div>
+      <div class="tile truck ins" id="insTile">
+        <span class="label">Tool insurance</span>
+        <div id="ins"></div>
       </div>
       <div class="tile watch">
         <span class="label">Prices</span>
@@ -931,6 +944,41 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
       <span class="spacer" style="flex:1"></span>
       <button class="btn" type="button" id="t-cancel">Cancel</button>
       <button class="btn primary" type="submit" id="t-save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="insDlg">
+  <form id="insFrm" novalidate>
+    <h2>Tool insurance</h2>
+    <p class="meta-line">Keep your policy from your own insurer here, and see if it covers what your box is worth. BoxTally doesn't sell insurance. Only you can see this, and it's never on your share link.</p>
+    <div class="grid2">
+      <label class="field full"><span class="label">Insurance provider</span><select id="i-prov"></select></label>
+      <label class="field full" id="i-otherRow" hidden><span class="label">Provider name</span><input id="i-other" maxlength="60" placeholder="My local agent"></label>
+      <p class="meta-line full ins-tip" id="i-tip"></p>
+      <label class="field"><span class="label">Kind of policy</span><select id="i-type">
+        <option value="">Not sure</option>
+        <option>Tools &amp; equipment (inland marine)</option>
+        <option>Personal articles / scheduled items</option>
+        <option>Homeowners or renters add-on</option>
+        <option>Business owner's policy</option>
+        <option>Other</option>
+      </select></label>
+      <label class="field"><span class="label">Policy number</span><input id="i-num" maxlength="40" autocomplete="off" placeholder="Optional"></label>
+      <label class="field"><span class="label">Coverage limit ($)</span><input id="i-cov" type="number" min="0" step="1" inputmode="decimal" placeholder="0"><small>The most it pays for your tools.</small></label>
+      <label class="field"><span class="label">Deductible ($)</span><input id="i-ded" type="number" min="0" step="1" inputmode="decimal" placeholder="Optional"></label>
+      <label class="field"><span class="label">Premium ($)</span><span class="ins-prem"><input id="i-prem" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Optional"><select id="i-every" aria-label="How often"><option value="year">a year</option><option value="month">a month</option></select></span></label>
+      <label class="field"><span class="label">Renews on</span><input id="i-renew" type="date"></label>
+      <label class="field full"><span class="label">Agent or claims phone</span><input id="i-agent" maxlength="80" placeholder="Optional, e.g. Dana Ruiz 555-0142"></label>
+      <label class="field full"><span class="label">Notes</span><textarea id="i-notes" maxlength="500" rows="2" placeholder="Optional, e.g. covers theft from the shop, not the truck"></textarea></label>
+    </div>
+    <div class="ins-print"><span class="meta-line">Insurers usually want a list of what you own and what it's worth.</span><button class="btn small" type="button" id="i-print">Print my tool list</button></div>
+    <p class="err" id="i-err" hidden></p>
+    <div class="formfoot">
+      <button class="btn ghost danger" type="button" id="i-clear">Remove policy</button>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" type="button" id="i-cancel">Cancel</button>
+      <button class="btn primary" type="submit" id="i-save">Save</button>
     </div>
   </form>
 </dialog>
@@ -1865,6 +1913,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderAccount();
     if (state.readonly) { if (!booted) { booted = true; await loadShared(); } return; }
     loadAlerts();
+    loadIns();
     if (changed || !booted) { booted = true; await loadItems(); }
     const localRows = local.read();
     $("importBanner").hidden = !(user && localRows.length);
@@ -2097,6 +2146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setCount($("c-tools"), t.length);
     setCount($("c-wish"), w.length);
     renderTruck();
+    renderIns(worth);
     document.body.classList.toggle("readonly", !!state.readonly);
     document.body.classList.toggle("demo", !!state.demo);
     $("q-add").textContent = state.tab === "owned" ? "Add to box" : "Add to wishlist";
@@ -2633,6 +2683,145 @@ document.addEventListener("DOMContentLoaded", () => {
     if (await guard(() => setTruck(null))) { truckDlg.close(); toast("Truck account removed", { label: "Undo", run: () => guard(() => setTruck(before)) }); }
   };
 
+  /* ---------- tool insurance: the person's own policy from their own insurer ---------- */
+  // BoxTally doesn't sell insurance. People pick who they're insured with and keep the details here,
+  // private to them (signed in: the insurance_policies table, owner-only; signed out: this browser).
+  const INS_PROVIDERS = [
+    ["Tools & equipment policies", [
+      ["Next Insurance", "https://www.nextinsurance.com"],
+      ["Hiscox", "https://www.hiscox.com"],
+      ["The Hartford", "https://www.thehartford.com"],
+      ["Thimble", "https://www.thimble.com"],
+      ["Travelers", "https://www.travelers.com"],
+    ]],
+    ["Home, renters or personal articles", [
+      ["State Farm", "https://www.statefarm.com"],
+      ["Allstate", "https://www.allstate.com"],
+      ["Progressive", "https://www.progressive.com"],
+      ["GEICO", "https://www.geico.com"],
+      ["Nationwide", "https://www.nationwide.com"],
+      ["Farmers", "https://www.farmers.com"],
+      ["Liberty Mutual", "https://www.libertymutual.com"],
+      ["USAA", "https://www.usaa.com"],
+      ["American Family", "https://www.amfam.com"],
+      ["Erie Insurance", "https://www.erieinsurance.com"],
+      ["Lemonade", "https://www.lemonade.com"],
+    ]],
+  ];
+  const insLink = (name) => { for (const [, list] of INS_PROVIDERS) for (const [n, u] of list) if (n === name) return u; return null; };
+  const INS_LS = LS + "-insurance";
+  function getIns() {
+    if (state.demo) return state.demoIns || null;
+    if (signedIn()) return state.ins || null;
+    try { return JSON.parse(localStorage.getItem(INS_LS)); } catch { return null; }
+  }
+  // Older databases may not have the table yet; the tile says so instead of failing quietly.
+  const insMissing = (e) => e && (e.code === "42P01" || e.code === "PGRST205" || e.code === "PGRST202");
+  async function loadIns() {
+    state.ins = null; state.insReady = true;
+    if (!signedIn()) return render();
+    const { data, error } = await sb.from("insurance_policies").select("provider, policy_type, policy_number, coverage, deductible, premium, premium_every, renews_on, agent, notes").maybeSingle();
+    if (error && insMissing(error)) state.insReady = false;
+    state.ins = data || null;
+    render();
+  }
+  async function setIns(p) {
+    if (state.demo) state.demoIns = p;
+    else if (signedIn()) {
+      if (!state.insReady) throw { code: "P0001", message: "Insurance is still being set up. Try again soon." };
+      const { error } = p
+        ? await sb.from("insurance_policies").upsert({ user_id: state.user.id, ...p }, { onConflict: "user_id" })
+        : await sb.from("insurance_policies").delete().eq("user_id", state.user.id);
+      if (error) throw error;
+      state.ins = p;
+    } else {
+      try { p ? localStorage.setItem(INS_LS, JSON.stringify(p)) : localStorage.removeItem(INS_LS); } catch { throw { code: "quota" }; }
+    }
+    render();
+  }
+  const daysUntil = (d) => { const t = toDate(d); if (!t) return null; const n = new Date(); return Math.round((t - new Date(n.getFullYear(), n.getMonth(), n.getDate())) / 86400000); };
+  function renderIns(worth) {
+    const tile = $("insTile");
+    tile.hidden = !!state.readonly;
+    if (state.readonly) return;
+    const p = getIns();
+    if (!p) {
+      $("ins").innerHTML = `<div class="watch-empty"><span class="note">Are your tools insured? Pick your insurer and see if the policy covers your box.</span><button class="btn-watch" type="button" data-ins="edit">Set it up →</button></div>`;
+      return;
+    }
+    const cov = Number(p.coverage) || 0, w = Math.round(worth || 0);
+    const pct = cov && w ? Math.min(100, Math.round((cov / w) * 100)) : cov ? 100 : 0;
+    const gap = w - cov;
+    const left = daysUntil(p.renews_on);
+    const renew = left == null ? "" : left < 0 ? `<span class="warn">Renewal date passed ${esc(fmtDate(p.renews_on))}</span>` : left <= 30 ? `<span class="warn">Renews in ${left} day${left === 1 ? "" : "s"}</span>` : `Renews ${esc(fmtDate(p.renews_on))}`;
+    const cover = !cov ? "Add your coverage limit to compare it with your box."
+      : !w ? "Covers up to this much."
+      : gap > 0 ? `<span class="warn">${money(gap)} of your ${money(w)} box isn't covered</span>`
+      : `Covers your whole ${money(w)} box`;
+    const url = insLink(p.provider);
+    $("ins").innerHTML = `<span class="big">${cov ? money(cov) : esc(p.provider)}</span>
+      <span class="sub">${cover}<br>${cov ? `${esc(p.provider)}${renew ? " · " : ""}` : ""}${renew}</span>
+      ${cov ? `<div class="bar ${w && gap <= 0 ? "done" : ""}"><span style="width:${pct}%"></span></div>` : ""}
+      <div class="truck-act"><button class="btn-watch" type="button" data-ins="edit">Edit</button>${url ? `<a class="btn-watch" href="${url}" target="_blank" rel="noopener">${esc(p.provider)} ↗</a>` : ""}</div>`;
+  }
+  $("ins").addEventListener("click", (e) => { if (e.target.closest("[data-ins]")) openIns(); });
+  const insDlg = $("insDlg");
+  $("i-prov").innerHTML = `<option value="">Choose your insurer</option>`
+    + INS_PROVIDERS.map(([g, list]) => `<optgroup label="${esc(g)}">${list.map(([n]) => `<option>${esc(n)}</option>`).join("")}</optgroup>`).join("")
+    + `<option value="__other">Other</option>`;
+  function insProvChanged() {
+    const v = $("i-prov").value, other = v === "__other", url = insLink(v);
+    $("i-otherRow").hidden = !other;
+    $("i-tip").innerHTML = url
+      ? `Not covered yet? Ask ${esc(v)} about a tools &amp; equipment policy or a scheduled-items add-on. <a href="${url}" target="_blank" rel="noopener">Visit ${esc(v)} ↗</a>`
+      : other ? "Type the name of your insurer or agent." : "Pick who you're insured with, or who you'd like a quote from.";
+  }
+  $("i-prov").addEventListener("change", () => { insProvChanged(); if ($("i-prov").value === "__other") $("i-other").focus(); });
+  function openIns() {
+    const p = getIns() || {};
+    const known = p.provider && insLink(p.provider);
+    $("i-prov").value = !p.provider ? "" : known ? p.provider : "__other";
+    $("i-other").value = p.provider && !known ? p.provider : "";
+    $("i-type").value = p.policy_type || "";
+    $("i-num").value = p.policy_number || "";
+    $("i-cov").value = p.coverage != null ? Number(p.coverage) : "";
+    $("i-ded").value = p.deductible != null ? Number(p.deductible) : "";
+    $("i-prem").value = p.premium != null ? Number(p.premium) : "";
+    $("i-every").value = p.premium_every || "year";
+    $("i-renew").value = p.renews_on || "";
+    $("i-agent").value = p.agent || "";
+    $("i-notes").value = p.notes || "";
+    $("i-clear").hidden = !getIns();
+    $("i-err").hidden = true;
+    insProvChanged();
+    insDlg.showModal();
+    setTimeout(() => $("i-prov").focus(), 0);
+  }
+  $("i-cancel").onclick = () => insDlg.close();
+  $("i-print").onclick = () => { insDlg.close(); $("exportPrint").click(); };
+  $("insFrm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const err = (m) => { $("i-err").textContent = m; $("i-err").hidden = false; };
+    const v = $("i-prov").value;
+    const provider = (v === "__other" ? $("i-other").value : v).trim().slice(0, 60);
+    if (!provider) return err(v === "__other" ? "Type your insurer's name." : "Choose your insurer, or pick Other.");
+    const num = (id, max) => { const raw = $(id).value; if (raw === "") return null; const n = Number(raw); return n >= 0 && n < max ? round2(n) : NaN; };
+    const coverage = num("i-cov", 10000000), deductible = num("i-ded", 1000000), premium = num("i-prem", 1000000);
+    if (Number.isNaN(coverage)) return err("Enter your coverage limit in dollars, or leave it empty.");
+    if (Number.isNaN(deductible)) return err("Enter your deductible in dollars, or leave it empty.");
+    if (Number.isNaN(premium)) return err("Enter your premium in dollars, or leave it empty.");
+    const next = {
+      provider, policy_type: $("i-type").value, policy_number: $("i-num").value.trim().slice(0, 40),
+      coverage, deductible, premium, premium_every: $("i-every").value === "month" ? "month" : "year",
+      renews_on: $("i-renew").value || null, agent: $("i-agent").value.trim().slice(0, 80), notes: $("i-notes").value.trim().slice(0, 500),
+    };
+    if (await guard(() => setIns(next), "Insurance saved")) insDlg.close();
+  });
+  $("i-clear").onclick = async () => {
+    const before = getIns();
+    if (await guard(() => setIns(null))) { insDlg.close(); toast("Insurance removed", { label: "Undo", run: () => guard(() => setIns(before)) }); }
+  };
+
   /* ---------- sample box: a pretend toolbox for first-time visitors, never saved ---------- */
   function demoItems() {
     const day = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`; };
@@ -2662,13 +2851,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function enterDemo() {
     const day = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return t.toISOString().slice(0, 10); };
     state.demo = true; state.items = demoItems(); state.introDone = false; state.railIntro = false;
+    state.demoIns = { provider: "State Farm", policy_type: "Personal articles / scheduled items", policy_number: "", coverage: 2000, deductible: 250, premium: 96, premium_every: "year", renews_on: day(-40), agent: "", notes: "" };
     state.demoTruck = { balance: 1840, weekly: 60, dealer: "Thursday truck", log: [{ d: day(7), amt: -60, what: "Payment" }, { d: day(14), amt: -60, what: "Payment" }, { d: day(90), amt: 495, what: '1/2" drive click-type torque wrench' }] };
     render();
     scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
     loadCatalog().then(render);
   }
   $("localDemo").onclick = () => enterDemo();
-  $("demoExit").onclick = () => { state.introDone = false; state.railIntro = false; state.demoTruck = null; loadItems(); scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); };
+  $("demoExit").onclick = () => { state.introDone = false; state.railIntro = false; state.demoTruck = null; state.demoIns = null; loadItems(); scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); };
 
   /* ---------- share my box: a read-only link ---------- */
   const shareDlg = $("shareDlg");
@@ -3093,10 +3283,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const worth = owned.reduce((s, r) => s + worthOf(r), 0);
     const who = state.user ? state.user.user_metadata?.full_name || state.user.email || "" : "";
     const m = (n) => (n ? money(n, true) : "");
+    const pol = getIns();
     const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(catOf(r))}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(nowPrice(r))}</td><td>${esc(r.location || "")}</td></tr>`).join("");
     const wishRows = wish.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(catOf(r))}</td><td>${esc(r.priority || "Want")}</td><td class="n">${m(wishCost(r))}</td><td class="n">${m(Number(r.saved) || 0)}</td></tr>`).join("");
     return `<h1>BoxTally</h1>
       <p class="meta">Tool list as of ${esc(fmtDate(today()))}${who ? ` · ${esc(who)}` : ""}</p>
+      ${pol ? `<p class="meta">Insured with ${esc(pol.provider)}${pol.policy_number ? ` · policy ${esc(pol.policy_number)}` : ""}${Number(pol.coverage) ? ` · coverage ${money(pol.coverage, true)}` : ""}</p>` : ""}
       <h2>Owned tools</h2>
       ${owned.length ? `<p class="totals"><span>${owned.length} tool${owned.length === 1 ? "" : "s"}</span><span>Paid ${money(paid, true)}</span><span>Worth today ${money(worth, true)}</span></p>
       <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Condition</th><th>Bought</th><th class="n">Paid</th><th class="n">eBay now</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
