@@ -97,7 +97,7 @@ const CASES = [
   // diagnostics and storage
   ["EEDM504F", "multimeter"], ["EEMS341", "diag-tablet"], ["EETH400", "diag-handheld"], ["KRA4107", "storage"], ["KRL1022", "storage"], ["KMP3415", "storage"], ["KRSC326", "storage-cart"],
   // cordless (14.4V: 7xx/8xx, 18V: 88xx/9xxx)
-  ["CT861", "cl14-impact"], ["CT861DB", "cl14-impact"], ["CT825", "cl14-impact"], ["CTR814DB", "cl14-ratchet"], ["CTR867", "cl14-ratchet"], ["CTR761", "cl14-ratchet"],
+  ["CT861", "cl14-impact"], ["CT861DB", "cl14-impact"], ["CT825", "cl14-impact"], ["CTR814DB", "cl14-ratchet"], ["CTR867", "cl14-ratchet"], ["CTR761", "cl14-ratchet"], ["CTR881GMDB", "cl14-ratchet"],
   ["CTS861", "cl14-driver"], ["CDR861", "power-drill"], ["CTB8174", "cl14-battery"], ["CT9075", "cl18-impact"], ["CT8850", "cl18-impact"], ["CT9010", "cl18-impact"],
   ["CDR9015", "cl18-drill"], ["CTGR8850", "cl18-grinder"], ["CTGRS8825", "grinder-die"], ["CTRS8850", "cl18-saw"], ["CTB185", "cl18-battery"], ["CTB8185", "cl18-battery"],
   ["CTC772A", "charger"], ["CGRS861", "grinder-die"], ["CTPP861", "polisher"], ["CTLED861", "shop"], ["CTRG9050", "rivet"], ["CGG8850", "grease-gun"],

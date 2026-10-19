@@ -1671,7 +1671,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   const VARIANT_DEFAULT = { diag: "diag-tablet", torque: "torque-click" };
   // Cordless tools get a drawing for their battery platform. The name says it (14.4 V, 18V) or, failing
-  // that, the part number: 14.4V tools carry 7xx/8xx numbers (CT761, CTR814, CT861, CTR867), 18V tools
+  // that, the part number: 14.4V tools carry 3-digit 7xx/8xx numbers (CT761, CTR814, CT861, CTR881), 18V tools
   // 88xx/90xx/91xx (CT8850, CT9075, CDR9015), and packs CTB817x (14.4V) or CTB185/CTB818x (18V).
   const CORDLESS = {
     14: { "power-ratchet": "cl14-ratchet", power: "cl14-impact", "power-stubby": "cl14-impact", "power-12": "cl14-impact", "power-driver": "cl14-driver", battery: "cl14-battery" },
@@ -1683,7 +1683,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (/^CTB817\d/.test(pn)) return 14;
     if (/^CTB(818\d|18\d)/.test(pn)) return 18;
     if (/^CTB[678]17\d/.test(pn)) return 14;
-    if (/^C[A-Z]{0,4}(7\d\d|8[0-7]\d)(?!\d)/.test(pn)) return 14;
+    if (/^C[A-Z]{0,4}(7\d\d|8\d\d)(?!\d)/.test(pn)) return 14;
     if (/^C[A-Z]{0,4}(88\d\d|9[01]\d\d)(?!\d)/.test(pn)) return 18;
     return null;
   }
