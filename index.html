@@ -565,6 +565,15 @@ footer #iosHint { margin: 0 0 8px; }
 .t-log .line { display: flex; justify-content: space-between; gap: 10px; }
 .t-log .num { font-family: var(--f-mono); font-size: .8rem; }
 .t-log .num.pay { color: var(--good); }
+/* payment plan breakdown in the truck dialog */
+.t-plan { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; background: var(--sunk); padding: 12px; border-radius: 10px; }
+.t-plan:empty { display: none; }
+.t-plan div { display: grid; gap: 2px; min-width: 0; }
+.t-plan .label { font-size: .72rem; }
+.t-plan strong { font-family: var(--f-mono); font-size: 1rem; font-variant-numeric: tabular-nums; }
+.t-plan .hero { grid-column: 1 / -1; }
+.t-plan .hero strong { font-size: 1.5rem; }
+.t-plan .all { grid-column: 1 / -1; font-size: .82rem; color: var(--muted); }
 .alert-opt { display: flex; gap: 8px; align-items: flex-start; font-size: .82rem; color: var(--band-muted); margin-top: 8px; cursor: pointer; }
 .alert-opt input { accent-color: var(--band-accent); margin-top: 2px; }
 /* lent out */
@@ -944,10 +953,13 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 <dialog id="truckDlg">
   <form id="truckFrm" novalidate>
     <h2>Truck account</h2>
-    <p class="meta-line">Buying off the truck on a weekly payment? Keep the balance here and see when it's paid off.</p>
+    <p class="meta-line">Buying off the truck? Truck accounts get paid off in 8 to 10 weeks. Put in what you owe, how often you pay and the interest, and BoxTally works out your payment.</p>
     <div class="grid2">
-      <label class="field"><span class="label">Balance owed ($)</span><input id="t-bal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
-      <label class="field"><span class="label">Weekly payment ($)</span><input id="t-week" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+      <label class="field"><span class="label">Balance owed ($)</span><input id="t-bal" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><small>Before interest.</small></label>
+      <label class="field"><span class="label">Interest (% a year)</span><input id="t-apr" type="number" min="0" max="100" step="0.01" inputmode="decimal" placeholder="0"><small>Put 0 if there's none.</small></label>
+      <label class="field"><span class="label">I pay</span><select id="t-every"><option value="weekly">Every week</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Every month</option></select></label>
+      <label class="field"><span class="label">Paid off in</span><select id="t-weeks"><option value="8">8 weeks</option><option value="9">9 weeks</option><option value="10">10 weeks</option></select><small>10 weeks at most.</small></label>
+      <div class="t-plan full" id="t-plan" aria-live="polite"></div>
       <label class="field full"><span class="label">Truck or dealer</span><input id="t-dealer" maxlength="60" placeholder="Thursday truck"><small>Optional.</small></label>
     </div>
     <div id="t-log"></div>
@@ -2605,8 +2617,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<div class="panel"><h2>Who has my stuff</h2>${people.map(([who, rs]) => `<div class="cat"><div class="line"><strong>${esc(who)}</strong><span class="num">${rs.length} tool${rs.length === 1 ? "" : "s"}</span></div>${rs.map((r) => `<span class="meta-line">${esc(displayName(r))} · ${lentDays(r)} day${lentDays(r) === 1 ? "" : "s"}</span>`).join("")}</div>`).join("")}</div>`;
   }
 
-  /* ---------- truck account: balance, weekly payment, payoff date ---------- */
+  /* ---------- truck account: balance, pay interval, interest, 8–10 week payoff ---------- */
+  // Truck accounts are short: paid off in 8 to 10 weeks, never longer. The person picks how often they pay
+  // and the yearly interest rate; we work out the plan. Simple interest: balance × rate × weeks ÷ 52.
+  // Stored as { balance (left to pay, interest included), principal, apr, every, weeks, interest, total,
+  // pay, n, start, end, dealer, log }. Signed in: the person's own auth metadata; signed out: this browser.
   const TRUCK_LS = LS + "-truck";
+  const TRUCK_MIN_WEEKS = 8, TRUCK_MAX_WEEKS = 10;
+  const PAY_EVERY = { weekly: { days: 7, one: "week", label: "a week" }, biweekly: { days: 14, one: "2 weeks", label: "every 2 weeks" }, monthly: { days: 365.25 / 12, one: "month", label: "a month" } };
   function getTruck() {
     if (state.demo) return state.demoTruck;
     if (signedIn()) return state.user.user_metadata?.truck || null;
@@ -2625,57 +2643,106 @@ document.addEventListener("DOMContentLoaded", () => {
     render();
   }
   const truckOn = () => !state.readonly && !!getTruck();
-  async function truckCharge(amount, what) {
-    const t = getTruck(); if (!t || !(amount > 0)) return;
-    await setTruck({ ...t, balance: round2((Number(t.balance) || 0) + amount), log: [{ d: today(), amt: round2(amount), what: what || "Added" }, ...(t.log || [])] });
-  }
   const round2 = (n) => Math.round(n * 100) / 100;
+  const clampWeeks = (w) => Math.min(TRUCK_MAX_WEEKS, Math.max(TRUCK_MIN_WEEKS, Math.round(Number(w)) || TRUCK_MAX_WEEKS));
+  const addDays = (iso, n) => { const d = toDate(iso) || new Date(); d.setDate(d.getDate() + Math.round(n)); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+  // The plan for paying off `principal` in `weeks` weeks, paying `every` (weekly/biweekly/monthly).
+  // Only payments that land inside the term count, so the last one is never past the week limit.
+  function truckPlan(principal, apr, every, weeks, start = today()) {
+    weeks = clampWeeks(weeks);
+    const ev = PAY_EVERY[every] || PAY_EVERY.weekly;
+    const n = Math.max(1, Math.floor((weeks * 7) / ev.days + 1e-9));
+    const interest = round2(principal * (Math.max(0, Number(apr) || 0) / 100) * (weeks / 52));
+    const total = round2(principal + interest);
+    const pay = Math.ceil((total / n) * 100) / 100; // round up so n payments always cover it
+    return { principal: round2(principal), apr: Number(apr) || 0, every: PAY_EVERY[every] ? every : "weekly", weeks, n, interest, total, pay,
+      perWeek: round2(total / weeks), perMonth: round2((total / weeks) * 52 / 12), start, end: addDays(start, n * ev.days) };
+  }
+  // Older accounts only had a balance and a weekly payment: read them as a weekly plan from today.
+  function truckPlanned(t) {
+    if (!t || t.every) return t;
+    return { ...t, ...truckPlan(Number(t.balance) || 0, 0, "weekly", TRUCK_MAX_WEEKS), balance: Number(t.balance) || 0, legacy: true };
+  }
+  async function truckCharge(amount, what) {
+    const t = truckPlanned(getTruck()); if (!t || !(amount > 0)) return;
+    // New tool on the account: what's left plus the new tool (with its interest) starts a fresh 8–10 week plan.
+    const add = truckPlan(amount, t.apr, t.every, t.weeks);
+    const p = truckPlan(0, 0, t.every, t.weeks);
+    const balance = round2((Number(t.balance) || 0) + add.total);
+    const pay = Math.ceil((balance / p.n) * 100) / 100;
+    await setTruck({ ...t, legacy: undefined, balance, principal: round2((Number(t.principal) || 0) + amount), interest: round2((Number(t.interest) || 0) + add.interest),
+      total: round2((Number(t.total) || 0) + add.total), pay, n: p.n, perWeek: round2(balance / p.weeks), perMonth: round2((balance / p.weeks) * 52 / 12), start: p.start, end: p.end,
+      log: [{ d: today(), amt: round2(add.total), what: what || "Added" }, ...(t.log || [])] });
+  }
   function payoff(t) {
-    const bal = Number(t.balance) || 0, wk = Number(t.weekly) || 0;
-    if (bal <= 0) return { weeks: 0, text: "All paid off" };
-    if (wk <= 0) return { weeks: null, text: "Add a weekly payment to see when it's paid off" };
-    const weeks = Math.ceil(bal / wk), d = new Date(); d.setDate(d.getDate() + weeks * 7);
-    return { weeks, text: `paid off in ${weeks} week${weeks === 1 ? "" : "s"}, around ${d.toLocaleDateString("en-US", { month: "short", year: "numeric" })}` };
+    const bal = Number(t.balance) || 0;
+    if (bal <= 0) return { text: "All paid off" };
+    const late = t.end && t.end < today();
+    return { late, text: late ? `past the ${t.weeks}-week payoff date (${fmtDate(t.end, false)})` : `paid off by ${fmtDate(t.end, false)}` };
   }
   function renderTruck() {
     const tile = $("truckTile");
     tile.hidden = !!state.readonly;
     if (state.readonly) return;
-    const t = getTruck();
+    const t = truckPlanned(getTruck());
     if (!t) {
-      $("truck").innerHTML = `<div class="watch-empty"><span class="note">Buying off the truck? Keep your balance here and see when it's paid off.</span><button class="btn-watch" type="button" data-truck="edit">Set it up →</button></div>`;
+      $("truck").innerHTML = `<div class="watch-empty"><span class="note">Buying off the truck? Keep your balance here and see your payment for an 8 to 10 week payoff.</span><button class="btn-watch" type="button" data-truck="edit">Set it up →</button></div>`;
       return;
     }
-    const bal = Number(t.balance) || 0, wk = Number(t.weekly) || 0, po = payoff(t);
+    const bal = Number(t.balance) || 0, po = payoff(t), ev = PAY_EVERY[t.every];
     const paid = (t.log || []).filter((x) => x.amt < 0).reduce((sum, x) => sum - x.amt, 0);
     const pct = paid + bal > 0 ? Math.round((paid / (paid + bal)) * 100) : 100;
     const lastPay = (t.log || []).find((x) => x.amt < 0);
+    const next = Math.min(t.pay, bal);
     $("truck").innerHTML = `<span class="big">${money(bal, bal % 1)}</span>
-      <span class="sub">${wk ? `${money(wk, wk % 1)} a week · ` : ""}${esc(po.text)}${t.dealer ? ` · ${esc(t.dealer)}` : ""}${lastPay ? `<br>Last payment ${rel(lastPay.d)}` : ""}</span>
+      <span class="sub">${t.legacy ? "Add your pay interval and interest to get a payment plan" : `${money(t.pay, true)} ${ev.label}${t.interest > 0 ? ` · ${t.apr}% interest` : ""} · ${esc(po.text)}`}${t.dealer ? ` · ${esc(t.dealer)}` : ""}${lastPay ? `<br>Last payment ${rel(lastPay.d)}` : ""}</span>
       <div class="bar ${bal <= 0 ? "done" : ""}"><span style="width:${pct}%"></span></div>
-      <div class="truck-act">${bal > 0 ? `<button class="btn-watch" type="button" data-truck="pay">Made a payment${wk ? ` (${money(Math.min(wk, bal), true)})` : ""}</button>` : ""}<button class="btn-watch" type="button" data-truck="edit">Edit</button></div>`;
+      <div class="truck-act">${bal > 0 && !t.legacy ? `<button class="btn-watch" type="button" data-truck="pay">Made a payment (${money(next, true)})</button>` : ""}<button class="btn-watch" type="button" data-truck="edit">${t.legacy ? "Set up plan →" : "Edit"}</button></div>`;
   }
   $("truck").addEventListener("click", async (e) => {
     const b = e.target.closest("[data-truck]"); if (!b) return;
     if (b.dataset.truck === "edit") return openTruck();
-    const t = getTruck(); if (!t) return;
-    const amt = Math.min(Number(t.weekly) || 0, Number(t.balance) || 0);
+    const t = truckPlanned(getTruck()); if (!t || t.legacy) return openTruck();
+    const amt = round2(Math.min(Number(t.pay) || 0, Number(t.balance) || 0));
     if (!(amt > 0)) return openTruck();
-    const before = { ...t };
+    const before = getTruck();
     const ok = await guard(() => setTruck({ ...t, balance: round2(t.balance - amt), log: [{ d: today(), amt: -amt, what: "Payment" }, ...(t.log || [])] }));
     if (!ok) return;
     burst(...centerOf(b), 12);
-    const left = round2(before.balance - amt);
+    const left = round2(t.balance - amt);
     toast(left > 0 ? `Logged a ${money(amt, true)} payment. ${money(left, left % 1)} to go.` : "Logged the last payment. All paid off!", { label: "Undo", run: () => guard(() => setTruck(before), "Payment taken back") });
   });
   const truckDlg = $("truckDlg");
+  // What's left before interest, so editing doesn't charge interest on interest.
+  const truckLeftPrincipal = (t) => t && t.total > 0 ? round2(t.balance * (t.principal / t.total)) : Number(t?.balance) || 0;
+  function truckFormPlan() {
+    const bal = Number($("t-bal").value), apr = Number($("t-apr").value || 0);
+    if ($("t-bal").value === "" || !(bal > 0) || !(apr >= 0) || apr > 100) return null;
+    return truckPlan(bal, apr, $("t-every").value, $("t-weeks").value);
+  }
+  function renderTruckPlan() {
+    const p = truckFormPlan();
+    if (!p) { $("t-plan").innerHTML = ""; return; }
+    const ev = PAY_EVERY[p.every];
+    $("t-plan").innerHTML = `<div class="hero"><span class="label">Payment ${ev.label}</span><strong>${money(p.pay, true)}</strong></div>
+      <div><span class="label">Weekly</span><strong>${money(p.perWeek, true)}</strong></div>
+      <div><span class="label">Monthly</span><strong>${money(p.perMonth, true)}</strong></div>
+      <div><span class="label">Total</span><strong>${money(p.principal, true)}</strong></div>
+      <div><span class="label">Interest</span><strong>${money(p.interest, true)}</strong></div>
+      <div class="hero"><span class="label">Total with interest</span><strong>${money(p.total, true)}</strong></div>
+      <span class="all">${p.n} payment${p.n === 1 ? "" : "s"} of ${money(p.pay, true)}, paid off by ${fmtDate(p.end)} (${p.weeks} weeks).</span>`;
+  }
+  ["t-bal", "t-apr", "t-every", "t-weeks"].forEach((id) => $(id).addEventListener("input", renderTruckPlan));
   function openTruck() {
-    const t = getTruck() || {};
-    $("t-bal").value = t.balance != null ? Number(t.balance) : "";
-    $("t-week").value = t.weekly ? Number(t.weekly) : "";
+    const raw = getTruck(), t = truckPlanned(raw) || {};
+    $("t-bal").value = raw ? truckLeftPrincipal(t) : "";
+    $("t-apr").value = t.apr ? t.apr : "";
+    $("t-every").value = PAY_EVERY[t.every] ? t.every : "weekly";
+    $("t-weeks").value = String(t.weeks ? clampWeeks(t.weeks) : TRUCK_MAX_WEEKS);
     $("t-dealer").value = t.dealer || "";
-    $("t-clear").hidden = !getTruck();
+    $("t-clear").hidden = !raw;
     $("t-err").hidden = true;
+    renderTruckPlan();
     const log = (t.log || []).slice(0, 8);
     $("t-log").innerHTML = log.length ? `<div class="t-log"><span class="label">Recent</span>${log.map((x) => `<div class="line"><span>${esc(x.what)}</span><span class="num ${x.amt < 0 ? "pay" : ""}">${x.amt < 0 ? "−" : "+"}${money(Math.abs(x.amt), true)} · ${esc(fmtDate(x.d, false))}</span></div>`).join("")}</div>` : "";
     truckDlg.showModal();
@@ -2685,13 +2752,22 @@ document.addEventListener("DOMContentLoaded", () => {
   $("t-cancel").onclick = () => truckDlg.close();
   $("truckFrm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const bal = Number($("t-bal").value), wk = Number($("t-week").value || 0);
+    const bal = Number($("t-bal").value), apr = Number($("t-apr").value || 0), weeks = Number($("t-weeks").value);
     const err = (m) => { $("t-err").textContent = m; $("t-err").hidden = false; };
     if ($("t-bal").value === "" || !(bal >= 0) || bal >= 1000000) return err("Enter what you owe on the truck, or 0.");
-    if (!(wk >= 0) || wk >= 100000) return err("Enter your weekly payment, or leave it empty.");
-    const t = getTruck() || { log: [] };
-    const next = { ...t, balance: round2(bal), weekly: round2(wk), dealer: $("t-dealer").value.trim().slice(0, 60) };
-    if (t.balance != null && round2(bal) !== round2(t.balance)) next.log = [{ d: today(), amt: round2(bal - t.balance), what: "Balance changed" }, ...(t.log || [])];
+    if (!(apr >= 0) || apr > 100) return err("Enter the interest as a yearly percent between 0 and 100, or leave it empty.");
+    if (!(weeks >= TRUCK_MIN_WEEKS && weeks <= TRUCK_MAX_WEEKS)) return err("Truck accounts get paid off in 8 to 10 weeks.");
+    if (!PAY_EVERY[$("t-every").value]) return err("Pick how often you pay.");
+    const raw = getTruck(), t = truckPlanned(raw) || { log: [] };
+    const dealer = $("t-dealer").value.trim().slice(0, 60);
+    const same = raw && !t.legacy && round2(bal) === truckLeftPrincipal(t) && apr === t.apr && $("t-every").value === t.every && weeks === t.weeks;
+    let next;
+    if (same) next = { ...t, dealer }; // only the name changed: keep the plan and its dates
+    else {
+      const p = truckPlan(round2(bal), apr, $("t-every").value, weeks);
+      next = { ...t, legacy: undefined, weekly: undefined, ...p, balance: p.total, dealer };
+      if (raw && round2(p.total) !== round2(t.balance)) next.log = [{ d: today(), amt: round2(p.total - (Number(t.balance) || 0)), what: "New payment plan" }, ...(t.log || [])];
+    }
     if (await guard(() => setTruck(next), "Truck account saved")) truckDlg.close();
   });
   $("t-clear").onclick = async () => {
@@ -2869,7 +2945,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const day = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return t.toISOString().slice(0, 10); };
     state.demo = true; state.items = demoItems(); state.introDone = false; state.railIntro = false;
     state.demoIns = { provider: "State Farm", policy_type: "Personal articles / scheduled items", policy_number: "", coverage: 2000, deductible: 250, premium: 96, premium_every: "year", renews_on: day(-40), agent: "", notes: "" };
-    state.demoTruck = { balance: 1840, weekly: 60, dealer: "Thursday truck", log: [{ d: day(7), amt: -60, what: "Payment" }, { d: day(14), amt: -60, what: "Payment" }, { d: day(90), amt: 495, what: '1/2" drive click-type torque wrench' }] };
+    { const p = truckPlan(495, 12, "weekly", 10, day(21)); state.demoTruck = { ...p, balance: round2(p.total - 3 * p.pay), dealer: "Thursday truck", log: [{ d: day(7), amt: -p.pay, what: "Payment" }, { d: day(14), amt: -p.pay, what: "Payment" }, { d: day(21), amt: -p.pay, what: "Payment" }, { d: day(21), amt: p.total, what: '1/2" drive click-type torque wrench' }] }; }
     render();
     scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
     loadCatalog().then(render);
