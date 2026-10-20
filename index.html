@@ -1143,14 +1143,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const storeOk = () => false;
   const storePrice = () => null;
   const wasPrice = () => null;
-  const hist = () => [];
+  // eBay price history: one point per day, only on days the price moved 3% or more
+  const hist = (r) => (r.part_number && state.hist[r.part_number]) || [];
   const lastChange = (r) => { const h = hist(r); if (h.length < 2) return null; const a = h[h.length - 2].p, b = h[h.length - 1].p; return b === a ? null : { from: a, to: b, d: h[h.length - 1].d }; };
   const displayName = (r) => r.name || (storeOf(r) && storeOf(r).name) || r.part_number || "Unnamed tool";
   // A tool's price today: the typical eBay asking price for a new one (or across all listings
-  // when none are new). Refreshed daily by checker/ebay.mjs.
+  // when none are new). Kept fresh every few hours by checker/ebay.mjs. When eBay has nothing right
+  // now, the last price it had is kept (shown as "last seen").
   const ebayPrice = (r) => {
     const e = r.part_number && state.ebay && state.ebay[r.part_number];
-    if (!e || !e.listings) return null;
+    if (!e) return null;
     const v = e.new_median ?? e.median;
     return v == null ? null : Number(v);
   };
@@ -2180,9 +2182,9 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < pns.length; i += 150) batches.push(pns.slice(i, i + 150));
     const res = await Promise.all(batches.map((b) => Promise.all([
       sb.from("catalog").select("part_number,name,price,was_price,status,checked_at").in("part_number", b),
-      // newest first, so if there's ever more history than one request holds, the oldest days are what's left out
-      sb.from("catalog_prices").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
-      sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at").in("part_number", b),
+      // eBay price history, newest first, so if there's ever more than one request holds, the oldest days are what's left out
+      sb.from("ebay_price_history").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
+      sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at,seen_at,source,note").in("part_number", b),
       sb.rpc("owner_counts", { pns: b }),
     ])));
     if (res.every(([, , , o]) => !o.error)) state.owners = Object.fromEntries(res.flatMap(([, , , o]) => o.data || []).map((r) => [r.part_number, r]));
@@ -2348,16 +2350,26 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
   // A shared box whose owner keeps what they paid private
-  // eBay asking prices (official eBay API, refreshed daily by .github/workflows/ebay-prices.yml)
+  // eBay asking prices (official eBay API, kept fresh by .github/workflows/ebay-prices.yml).
+  // source says how the price was found: exact part number, a color/kit variant, auction bids, or an
+  // estimate from sibling part numbers. A tool with nothing listed now keeps its last price.
+  const EBAY_HOW = { variant: (n) => `as ${n}`, auction: () => "auction bids", similar: (n) => `estimate from ${n}` };
   const ebayLine = (r) => {
     const e = r.part_number && state.ebay && state.ebay[r.part_number];
     if (!e) return "";
     const url = `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent("snap-on " + r.part_number)}`;
-    if (!e.listings || e.median == null) return `<span class="meta-line ebay-line">eBay: no listings right now · <a href="${url}" target="_blank" rel="noopener">search eBay</a></span>`;
+    const link = (t) => `<a href="${url}" target="_blank" rel="noopener">${t}</a>`;
+    if (e.median == null) return `<span class="meta-line ebay-line">eBay: none listed yet · ${link("search eBay")}</span>`;
     const parts = [];
     if (e.new_median != null) parts.push(`new ~${money(Number(e.new_median), true)}`);
     if (e.used_median != null) parts.push(`used ~${money(Number(e.used_median), true)}`);
-    return `<span class="meta-line ebay-line">eBay: ${parts.join(", ") || `~${money(Number(e.median), true)}`} · from ${money(Number(e.low), true)} · ${e.listings} listing${e.listings === 1 ? "" : "s"} · <a href="${url}" target="_blank" rel="noopener">see on eBay</a></span>`;
+    const price = parts.join(", ") || `~${money(Number(e.median), true)}`;
+    const how = EBAY_HOW[e.source] ? ` (${esc(EBAY_HOW[e.source](e.note || "similar tools"))})` : "";
+    if (!e.listings) {
+      const seen = e.seen_at ? new Date(e.seen_at).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "";
+      return `<span class="meta-line ebay-line">eBay: ${price}${how} · last seen${seen ? " " + seen : ""} · ${link("search eBay")}</span>`;
+    }
+    return `<span class="meta-line ebay-line">eBay: ${price}${how} · from ${money(Number(e.low), true)} · ${e.listings} listing${e.listings === 1 ? "" : "s"} · ${link("see on eBay")}</span>`;
   };
   // how many other BoxTally users have this part number (counts only, never who)
   const ownersLine = (r) => {
@@ -2523,7 +2535,7 @@ document.addEventListener("DOMContentLoaded", () => {
       list.innerHTML = state.readonly
         ? `<div class="empty"><strong>${state.shareInfo ? "Nothing here yet" : "Link not found"}</strong><span>${state.shareInfo ? "This box doesn't have any tools on this list yet." : "Ask whoever sent it for a new link."}</span></div>`
         : state.tab === "owned"
-        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool, or paste a whole list of them. Its eBay price fills in automatically within a day.</span>${demoBtn}</div>`
+        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool, or paste a whole list of them. Its eBay price usually fills in on its own within half an hour.</span>${demoBtn}</div>`
         : `<div class="empty"><strong>Wishlist is empty</strong><span>Find a tool in the Shop box above and add it by part number.</span>${demoBtn}</div>`;
     } else {
       const rows = filtered();
@@ -2704,7 +2716,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const wishN = rowsOf("wishlist").length;
     $("watch").innerHTML = changes.length
       ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Based on eBay prices.</span>`
-      : `<div class="watch-empty"><span class="note">${trackedN ? `eBay prices for your ${trackedN} part number${trackedN === 1 ? "" : "s"} refresh every day.` : "Add tools by part number and their eBay prices fill in every day."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
+      : `<div class="watch-empty"><span class="note">${trackedN ? `eBay prices for your ${trackedN} part number${trackedN === 1 ? "" : "s"} refresh every few hours.` : "Add tools by part number and their eBay prices fill in on their own."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
     $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
       ? `<label class="alert-opt"><input type="checkbox" id="alertDrops"${state.alerts && state.alerts.email_drops ? " checked" : ""}><span>Email me when something on my wishlist drops</span></label>` : "");
     $("sync").dataset.mode = signedIn() ? "account" : "local";
@@ -3467,7 +3479,7 @@ document.addEventListener("DOMContentLoaded", () => {
     : { list, name: "", part_number: "", category: "Other", price: 0, date_bought: null, condition: null, location: "", notes: "", priority: "Want", saved: 0 };
   const addedMsg = (pn, where) => {
     const e = state.ebay[pn];
-    return e && e.listings ? `Added ${pn} to your ${where}, with its eBay price.` : `Added ${pn} to your ${where}. Its eBay price fills in within a day.`;
+    return e && e.median != null ? `Added ${pn} to your ${where}, with its eBay price.` : `Added ${pn} to your ${where}. Its eBay price usually fills in within half an hour.`;
   };
 
   async function addByPn(pn, list) {
@@ -3695,7 +3707,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ${owned.length ? `<p class="totals"><span>${owned.length} tool${owned.length === 1 ? "" : "s"}</span><span>Paid ${money(paid, true)}</span><span>Worth today ${money(worth, true)}</span></p>
       <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Condition</th><th>Bought</th><th class="n">Paid</th><th class="n">eBay now</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
       ${wish.length ? `<h2>Wishlist</h2><table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Priority</th><th class="n">Price</th><th class="n">Saved</th></tr></thead><tbody>${wishRows}</tbody></table>` : ""}
-      <p class="foot">Prices today are typical eBay asking prices for new tools, refreshed daily. BoxTally is not affiliated with Snap-on.</p>`;
+      <p class="foot">Prices today are typical eBay asking prices for new tools, refreshed every few hours. BoxTally is not affiliated with Snap-on.</p>`;
   }
   $("exportPrint").onclick = () => {
     if (!state.items.length) { toast("Add some tools first, then you can print them."); return; }

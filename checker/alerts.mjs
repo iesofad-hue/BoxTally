@@ -1,7 +1,8 @@
 // BoxTally price-drop emails.
 //
-// Once a day: for everyone who ticked "Email me when something on my wishlist drops", look for store
+// Once a day: for everyone who ticked "Email me when something on my wishlist drops", look for eBay
 // prices on their wishlist that went down since the last email, and send one short email listing them.
+// Prices come from ebay_price_history, which the eBay checker only writes when a price moves 3% or more.
 // Runs in GitHub Actions (.github/workflows/price-alerts.yml).
 //
 // Environment (GitHub Actions secrets):
@@ -59,7 +60,7 @@ for (const p of people) {
     const drops = [];
     if (pns.length) {
       const [hist, cat] = await Promise.all([
-        rest(`catalog_prices?part_number=in.${inList(pns)}&select=part_number,d,price&order=d.desc&limit=5000`),
+        rest(`ebay_price_history?part_number=in.${inList(pns)}&select=part_number,d,price&order=d.desc&limit=5000`),
         rest(`catalog?part_number=in.${inList(pns)}&select=part_number,name`),
       ]);
       const names = Object.fromEntries(cat.map((c) => [c.part_number, c.name]));
@@ -79,8 +80,8 @@ for (const p of people) {
         ? `Price drop: ${drops[0].name} is now ${money(drops[0].to)}`
         : `${drops.length} price drops on your BoxTally wishlist`;
       const lines = drops.map((d) => `${d.name} (${d.pn}): ${money(d.from)} → ${money(d.to)}, down ${money(d.from - d.to)}`);
-      const text = `Good news from BoxTally. Store prices dropped on your wishlist:\n\n${lines.join("\n")}\n\nPrices are shared by people who track each tool, so check Snap-on's store or your dealer before you buy.\n\nSee your wishlist: ${SITE}\nTo stop these emails, untick "Email me when something on my wishlist drops" under Price watch on ${SITE}.`;
-      const html = `<p>Good news from BoxTally. Store prices dropped on your wishlist:</p><ul>${drops.map((d) => `<li><strong>${esc(d.name)}</strong> (${esc(d.pn)}): <s>${money(d.from)}</s> → <strong>${money(d.to)}</strong>, down ${money(d.from - d.to)}</li>`).join("")}</ul><p style="color:#586473">Prices are shared by people who track each tool, so check Snap-on's store or your dealer before you buy.</p><p><a href="${SITE}">See your wishlist</a></p><p style="color:#586473;font-size:12px">To stop these emails, untick "Email me when something on my wishlist drops" under Price watch on boxtally.app.</p>`;
+      const text = `Good news from BoxTally. eBay prices dropped on your wishlist:\n\n${lines.join("\n")}\n\nThese are typical eBay asking prices, so check the listings before you buy.\n\nSee your wishlist: ${SITE}\nTo stop these emails, untick "Email me when something on my wishlist drops" under Price watch on ${SITE}.`;
+      const html = `<p>Good news from BoxTally. eBay prices dropped on your wishlist:</p><ul>${drops.map((d) => `<li><strong>${esc(d.name)}</strong> (${esc(d.pn)}): <s>${money(d.from)}</s> → <strong>${money(d.to)}</strong>, down ${money(d.from - d.to)}</li>`).join("")}</ul><p style="color:#586473">These are typical eBay asking prices, so check the listings before you buy.</p><p><a href="${SITE}">See your wishlist</a></p><p style="color:#586473;font-size:12px">To stop these emails, untick "Email me when something on my wishlist drops" under Price watch on boxtally.app.</p>`;
       if (DRY) console.log(`Would email ${p.email}: ${subject}\n  ${lines.join("\n  ")}`);
       else { await transport.sendMail({ from: process.env.ALERT_FROM || SMTP_USER, to: p.email, subject, text, html }); sent++; }
     }

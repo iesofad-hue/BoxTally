@@ -58,7 +58,7 @@ The site never loads, copies or hotlinks Snap-on's product photos (Snap-on limit
 
 ### Price-drop emails
 
-`checker/alerts.mjs` runs once a day from `.github/workflows/price-alerts.yml`. For everyone who ticked **Email me when something on my wishlist drops** (stored in `alert_prefs`; the address always comes from the person's own Google sign-in), it emails any store-price drops on their wishlist since the last email.
+`checker/alerts.mjs` runs once a day from `.github/workflows/price-alerts.yml`. For everyone who ticked **Email me when something on my wishlist drops** (stored in `alert_prefs`; the address always comes from the person's own Google sign-in), it emails any eBay price drops on their wishlist since the last email. Drops come from `ebay_price_history`, which only gets a new point when a price moves 3% or more, so day-to-day wobble doesn't send email.
 
 To switch it on:
 1. Make an app password for the Gmail account that will send the emails (Google Account → Security → 2-Step Verification → App passwords).
@@ -72,7 +72,20 @@ BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on
 
 ### eBay prices
 
-`checker/ebay.mjs` runs once a day from `.github/workflows/ebay-prices.yml`. It uses eBay's official Browse API to find current Buy It Now listings whose title says Snap-on and the exact part number, then saves the typical new and used asking price, the lowest price and the listing count to `ebay_prices`. Each tool card shows that as an "eBay:" line with a link to the search. These are asking prices from active listings, not Snap-on's list price or what things actually sold for.
+`checker/ebay.mjs` runs every 15 minutes from `.github/workflows/ebay-prices.yml`. Each run looks up tools that have never been priced first (so a newly added tool usually has a price within half an hour), then any price older than 3 hours, oldest first, at most 120 per run. That stays well under eBay's 5,000 calls a day.
+
+It uses eBay's official Browse API and saves the typical new and used asking price, the lowest price and the listing count to `ebay_prices`. Matching lives in `checker/ebay-match.mjs` (test: `node checker/ebay-match.test.mjs`). For each part number it takes the first of these that finds something, and saves which one in `source`:
+1. `exact`: Buy It Now listings whose title says Snap-on and the exact part number (a part number of 6+ characters counts even without "Snap-on").
+2. `variant`: the same tool under another color or kit ending, or with a 0/O mix-up (CTR881 → CTR881DB, 0FCA1KT → OFCA1KT). `note` says which.
+3. `auction`: current bids on exact or variant auction listings.
+4. `similar`: an estimate from 3+ listings of sibling part numbers that differ only in the last digit (CTR868 from CTR861/CTR867/CTR869). `note` says which.
+If nothing turns up and the tool had a price before, that price is kept with `listings = 0`, and the card says "last seen" with the date in `seen_at`.
+
+Whenever a tool's price moves 3% or more from the last day on record, that day's price is saved in `ebay_price_history`. The site uses it for price drops, sparklines, recent activity and box value over time.
+
+Each tool card shows this as an "eBay:" line with a link to the search. These are asking prices from active listings, not Snap-on's list price or what things actually sold for.
+
+To see why a tool did or didn't match, open **Actions → eBay prices → Run workflow**, put the part numbers in "parts" and `--dry-run --explain` in "flags". The log lists every title it saw, marked `=` exact, `~` variant, `-` skipped.
 
 Setup: make a free account at developer.ebay.com, create a **Production** keyset, then in the GitHub repo go to **Settings → Secrets and variables → Actions** and add `EBAY_CLIENT_ID` (the App ID) and `EBAY_CLIENT_SECRET` (the Cert ID). The workflow also needs `SUPABASE_SECRET_KEY`. Run **eBay prices** from the Actions tab to fill it right away.
 

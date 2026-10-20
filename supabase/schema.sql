@@ -602,3 +602,39 @@ end $$;
 revoke execute on function public.insurance_policies_fill() from public, anon, authenticated;
 create trigger insurance_policies_fill before insert or update on public.insurance_policies
   for each row execute function public.insurance_policies_fill();
+
+-- ===== Faster eBay prices, fallbacks and price history (2026-10-20) =====
+-- source: how the price was found. exact = listings for this part number; variant = the same tool under a
+-- color or kit suffix (CTR881 / CTR881DB) or a 0/O typo; auction = current bids, when nothing is Buy It Now;
+-- similar = estimate from the closest Snap-on part numbers in the same family (CTR868 from CTR861/867/869).
+-- seen_at: when listings were last found. If a tool disappears from eBay, its last price is kept and shown
+-- as "last seen" instead of vanishing. note: which part numbers a variant or similar price came from.
+alter table public.ebay_prices add column if not exists source text not null default 'exact'
+  check (source in ('exact', 'variant', 'auction', 'similar'));
+alter table public.ebay_prices add column if not exists seen_at timestamptz;
+alter table public.ebay_prices add column if not exists note text not null default '' check (char_length(note) <= 200);
+update public.ebay_prices set seen_at = checked_at where seen_at is null and listings > 0;
+
+-- One eBay price per tool per day, written only when it moves 3% or more, so the site can show
+-- price drops, sparklines and box value over time. Public like ebay_prices; only the checker writes.
+create table if not exists public.ebay_price_history (
+  part_number text not null references public.catalog(part_number) on delete cascade,
+  d           date not null,
+  price       numeric(10,2) not null,
+  primary key (part_number, d)
+);
+alter table public.ebay_price_history enable row level security;
+create policy "Anyone can read eBay price history" on public.ebay_price_history for select to anon, authenticated using (true);
+revoke all on public.ebay_price_history from anon, authenticated;
+grant select on public.ebay_price_history to anon, authenticated;
+
+create or replace function public.cleanup_old_data()
+returns void language sql security definer set search_path to '' as $$
+  delete from public.price_reports where created_at < now() - interval '90 days';
+  -- price history: every day for a year, then Mondays only
+  delete from public.catalog_prices p
+   where p.d < (now() - interval '1 year')::date and extract(isodow from p.d) <> 1;
+  delete from public.ebay_price_history p
+   where p.d < (now() - interval '1 year')::date and extract(isodow from p.d) <> 1;
+$$;
+revoke execute on function public.cleanup_old_data() from public, anon, authenticated;
