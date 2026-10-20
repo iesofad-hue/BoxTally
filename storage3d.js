@@ -668,8 +668,12 @@ function bitCase() {
   g.userData.yaw = -0.5; return g;
 }
 // An extension set: 3", 6" and 10" laid side by side.
-function extensionSet() {
-  return group([76, 152, 254].map((len, i) => { const e = extension({ len, drive: "3/8" }); e.position.set(-127, 10, -36 + i * 36); return e; }));
+// Lengths come from the set's part number (206AFX: 1-1/2" to 11"); they sit in a black clip rail, shortest in front.
+function extensionSet({ sizes = ['3"', '6"', '10"'], drive = "3/8" } = {}) {
+  const k = { "1/4": 0.7, "1/2": 1.32, "3/4": 1.9 }[drive] || 1, step = 20 * k + 4, ins = sizes.map(parseFloat).sort((a, b) => b - a), n = ins.length;
+  const g = group(ins.map((inch, i) => { const e = extension({ len: Math.max(30, inch * 25.4), drive }); e.position.set(0, 10 * k + 4, (i - (n - 1) / 2) * step); return e; }));
+  g.add(at(box(30, 8, n * step + 6, mat.black, 2), 12, 4, 0));
+  g.position.x = -ins[0] * 12.7; g.rotation.x = 0.45; const out = group(g); out.userData.yaw = -0.1; return out;
 }
 export const MODELS = {
   storage: () => rollCabChest(),
@@ -692,6 +696,6 @@ export const MODELS = {
   other: () => closedCase(),
   creeper: () => creeper(),
   stool: () => stool(),
-  magtray: () => magTray(), magmat: () => magMat(), "tool-bag": () => kitBag(), "bit-case": () => bitCase(), "set-extension": () => extensionSet(),
+  magtray: () => magTray(), magmat: () => magMat(), "tool-bag": () => kitBag(), "bit-case": () => bitCase(), "set-extension": (o = {}) => extensionSet(o.sizes?.length ? { sizes: o.sizes, drive: o.drive } : {}),
   "drain-pan": () => drainPan(),
 };

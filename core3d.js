@@ -233,8 +233,8 @@ function flareShape(gap, R) {
   for (let k = 11; k >= -11; k--) { const t = (k * PI) / 12; if (Math.abs(t) < PI - b - 0.02) { const rr = k % 2 ? gap * 0.5 : gap * 0.56; s.lineTo(rr * Math.cos(t), rr * Math.sin(t)); } }
   s.lineTo(-ri * Math.cos(b), -sw); s.closePath(); return s;
 }
-export function wrench({ gap = 13, left = "open", right = "box", size = "", ratcheting = false } = {}) {
-  const len = 110 + gap * 4, xe = len / 2 - 6, T = 3.2 + gap * 0.07, top = T / 2 + 1;
+export function wrench({ gap = 13, left = "open", right = "box", size = "", ratcheting = false, long = false } = {}) {
+  const len = (110 + gap * 4) * (long ? 1.32 : 1), xe = len / 2 - 6, T = 3.2 + gap * 0.07, top = T / 2 + 1;
   const w = (x) => 3.6 + 0.12 * gap + 1.6 * (Math.abs(x) / xe) ** 2.2; // shank half-width, flaring into the heads
   const xs = Array.from({ length: 21 }, (_, i) => -xe + (2 * xe * i) / 20);
   const strip = (lo, hi, x0, x1) => { const q = xs.filter((x) => x >= x0 && x <= x1); return poly([...q.map((x) => [x, lo(x)]), ...q.slice().reverse().map((x) => [x, hi(x)])]); };
@@ -465,17 +465,32 @@ export function hexkeys() {
 
 /* ---------- sets ---------- */
 // The rail prints the set's own drive and SAE or metric, and carries sockets to match.
-export function socketRail({ n = 7, drive = "3/8", sae = false } = {}) {
+export function socketRail({ n = 7, drive = "3/8", sae = false, list = null, kind = {} } = {}) {
   if (!DRIVES[drive]) drive = "3/8";
-  const sizes = (sae ? ["1/4", "5/16", "3/8", "7/16", "1/2", "9/16", "5/8", "11/16", "3/4"] : [8, 9, 10, 11, 12, 13, 14, 15, 17, 19]).slice(0, n);
-  const mm = (s) => (typeof s === "number" ? s : (25.4 * s.split("/")[0]) / s.split("/")[1]);
+  const sizes = list ? list.map((z) => (/mm$/.test(z) ? parseFloat(z) : z.replace(/"$/, ""))) : (sae ? ["1/4", "5/16", "3/8", "7/16", "1/2", "9/16", "5/8", "11/16", "3/4"] : [8, 9, 10, 11, 12, 13, 14, 15, 17, 19]).slice(0, n);
+  if (list) sae = !list.some((z) => /mm$/.test(z));
+  const mm = (s) => (typeof s === "number" ? s : gapOf(s));
   const rs = sizes.map((s) => Math.max(mm(s) * 0.6 + 3.2, DRIVES[drive] * 0.82 + 2.2)), gap = 7;
   const W = rs.reduce((a, r) => a + 2 * r + gap, gap + 14);
   const rail = group(at(box(W, 6, 30, mat.red, 2), 0, 3, 0), at(box(W + 4, 3, 32, mat.black, 1), 0, -0.5, 0));
   for (const s of [-1, 1]) rail.add(at(box(9, 9, 32, mat.black, 2.5), s * (W / 2 - 2), 4, 0));
   const t = mesh(new THREE.PlaneGeometry(W * 0.5, 4.2), label(`${drive}" DRIVE  ·  ${sae ? "SAE" : "METRIC"}`, W * 0.5, 4.2, { color: "#f1f3f5" }), false); t.position.set(0, 3, 15.08); rail.add(t);
   let x = -W / 2 + 7 + gap;
-  sizes.forEach((sz, i) => { const r = rs[i]; x += r; rail.add(at(cyl(4.2, 2, mat.black), x, 6.5, -3), at(socket({ r, h: 20 + r * 0.55, size: String(sz), drive }), x, 6.8, -3)); x += r + gap; });
+  sizes.forEach((sz, i) => { const r = rs[i]; x += r; rail.add(at(cyl(4.2, 2, mat.black), x, 6.5, -3), at(socket({ r, h: (kind.deep ? 44 : 20) + r * 0.55, size: String(sz), drive, ...kind }), x, 6.8, -3)); x += r + gap; });
   return rail;
 }
-export function wrenchSet() { const g = group(); [10, 11, 12, 13, 14].forEach((s, i) => { const w = wrench({ gap: s, size: s + "mm" }); w.position.set(0, i * 0.2, -i * 34); g.add(w); }); return g; }
+// A wrench set the way Snap-on shows it: side by side in a black rack, biggest at the back, box ends lined up.
+// sizes: ["8mm", ... "19mm"] or ['5/16"', ...]; member: combo, long, ratchet, box, open, flare.
+const gapOf = (z) => { const m = String(z).match(/^([\d.]+)mm$/), f = String(z).replace(/"/g, "").match(/^(?:(\d)-)?(\d+)\/(\d+)$/); return m ? +m[1] : f ? 25.4 * ((+f[1] || 0) + f[2] / f[3]) : /^\d+"?$/.test(z) ? 25.4 * parseFloat(z) : 13; };
+export function wrenchSet({ sizes = ["10mm", "11mm", "12mm", "13mm", "14mm"], member = "combo" } = {}) {
+  const g = group(), ends = { combo: ["open", "box"], long: ["open", "box"], ratchet: ["open", "box"], box: ["box", "box"], open: ["open", "open"], flare: ["flare", "flare"] }[member] || ["open", "box"];
+  let z = 0, xmax = 0;
+  const ws = sizes.slice().reverse().map((s) => { const gap = gapOf(s), w = wrench({ gap, size: s.replace(/"$/, ""), left: ends[0], right: ends[1], ratcheting: member === "ratchet", long: member === "long" }); const R = gap * 0.55 + 7.5; return { w, R, half: ((110 + gap * 4) * (member === "long" ? 1.32 : 1)) / 2 + R }; });
+  // nested like shingles in the rack
+  ws.forEach((o, i) => { z += i ? (ws[i - 1].R + o.R) * 0.62 : 0; o.w.position.set(-o.half, 6 + (ws.length - i) * 2.6, z); xmax = Math.max(xmax, o.half); g.add(o.w); });
+  ws.forEach((o) => { o.w.position.x += xmax * 0.5; o.w.position.z -= z / 2; }); // right ends line up
+  const rackX = xmax * 0.5 - ws[0].half * 0.55;
+  g.add(at(box(26, 6, z + ws[0].R + ws[ws.length - 1].R + 12, mat.black, 2), rackX, 3, 0));
+  // tipped up toward you like a set standing in its rack, so every wrench shows
+  g.rotation.x = 0.5; const out = group(g); out.userData.yaw = -0.1; return out;
+}

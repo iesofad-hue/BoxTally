@@ -1804,6 +1804,52 @@ document.addEventListener("DOMContentLoaded", () => {
     const d = saidDrive([r.name, storeOf(r) && storeOf(r).name].filter(Boolean).join(" ")) || pnDrive(r.part_number);
     return d && d !== CAT_DRIVE[c] ? Object.keys(CAT_DRIVE).find((k) => CAT_DRIVE[k] === d) : c;
   }
+  /* ---------- what's inside a set ----------
+     Snap-on set numbers carry the piece count: OEXM710 is 10 metric wrenches, BOERM712 12 ratcheting ones,
+     206AFX six 3/8" extensions, 207IPLFM seven 3/8" metric swivel impact sockets. The sizes are the usual run
+     for that count, unless the name spells the range out ("10-19 mm"). The result is "member;size,size,...". */
+  const RUN = {
+    wrenchMM: ["6mm", "7mm", "8mm", "9mm", "10mm", "11mm", "12mm", "13mm", "14mm", "15mm", "16mm", "17mm", "18mm", "19mm", "21mm", "22mm", "24mm"],
+    wrenchSAE: ['1/4"', '5/16"', '3/8"', '7/16"', '1/2"', '9/16"', '5/8"', '11/16"', '3/4"', '13/16"', '7/8"', '15/16"', '1"'],
+    ext: { '1/4"': [1.5, 2, 3, 4, 6, 10, 14], '3/8"': [1.5, 3, 4, 6, 8, 11, 18, 24], '1/2"': [2, 3, 5, 8, 11, 18, 24], '3/4"': [3, 8, 16] },
+    sockMM: { '1/4"': [4, 4.5, 5, 5.5, 6, 7, 8, 9, 10, 11, 12, 13, 14], '3/8"': [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], '1/2"': [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 24], '3/4"': [19, 21, 22, 24, 27, 30, 32] },
+    sockSAE: { '1/4"': ["3/16", "7/32", "1/4", "9/32", "5/16", "11/32", "3/8", "7/16", "1/2", "9/16"], '3/8"': ["1/4", "5/16", "3/8", "7/16", "1/2", "9/16", "5/8", "11/16", "3/4", "13/16", "7/8"], '1/2"': ["3/8", "7/16", "1/2", "9/16", "5/8", "11/16", "3/4", "13/16", "7/8", "15/16", "1"], '3/4"': ["3/4", "7/8", "15/16", "1", "1-1/16", "1-1/8"] },
+  };
+  // n pieces of a run, starting at `from` (or ending at the run's end if that's too late); a name's range wins
+  function run(list, n, from, range) {
+    const v = (x) => (typeof x === "number" ? x : /\//.test(x) ? fracVal(x.replace(/[^\d\/-]/g, "")) : parseFloat(x));
+    if (range && range.lo != null) { const inR = list.filter((x) => v(x) >= range.lo - 1e-6 && v(x) <= range.hi + 1e-6); if (inR.length >= 2) return inR; }
+    const i = Math.max(0, Math.min(list.indexOf(from) < 0 ? 0 : list.indexOf(from), list.length - n));
+    return list.slice(i, i + n);
+  }
+  function setSpec(kind, pn, text, drive) {
+    const range = setRange(text), metric = range ? range.unit === "MM" : null;
+    if (kind === "set-wrench") {
+      const m = pn.match(/^(?<p>[A-Z]+?)(?<m>M?)(?<f>[5-8])(?<n>\d\d)[A-Z]{0,3}$/);
+      const n = m ? +m.groups.n : 7, p = m ? m.groups.p : pn;
+      if (!(n >= 2 && n <= 20)) return null;
+      const member = /^(S?OEXR|S?OXR|OXIR|BOER|SRXR|SOEXR)/.test(p) ? "ratchet" : /^(G?S?OEXL|OEXL)/.test(p) ? "long" : /^(R?XF|RXH|RXS|SRXF)/.test(p) ? "flare"
+        : /^(X|SBX|LTA|CRB|RB)/.test(p) ? "box" : /^(G?VS|DS|VO)/.test(p) ? "open" : "combo";
+      const mm = metric ?? !!(m && m.groups.m);
+      const sizes = mm ? run(RUN.wrenchMM, n, n >= 10 ? RUN.wrenchMM[Math.max(0, 14 - n)] : "10mm", range) : run(RUN.wrenchSAE, n, n >= 10 ? '1/4"' : '5/16"', range);
+      return member + ";" + sizes.join(",");
+    }
+    if (kind === "set-extension") {
+      const m = pn.match(/^[1-4](\d\d)/), n = m ? +m[1] : 3, list = RUN.ext[drive] || RUN.ext['3/8"'];
+      return (/W\w*$/.test(pn.slice(3)) ? "wobble" : "extension") + ";" + list.slice(0, Math.min(n, list.length)).map((x) => x + '"').join(",");
+    }
+    if (kind === "set") {
+      const m = pn.match(/^([1-4])(\d\d)(?!CN|ND|SSD)([A-Z]+)$/);
+      if (!m || !drive) return null;
+      let g = null;
+      for (let L = m[3]; L.length && !g; L = L.slice(0, -1)) { const t = pnGuess(L + "12"); if (t && /^socket/.test(t.key) && t.drive === drive) g = t; }
+      const member = g ? g.key : "socket", mm = metric ?? (g ? /mm$/.test(g.size) : /M/.test(m[3]));
+      const n = Math.min(+m[2], 13);
+      const sizes = mm ? run(RUN.sockMM[drive], n, { '1/4"': 5, '3/8"': 10, '1/2"': 10, '3/4"': 19 }[drive], range).map((x) => x + "mm") : run(RUN.sockSAE[drive], n, { '1/4"': "3/16", '3/8"': "5/16", '1/2"': "3/8", '3/4"': "3/4" }[drive], range).map((x) => x + '"');
+      return member + ";" + sizes.join(",");
+    }
+    return null;
+  }
   function artOf(r) {
     const chosen = r.art === "ratchet-hard" ? "ratchet" : r.art && ART[r.art] ? r.art : null;
     const text = [r.name, storeOf(r) && storeOf(r).name].filter(Boolean).join(" ");
@@ -1823,7 +1869,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // beats the category because the add form starts on 3/8" Drive Tools, so an S80A saved without changing
     // it would otherwise read as 3/8".
     const drive = saidDrive(text) || ((DRIVE_KINDS.includes(familyOf(kind)) || /^set/.test(kind)) && g && g.drive) || CAT_DRIVE[r.category] || null;
-    return { key: kind, drive, size: sizeOf(kind, text, pn, drive), nums: kind === "set" ? setNums(setRange(text)) : null, unit: kind === "set" ? (setRange(text) || {}).unit : null, label: (!chosen && !key && g && kind === g.key && firstHit(PN_LABEL, pn)) || ART_LABEL[kind] || "Drawing", pn };
+    const spec = ["set", "set-wrench", "set-extension"].includes(kind) ? setSpec(kind, pn, text, drive) : null;
+    // a set with no range in its name shows what its part number says: "12 pc · 8mm–19mm"
+    const z = spec && spec.split(";")[1].split(","), size = sizeOf(kind, text, pn, drive) || (z && z.length > 1 ? `${z.length} pc · ${z[0]}–${z[z.length - 1]}` : null);
+    return { key: kind, drive, size, spec, nums: kind === "set" ? setNums(setRange(text)) || specNums(spec) : null, unit: kind === "set" ? (setRange(text) || {}).unit || (spec ? (/mm/.test(spec) ? "MM" : "SAE") : null) : null, label: (!chosen && !key && g && kind === g.key && firstHit(PN_LABEL, pn)) || ART_LABEL[kind] || "Drawing", pn };
   }
   /* ---------- the size printed on a drawing: 11mm, 9/16", T40, 1/2 × 9/16 ...
      Read from the tool's name first, then from Snap-on's part number when the
@@ -1851,6 +1900,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (/\bsae\b|standard|inch|fractional/i.test(t)) return { unit: "SAE", text: "SAE" };
     return null;
   }
+  // the socket set drawing's five sockets, picked across the sizes the part number says are in it
+  const specNums = (spec) => { const z = spec && spec.split(";")[1].split(","); return z && z.length >= 2 ? [0, 1, 2, 3, 4].map((i) => z[Math.round((i * (z.length - 1)) / 4)].replace(/mm|"/g, "")) : null; };
   // five sockets spread across the set's range
   function setNums(r) {
     if (!r || r.lo == null) return null;
@@ -1903,9 +1954,50 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) { /* not measurable yet: use the old fixed floor */ }
     return (artBox[key] = box);
   }
+  /* ---------- set drawings built from what's in the set ----------
+     Wrenches lie side by side in their rack, biggest at the back, box ends lined up like a Snap-on set photo;
+     extensions lie in their clip rail shortest in front. */
+  const sizeMM = (z) => { const m = String(z).match(/^([\d.]+)mm$/); return m ? +m[1] : fracVal(String(z).replace(/[^\d\/-]/g, "")) * 25.4; };
+  const f1 = (x) => +x.toFixed(1);
+  const SET_ART = {
+    "set-wrench": (spec) => {
+      const [member, list] = spec.split(";"), z = list.split(",").reverse(), n = z.length; if (n < 2) return null;
+      const lo = sizeMM(z[n - 1]), hi = sizeMM(z[0]), dy = Math.min(9, 58 / (n - 1)), y0 = 76 - dy * (n - 1);
+      let out = `<rect class="k" x="104" y="${f1(y0 - 7)}" width="12" height="${f1(dy * (n - 1) + 16)}" rx="2.4"/><rect class="d" x="106" y="${f1(y0 - 5)}" width="8" height="${f1(dy * (n - 1) + 12)}" rx="1.6" opacity=".6"/>`;
+      z.forEach((sz, i) => {
+        const t = hi > lo ? (sizeMM(sz) - lo) / (hi - lo) : 0.5, y = y0 + i * dy, r = 4.6 + t * 3.2, w = 1.5 + t * 0.9;
+        const xr = 146 - r, len = (member === "long" ? 112 : 94) + t * 26, xl = Math.max(8 + r, xr - len);
+        const end = (x, kind) => kind === "open"
+          ? `<path class="s" d="M${f1(x + r * 0.5)} ${f1(y - w)} L${f1(x)} ${f1(y - r * 0.95)} Q${f1(x - r * 1.1)} ${f1(y - r * 0.8)} ${f1(x - r * 1.2)} ${f1(y - r * 0.3)} L${f1(x - r * 0.35)} ${f1(y - r * 0.32)} L${f1(x - r * 0.35)} ${f1(y + r * 0.32)} L${f1(x - r * 1.2)} ${f1(y + r * 0.3)} Q${f1(x - r * 1.1)} ${f1(y + r * 0.8)} ${f1(x)} ${f1(y + r * 0.95)} L${f1(x + r * 0.5)} ${f1(y + w)} Z"/>`
+          : `<ellipse class="s" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r)}" ry="${f1(r * 0.86)}"/>` + (kind === "ratchet"
+            ? `<ellipse class="d" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.66)}" ry="${f1(r * 0.56)}"/><ellipse class="pit" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.38)}" ry="${f1(r * 0.32)}"/>`
+            : `<ellipse class="pit" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.5)}" ry="${f1(r * 0.42)}"/><ellipse class="nl" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.64)}" ry="${f1(r * 0.55)}" opacity=".35"/>`);
+        const left = member === "box" || member === "flare" ? "box" : "open", right = member === "open" ? "open" : member === "ratchet" ? "ratchet" : "box";
+        out += `<path class="s" d="M${f1(xl)} ${f1(y - w)} L${f1(xr)} ${f1(y - w * 1.25)} V${f1(y + w * 1.25)} L${f1(xl)} ${f1(y + w)} Z"/><rect class="sh" x="${f1(xl + 6)}" y="${f1(y - w + 0.4)}" width="${f1(xr - xl - 12)}" height=".9" rx=".45"/>`;
+        out += end(xl, left) + end(xr, right);
+        if (dy >= 5.6) out += `<text class="txe" x="${f1((xl + xr) / 2 - 8)}" y="${f1(y + 1.3)}" font-size="${f1(Math.min(3.6, dy * 0.5))}" text-anchor="middle">${esc(sz.replace("mm", ""))}</text>`;
+      });
+      return out;
+    },
+    "set-extension": (spec) => {
+      const z = spec.split(";")[1].split(",").map(parseFloat).reverse(), n = z.length; if (n < 2) return null;
+      const max = z[0], dy = Math.min(13, 60 / (n - 1)), y0 = 78 - dy * (n - 1), fs = Math.min(1, dy / 12 + 0.25);
+      let out = `<rect class="k" x="10" y="${f1(y0 - 9 * fs - 2)}" width="30" height="${f1(dy * (n - 1) + 18 * fs + 4)}" rx="3"/>`;
+      z.forEach((inch, i) => {
+        const y = y0 + i * dy, h = 7.6 * fs, fw = 24 * fs, fh = 16 * fs, x0 = 13, x1 = x0 + fw, len = 14 + 112 * Math.sqrt(inch / max), x2 = x1 + len;
+        out += `<rect class="s" x="${f1(x1 - 2)}" y="${f1(y - h / 2)}" width="${f1(len + 4)}" height="${f1(h)}" rx="1.4"/><rect class="sh" x="${f1(x1 + 2)}" y="${f1(y - h / 2 + 0.9)}" width="${f1(Math.max(2, len - 6))}" height="1.3" rx=".65"/>`
+          + `<rect class="s" x="${f1(x2)}" y="${f1(y - 5.4 * fs)}" width="${f1(9 * fs)}" height="${f1(10.8 * fs)}" rx="1.1"/><circle class="h" cx="${f1(x2 + 5.4 * fs)}" cy="${f1(y - 5.4 * fs)}" r="1.3"/>`
+          + `<rect class="s" x="${x0}" y="${f1(y - fh / 2)}" width="${f1(fw)}" height="${f1(fh)}" rx="3"/><path class="nl" opacity=".5" d="${[9, 11, 13, 15, 17, 19].map((d) => `M${f1(x0 + d * fs)} ${f1(y - fh / 2 + 1.3)} V${f1(y + fh / 2 - 1.3)}`).join(" ")}"/><rect class="pit" x="${x0 + 0.6}" y="${f1(y - 4 * fs)}" width="${f1(4.2 * fs)}" height="${f1(8 * fs)}" rx=".9"/>`
+          + (dy >= 7 ? `<text class="tx" x="${f1(x1 + len / 2 + 4)}" y="${f1(y - h / 2 - 1.2)}" font-size="${f1(3.4 + fs)}" text-anchor="middle">${esc(String(inch))}"</text>` : "");
+      });
+      return out;
+    },
+  };
+  // what a 3D model needs: kind|size|drive|part number. A set sends what's in it ("set:combo;10mm,11mm...") as its size.
+  const m3dOf = (a) => [a.key, a.spec ? "set:" + a.spec : a.size || "", a.drive || "", a.pn || ""].join("|");
   const artTag = (a, cls = "", { refl = false } = {}) => {
     const key = typeof a === "string" ? a : a.key;
-    let svg = ART[key] || ART.other;
+    let svg = (typeof a === "object" && a.spec && SET_ART[key] && SET_ART[key](a.spec)) || ART[key] || ART.other;
     const slot = SIZE_SLOT[key];
     if (typeof a === "object" && a.size != null && slot) svg = svg.replace(`>${slot}</text>`, `>${esc(a.size)}</text>`);
     if (typeof a === "object" && key === "set") {
@@ -2251,7 +2343,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!p) {
       // no photo of your own yet: BoxTally's drawing of this kind of tool
       const a = artOf(r);
-      return `<div class="photo art-bg" data-m3d="${esc([a.key, a.size || "", a.drive || "", a.pn || ""].join("|"))}"><button class="open" type="button" data-act="view" aria-label="See ${esc(displayName(r))} up close">${artTag(a, "", { refl: true })}</button>${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
+      return `<div class="photo art-bg" data-m3d="${esc(m3dOf(a))}"><button class="open" type="button" data-act="view" aria-label="See ${esc(displayName(r))} up close">${artTag(a, "", { refl: true })}</button>${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
     }
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
@@ -2494,7 +2586,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("railCount").textContent = `${owned.length} tool${owned.length === 1 ? "" : "s"}${withPh ? ` · ${withPh} with your photos` : ""}`;
     if (!state.railIntro) { state.railIntro = true; $("rail").classList.add("intro"); setTimeout(() => $("rail").classList.remove("intro"), 2200); }
     $("rail").innerHTML = rows.map((r, i) => { const p = photoOf(r), pr = worthOf(r);
-      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}"${p ? "" : ` data-m3d="${esc([artOf(r).key, artOf(r).size || "", artOf(r).drive || "", artOf(r).pn || ""].join("|"))}"`}>${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
+      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}"${p ? "" : ` data-m3d="${esc(m3dOf(artOf(r)))}"`}>${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
   }
 
   function activity() {
@@ -2712,7 +2804,7 @@ document.addEventListener("DOMContentLoaded", () => {
       load3d().then((t) => {
         if (!t || !t.has(a.key) || viewing !== id || !viewer.open || !$("vStage")) return;
         showroomLight(false);
-        const stop = t.viewer($("vStage"), a.key, a.size || "", a.drive || "", a.pn || "");
+        const stop = t.viewer($("vStage"), ...m3dOf(a).split("|"));
         if (!stop) return;
         $("vStage").classList.add("is3d"); $("vHint").textContent = "· Drag to spin it";
         viewer.addEventListener("close", stop, { once: true });

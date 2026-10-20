@@ -25,6 +25,8 @@ function lying(s, yaw = 0.62, spin = 0) {
 const brightChrome = mat.chrome.clone(); Object.assign(brightChrome, { roughness: 0.14, envMapIntensity: 1.7 }); brightChrome.color.set(0xffffff);
 function bright(o) { o.traverse((m) => { if (m.material === mat.chrome) m.material = brightChrome; }); return o; }
 function turnTo(o, yaw) { o.userData.yaw = yaw; return o; }
+// which socket a set's pieces are (from the set's part number)
+const SET_SOCKET = { "socket-12": { points: 12 }, "socket-deep": { deep: true }, "socket-impact": { impact: true }, "socket-swivel": { swivel: true } };
 const MODELS = {
   // Snap-on ratchets are hard-handle (chrome) unless the part is a soft grip one; "-soft" keys get the red grip.
   ...Object.fromEntries([["ratchet", {}], ["ratchet-long", { len: 280 }], ["ratchet-stubby", { len: 115 }], ["ratchet-flex", { flex: true }], ["ratchet-long-flex", { len: 280, flex: true }],
@@ -41,7 +43,7 @@ const MODELS = {
   extension: (o = {}) => bright(extension({ drive: o.drive })), breaker: () => breaker(), adapter: () => turnTo(bright(adapter()), 1.05),
   hammer: () => hammer(), "hammer-ballpeen": () => hammer(), "hammer-deadblow": () => hammer({ kind: "deadblow" }), "hammer-mallet": () => hammer({ kind: "mallet" }), "hammer-sledge": () => hammer({ kind: "sledge" }),
   pry: () => prybar(), punch: () => punch({ chisel: true }), "punch-pin": () => punch(), torque: () => torque(), "torque-click": () => torque(), hexkeys: () => hexkeys(),
-  set: (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "socket-rail": (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "set-wrench": () => wrenchSet(),
+  set: (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || ""), list: o.sizes?.length ? o.sizes : null, kind: SET_SOCKET[o.member] || {} }), "socket-rail": (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "set-wrench": (o = {}) => wrenchSet(o.sizes?.length ? { sizes: o.sizes, member: o.member } : {}),
 };
 Object.assign(MODELS, ...EXTRA);
 export const has = (key) => key in MODELS;
@@ -53,6 +55,7 @@ export const keys = () => Object.keys(MODELS);
 function opts(key, size, drive, pn) {
   const o = {}; const d = String(drive || "").replace(/"/g, ""); if (DRIVES[d]) o.drive = d;
   if (/^[A-Z0-9-]{2,14}$/.test(pn || "")) o.pn = pn;
+  if (/^set:/.test(size || "")) { const [member, list] = size.slice(4).split(";"); o.member = member; o.sizes = (list || "").split(",").filter(Boolean); return o; }
   if (!size) return o;
   const mm = String(size).match(/^(\d+(?:\.\d)?)\s*mm$/i), fr = String(size).match(/^(\d+)\/(\d+)"?$/);
   const gap = mm ? +mm[1] : fr ? (25.4 * fr[1]) / fr[2] : null;

@@ -148,6 +148,13 @@ const named = artOf({ part_number: "F80", name: "1/2\" Drive 9/16\" Deep Socket"
 if (named.key !== "socket-deep" || named.drive !== '1/2"') { bad++; console.log("name should win:", named.key, named.drive); }
 // numbers we can't read get a plain drawing, not a wrong tool
 for (const pn of ["ZZ123", "YA480B", "A78", "GA98A"]) { const a = artOf({ part_number: pn, name: "", category: "Other" }); if (a.key !== "other") { bad++; console.log(`${pn} should be unknown, got ${a.key}`); } }
+// what's in a set, read from its number (count, sizes, kind of piece)
+for (const [pn, spec] of [["BOERM712", "ratchet;8mm,9mm,10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"], ["SOEXLM710B", "long;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"],
+  ["SRXRM710", "ratchet;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"], ["206AFX", 'extension;1.5",3",4",6",8",11"'], ["208AFX", 'extension;1.5",3",4",6",8",11",18",24"'],
+  ["305ASX", 'extension;2",3",5",8",11"'], ["207IPLFM", "socket-swivel;10mm,11mm,12mm,13mm,14mm,15mm,16mm"], ["310IMMYA", "socket-impact;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"]]) {
+  const a = artOf({ part_number: pn, name: "", category: "Other" });
+  if (a.spec !== spec) { bad++; console.log(`${pn} set holds ${a.spec}, want ${spec}`); }
+}
 console.log(bad ? `${bad} of ${CASES.length + 5} wrong` : `all ${CASES.length + 5} part numbers right`);
 // how much of Snap-on's catalog we can read at all (catalog-part-numbers.tsv: number, catalog description)
 const rows = readFileSync(new URL("./catalog-part-numbers.tsv", import.meta.url), "utf8").trim().split("\n").slice(1);
