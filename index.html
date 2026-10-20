@@ -1546,7 +1546,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const PN_RULES = [
     // sets and kits
     [/^[TFSL][A-Z]*(72|80|720|830|936|880)[A-Z]*(SET|KIT)/, "set-kit", (m) => PN_DRIVE[m.input[0]]],
-    [/^[O0]FCA\d/, "filter-wrench"], [/^BLPBTW/, "set-kit", at('1/4"')], [/^BLPBSS\d/, "set", at('1/4"')], // BLPBSS40 40 pc 1/4" stubby bit socket set [/^LDT\d/, "disconnect-set"], // OFCA1KT spider filter wrench, LDT40 master disconnect set
+    [/^[O0]FCA\d/, "filter-wrench"], [/^BLPBTW/, "set-kit", at('1/4"')], [/^BLPBSS\d/, "set", at('1/4"')], [/^LDT\d/, "disconnect-set"], // OFCA1KT spider filter wrench, BLPBSS40 40 pc 1/4" stubby bit socket set, LDT40 master disconnect set
     [/(SET|KIT)\d*[A-Z]?$/, "set", (m) => PN_DRIVE[m.input[0]]],
     // pliers are numbers with letters after: 47ACF slip joint, 96CF needle nose, 87CF diagonal, PL400B a set
     [/^PL\d{3}/, "set-pliers"],
