@@ -647,8 +647,19 @@ function flashlight() {
   const w = group(g); g.position.y = 19.5; g.rotation.z = 0.032; w.userData.yaw = -0.7; return w;
 }
 
+// A master disconnect set: split plastic collars in several sizes and colours, in a black tray.
+function disconnectSet() {
+  const g = group(at(box(260, 18, 130, mat.black, 6), 0, 9, 0), at(box(240, 2, 110, mat.hole, 3), 0, 18.2, 0));
+  const ms = [mat.redp, mat.yellow, mat.blue, mat.white, mat.redp, mat.black, mat.redp, mat.yellow, mat.blue, mat.grey];
+  ms.forEach((m, i) => {
+    const r = 15 - (i % 5) * 1.8, x = -88 + (i % 5) * 44, z = i < 5 ? -26 : 26;
+    const c = group(turned([[r * 0.55, 0], [r, 0], [r, 22], [r * 0.7, 26], [r * 0.55, 26], [r * 0.55, 0]], m, { along: "y", segs: 40 }), at(box(r * 2.2, 26, 2, mat.hole, 0.3), 0, 13, 0));
+    c.position.set(x, 19, z); c.rotation.y = i; g.add(c);
+  });
+  g.userData.yaw = -0.3; return g;
+}
 export const MODELS = {
-  shop: () => shopLight(), "floor-jack": () => floorJack(), "jack-stand": () => jackStands(), funnel: () => funnel(), "air-hose": () => airHose(),
+  shop: () => shopLight(), "disconnect-set": () => disconnectSet(), "floor-jack": () => floorJack(), "jack-stand": () => jackStands(), funnel: () => funnel(), "air-hose": () => airHose(),
   "tire-gauge": () => tireGauge(), "tire-inflator": () => tireInflator(), "tire-plug": () => tirePlug(), vise: () => vise(), clamp: () => cClamp(),
   caliper: () => caliper(), micrometer: () => micrometer(), feeler: () => feeler(), "dial-indicator": () => dialIndicator(), "pressure-gauge": () => pressureTester(),
   thermometer: () => irThermometer(), stethoscope: () => stethoscope(), puller: () => gearPuller(), "seal-puller": () => sealPuller(), "ball-joint": () => ballJoint(),

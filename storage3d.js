@@ -644,6 +644,33 @@ function drainPan() {
 }
 
 /* ---------- the keys ---------- */
+// A flexible red magnetic mat with a few nuts and a bolt stuck to it.
+function magMat(mini = false) {
+  const w = mini ? 150 : 280, d = mini ? 100 : 200;
+  const g = group(at(box(w, 3, d, M.redrub, 1.4), 0, 1.5, 0));
+  [[-w * 0.3, -d * 0.2, 7], [w * 0.1, d * 0.22, 9], [w * 0.32, -d * 0.1, 6]].forEach(([x, z, s], i) => { const n = nut(s, i % 2 ? mat.satin : mat.chrome); n.position.set(x, 3, z); n.rotation.y = i; g.add(n); });
+  const b = bolt(36, 4); b.position.set(-w * 0.05, 2.4, -d * 0.05); b.rotation.y = 0.5; g.add(b);
+  g.userData.yaw = -0.35; return g;
+}
+// A soft zip kit bag: black nylon body, red band, zip along the top and a pull.
+function kitBag() {
+  const body = box(240, 70, 110, M.vinyl, 24), band = box(242, 14, 112, M.redrub, 6);
+  const g = group(at(body, 0, 35, 0), at(band, 0, 26, 0), at(box(220, 2, 4, mat.black, 1), 0, 70.4, 0));
+  g.add(at(box(14, 3, 8, mat.satin, 1), 70, 71, 0), at(rot(box(6, 2, 22, mat.black, 1), 0, 0, 0), 70, 71, 14));
+  g.add(at(tube([[-60, 70, 0], [-50, 92, 0], [50, 92, 0], [60, 70, 0]], 4, mat.black, 12), 0, 0, 0));
+  g.userData.yaw = -0.4; return g;
+}
+// A blow-moulded red bit case, closed: lid seam, two latches and a moulded handle.
+function bitCase() {
+  const g = group(at(box(220, 30, 150, mat.redp, 10), 0, 15, 0), at(box(222, 2, 152, mat.black, 1), 0, 22, 0), at(box(160, 2, 90, M.dark, 4), 0, 30.4, 0));
+  [-60, 60].forEach((x) => g.add(at(box(26, 16, 6, mat.satin, 2), x, 22, 77)));
+  g.add(at(tube([[-40, 15, -75], [-40, 15, -92], [40, 15, -92], [40, 15, -75]], 6, mat.black, 12), 0, 0, 0));
+  g.userData.yaw = -0.5; return g;
+}
+// An extension set: 3", 6" and 10" laid side by side.
+function extensionSet() {
+  return group([76, 152, 254].map((len, i) => { const e = extension({ len, drive: "3/8" }); e.position.set(-127, 10, -36 + i * 36); return e; }));
+}
 export const MODELS = {
   storage: () => rollCabChest(),
   "storage-cart": () => serviceCart(),
@@ -665,6 +692,6 @@ export const MODELS = {
   other: () => closedCase(),
   creeper: () => creeper(),
   stool: () => stool(),
-  magtray: () => magTray(),
+  magtray: () => magTray(), magmat: () => magMat(), "tool-bag": () => kitBag(), "bit-case": () => bitCase(), "set-extension": () => extensionSet(),
   "drain-pan": () => drainPan(),
 };

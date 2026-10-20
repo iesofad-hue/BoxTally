@@ -125,6 +125,13 @@ const CASES = [
   ["PPC808A", "punch"], ["PPC12B", "punch"], ["BPPC1878", "punch"], ["PPC714B", "punch-pin"], ["PPC104A", "punch-pin"], ["PPC710A", "set-punch"], ["PPB20AK", "set-punch"], ["1210B", "punch-pin"],
   ["1250", "pry"], ["BP8B", "hammer-ballpeen"], ["HLE24", "hammer-deadblow"], ["HD4SG", "hammer-sledge"], ["5NHRA", "file"], ["SGHF614BR", "file"],
   ["PSLR4-1", "pick"], ["SGLASA204", "set-pick"], ["YA338", "pick"], ["GA294", "mirror"], ["GA265A", "pickup"], ["MS800", "scraper"], ["YA405A", "knife"], ["PIT160", "hand-impact"],
+  // fadie's own box (2026-10-20): every number checked against Snap-on's listing
+  ["OFCA1", "filter-wrench"], ["0FCA1KT", "filter-wrench"], ["206AFX", "set-extension", '3/8"'], ["305ASX", "set-extension", '1/2"'], ["207IPLFM", "set", '3/8"'],
+  ["ADHWS10", "wrench-adjust"], ["ADHWS8O", "wrench-adjust"], ["ADWS8O", "wrench-adjust"], ["BLPBTWKIT", "set-kit", '1/4"'], ["BLPHSM1440", "socket-bit", '1/4"', "4mm"],
+  ["C0100", "tool-bag"], ["PB206B", "bit-case"], ["MAGMATR", "magmat"], ["MAGMINI", "magmat"], ["PHG1004RPBK", "air-bit"], ["PHG1005BK", "air-bit"], ["PH3050BR", "air-hammer"],
+  ["LDT40", "disconnect-set"], ["GSL832", "ratchet-long", '1/2"'], ["TNF72", "ratchet-round", '1/4"'], ["GTM830", "ratchet", '1/4"'], ["IEDP105", "pliers-pump"],
+  ["P92055A", "pliers-needle"], ["YA824C", "pliers"], ["YA1005C", "extractor"], ["PSN500", "trim-tool"], ["SAPB200O", "pry"], ["SPBSDC705FR", "pry"], ["SRXRM710", "set-wrench"],
+  ["TPGDL2000HD", "tire-inflator"], ["ECHDH042", "headlamp"], ["ECPN1032R", "flashlight"], ["ECPRB042", "shop"], ["CTRS761", "cl14-saw"], ["CT861AMG", "cl14-impact"], ["CT9055DB", "cl18-impact"],
 ];
 
 let bad = 0;

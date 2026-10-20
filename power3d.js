@@ -595,6 +595,19 @@ function solderingIron() {
 const imp = (o) => pistol({ nose: "impact", mode: true, ...o });
 // the item's own drive (a 3/8" 18V impact) replaces the model's usual anvil and stamp
 const sized = (base, o = {}) => (o.drive && DRIVES[o.drive] ? { ...base, drive: DRIVES[o.drive], tag: o.drive } : base);
+// Air hammer bits lying side by side: .401 round shank with a turned retaining collar, then a flat chisel,
+// a tapered punch and a forked panel cutter.
+function airBits() {
+  const bit = (tip) => {
+    const g = group(turned([[0.1, 0], [4.6, 0], [5.1, 0.6], [5.1, 46], [7.6, 47], [7.6, 55], [5.4, 57], [5.4, 70], [4.8, 72], [4.8, 150], [0.1, 150]], mat.satin, { segs: 32 }));
+    if (tip === "chisel") g.add(at(box(40, 3, 16, mat.satin, 1), 168, 0, 0));
+    if (tip === "punch") g.add(turned([[4.8, 150], [3.2, 175], [1.2, 190], [0.1, 191]], mat.satin, { segs: 32 }));
+    if (tip === "fork") g.add(at(box(34, 3, 12, mat.satin, 1), 165, 0, 0), at(box(12, 3.4, 3.6, mat.hole, 0.5), 178, 0, 0));
+    return g;
+  };
+  const g = group(["chisel", "punch", "fork"].map((t, i) => { const b = bit(t); b.position.set(0, 5.1, -30 + i * 30); b.rotation.y = 0.04 * (i - 1); return b; }));
+  g.position.x = -95; return group(g);
+}
 export const MODELS = {
   // generic cordless line: grey/black packs, black overmold
   power: (o) => imp(sized({ pk: "gen", len: 120, R: 29, drive: 9.5, tag: "3/8", tag2: "BRUSHLESS", gearM: mat.oxide }, o)),
@@ -615,6 +628,8 @@ export const MODELS = {
   "cl18-ratchet": (o = {}) => cratchet("18", o.drive),
   "cl18-grinder": () => rightAngle({ pk: "18", tag: "18V" }),
   "cl18-cutoff": () => rightAngle({ pk: "18", cut: true, disc: 38, R: 22, len: 150, handle: false, tag: "18V", yb0: 46 }),
+  "cl14-saw": () => pistol({ pk: "14", nose: "saw", len: 220, R: 26, xr: -40, px: -4, tag: "14.4V", gripH: 84, gripT: 31, gripW: 42 }),
+  "air-bit": () => airBits(),
   "cl18-saw": () => { const s = pistol({ pk: "18", nose: "saw", len: 250, R: 30, xr: -46, px: -6, tag: "18V", gripH: 92, gripT: 35 }); return s; },
   "cl18-battery": () => batteryModel("18"),
   battery: () => batteryModel("gen"),
