@@ -16,6 +16,7 @@ const ID = process.env.EBAY_CLIENT_ID || "";
 const SECRET = process.env.EBAY_CLIENT_SECRET || "";
 const ONLY = process.argv.slice(2).filter((a) => !a.startsWith("--")); // optional: check just these part numbers
 const DRY = process.argv.includes("--dry-run");
+const EXPLAIN = process.argv.includes("--explain"); // print the listing titles that were skipped
 
 if (!ID || !SECRET) {
   console.log("eBay keys aren't set up yet (EBAY_CLIENT_ID / EBAY_CLIENT_SECRET). Skipping.");
@@ -86,6 +87,7 @@ async function lookup(token, pn) {
   if (res.status === 429) throw new Error("eBay daily limit reached");
   const j = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(`eBay search failed (${res.status}): ${JSON.stringify(j).slice(0, 200)}`);
+  if (EXPLAIN) for (const it of (j.itemSummaries || []).slice(0, 25)) console.log(`   ${matches(it.title || "", pn) ? "+" : "-"} $${it.price && it.price.value} [${it.condition}] ${it.title}`);
   const hits = (j.itemSummaries || [])
     .filter((it) => it.price && it.price.currency === "USD" && matches(it.title || "", pn))
     .map((it) => ({ p: Number(it.price.value), used: !/^new/i.test(it.condition || "") }))
