@@ -10,6 +10,7 @@ const { artOf } = new Function("state", "storeOf", html.slice(from, to).join("\n
 
 // [part number, drawing, drive, size]  (drive/size left out = not checked)
 const CASES = [
+  ["BLPBSS40", "set", '1/4"'],
   // ratchets: the tooth count ends the number; L long, F/X flex, K/C stubby, H soft grip, 8xx round
   ["F80", "ratchet", '3/8"'], ["GF80", "ratchet", '3/8"'], ["FK80", "ratchet-stubby", '3/8"'], ["FL80", "ratchet-long", '3/8"'],
   ["FLF80", "ratchet-long-flex", '3/8"'], ["FX80", "ratchet-flex", '3/8"'], ["FBF80", "ratchet-flex"], ["FKF80", "ratchet-flex"],
