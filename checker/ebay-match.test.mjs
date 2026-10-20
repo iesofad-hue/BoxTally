@@ -35,6 +35,9 @@ eq(pick([it("Snap-on PKNC075 pick", 1, { buyingOptions: ["AUCTION"], currentBidP
 const sim = pick([it("Snap-on CTR869 ratchet", 250), it("Snap-on CTR867A ratchet", 300), it("Snap-on CTR861 ratchet", 220), it("Snap-on CTR761 ratchet", 140)], "CTR868GM");
 eq([sim.source, sim.listings, sim.median], ["similar", 3, 250], "similar estimate");
 eq(pick([it("Snap-on CTR869 ratchet", 250)], "CTR868GM"), null, "one sibling isn't enough");
+const wide = pick([it("Snap-on CT9038DB impact", 285), it("Snap-on CT9015DB impact", 250), it("Snap On CT9080G impact", 379.99), it("Snap-on CT861 impact", 199)], "CT9055DB");
+eq([wide.source, wide.listings, wide.median, wide.note], ["similar", 3, 285, "CT9038DB, CT9015DB, CT9080G"], "wider family for 4-digit numbers");
+eq(sibling("Snap-on F87 ratchet", "F80", true), null, "no wide family for short numbers");
 
 eq(altQueries("CTR868GM"), ["CTR868"], "alt query base");
 eq(altQueries("0FCA1KT"), ["OFCA1KT", "0FCA1"], "alt query 0/O");

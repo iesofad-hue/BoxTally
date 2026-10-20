@@ -78,7 +78,7 @@ It uses eBay's official Browse API and saves the typical new and used asking pri
 1. `exact`: Buy It Now listings whose title says Snap-on and the exact part number (a part number of 6+ characters counts even without "Snap-on").
 2. `variant`: the same tool under another color or kit ending, or with a 0/O mix-up (CTR881 → CTR881DB, 0FCA1KT → OFCA1KT). `note` says which.
 3. `auction`: current bids on exact or variant auction listings.
-4. `similar`: an estimate from 3+ listings of sibling part numbers that differ only in the last digit (CTR868 from CTR861/CTR867/CTR869). `note` says which.
+4. `similar`: an estimate from 3+ listings of sibling part numbers that differ only in the last digit (CTR868 from CTR861/CTR867/CTR869), or for 4+ digit numbers the last two (CT9055 from CT9015/CT9038/CT9080). `note` says which.
 If nothing turns up and the tool had a price before, that price is kept with `listings = 0`, and the card says "last seen" with the date in `seen_at`.
 
 Whenever a tool's price moves 3% or more from the last day on record, that day's price is saved in `ebay_price_history`. The site uses it for price drops, sparklines, recent activity and box value over time.

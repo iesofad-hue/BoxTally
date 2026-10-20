@@ -41,17 +41,19 @@ export function variant(title, pn) {
   if (b.length < 4) return null; // too short to guess safely
   return tokens(title).find((t) => loose(base(t)) === b) || null;
 }
-// "similar": a close sibling in the same family: same letters, same number of digits, only the last digit
-// different (CTR868 ~ CTR861/CTR867/CTR869). Returns the sibling's part number, or null.
-export function family(pn) {
+// "similar": a close sibling in the same family: same letters and number of digits, only the last digit
+// different (CTR868 ~ CTR861/CTR867/CTR869). With wide = true, the last two digits may differ, for
+// 4+ digit numbers only (CT9055 ~ CT9015/CT9038/CT9075). Returns the sibling's part number, or null.
+export function family(pn, cut = 1) {
   const m = norm(base(pn)).match(/^([A-Z]+)(\d{2,})$/);
-  return m ? { letters: m[1], stem: m[2].slice(0, -1), digits: m[2].length } : null;
+  if (!m || m[2].length - cut < 1 || (cut > 1 && m[2].length < 4)) return null;
+  return { letters: m[1], stem: m[2].slice(0, -cut), digits: m[2].length };
 }
-export function sibling(title, pn) {
-  const f = family(pn);
+export function sibling(title, pn, wide = false) {
+  const cut = wide ? 2 : 1, f = family(pn, cut);
   if (!f || !SNAP.test(title) || BAD.test(title)) return null;
   for (const t of tokens(title)) {
-    const g = family(t);
+    const g = family(t, cut);
     if (g && g.letters === f.letters && g.digits === f.digits && g.stem === f.stem && base(t) !== base(pn)) return t;
   }
   return null;
@@ -91,7 +93,8 @@ export function summarize(hits) {
 }
 
 // Pick the best price from every listing found for this part number, in order of trust:
-// exact Buy It Now > variant Buy It Now > auctions (exact or variant) > similar tools (3+ listings).
+// exact Buy It Now > variant Buy It Now > auctions (exact or variant) > similar tools (3+ listings),
+// closest siblings first.
 export function pick(items, pn) {
   const hits = items.map((it) => ({ it, h: hitOf(it) })).filter((x) => x.h);
   const seen = new Set();
@@ -106,8 +109,11 @@ export function pick(items, pn) {
   if (bin(va).length) return { source: "variant", note: names(va.filter(({ h }) => !h.auction), variant), ...summarize(bin(va)) };
   const a = [...auc(ex), ...auc(va)];
   if (a.length) return { source: "auction", note: "", ...summarize(a) };
-  const si = uniq(hits.filter(({ it, h }) => !h.auction && sibling(it.title || "", pn)));
-  if (si.length >= 3) return { source: "similar", note: names(si, sibling), ...summarize(si.map(({ h }) => h)) };
+  for (const wide of [false, true]) {
+    const sib = (t) => sibling(t, pn, wide);
+    const si = uniq(hits.filter(({ it, h }) => !h.auction && sib(it.title || "")));
+    if (si.length >= 3) return { source: "similar", note: names(si, sib), ...summarize(si.map(({ h }) => h)) };
+  }
   return null;
 }
 
