@@ -782,6 +782,15 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .lp-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .lp-btns a.btn { text-decoration: none; }
 .lp-batch { margin: 0 0 12px; font-size: 14px; }
+.lp-tabs { display: flex; gap: 6px; margin: 4px 0 8px; }
+.lp-tab { flex: 1; padding: 9px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--fg); font: inherit; font-size: .9rem; cursor: pointer; }
+.lp-tab[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+.lp-tab .count { font-family: var(--f-mono); font-size: .78rem; background: var(--chip); padding: 1px 7px; border-radius: 999px; }
+.lp-done { max-height: 240px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; margin-top: 6px; }
+.lp-done div { display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px; border-top: 1px solid var(--line); }
+.lp-done div:first-child { border-top: 0; }
+.lp-done .pn { font-family: var(--f-mono); font-size: 13px; }
+.lp-done .miss { color: var(--muted); }
 .lp-batch .lp-pns { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .lp-batch .lp-pns span { font-family: var(--f-mono); font-size: 13px; padding: 2px 6px; border-radius: 6px; background: var(--chip); }
 #l-text { width: 100%; min-height: 9em; font: inherit; font-size: 16px; }
@@ -886,6 +895,10 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
   <div class="banner demo" id="demoBanner" hidden>
     <span><strong>Sample box.</strong> Look around, add, lend or delete tools. Nothing here is saved.</span>
     <button class="btn small primary" id="demoExit" type="button">Start my own box</button>
+  </div>
+  <div class="banner info" id="ownerBanner" hidden>
+    <span id="ownerText"></span>
+    <button class="btn small primary" id="ownerGo" type="button">Check them</button>
   </div>
   <div class="banner info" id="shareBanner" hidden>
     <span id="shareText"></span>
@@ -1053,7 +1066,11 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 <dialog id="listDlg">
   <form id="listFrm" novalidate>
     <h2>Snap-on list prices</h2>
-    <p class="meta-line">A free way to fill in list prices for your whole box. Prices you add here stay private to you, and they count before eBay in your box worth.</p>
+    <p class="meta-line">Only you see this, as the owner. Prices you save here are shared: everyone who has that tool sees the same Snap-on list price. You only see part numbers, never whose tools they are.</p>
+    <div class="lp-tabs" role="tablist">
+      <button class="lp-tab" type="button" role="tab" data-lp-tab="todo" aria-selected="true">Not checked <span class="count" id="l-n-todo">0</span></button>
+      <button class="lp-tab" type="button" role="tab" data-lp-tab="done" aria-selected="false">Checked <span class="count" id="l-n-done">0</span></button>
+    </div>
     <ol class="lp-steps">
       <li>Tap <strong>Copy for Gemini</strong>. It copies the part numbers shown below with the question to ask.</li>
       <li>Open Gemini (or any AI app that can search the web), paste it and send.</li>
@@ -1061,7 +1078,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
     </ol>
     <div class="lp-btns"><button class="btn primary" type="button" id="l-copy">Copy for Gemini</button><a class="btn" id="l-gem" href="https://gemini.google.com/app" target="_blank" rel="noopener">Open Gemini</a></div>
     <div class="lp-batch" id="l-batch"></div>
-    <label class="field"><span class="label">Paste the answer</span><textarea id="l-text" rows="7" placeholder="F80 $159.00&#10;CTR881 $455.00"></textarea><small id="l-hint">Lines with one of your part numbers and a $ price are used. Anything else is skipped.</small></label>
+    <label class="field"><span class="label">Paste the answer</span><textarea id="l-text" rows="7" placeholder="F80 $159.00&#10;CTR881 $455.00"></textarea><small id="l-hint"></small></label>
     <p class="err" id="l-err" hidden></p>
     <div class="formfoot">
       <span class="spacer" style="flex:1"></span>
@@ -1160,7 +1177,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
 
-  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, list: {}, loaded: false, editing: null, confirm: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
+  const state = { admin: false, adminParts: [], tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, list: {}, loaded: false, editing: null, confirm: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
 
@@ -1185,8 +1202,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const v = e.new_median ?? e.median;
     return v == null ? null : Number(v);
   };
-  // Snap-on's list price: the one you entered on the tool (private to you), else the one looked up
-  // weekly by checker/list-prices.mjs (null when it couldn't be confirmed)
+  // Snap-on's list price: the one you entered on the tool (private to you), else the shared one the
+  // owner saved (list_prices; null when none was found)
   const listPrice = (r) => {
     if (Number(r.list_price) > 0) return Number(r.list_price);
     const l = r.part_number && state.list && state.list[r.part_number];
@@ -2195,7 +2212,7 @@ document.addEventListener("DOMContentLoaded", () => {
         toast("Couldn't load your tools. Check your connection and reload."); state.items = [];
       }
     } else state.items = local.read();
-    await loadCatalog();
+    await Promise.all([loadCatalog(), loadAdmin()]);
     state.loaded = true;
     saveCache();
     render();
@@ -2561,6 +2578,9 @@ document.addEventListener("DOMContentLoaded", () => {
     $("localDemo").hidden = state.items.length > 0;
     $("demoBanner").hidden = !state.demo;
     $("shareBanner").hidden = !state.readonly;
+    const unchecked = state.admin ? lpTodo().length : 0;
+    $("ownerBanner").hidden = !unchecked;
+    if (unchecked) $("ownerText").innerHTML = `<strong>Owner:</strong> ${unchecked} tool${unchecked === 1 ? "" : "s"} in BoxTally ${unchecked === 1 ? "hasn't" : "haven't"} been checked for a Snap-on list price yet.`;
     if (state.readonly) {
       const title = state.shareInfo && state.shareInfo.title;
       $("shareText").textContent = !state.loaded ? "Loading a shared box…" : !state.shareInfo ? "This shared box link was turned off, or it's not quite right." : `You're looking at ${title ? title : "someone's toolbox"} on BoxTally. It's read-only.`;
@@ -2765,7 +2785,7 @@ document.addEventListener("DOMContentLoaded", () => {
       : `<div class="watch-empty"><span class="note">${trackedN ? `eBay prices for your ${trackedN} part number${trackedN === 1 ? "" : "s"} refresh every few hours.` : "Add tools by part number and their eBay prices fill in on their own."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
     if (trackedN && !state.readonly) {
       const pns = state.items.filter((r) => r.part_number), withList = pns.filter((r) => listPrice(r) != null).length;
-      $("watch").insertAdjacentHTML("beforeend", `<div class="watch-empty"><span class="note">${withList} of ${pns.length} tool${pns.length === 1 ? "" : "s"} have a Snap-on list price.</span><button class="btn-watch" type="button" data-list-prices>${withList < pns.length ? "Add list prices →" : "Update list prices →"}</button></div>`);
+      $("watch").insertAdjacentHTML("beforeend", `<div class="watch-empty"><span class="note">${withList} of ${pns.length} tool${pns.length === 1 ? "" : "s"} have a Snap-on list price.</span>${state.admin ? `<button class="btn-watch" type="button" data-list-prices>Manage list prices →</button>` : ""}</div>`);
     }
     $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
       ? `<label class="alert-opt"><input type="checkbox" id="alertDrops"${state.alerts && state.alerts.email_drops ? " checked" : ""}><span>Email me when something on my wishlist drops</span></label>` : "");
@@ -3312,7 +3332,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function enterDemo() {
     const day = (n) => { const t = new Date(); t.setDate(t.getDate() - n); return t.toISOString().slice(0, 10); };
-    state.demo = true; state.items = demoItems(); state.introDone = false; state.railIntro = false;
+    state.demo = true; state.admin = false; state.items = demoItems(); state.introDone = false; state.railIntro = false;
     state.demoIns = { provider: "State Farm", policy_type: "Personal articles / scheduled items", policy_number: "", coverage: 2000, deductible: 250, premium: 96, premium_every: "year", renews_on: day(-40), agent: "", notes: "" };
     { const p = truckPlan(495, 12, "weekly", 10, day(21)); state.demoTruck = { ...p, balance: round2(p.total - 3 * p.pay), dealer: "Thursday truck", log: [{ d: day(7), amt: -p.pay, what: "Payment" }, { d: day(14), amt: -p.pay, what: "Payment" }, { d: day(21), amt: -p.pay, what: "Payment" }, { d: day(21), amt: p.total, what: '1/2" drive click-type torque wrench' }] }; }
     render();
@@ -3663,61 +3683,88 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.closest("[data-list-prices]")) openListPrices();
   });
 
-  /* ---------- Snap-on list prices, filled in for free ----------
+  /* ---------- Snap-on list prices, managed by the BoxTally owner ----------
      Snap-on's store can't be read by a website, but an AI app that searches the web (Gemini) can find
-     list prices. So: copy your part numbers with the question, ask Gemini, paste its answer back. Each
-     price is saved on your own tools (items.list_price), private to you like what you paid. */
+     list prices. The owner copies part numbers (from everyone's boxes, part numbers only) with the
+     question, asks Gemini, and pastes its answer back. Prices go in list_prices, which everyone reads.
+     Only admins (public.admins) can see admin_parts() or call admin_save_list_prices(). */
   const listDlg = $("listDlg");
   const LIST_BATCH = 12;
-  // which part numbers were copied for Gemini, and when (this browser only)
-  const listAsked = () => { try { return JSON.parse(localStorage.getItem("bx-lp-asked") || "{}"); } catch { return {}; } };
-  const markAsked = (pns) => { try { const a = listAsked(), t = Date.now(); pns.forEach((pn) => (a[pn] = t)); localStorage.setItem("bx-lp-asked", JSON.stringify(a)); } catch {} };
   const pnKey = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
-  function listPrompt() {
-    const all = [...new Set(state.items.filter((r) => r.part_number).map((r) => r.part_number))];
-    const missing = all.filter((pn) => !state.items.some((r) => r.part_number === pn && Number(r.list_price) > 0));
-    // Small batches: Gemini searches properly for a handful at a time, and gives up on long lists.
-    // Part numbers asked about in the last week (Gemini answered "?") go to the back of the line.
-    const asked = listAsked(), week = Date.now() - 7 * 864e5;
-    const queue = (missing.length ? missing : all).slice().sort((a, b) => ((asked[a] || 0) > week) - ((asked[b] || 0) > week));
-    const pns = queue.slice(0, LIST_BATCH);
-    return { pns, done: all.length - missing.length, total: all.length, left: (missing.length ? missing : all).length, text: `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}` };
+  let lpTab = "todo", curBatch = null;
+  async function loadAdmin() {
+    state.admin = false; state.adminParts = [];
+    if (!sb || !signedIn() || state.demo || state.readonly) return;
+    const a = await sb.rpc("is_admin");
+    if (a.error || !a.data) return;
+    const r = await sb.rpc("admin_parts");
+    if (r.error) return;
+    state.admin = true; state.adminParts = r.data || [];
   }
-  let curBatch = null; // the batch shown in the dialog is the one that gets copied
-  function openListPrices() {
-    $("l-err").hidden = true; $("l-text").value = "";
-    curBatch = listPrompt();
-    const { pns, left, done, total } = curBatch;
+  // not checked = never looked up; checked = has a price, or was looked up and none was found
+  const lpTodo = () => state.adminParts.filter((p) => !p.checked_at);
+  const lpDone = () => state.adminParts.filter((p) => p.checked_at).sort((a, b) => (a.price != null) - (b.price != null) || a.part_number.localeCompare(b.part_number));
+  const ask = (pns) => `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}`;
+  function renderListDlg() {
+    const todo = lpTodo(), done = lpDone(), missing = done.filter((p) => p.price == null);
+    $("l-n-todo").textContent = todo.length; $("l-n-done").textContent = done.length;
+    document.querySelectorAll("[data-lp-tab]").forEach((b) => b.setAttribute("aria-selected", b.dataset.lpTab === lpTab));
+    // the batch shown is the one that gets copied: newest tools first, or the not-found ones to try again
+    const pns = (lpTab === "todo" ? todo : missing).slice(0, LIST_BATCH).map((p) => p.part_number);
+    curBatch = pns;
     const b = $("l-batch"); b.textContent = "";
     const head = document.createElement("div");
-    head.innerHTML = `<strong>${done} of ${total}</strong> of your tools have a list price. This batch is these ${pns.length}:`;
-    const list = document.createElement("div"); list.className = "lp-pns";
-    pns.forEach((pn) => { const s = document.createElement("span"); s.textContent = pn; list.append(s); });
-    b.append(head, list);
+    if (lpTab === "todo") head.textContent = todo.length ? `${todo.length} tool${todo.length === 1 ? "" : "s"} still to check. This batch is these ${pns.length}:` : "Every tool has been checked. New tools people add show up here.";
+    else head.textContent = done.length ? `${done.length - missing.length} with a price, ${missing.length} where Gemini found none.${pns.length ? ` Try these ${pns.length} again:` : ""}` : "Nothing checked yet.";
+    b.append(head);
+    if (pns.length) {
+      const list = document.createElement("div"); list.className = "lp-pns";
+      pns.forEach((pn) => { const x = document.createElement("span"); x.textContent = pn; list.append(x); });
+      b.append(list);
+    }
+    if (lpTab === "done" && done.length) {
+      const box = document.createElement("div"); box.className = "lp-done";
+      done.forEach((p) => {
+        const row = document.createElement("div"), a = document.createElement("span"), v = document.createElement("span");
+        a.className = "pn"; a.textContent = p.part_number;
+        v.textContent = p.price != null ? money(p.price, true) : "no price found"; if (p.price == null) v.className = "miss";
+        row.append(a, v); box.append(row);
+      });
+      b.append(box);
+    }
+    $("l-copy").hidden = !pns.length;
     $("l-copy").textContent = `Copy ${pns.length} for Gemini`;
-    $("l-hint").textContent = `${left > pns.length ? `${left} tools still need a list price, so this does ${pns.length} at a time. Save, then tap Add list prices again for the next ${Math.min(LIST_BATCH, left - pns.length)}. ` : ""}Lines with one of your part numbers and a $ price are used; anything else is skipped.`;
+    $("l-hint").textContent = "Lines with a part number and a $ price are saved. A part number with ? is marked checked with no price. To fix a price, paste a line like F80 $159.00.";
+  }
+  function openListPrices() {
+    if (!state.admin) return;
+    $("l-err").hidden = true; $("l-text").value = "";
+    lpTab = lpTodo().length ? "todo" : "done";
+    renderListDlg();
     listDlg.showModal();
   }
+  document.querySelectorAll("[data-lp-tab]").forEach((b) => (b.onclick = () => { lpTab = b.dataset.lpTab; renderListDlg(); }));
+  $("ownerGo").onclick = openListPrices;
   $("l-close").onclick = () => listDlg.close();
   $("l-copy").onclick = async () => {
-    const { text, pns } = curBatch || listPrompt();
-    markAsked(pns);
+    const pns = curBatch || []; if (!pns.length) return;
+    const text = ask(pns);
     try { await navigator.clipboard.writeText(text); toast(`Copied ${pns[0]} to ${pns[pns.length - 1]}. Paste it into Gemini and send.`); }
     catch { $("l-text").value = text; $("l-text").select(); toast("Couldn't copy on its own. The question is in the box: copy it from there."); }
   };
-  // "F80 $159.00", "| CTR881 | $455.00 |", "F80: $1,299" -> Map(part number -> price)
+  // "F80 $159.00", "| CTR881 | $455.00 |", "F80: $1,299", "GSL832 ?" -> Map(part number -> price, or null for "?")
   function parseListPrices(text) {
-    const mine = new Map(state.items.filter((r) => r.part_number).map((r) => [pnKey(r.part_number), r.part_number]));
+    const known = new Map(state.adminParts.map((p) => [pnKey(p.part_number), p.part_number]));
     const out = new Map();
     for (const line of String(text).split(/\r?\n/)) {
       const up = line.toUpperCase();
-      const word = up.split(/[^A-Z0-9./-]+/).find((w) => mine.has(pnKey(w)));
+      const word = up.split(/[^A-Z0-9./-]+/).find((w) => known.has(pnKey(w)));
       if (!word) continue;
       const rest = up.replace(word, " ");
       const m = rest.match(/\$\s*(\d[\d,]*(?:\.\d{1,2})?)/) || rest.match(/(?:^|[\s|:=])(\d[\d,]*\.\d{2})(?!\d)/);
-      if (!m) continue;
-      const v = Number(m[1].replace(/,/g, ""));
-      if (v > 0 && v < 1000000) out.set(mine.get(pnKey(word)), Math.round(v * 100) / 100);
+      const v = m ? Number(m[1].replace(/,/g, "")) : NaN;
+      if (v > 0 && v < 1000000) out.set(known.get(pnKey(word)), Math.round(v * 100) / 100);
+      else if (/\?|NOT FOUND|N\/A|UNKNOWN|NO PRICE/.test(rest) && !out.has(known.get(pnKey(word)))) out.set(known.get(pnKey(word)), null);
     }
     return out;
   }
@@ -3725,20 +3772,23 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     const found = parseListPrices($("l-text").value);
     const err = (m) => { $("l-err").textContent = m; $("l-err").hidden = false; };
-    if (!found.size) return err("No prices found. Paste Gemini's answer with lines like F80 $159.00.");
-    const rows = state.items.filter((r) => found.has(r.part_number) && Number(r.list_price) !== found.get(r.part_number));
+    if (!found.size) return err("No part numbers found. Paste Gemini's answer with lines like F80 $159.00.");
     $("l-save").disabled = true; $("l-save").textContent = "Saving…";
     try {
-      if (signedIn() && !state.demo) {
-        const res = await Promise.all(rows.map((r) => sb.from("items").update({ list_price: found.get(r.part_number) }).eq("id", r.id)));
-        const bad = res.find((x) => x.error); if (bad) throw bad.error;
-      }
-      const ids = new Set(rows.map((r) => r.id));
-      state.items = state.items.map((r) => (ids.has(r.id) ? { ...r, list_price: found.get(r.part_number) } : r));
-      if (!signedIn() && !state.demo) local.write(state.items);
+      const rows = [...found].map(([pn, price]) => ({ pn, price }));
+      const res = await sb.rpc("admin_save_list_prices", { rows });
+      if (res.error) throw res.error;
+      // your own private list price on a tool would hide the shared one, so drop it for these
+      const mine = state.items.filter((r) => found.has(r.part_number) && Number(r.list_price) > 0);
+      if (mine.length) await Promise.all(mine.map((r) => sb.from("items").update({ list_price: null }).eq("id", r.id)));
+      state.items = state.items.map((r) => (found.has(r.part_number) && Number(r.list_price) > 0 ? { ...r, list_price: null } : r));
+      await Promise.all([loadAdmin(), loadCatalog()]);
       render();
-      listDlg.close();
-      toast(`Saved list prices for ${found.size} part number${found.size === 1 ? "" : "s"}. Tap Add list prices for the next batch.`);
+      const priced = [...found.values()].filter((v) => v != null).length;
+      $("l-text").value = ""; $("l-err").hidden = true;
+      if (lpTab === "todo" && !lpTodo().length) lpTab = "done";
+      renderListDlg();
+      toast(`Saved ${priced} price${priced === 1 ? "" : "s"}${found.size > priced ? `, ${found.size - priced} with none found` : ""}. The next batch is ready.`);
     } catch (ex) { err(dbMsg(ex) || "Couldn't save those. Check your connection and try again."); }
     $("l-save").disabled = false; $("l-save").textContent = "Save prices";
   });

@@ -89,13 +89,14 @@ if (ONLY.length) parts = ONLY.map((p) => p.toUpperCase());
 else {
   const [tracked, rows] = await Promise.all([
     rest("rpc/parts_for_ebay", { method: "POST", body: {} }),
-    rest("list_prices?select=part_number,price,checked_at"),
+    rest("list_prices?select=part_number,price,checked_at,source"),
   ]);
   const old = Object.fromEntries(rows.map((r) => [r.part_number, r]));
   const cutoff = Date.now() - RECHECK_DAYS * 864e5;
   // Not-found answers are retried after 30 days; found prices after RECHECK_DAYS
   const due = tracked.map((t) => t.part_number).filter((pn) => {
     const o = old[pn];
+    if (o && o.source === "owner") return false; // the owner's own prices are never overwritten
     return !o || Date.parse(o.checked_at) < (o.price == null ? Date.now() - 30 * 864e5 : cutoff);
   });
   due.sort((a, b) => (old[a] ? Date.parse(old[a].checked_at) : 0) - (old[b] ? Date.parse(old[b].checked_at) : 0));

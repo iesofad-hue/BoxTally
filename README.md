@@ -72,9 +72,9 @@ BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on
 
 ### Snap-on list prices
 
-**Free way (works now):** under **Prices**, **Add list prices** opens a box with three steps: **Copy for Gemini** copies your part numbers with the question to ask, you paste that into the Gemini app (free, and it can search Google), then paste its answer back. Every line with one of your part numbers and a $ price is saved as `items.list_price` on your own tools. You can also type a list price on any tool's edit form. These prices are private like what you paid (owner-only RLS; share links don't include them).
+**Free way (works now), managed by the owner:** list prices are shared. Accounts in `public.admins` (the BoxTally owner) see a banner when tools haven't been checked yet, and **Prices → Manage list prices** opens a box with two tabs: **Not checked** (part numbers nobody has looked up, newest first) and **Checked** (with the price, or "no price found"). **Copy for Gemini** copies 12 part numbers with the question to ask; paste that into the Gemini app (free, it can search Google), then paste its answer back. Each line with a part number and a $ price is saved to `list_prices` for everyone; a part number with `?` is saved as checked with no price, and the Checked tab can copy those again to retry. The owner sees part numbers and how many people track them, never whose tools they are (`admin_parts()`, `admin_save_list_prices()`). Anyone can still type a private list price on a tool's edit form (`items.list_price`, owner-only RLS, not in share links).
 
-A tool's value is: your list price, else an automatic list price (below), else eBay, else what you paid.
+A tool's value is: your own list price, else the shared list price, else eBay, else what you paid.
 
 **Automatic way (optional, costs about a cent per new tool):**
 

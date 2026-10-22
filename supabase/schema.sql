@@ -660,3 +660,57 @@ grant select on public.list_prices to anon, authenticated;
 -- Private like price: covered by the owner-only RLS on items, and shared_box doesn't return it.
 alter table public.items add column if not exists list_price numeric(10,2)
   check (list_price is null or (list_price > 0 and list_price < 1000000));
+
+-- ---------- Owner-managed Snap-on list prices (2026-10-22) ----------
+-- The BoxTally owner fills list_prices for everyone from the "Manage list prices" dialog.
+-- admins: who counts as the owner. RLS on, no policies, so nobody reads it through the API.
+create table if not exists public.admins (user_id uuid primary key references auth.users (id) on delete cascade, created_at timestamptz not null default now());
+alter table public.admins enable row level security;
+-- insert into public.admins (user_id) select id from auth.users where email = '<owner email>';
+
+create or replace function public.is_admin() returns boolean language sql stable security definer set search_path to '' as $$
+  select exists (select 1 from public.admins a where a.user_id = auth.uid());
+$$;
+
+-- Every tracked part number with its list price state. Part numbers and counts only, never who.
+create or replace function public.admin_parts()
+returns table (part_number text, people integer, added timestamptz, price numeric, checked_at timestamptz, source text)
+language plpgsql stable security definer set search_path to '' as $$
+begin
+  if not exists (select 1 from public.admins a where a.user_id = auth.uid()) then
+    raise exception 'Only the BoxTally owner can see this.';
+  end if;
+  return query
+    select i.part_number, count(distinct i.user_id)::int, min(i.created_at), l.price, l.checked_at, l.source
+      from public.items i
+      left join public.list_prices l on l.part_number = i.part_number
+     where i.part_number ~ '^[A-Z0-9][A-Z0-9./-]{0,39}$'
+     group by i.part_number, l.price, l.checked_at, l.source
+     order by min(i.created_at) desc;
+end $$;
+
+-- rows: [{"pn": "F80", "price": 159.00}, {"pn": "GSL832", "price": null}]; null = checked, none found
+create or replace function public.admin_save_list_prices(rows jsonb)
+returns integer language plpgsql security definer set search_path to '' as $$
+declare n int;
+begin
+  if not exists (select 1 from public.admins a where a.user_id = auth.uid()) then
+    raise exception 'Only the BoxTally owner can save shared list prices.';
+  end if;
+  if jsonb_typeof(rows) <> 'array' or jsonb_array_length(rows) > 300 then
+    raise exception 'Send up to 300 prices at a time.';
+  end if;
+  insert into public.list_prices (part_number, price, name, source, checked_at)
+  select upper(r->>'pn'),
+         case when (r->>'price') ~ '^\d+(\.\d+)?$' and (r->>'price')::numeric > 0 and (r->>'price')::numeric < 1000000
+              then round((r->>'price')::numeric, 2) end,
+         '', 'owner', now()
+    from jsonb_array_elements(rows) r
+   where exists (select 1 from public.items i where i.part_number = upper(r->>'pn'))
+  on conflict (part_number) do update set price = excluded.price, source = 'owner', checked_at = now();
+  get diagnostics n = row_count;
+  return n;
+end $$;
+revoke execute on function public.is_admin() from public, anon;
+revoke execute on function public.admin_parts() from public, anon;
+revoke execute on function public.admin_save_list_prices(jsonb) from public, anon;
