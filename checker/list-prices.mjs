@@ -13,8 +13,12 @@
 //   GEMINI_API_KEY        Google AI Studio key, on a project with billing turned on (search grounding
 //                         isn't in Gemini's free tier; the paid tier includes 5,000 searches a month)
 //   GEMINI_MODEL          optional, default gemini-3.8-flash
-//   RECHECK_DAYS          optional, how old a price can get before it's looked up again (default 30)
-//   MAX_LOOKUPS           optional, most part numbers looked up in one run (default 150)
+//   RECHECK_DAYS          optional, how old a price can get before it's looked up again (default 182;
+//                         Snap-on changes list prices about once or twice a year)
+//   MAX_LOOKUPS           optional, most part numbers looked up in one run (default 600, so four weekly
+//                         runs stay inside the 5,000 free searches a month even with thousands of tools)
+//
+// Cost: only part numbers someone tracks are looked up, each once for everyone, then twice a year.
 //
 // Run by hand: node checker/list-prices.mjs [PART ...] [--dry-run]
 
@@ -22,8 +26,8 @@ const SUPABASE_URL = (process.env.SUPABASE_URL || "https://ctteljhhjsfvyyiwzxiy.
 const KEY = process.env.SUPABASE_SECRET_KEY || "";
 const GEMINI = process.env.GEMINI_API_KEY || "";
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
-const RECHECK_DAYS = Number(process.env.RECHECK_DAYS || 30);
-const MAX_LOOKUPS = Number(process.env.MAX_LOOKUPS || 150);
+const RECHECK_DAYS = Number(process.env.RECHECK_DAYS || 182);
+const MAX_LOOKUPS = Number(process.env.MAX_LOOKUPS || 600);
 const ONLY = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const DRY = process.argv.includes("--dry-run");
 
@@ -89,10 +93,10 @@ else {
   ]);
   const old = Object.fromEntries(rows.map((r) => [r.part_number, r]));
   const cutoff = Date.now() - RECHECK_DAYS * 864e5;
-  // Not-found answers are retried after a week; found prices after RECHECK_DAYS
+  // Not-found answers are retried after 30 days; found prices after RECHECK_DAYS
   const due = tracked.map((t) => t.part_number).filter((pn) => {
     const o = old[pn];
-    return !o || Date.parse(o.checked_at) < (o.price == null ? Date.now() - 7 * 864e5 : cutoff);
+    return !o || Date.parse(o.checked_at) < (o.price == null ? Date.now() - 30 * 864e5 : cutoff);
   });
   due.sort((a, b) => (old[a] ? Date.parse(old[a].checked_at) : 0) - (old[b] ? Date.parse(old[b].checked_at) : 0));
   parts = due.slice(0, MAX_LOOKUPS);
