@@ -3705,6 +3705,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const lpTodo = () => state.adminParts.filter((p) => !p.checked_at);
   const lpDone = () => state.adminParts.filter((p) => p.checked_at).sort((a, b) => (a.price != null) - (b.price != null) || a.part_number.localeCompare(b.part_number));
   const ask = (pns) => `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}`;
+  // second try for ones Gemini couldn't find: allow the same tool in another color, and the last known price
+  const askAgain = (pns) => `These Snap-on part numbers are harder to find. For each one, search shop.snapon.com and Google for the Snap-on list price (new, US dollars). Letters at the end are often just the color or kit (for example DB, GM, R, O, G, HD, C2), so if the exact number isn't listed, use the price of the same tool in another color, or the last list price shown before it was discontinued. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if there is still no price at all, write PARTNUMBER ?\n\n${pns.join("\n")}`;
   function renderListDlg() {
     const todo = lpTodo(), done = lpDone(), missing = done.filter((p) => p.price == null);
     $("l-n-todo").textContent = todo.length; $("l-n-done").textContent = done.length;
@@ -3734,7 +3736,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     $("l-copy").hidden = !pns.length;
     $("l-copy").textContent = `Copy ${pns.length} for Gemini`;
-    $("l-hint").textContent = "Lines with a part number and a $ price are saved. A part number with ? is marked checked with no price. To fix a price, paste a line like F80 $159.00.";
+    $("l-hint").textContent = (lpTab === "done" ? "If Gemini still can't find one, look it up on shop.snapon.com in your browser and type a line like PTM18AM $42.50 here. " : "") + "Lines with a part number and a $ price are saved. A part number with ? is marked checked with no price. To fix a price, paste a line like F80 $159.00.";
   }
   function openListPrices() {
     if (!state.admin) return;
@@ -3748,7 +3750,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("l-close").onclick = () => listDlg.close();
   $("l-copy").onclick = async () => {
     const pns = curBatch || []; if (!pns.length) return;
-    const text = ask(pns);
+    const text = lpTab === "done" ? askAgain(pns) : ask(pns);
     try { await navigator.clipboard.writeText(text); toast(`Copied ${pns[0]} to ${pns[pns.length - 1]}. Paste it into Gemini and send.`); }
     catch { $("l-text").value = text; $("l-text").select(); toast("Couldn't copy on its own. The question is in the box: copy it from there."); }
   };
