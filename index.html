@@ -781,6 +781,9 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .lp-steps { margin: 10px 0 12px; padding-left: 1.3em; display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
 .lp-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .lp-btns a.btn { text-decoration: none; }
+.lp-batch { margin: 0 0 12px; font-size: 14px; }
+.lp-batch .lp-pns { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.lp-batch .lp-pns span { font-family: var(--f-mono); font-size: 13px; padding: 2px 6px; border-radius: 6px; background: var(--chip); }
 #l-text { width: 100%; min-height: 9em; font: inherit; font-size: 16px; }
 .ins-tip { margin: -4px 0 0; }
 .ins-tip a { color: inherit; }
@@ -1052,11 +1055,12 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
     <h2>Snap-on list prices</h2>
     <p class="meta-line">A free way to fill in list prices for your whole box. Prices you add here stay private to you, and they count before eBay in your box worth.</p>
     <ol class="lp-steps">
-      <li>Tap <strong>Copy for Gemini</strong>. It copies a few of your part numbers with the question to ask.</li>
+      <li>Tap <strong>Copy for Gemini</strong>. It copies the part numbers shown below with the question to ask.</li>
       <li>Open Gemini (or any AI app that can search the web), paste it and send.</li>
       <li>Copy Gemini's whole answer and paste it below.</li>
     </ol>
     <div class="lp-btns"><button class="btn primary" type="button" id="l-copy">Copy for Gemini</button><a class="btn" id="l-gem" href="https://gemini.google.com/app" target="_blank" rel="noopener">Open Gemini</a></div>
+    <div class="lp-batch" id="l-batch"></div>
     <label class="field"><span class="label">Paste the answer</span><textarea id="l-text" rows="7" placeholder="F80 $159.00&#10;CTR881 $455.00"></textarea><small id="l-hint">Lines with one of your part numbers and a $ price are used. Anything else is skipped.</small></label>
     <p class="err" id="l-err" hidden></p>
     <div class="formfoot">
@@ -3677,20 +3681,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const asked = listAsked(), week = Date.now() - 7 * 864e5;
     const queue = (missing.length ? missing : all).slice().sort((a, b) => ((asked[a] || 0) > week) - ((asked[b] || 0) > week));
     const pns = queue.slice(0, LIST_BATCH);
-    return { pns, left: (missing.length ? missing : all).length, text: `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}` };
+    return { pns, done: all.length - missing.length, total: all.length, left: (missing.length ? missing : all).length, text: `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}` };
   }
+  let curBatch = null; // the batch shown in the dialog is the one that gets copied
   function openListPrices() {
     $("l-err").hidden = true; $("l-text").value = "";
-    const { pns, left } = listPrompt();
+    curBatch = listPrompt();
+    const { pns, left, done, total } = curBatch;
+    const b = $("l-batch"); b.textContent = "";
+    const head = document.createElement("div");
+    head.innerHTML = `<strong>${done} of ${total}</strong> of your tools have a list price. This batch is these ${pns.length}:`;
+    const list = document.createElement("div"); list.className = "lp-pns";
+    pns.forEach((pn) => { const s = document.createElement("span"); s.textContent = pn; list.append(s); });
+    b.append(head, list);
     $("l-copy").textContent = `Copy ${pns.length} for Gemini`;
     $("l-hint").textContent = `${left > pns.length ? `${left} tools still need a list price, so this does ${pns.length} at a time. Save, then tap Add list prices again for the next ${Math.min(LIST_BATCH, left - pns.length)}. ` : ""}Lines with one of your part numbers and a $ price are used; anything else is skipped.`;
     listDlg.showModal();
   }
   $("l-close").onclick = () => listDlg.close();
   $("l-copy").onclick = async () => {
-    const { text, pns } = listPrompt();
+    const { text, pns } = curBatch || listPrompt();
     markAsked(pns);
-    try { await navigator.clipboard.writeText(text); toast("Copied. Paste it into Gemini and send."); }
+    try { await navigator.clipboard.writeText(text); toast(`Copied ${pns[0]} to ${pns[pns.length - 1]}. Paste it into Gemini and send.`); }
     catch { $("l-text").value = text; $("l-text").select(); toast("Couldn't copy on its own. The question is in the box: copy it from there."); }
   };
   // "F80 $159.00", "| CTR881 | $455.00 |", "F80: $1,299" -> Map(part number -> price)
@@ -3726,7 +3738,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!signedIn() && !state.demo) local.write(state.items);
       render();
       listDlg.close();
-      toast(`Saved list prices for ${found.size} part number${found.size === 1 ? "" : "s"}.`);
+      toast(`Saved list prices for ${found.size} part number${found.size === 1 ? "" : "s"}. Tap Add list prices for the next batch.`);
     } catch (ex) { err(dbMsg(ex) || "Couldn't save those. Check your connection and try again."); }
     $("l-save").disabled = false; $("l-save").textContent = "Save prices";
   });
