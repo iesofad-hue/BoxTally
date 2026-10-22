@@ -638,3 +638,19 @@ returns void language sql security definer set search_path to '' as $$
    where p.d < (now() - interval '1 year')::date and extract(isodow from p.d) <> 1;
 $$;
 revoke execute on function public.cleanup_old_data() from public, anon, authenticated;
+
+-- ===== Snap-on list prices (2026-10-22) =====
+-- Filled weekly by checker/list-prices.mjs (.github/workflows/list-prices.yml), which asks Gemini with
+-- Google Search for the price on Snap-on's own store and keeps it only when a snapon.com page backed it.
+-- price is null when nothing trustworthy was found. Public like ebay_prices; only the checker writes.
+create table if not exists public.list_prices (
+  part_number text primary key references public.catalog(part_number) on delete cascade,
+  price       numeric(10,2) check (price > 0 and price < 100000),
+  name        text not null default '' check (char_length(name) <= 160),
+  source      text not null default '' check (char_length(source) <= 200),
+  checked_at  timestamptz not null default now()
+);
+alter table public.list_prices enable row level security;
+create policy "Anyone can read list prices" on public.list_prices for select to anon, authenticated using (true);
+revoke all on public.list_prices from anon, authenticated;
+grant select on public.list_prices to anon, authenticated;

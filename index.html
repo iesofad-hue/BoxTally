@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>BoxTally · Snap-on tool tracker</title>
-<meta name="description" content="BoxTally tracks the Snap-on tools in your box, what they're worth at today's eBay prices, and what's next on your wishlist.">
+<meta name="description" content="BoxTally tracks the Snap-on tools in your box, what they're worth at Snap-on list and eBay prices, and what's next on your wishlist.">
 <meta name="theme-color" content="#10151c">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://boxtally.app/">
@@ -1131,7 +1131,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
 
-  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, loaded: false, editing: null, confirm: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
+  const state = { tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, list: {}, loaded: false, editing: null, confirm: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
 
@@ -1156,11 +1156,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const v = e.new_median ?? e.median;
     return v == null ? null : Number(v);
   };
-  const nowPrice = ebayPrice;
-  // what an owned tool counts for in "Box worth": eBay today, else what you paid
+  // Snap-on's list price, looked up weekly by checker/list-prices.mjs (null when it couldn't be confirmed)
+  const listPrice = (r) => {
+    const l = r.part_number && state.list && state.list[r.part_number];
+    return l && l.price != null ? Number(l.price) : null;
+  };
+  // A tool's value today: Snap-on's list price (what it costs to replace new), else eBay
+  const nowPrice = (r) => listPrice(r) ?? ebayPrice(r);
+  // what an owned tool counts for in "Box worth": list price or eBay today, else what you paid
   const worthOf = (r) => nowPrice(r) ?? (Number(r.price) || 0);
-  // a wishlist tool: the price you typed in, else eBay
-  const wishCost = (r) => Number(r.price) || ebayPrice(r) || 0;
+  // a wishlist tool: the price you typed in, else list price, else eBay
+  const wishCost = (r) => Number(r.price) || nowPrice(r) || 0;
 
   /* ---------- photos: your own photo of your own tool, otherwise a drawing ----------
      (Snap-on's product photos aren't shown on this site.) */
@@ -2186,7 +2192,9 @@ document.addEventListener("DOMContentLoaded", () => {
       sb.from("ebay_price_history").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
       sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at,seen_at,source,note").in("part_number", b),
       sb.rpc("owner_counts", { pns: b }),
+      sb.from("list_prices").select("part_number,price,name,source,checked_at").in("part_number", b),
     ])));
+    if (res.every(([, , , , l]) => !l.error)) state.list = Object.fromEntries(res.flatMap(([, , , , l]) => l.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, , , o]) => !o.error)) state.owners = Object.fromEntries(res.flatMap(([, , , o]) => o.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, , e]) => !e.error)) state.ebay = Object.fromEntries(res.flatMap(([, , e]) => e.data || []).map((r) => [r.part_number, r]));
     if (res.every(([c]) => !c.error)) state.catalog = Object.fromEntries(res.flatMap(([c]) => c.data || []).map((r) => [r.part_number, r]));
@@ -2354,6 +2362,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // source says how the price was found: exact part number, a color/kit variant, auction bids, or an
   // estimate from sibling part numbers. A tool with nothing listed now keeps its last price.
   const EBAY_HOW = { variant: (n) => `as ${n}`, auction: () => "auction bids", similar: (n) => `estimate from ${n}` };
+  const listLine = (r) => {
+    const v = listPrice(r);
+    if (v == null) return "";
+    return `<span class="meta-line ebay-line">Snap-on list: ${money(v, v % 1)} · <a href="https://shop.snapon.com/product/${encodeURIComponent(r.part_number)}" target="_blank" rel="noopener">see on snapon.com</a></span>`;
+  };
   const ebayLine = (r) => {
     const e = r.part_number && state.ebay && state.ebay[r.part_number];
     if (!e) return "";
@@ -2392,11 +2405,11 @@ document.addEventListener("DOMContentLoaded", () => {
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
         <div><span class="label">${state.readonly ? "Paid" : "You paid"}</span>${hidePaid() ? `<span class="no-price">Kept private</span>` : paid || !mine ? `<span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span>` : `<span class="no-price">Not entered.<br><button class="btn small" data-act="edit" type="button">Add what you paid</button></span>`}</div>
-        <div><span class="label">eBay price now</span>${now != null
-          ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : `<span class="src-tag">eBay</span> typical new price`}</span>`
-          : `<span class="no-price">${r.part_number ? "No eBay listings found yet." : "Add a part number to get its eBay price."}</span>`}</div>
+        <div><span class="label">${listPrice(r) != null ? "Snap-on list" : "eBay price now"}</span>${now != null
+          ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : listPrice(r) != null ? `<span class="src-tag">Snap-on</span> list price` : `<span class="src-tag">eBay</span> typical new price`}</span>`
+          : `<span class="no-price">${r.part_number ? "No price found yet." : "Add a part number to get its price."}</span>`}</div>
       </div>
-      ${ebayLine(r)}${ownersLine(r)}
+      ${listLine(r)}${ebayLine(r)}${ownersLine(r)}
       ${r.location ? `<span class="meta-line">Kept in ${esc(r.location)}</span>` : ""}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
       ${lentLine(r)}${lendForm(r)}
@@ -2412,11 +2425,11 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<article class="card ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
-        <div><span class="label">${!Number(r.price) && ebayPrice(r) != null ? "eBay price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span>${wasPrice(r) ? `<span class="was">${money(wasPrice(r), true)}</span>` : `<span class="meta-line">&nbsp;</span>`}</div>
+        <div><span class="label">${Number(r.price) ? "Your price" : listPrice(r) != null ? "Snap-on list" : ebayPrice(r) != null ? "eBay price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span>${wasPrice(r) ? `<span class="was">${money(wasPrice(r), true)}</span>` : `<span class="meta-line">&nbsp;</span>`}</div>
         <div><span class="label">Left to save</span><span class="price-big">${cost ? money(left, left % 1) : "—"}</span><span class="meta-line">${cost ? (left ? `${money(saved)} saved` : "Ready to buy") : "&nbsp;"}</span></div>
       </div>
       ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
-      ${ebayLine(r)}${ownersLine(r)}
+      ${listLine(r)}${ebayLine(r)}${ownersLine(r)}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
       <div class="actions"><button class="btn small" data-act="bought" type="button">Bought it</button><span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       ${confirmHtml(r)}</div></article>`;
@@ -2471,14 +2484,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const t = rowsOf("owned"), w = rowsOf("wishlist");
     const paid = t.reduce((s, r) => s + (Number(r.price) || 0), 0);
     const worth = t.reduce((s, r) => s + worthOf(r), 0);
-    const onEbay = t.filter((r) => ebayPrice(r) != null).length;
+    const onList = t.filter((r) => listPrice(r) != null).length;
+    const onEbay = t.filter((r) => listPrice(r) == null && ebayPrice(r) != null).length;
+    const pricedFrom = [onList ? `${onList} at Snap-on list` : "", onEbay ? `${onEbay} from eBay` : ""].filter(Boolean).join(", ");
     if (!state.loaded) {
       ["d-worth", "d-left"].forEach((k) => { $(k).textContent = "$…"; $(k).classList.add("loading-num"); });
       $("d-worth-sub").textContent = "Loading your box…"; $("d-left-sub").textContent = "Loading…";
     } else { ["d-worth", "d-left"].forEach((k) => $(k).classList.remove("loading-num")); }
     if (state.loaded) countTo($("d-worth"), Math.round(worth));
     if (state.loaded) $("d-worth-sub").innerHTML = t.length
-      ? `${t.length} tool${t.length === 1 ? "" : "s"}${hidePaid() || !paid ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}<br>${onEbay} of ${t.length} priced from eBay${onEbay < t.length ? ", the rest at what you paid" : ""}`
+      ? `${t.length} tool${t.length === 1 ? "" : "s"}${hidePaid() || !paid ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}<br>${onList + onEbay ? `${pricedFrom}${onList + onEbay < t.length ? ", the rest at what you paid" : ""}` : "Valued at what you paid until prices come in"}`
       : "Add tools to see their value.";
     const cost = w.reduce((s, r) => s + wishCost(r), 0), saved = w.reduce((s, r) => s + Math.min(Number(r.saved) || 0, wishCost(r)), 0);
     if (state.loaded) countTo($("d-left"), Math.round(Math.max(cost - (state.readonly ? 0 : saved), 0)));
@@ -3707,7 +3722,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ${owned.length ? `<p class="totals"><span>${owned.length} tool${owned.length === 1 ? "" : "s"}</span><span>Paid ${money(paid, true)}</span><span>Worth today ${money(worth, true)}</span></p>
       <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Condition</th><th>Bought</th><th class="n">Paid</th><th class="n">eBay now</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
       ${wish.length ? `<h2>Wishlist</h2><table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Priority</th><th class="n">Price</th><th class="n">Saved</th></tr></thead><tbody>${wishRows}</tbody></table>` : ""}
-      <p class="foot">Prices today are typical eBay asking prices for new tools, refreshed every few hours. BoxTally is not affiliated with Snap-on.</p>`;
+      <p class="foot">Prices today are Snap-on list prices where we could confirm them (checked weekly), otherwise typical eBay asking prices for new tools (refreshed every few hours). BoxTally is not affiliated with Snap-on.</p>`;
   }
   $("exportPrint").onclick = () => {
     if (!state.items.length) { toast("Add some tools first, then you can print them."); return; }

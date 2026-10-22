@@ -70,6 +70,16 @@ To switch it on:
 
 BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on's logo, wordmark or fonts, and the tool drawings are BoxTally's own. The footer and privacy page say it's independent, with the Snap-on® trademark notice.
 
+### Snap-on list prices
+
+Snap-on has no public price API, and its store (shop.snapon.com) builds each page in the browser and turns away automated visitors, so BoxTally can't read list prices from it directly (and scraping it would go against Snap-on's terms). Google's search index does have those pages, which is how Gemini can answer "what does F80 cost".
+
+`checker/list-prices.mjs` runs weekly from `.github/workflows/list-prices.yml`. For each tracked part number it asks Gemini, with Google Search turned on, for the price on Snap-on's own store. The answer is saved to `list_prices` only when the part number matches exactly and at least one source Google returned is a snapon.com page; otherwise `price` is saved as null and the card keeps using eBay. Found prices are rechecked every 30 days, not-found ones every week.
+
+On the site, a tool's value is its Snap-on list price when there is one, otherwise the eBay price, otherwise what you paid. The card shows both a "Snap-on list" line (linking to the product on shop.snapon.com) and the eBay line.
+
+Setup: at aistudio.google.com create an API key, and turn on billing for its Google Cloud project (search grounding isn't in Gemini's free tier; the paid tier includes 5,000 searches a month, far more than a weekly run needs). Add it in the GitHub repo under **Settings → Secrets and variables → Actions** as `GEMINI_API_KEY`, then run **Snap-on list prices** from the Actions tab. A list price an AI found can still be wrong, so the card always links to Snap-on's page to check.
+
 ### eBay prices
 
 `checker/ebay.mjs` runs every 15 minutes from `.github/workflows/ebay-prices.yml`. Each run looks up tools that have never been priced first (so a newly added tool usually has a price within half an hour), then any price older than 3 hours, oldest first, at most 120 per run. That stays well under eBay's 5,000 calls a day.

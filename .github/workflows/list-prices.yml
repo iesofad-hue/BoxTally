@@ -1,0 +1,43 @@
+name: Snap-on list prices
+
+# Once a week, looks up the Snap-on list price for tracked part numbers (Gemini with Google Search,
+# kept only when a snapon.com page backs it). New tools are picked up on the next run; prices are
+# rechecked every 30 days. Does nothing until GEMINI_API_KEY is added (see README, "Snap-on list prices").
+on:
+  schedule:
+    - cron: "41 11 * * 1" # Mondays, 11:41 UTC
+  workflow_dispatch:
+    inputs:
+      parts:
+        description: "Only these part numbers (space separated); empty = all that are due"
+        default: ""
+      flags:
+        description: "Extra flags, e.g. --dry-run"
+        default: ""
+
+concurrency:
+  group: list-prices
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: https://ctteljhhjsfvyyiwzxiy.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Look up Snap-on list prices
+        env:
+          PARTS: ${{ inputs.parts }}
+          FLAGS: ${{ inputs.flags }}
+        # PARTS/FLAGS are split into words on purpose; only the repo owner can start a run by hand
+        run: node checker/list-prices.mjs $PARTS $FLAGS
