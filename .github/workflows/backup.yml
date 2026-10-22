@@ -1,0 +1,32 @@
+name: Database backup
+
+# Every Sunday: copies the whole database into one file in the private "backups" storage bucket
+# (Supabase dashboard > Storage > backups) and keeps the newest 8. See checker/backup.mjs.
+on:
+  schedule:
+    - cron: "43 8 * * 0" # Sundays, 08:43 UTC (before the 09:17 cleanup)
+  workflow_dispatch:
+    inputs:
+      flags:
+        description: "Extra flags, e.g. --dry-run"
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: https://ctteljhhjsfvyyiwzxiy.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Back up the database
+        env:
+          FLAGS: ${{ inputs.flags }}
+        run: node checker/backup.mjs $FLAGS

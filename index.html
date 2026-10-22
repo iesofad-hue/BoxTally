@@ -312,6 +312,11 @@ textarea { resize: vertical; min-height: 64px; }
 .pn { font-family: var(--f-mono); font-size: .8rem; background: var(--chip); padding: 1px 6px; border-radius: 4px; color: var(--fg); text-decoration: none; border: 1px solid transparent; }
 a.pn:hover { border-color: var(--accent); color: var(--accent); }
 a.pn span { color: var(--accent); }
+/* phones: links big enough for a thumb (about 40px tall) */
+@media (pointer: coarse) {
+  a.pn { display: inline-flex; align-items: center; min-height: 36px; padding: 0 10px; }
+  footer a { display: inline-block; padding: 12px 4px; }
+}
 .chip { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; padding: 3px 9px; border-radius: 999px; background: var(--chip); color: var(--muted); white-space: nowrap; }
 .chip.good { color: var(--good); background: var(--good-soft); }
 .chip.warn { color: var(--warn); background: var(--surface); }
@@ -1153,7 +1158,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const CONDS = ["New", "Good", "Worn", "Needs warranty"];
   const PRIS = ["Need", "Want", "Someday"];
   const PN_RE = /^[A-Z0-9][A-Z0-9./-]{0,39}$/;
-  const FIELDS = ["list", "name", "part_number", "category", "price", "list_price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "photo_shared", "art", "from_wishlist", "lent_to", "lent_at"];
+  const FIELDS = ["list", "name", "part_number", "category", "price", "list_price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "art", "from_wishlist", "lent_to", "lent_at"];
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -2239,7 +2244,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // eBay price history, newest first, so if there's ever more than one request holds, the oldest days are what's left out
       sb.from("ebay_price_history").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
       sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at,seen_at,source,note").in("part_number", b),
-      sb.rpc("owner_counts", { pns: b }),
+      // how many people own or want each tool: only answered for signed-in people
+      signedIn() ? sb.rpc("owner_counts", { pns: b }) : { data: [], error: null },
       sb.from("list_prices").select("part_number,price,name,source,checked_at").in("part_number", b),
     ])));
     if (res.every(([, , , , l]) => !l.error)) state.list = Object.fromEntries(res.flatMap(([, , , , l]) => l.data || []).map((r) => [r.part_number, r]));
@@ -2851,7 +2857,6 @@ document.addEventListener("DOMContentLoaded", () => {
     state.uploading[id] = true; render();
     try {
       const fields = await photoFields(file);
-      if (signedIn()) fields.photo_shared = false;
       await saveItem({ ...item, ...fields });
       dropOldPhoto(item.photo_path, fields.photo_path);
       toast("Photo saved. It's only shown to you.");
@@ -3979,7 +3984,6 @@ document.addEventListener("DOMContentLoaded", () => {
         : { priority: $("i-pri").value, saved: Math.max(0, Number($("i-saved").value) || 0) }),
     };
     const oldPath = state.editing ? state.editing.photo_path : null;
-    if (signedIn()) item.photo_shared = false;
     $("saveBtn").disabled = true;
     try {
       if (pf.file) { $("saveBtn").textContent = "Uploading photo…"; Object.assign(item, await photoFields(pf.file)); }

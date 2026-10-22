@@ -111,7 +111,9 @@ An earlier Snap-on store checker was removed (Snap-on's store hides product data
 
 ## Keeping it running
 
-- A weekly database job (`cleanup_old_data`, Sundays 09:17 UTC) deletes price reports older than 90 days and thins price history older than a year to one price per week.
+- A weekly database job (`cleanup_old_data`, Sundays 09:17 UTC) thins eBay price history older than a year to one price per week.
+- `.github/workflows/backup.yml` copies the whole database every Sunday into the private **backups** storage bucket (Supabase dashboard > Storage > backups) and keeps the newest 8. To make one now: Actions > **Database backup** > Run workflow.
+- `.github/workflows/checks.yml` runs on every push: the part number and eBay matching tests, then `checker/smoke.test.mjs` opens the site at phone and desktop size and loads the sample box. A red X on the commit (and an email) means something broke; the site still publishes, so fix it quickly. To run the smoke test yourself: `python3 -m http.server 8080`, then `node checker/smoke.test.mjs` (needs `npm install playwright`).
 - `.github/workflows/uptime.yml` loads boxtally.app every 12 hours; if it's down, GitHub emails you.
 - Supabase pauses free projects after a week with no activity. `.github/workflows/keep-supabase-awake.yml` reads one row twice a week so that never happens, even when nobody opens the site. If it does get paused anyway, restore it from the Supabase dashboard; nothing is lost.
 - GitHub turns off scheduled workflows in a repo that has had no commits for 60 days. If that happens, open the Actions tab, pick **Keep Supabase awake** and click **Enable workflow**.

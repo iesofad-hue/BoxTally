@@ -1,0 +1,35 @@
+name: Checks
+
+# On every change pushed to GitHub: runs the part number and eBay matching tests, then opens the site
+# in a hidden browser (phone and desktop size) and loads the sample box. If anything fails, GitHub emails
+# the repo owner. The site still publishes either way; this is the early warning.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Part numbers
+        run: node checker/part-numbers.test.mjs
+      - name: eBay matching
+        run: node checker/ebay-match.test.mjs
+      - name: Install a hidden browser
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Open the site and load the sample box
+        run: |
+          python3 -m http.server 8080 >/dev/null 2>&1 &
+          sleep 1
+          node checker/smoke.test.mjs

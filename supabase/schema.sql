@@ -714,3 +714,25 @@ end $$;
 revoke execute on function public.is_admin() from public, anon;
 revoke execute on function public.admin_parts() from public, anon;
 revoke execute on function public.admin_save_list_prices(jsonb) from public, anon;
+
+-- ===== Tidy-up (2026-10-22) =====
+-- Shared store prices (retired 2026-10-18) and shared photos (retired 2026-10-11) are gone for good.
+-- The weekly cleanup now only thins eBay price history: every day for a year, then Mondays only.
+create or replace function public.cleanup_old_data()
+returns void language sql security definer set search_path to '' as $$
+  delete from public.ebay_price_history p
+   where p.d < (now() - interval '1 year')::date and extract(isodow from p.d) <> 1;
+$$;
+revoke execute on function public.cleanup_old_data() from public, anon, authenticated;
+
+drop function if exists public.submit_price(text, numeric, numeric);
+drop function if exists public.shared_photos(text[]);
+drop function if exists public.report_photo(uuid);
+drop table if exists public.price_reports;
+drop table if exists public.photo_reports;
+drop table if exists public.catalog_prices;
+alter table public.items drop column if exists photo_shared;
+
+-- "How many people own this tool" is only answered for signed-in people. While there are only
+-- a few accounts, a count of 1 would tell a stranger what's in someone's box.
+revoke execute on function public.owner_counts(text[]) from anon;
