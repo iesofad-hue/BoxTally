@@ -3665,12 +3665,18 @@ document.addEventListener("DOMContentLoaded", () => {
      price is saved on your own tools (items.list_price), private to you like what you paid. */
   const listDlg = $("listDlg");
   const LIST_BATCH = 12;
+  // which part numbers were copied for Gemini, and when (this browser only)
+  const listAsked = () => { try { return JSON.parse(localStorage.getItem("bx-lp-asked") || "{}"); } catch { return {}; } };
+  const markAsked = (pns) => { try { const a = listAsked(), t = Date.now(); pns.forEach((pn) => (a[pn] = t)); localStorage.setItem("bx-lp-asked", JSON.stringify(a)); } catch {} };
   const pnKey = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   function listPrompt() {
     const all = [...new Set(state.items.filter((r) => r.part_number).map((r) => r.part_number))];
     const missing = all.filter((pn) => !state.items.some((r) => r.part_number === pn && Number(r.list_price) > 0));
-    // Small batches: Gemini searches properly for a handful at a time, and gives up on long lists
-    const pns = (missing.length ? missing : all).slice(0, LIST_BATCH);
+    // Small batches: Gemini searches properly for a handful at a time, and gives up on long lists.
+    // Part numbers asked about in the last week (Gemini answered "?") go to the back of the line.
+    const asked = listAsked(), week = Date.now() - 7 * 864e5;
+    const queue = (missing.length ? missing : all).slice().sort((a, b) => ((asked[a] || 0) > week) - ((asked[b] || 0) > week));
+    const pns = queue.slice(0, LIST_BATCH);
     return { pns, left: (missing.length ? missing : all).length, text: `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}` };
   }
   function openListPrices() {
@@ -3682,7 +3688,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   $("l-close").onclick = () => listDlg.close();
   $("l-copy").onclick = async () => {
-    const { text } = listPrompt();
+    const { text, pns } = listPrompt();
+    markAsked(pns);
     try { await navigator.clipboard.writeText(text); toast("Copied. Paste it into Gemini and send."); }
     catch { $("l-text").value = text; $("l-text").select(); toast("Couldn't copy on its own. The question is in the box: copy it from there."); }
   };
