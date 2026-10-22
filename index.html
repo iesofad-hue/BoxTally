@@ -778,6 +778,10 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .ins .warn { color: #ffb38a; }
 .ins .bar.done > span { background: #4fc58a; }
 .ins a.btn-watch { text-decoration: none; display: inline-block; }
+.lp-steps { margin: 10px 0 12px; padding-left: 1.3em; display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+.lp-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.lp-btns a.btn { text-decoration: none; }
+#l-text { width: 100%; min-height: 9em; font: inherit; font-size: 16px; }
 .ins-tip { margin: -4px 0 0; }
 .ins-tip a { color: inherit; }
 .ins-prem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
@@ -1043,6 +1047,26 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
   </form>
 </dialog>
 
+<dialog id="listDlg">
+  <form id="listFrm" novalidate>
+    <h2>Snap-on list prices</h2>
+    <p class="meta-line">A free way to fill in list prices for your whole box. Prices you add here stay private to you, and they count before eBay in your box worth.</p>
+    <ol class="lp-steps">
+      <li>Tap <strong>Copy for Gemini</strong>. It copies your part numbers with the question to ask.</li>
+      <li>Open Gemini (or any AI app that can search the web), paste it and send.</li>
+      <li>Copy Gemini's whole answer and paste it below.</li>
+    </ol>
+    <div class="lp-btns"><button class="btn primary" type="button" id="l-copy">Copy for Gemini</button><a class="btn" id="l-gem" href="https://gemini.google.com/app" target="_blank" rel="noopener">Open Gemini</a></div>
+    <label class="field"><span class="label">Paste the answer</span><textarea id="l-text" rows="7" placeholder="F80 $159.00&#10;CTR881 $455.00"></textarea><small id="l-hint">Lines with one of your part numbers and a $ price are used. Anything else is skipped.</small></label>
+    <p class="err" id="l-err" hidden></p>
+    <div class="formfoot">
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" type="button" id="l-close">Close</button>
+      <button class="btn primary" type="submit" id="l-save">Save prices</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="dlg">
   <form id="frm" novalidate>
     <h2 id="dlgTitle">Add tool</h2>
@@ -1064,6 +1088,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
       <label class="field"><span class="label">Category</span><select id="i-cat"></select></label>
       <label class="field"><span class="label">Drawing</span><select id="i-art"></select></label>
       <label class="field"><span class="label" id="l-price">Snap-on price you paid ($)</span><input id="i-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+      <label class="field"><span class="label">Snap-on list price ($)</span><input id="i-list" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><small>Optional, private. From your receipt, your dealer or snapon.com. Counts before eBay.</small></label>
       <label class="field" data-only="owned"><span class="label">Date bought</span><input id="i-date" type="date"></label>
       <label class="field" data-only="owned"><span class="label">Condition</span><select id="i-cond"></select></label>
       <label class="field full" data-only="owned"><span class="label">Where it's kept</span><input id="i-loc" placeholder="Top chest, drawer 3" maxlength="120" list="locList" autocomplete="off"></label>
@@ -1107,7 +1132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const CONDS = ["New", "Good", "Worn", "Needs warranty"];
   const PRIS = ["Need", "Want", "Someday"];
   const PN_RE = /^[A-Z0-9][A-Z0-9./-]{0,39}$/;
-  const FIELDS = ["list", "name", "part_number", "category", "price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "photo_shared", "art", "from_wishlist", "lent_to", "lent_at"];
+  const FIELDS = ["list", "name", "part_number", "category", "price", "list_price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "photo_shared", "art", "from_wishlist", "lent_to", "lent_at"];
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -1156,8 +1181,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const v = e.new_median ?? e.median;
     return v == null ? null : Number(v);
   };
-  // Snap-on's list price, looked up weekly by checker/list-prices.mjs (null when it couldn't be confirmed)
+  // Snap-on's list price: the one you entered on the tool (private to you), else the one looked up
+  // weekly by checker/list-prices.mjs (null when it couldn't be confirmed)
   const listPrice = (r) => {
+    if (Number(r.list_price) > 0) return Number(r.list_price);
     const l = r.part_number && state.list && state.list[r.part_number];
     return l && l.price != null ? Number(l.price) : null;
   };
@@ -2732,6 +2759,10 @@ document.addEventListener("DOMContentLoaded", () => {
     $("watch").innerHTML = changes.length
       ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Based on eBay prices.</span>`
       : `<div class="watch-empty"><span class="note">${trackedN ? `eBay prices for your ${trackedN} part number${trackedN === 1 ? "" : "s"} refresh every few hours.` : "Add tools by part number and their eBay prices fill in on their own."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
+    if (trackedN && !state.readonly) {
+      const pns = state.items.filter((r) => r.part_number), withList = pns.filter((r) => listPrice(r) != null).length;
+      $("watch").insertAdjacentHTML("beforeend", `<div class="watch-empty"><span class="note">${withList} of ${pns.length} tool${pns.length === 1 ? "" : "s"} have a Snap-on list price.</span><button class="btn-watch" type="button" data-list-prices>${withList < pns.length ? "Add list prices →" : "Update list prices →"}</button></div>`);
+    }
     $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
       ? `<label class="alert-opt"><input type="checkbox" id="alertDrops"${state.alerts && state.alerts.email_drops ? " checked" : ""}><span>Email me when something on my wishlist drops</span></label>` : "");
     $("sync").dataset.mode = signedIn() ? "account" : "local";
@@ -3623,7 +3654,72 @@ document.addEventListener("DOMContentLoaded", () => {
     $("quick").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
     $("q-pn").focus({ preventScroll: true });
   };
-  $("watch").addEventListener("click", (e) => { if (e.target.closest("[data-watch-go]")) goAddWish(); });
+  $("watch").addEventListener("click", (e) => {
+    if (e.target.closest("[data-watch-go]")) goAddWish();
+    if (e.target.closest("[data-list-prices]")) openListPrices();
+  });
+
+  /* ---------- Snap-on list prices, filled in for free ----------
+     Snap-on's store can't be read by a website, but an AI app that searches the web (Gemini) can find
+     list prices. So: copy your part numbers with the question, ask Gemini, paste its answer back. Each
+     price is saved on your own tools (items.list_price), private to you like what you paid. */
+  const listDlg = $("listDlg");
+  const pnKey = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  function listPrompt() {
+    const all = [...new Set(state.items.filter((r) => r.part_number).map((r) => r.part_number))];
+    const missing = all.filter((pn) => !state.items.some((r) => r.part_number === pn && Number(r.list_price) > 0));
+    const pns = (missing.length ? missing : all).slice(0, 120);
+    return { pns, text: `For each Snap-on part number below, look up the current US list price on Snap-on's own website (shop.snapon.com). Reply with one line per part number, written exactly like this: PARTNUMBER $PRICE\nIf you can't find a part number's price on snapon.com, write PARTNUMBER ? instead. Don't guess, and don't use eBay or other sellers.\n\n${pns.join("\n")}` };
+  }
+  function openListPrices() {
+    $("l-err").hidden = true; $("l-text").value = "";
+    const { pns } = listPrompt();
+    $("l-hint").textContent = `Copy for Gemini asks about ${pns.length} part number${pns.length === 1 ? "" : "s"}${pns.length === 120 ? " (the first 120; do the rest next time)" : ""}. Lines with one of your part numbers and a $ price are used; anything else is skipped.`;
+    listDlg.showModal();
+  }
+  $("l-close").onclick = () => listDlg.close();
+  $("l-copy").onclick = async () => {
+    const { text } = listPrompt();
+    try { await navigator.clipboard.writeText(text); toast("Copied. Paste it into Gemini and send."); }
+    catch { $("l-text").value = text; $("l-text").select(); toast("Couldn't copy on its own. The question is in the box: copy it from there."); }
+  };
+  // "F80 $159.00", "| CTR881 | $455.00 |", "F80: $1,299" -> Map(part number -> price)
+  function parseListPrices(text) {
+    const mine = new Map(state.items.filter((r) => r.part_number).map((r) => [pnKey(r.part_number), r.part_number]));
+    const out = new Map();
+    for (const line of String(text).split(/\r?\n/)) {
+      const up = line.toUpperCase();
+      const word = up.split(/[^A-Z0-9./-]+/).find((w) => mine.has(pnKey(w)));
+      if (!word) continue;
+      const rest = up.replace(word, " ");
+      const m = rest.match(/\$\s*(\d[\d,]*(?:\.\d{1,2})?)/) || rest.match(/(?:^|[\s|:=])(\d[\d,]*\.\d{2})(?!\d)/);
+      if (!m) continue;
+      const v = Number(m[1].replace(/,/g, ""));
+      if (v > 0 && v < 1000000) out.set(mine.get(pnKey(word)), Math.round(v * 100) / 100);
+    }
+    return out;
+  }
+  $("listFrm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const found = parseListPrices($("l-text").value);
+    const err = (m) => { $("l-err").textContent = m; $("l-err").hidden = false; };
+    if (!found.size) return err("No prices found. Paste Gemini's answer with lines like F80 $159.00.");
+    const rows = state.items.filter((r) => found.has(r.part_number) && Number(r.list_price) !== found.get(r.part_number));
+    $("l-save").disabled = true; $("l-save").textContent = "Saving…";
+    try {
+      if (signedIn() && !state.demo) {
+        const res = await Promise.all(rows.map((r) => sb.from("items").update({ list_price: found.get(r.part_number) }).eq("id", r.id)));
+        const bad = res.find((x) => x.error); if (bad) throw bad.error;
+      }
+      const ids = new Set(rows.map((r) => r.id));
+      state.items = state.items.map((r) => (ids.has(r.id) ? { ...r, list_price: found.get(r.part_number) } : r));
+      if (!signedIn() && !state.demo) local.write(state.items);
+      render();
+      listDlg.close();
+      toast(`Saved list prices for ${found.size} part number${found.size === 1 ? "" : "s"}.`);
+    } catch (ex) { err(dbMsg(ex) || "Couldn't save those. Check your connection and try again."); }
+    $("l-save").disabled = false; $("l-save").textContent = "Save prices";
+  });
 
   $("list").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-act]"); if (!btn) return;
@@ -3776,6 +3872,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("i-art").value = item?.art && ART[item.art] ? item.art : "";
     $("i-art").closest(".field").hidden = signedIn() && !state.dbArt;
     $("i-price").value = item?.price ? Number(item.price) : "";
+    $("i-list").value = item?.list_price ? Number(item.list_price) : "";
     $("i-date").value = item?.date_bought || (list === "owned" ? today() : "");
     $("i-cond").value = item?.condition || "Good";
     $("i-loc").value = item?.location || "";
@@ -3802,6 +3899,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const item = {
       ...(state.editing || blank(list)),
       name, part_number: pn, category: $("i-cat").value, art: $("i-art").value || null, price: Math.max(0, Number($("i-price").value) || 0), notes: $("i-notes").value.trim(),
+      list_price: Number($("i-list").value) > 0 ? Math.round(Number($("i-list").value) * 100) / 100 : null,
       ...(list === "owned"
         ? { date_bought: $("i-date").value || null, condition: $("i-cond").value, location: $("i-loc").value.trim() }
         : { priority: $("i-pri").value, saved: Math.max(0, Number($("i-saved").value) || 0) }),

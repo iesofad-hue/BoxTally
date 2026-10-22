@@ -72,6 +72,12 @@ BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on
 
 ### Snap-on list prices
 
+**Free way (works now):** under **Prices**, **Add list prices** opens a box with three steps: **Copy for Gemini** copies your part numbers with the question to ask, you paste that into the Gemini app (free, and it can search Google), then paste its answer back. Every line with one of your part numbers and a $ price is saved as `items.list_price` on your own tools. You can also type a list price on any tool's edit form. These prices are private like what you paid (owner-only RLS; share links don't include them).
+
+A tool's value is: your list price, else an automatic list price (below), else eBay, else what you paid.
+
+**Automatic way (optional, costs about a cent per new tool):**
+
 Snap-on has no public price API, and its store (shop.snapon.com) builds each page in the browser and turns away automated visitors, so BoxTally can't read list prices from it directly (and scraping it would go against Snap-on's terms). Google's search index does have those pages, which is how Gemini can answer "what does F80 cost".
 
 `checker/list-prices.mjs` runs weekly from `.github/workflows/list-prices.yml`. For each tracked part number it asks Gemini, with Google Search turned on, for the price on Snap-on's own store. The answer is saved to `list_prices` only when the part number matches exactly and at least one source Google returned is a snapon.com page; otherwise `price` is saved as null and the card keeps using eBay. Only part numbers someone tracks are looked up, each once for everyone, then rechecked twice a year (Snap-on changes list prices about that often); not-found ones are retried monthly. Each run does at most 600, so a month stays inside Gemini's 5,000 free searches even with thousands of tools, and the only cost is Gemini's answer, about a cent per lookup.

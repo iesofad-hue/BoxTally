@@ -654,3 +654,9 @@ alter table public.list_prices enable row level security;
 create policy "Anyone can read list prices" on public.list_prices for select to anon, authenticated using (true);
 revoke all on public.list_prices from anon, authenticated;
 grant select on public.list_prices to anon, authenticated;
+
+-- ===== Your own Snap-on list price on each tool (2026-10-22) =====
+-- Typed on the tool or pasted in bulk from an AI app's answer ("Add list prices" under Prices).
+-- Private like price: covered by the owner-only RLS on items, and shared_box doesn't return it.
+alter table public.items add column if not exists list_price numeric(10,2)
+  check (list_price is null or (list_price > 0 and list_price < 1000000));
