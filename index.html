@@ -1052,7 +1052,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
     <h2>Snap-on list prices</h2>
     <p class="meta-line">A free way to fill in list prices for your whole box. Prices you add here stay private to you, and they count before eBay in your box worth.</p>
     <ol class="lp-steps">
-      <li>Tap <strong>Copy for Gemini</strong>. It copies your part numbers with the question to ask.</li>
+      <li>Tap <strong>Copy for Gemini</strong>. It copies a few of your part numbers with the question to ask.</li>
       <li>Open Gemini (or any AI app that can search the web), paste it and send.</li>
       <li>Copy Gemini's whole answer and paste it below.</li>
     </ol>
@@ -3664,17 +3664,20 @@ document.addEventListener("DOMContentLoaded", () => {
      list prices. So: copy your part numbers with the question, ask Gemini, paste its answer back. Each
      price is saved on your own tools (items.list_price), private to you like what you paid. */
   const listDlg = $("listDlg");
+  const LIST_BATCH = 12;
   const pnKey = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   function listPrompt() {
     const all = [...new Set(state.items.filter((r) => r.part_number).map((r) => r.part_number))];
     const missing = all.filter((pn) => !state.items.some((r) => r.part_number === pn && Number(r.list_price) > 0));
-    const pns = (missing.length ? missing : all).slice(0, 120);
-    return { pns, text: `For each Snap-on part number below, look up the current US list price on Snap-on's own website (shop.snapon.com). Reply with one line per part number, written exactly like this: PARTNUMBER $PRICE\nIf you can't find a part number's price on snapon.com, write PARTNUMBER ? instead. Don't guess, and don't use eBay or other sellers.\n\n${pns.join("\n")}` };
+    // Small batches: Gemini searches properly for a handful at a time, and gives up on long lists
+    const pns = (missing.length ? missing : all).slice(0, LIST_BATCH);
+    return { pns, left: (missing.length ? missing : all).length, text: `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}` };
   }
   function openListPrices() {
     $("l-err").hidden = true; $("l-text").value = "";
-    const { pns } = listPrompt();
-    $("l-hint").textContent = `Copy for Gemini asks about ${pns.length} part number${pns.length === 1 ? "" : "s"}${pns.length === 120 ? " (the first 120; do the rest next time)" : ""}. Lines with one of your part numbers and a $ price are used; anything else is skipped.`;
+    const { pns, left } = listPrompt();
+    $("l-copy").textContent = `Copy ${pns.length} for Gemini`;
+    $("l-hint").textContent = `${left > pns.length ? `${left} tools still need a list price, so this does ${pns.length} at a time. Save, then tap Add list prices again for the next ${Math.min(LIST_BATCH, left - pns.length)}. ` : ""}Lines with one of your part numbers and a $ price are used; anything else is skipped.`;
     listDlg.showModal();
   }
   $("l-close").onclick = () => listDlg.close();
