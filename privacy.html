@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- security: no plugins, no <base> tag tricks, forms only post back to BoxTally -->
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Privacy and terms · BoxTally</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@700&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <style>

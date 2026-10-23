@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- security: no plugins, no <base> tag tricks, forms only post back to BoxTally -->
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>BoxTally · Snap-on tool tracker</title>
 <meta name="description" content="BoxTally tracks the Snap-on tools in your box, what they're worth at Snap-on list and eBay prices, and what's next on your wishlist.">
 <meta name="theme-color" content="#10151c">
@@ -43,7 +45,7 @@
   --accent: #c8171f; --accent-ink: #ffffff; --accent-soft: #fbe2e3; --band-accent: #ff4b53;
   --band: #10151c; --band-2: #18202a; --band-fg: #eef2f7; --band-muted: #98a7b9; --band-line: rgb(255 255 255 / .1);
   --tag: #ffc629; --tag-ink: #1d1600;
-  --good: #1b7a4b; --good-soft: #d9f0e4; --warn: #9c5b07; --bad: #b3261e; --bad-soft: #f8e1df; --chip: #e8ecf1;
+  --good: #176b42; --good-soft: #d9f0e4; --warn: #9c5b07; --bad: #b3261e; --bad-soft: #f8e1df; --chip: #e8ecf1;
   --plate: #ffffff; --plate-line: #e5e9ee; --scrim: rgb(10 14 20 / .62); --scrim-ink: #ffffff;
   --shadow: 0 1px 2px rgb(16 21 28 / .05), 0 10px 28px -16px rgb(16 21 28 / .28);
   --shadow-hi: 0 2px 4px rgb(16 21 28 / .06), 0 18px 40px -18px rgb(16 21 28 / .4);
@@ -328,7 +330,6 @@ a.pn span { color: var(--accent); }
 .price-big { font-family: var(--f-display); font-size: 1.8rem; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
 .no-price { display: block; padding-top: 4px; font-size: .85rem; color: var(--muted); line-height: 1.35; }
 .no-price .btn { margin-top: 2px; }
-.was { font-family: var(--f-mono); font-size: .8rem; color: var(--muted); text-decoration: line-through; }
 .trend { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); }
 .trend svg { flex: none; }
 .chg { font-family: var(--f-mono); font-size: .8rem; font-weight: 500; }
@@ -370,6 +371,8 @@ dialog h2 { font-size: 1.6rem; text-transform: uppercase; }
 .pf-prev.none svg { width: 36px; height: 36px; opacity: .55; }
 .pf-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .pf-actions small { flex-basis: 100%; }
+/* narrow phones: smaller preview so the photo button and hint fit beside it */
+@media (max-width: 400px) { .pf { grid-template-columns: 84px minmax(0, 1fr); align-items: start; } .pf-prev { width: 84px; } .pf-actions .btn { max-width: 100%; } }
 .lookup { font-size: .82rem; color: var(--accent); text-decoration: none; font-weight: 600; justify-self: start; }
 .lookup:hover { text-decoration: underline; }
 .formfoot { display: flex; justify-content: end; gap: 8px; flex-wrap: wrap; }
@@ -1177,6 +1180,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return fmtDate(d, t.getFullYear() !== n.getFullYear());
   };
   const ts = (x) => (x ? Date.parse(x) || 0 : 0);
+  // put the cursor in a form's first field, except on touch screens where that pops the keyboard over the form
+  const deskFocus = (el) => { if (el && !matchMedia("(pointer: coarse)").matches) el.focus(); };
   const deptOf = (cat) => Object.keys(DEPTS).find((d) => DEPTS[d].includes(cat)) || "Other";
   const storeLink = (pn) => "https://shop.snapon.com/search?q=" + encodeURIComponent(pn);
   const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
@@ -1188,12 +1193,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- prices from the shared list ---------- */
   const storeOf = (r) => state.catalog[r.part_number] || null;
-  // Store prices used to be typed in by anyone tracking a tool, so they could be anything.
-  // Retired 2026-10-18: a tool's value now comes from eBay automatically, and the only price
-  // people type is what they paid, which stays private to them.
-  const storeOk = () => false;
-  const storePrice = () => null;
-  const wasPrice = () => null;
   // eBay price history: one point per day, only on days the price moved 3% or more
   const hist = (r) => (r.part_number && state.hist[r.part_number]) || [];
   const lastChange = (r) => { const h = hist(r); if (h.length < 2) return null; const a = h[h.length - 2].p, b = h[h.length - 1].p; return b === a ? null : { from: a, to: b, d: h[h.length - 1].d }; };
@@ -2130,7 +2129,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!item.id) state.flash = new Set([row.id]);
       state.items = next;
     }
-    await loadCatalog();
+    await pricesSoon();
     render();
   }
   // Several new tools at once (pasted part numbers), saved in one go.
@@ -2148,7 +2147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     state.items = state.items.concat(saved);
     state.flash = new Set(saved.map((r) => r.id));
-    await loadCatalog();
+    await pricesSoon();
     render();
     return saved.length;
   }
@@ -2179,7 +2178,7 @@ document.addEventListener("DOMContentLoaded", () => {
       state.items = next;
     }
     state.flash = new Set([item.id]);
-    await loadCatalog();
+    await pricesSoon();
     render();
   }
 
@@ -2232,6 +2231,13 @@ document.addEventListener("DOMContentLoaded", () => {
     state.loaded = true;
     render();
   }
+  // After a save, wait up to 2.5 s for prices so the card shows them straight away, but never hold the
+  // form open longer than that on a weak signal: the prices fill in by themselves when they arrive.
+  function pricesSoon() {
+    let late = false;
+    const load = loadCatalog().then(() => { if (late) render(); }, () => {});
+    return Promise.race([load, new Promise((r) => setTimeout(() => { late = true; r(); }, 2500))]);
+  }
   async function loadCatalog() {
     if (!sb) return;
     const pns = [...new Set(state.items.map((r) => r.part_number).filter((p) => p && PN_RE.test(p)))];
@@ -2240,7 +2246,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const batches = [];
     for (let i = 0; i < pns.length; i += 150) batches.push(pns.slice(i, i + 150));
     const res = await Promise.all(batches.map((b) => Promise.all([
-      sb.from("catalog").select("part_number,name,price,was_price,status,checked_at").in("part_number", b),
+      sb.from("catalog").select("part_number,name,status,checked_at").in("part_number", b),
       // eBay price history, newest first, so if there's ever more than one request holds, the oldest days are what's left out
       sb.from("ebay_price_history").select("part_number,d,price").in("part_number", b).order("d", { ascending: false }).limit(1000),
       sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at,seen_at,source,note").in("part_number", b),
@@ -2454,7 +2460,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const now = nowPrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
     const mine = !state.readonly && !state.demo;
     const chips = (r.condition ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r);
-    const badge = wasPrice(r) ? `<span class="chip tag">On sale</span>` : "";
+    const badge = "";
     return `<article class="card${fresh(r)}${r.lent_to ? " lent" : ""}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
@@ -2475,11 +2481,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const left = Math.max(cost - saved, 0), pct = cost ? Math.min(100, Math.round((saved / cost) * 100)) : 0;
     const ch = lastChange(r), dropped = ch && ch.to < ch.from;
     const chips = `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`;
-    const badge = dropped ? `<span class="chip tag">Price dropped</span>` : wasPrice(r) ? `<span class="chip tag">On sale</span>` : "";
+    const badge = dropped ? `<span class="chip tag">Price dropped</span>` : "";
     return `<article class="card ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
-        <div><span class="label">${Number(r.price) ? "Your price" : listPrice(r) != null ? "Snap-on list" : ebayPrice(r) != null ? "eBay price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span>${wasPrice(r) ? `<span class="was">${money(wasPrice(r), true)}</span>` : `<span class="meta-line">&nbsp;</span>`}</div>
+        <div><span class="label">${Number(r.price) ? "Your price" : listPrice(r) != null ? "Snap-on list" : ebayPrice(r) != null ? "eBay price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span><span class="meta-line">&nbsp;</span></div>
         <div><span class="label">Left to save</span><span class="price-big">${cost ? money(left, left % 1) : "—"}</span><span class="meta-line">${cost ? (left ? `${money(saved)} saved` : "Ready to buy") : "&nbsp;"}</span></div>
       </div>
       ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
@@ -2504,7 +2510,7 @@ document.addEventListener("DOMContentLoaded", () => {
       sub = !cost ? "" : left ? `${money(left, left % 1)} left` : "Ready to buy";
     }
     const chips = (owned ? (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
-      + (dropped ? `<span class="chip tag">Price dropped</span>` : wasPrice(r) ? `<span class="chip tag">On sale</span>` : "");
+      + (dropped ? `<span class="chip tag">Price dropped</span>` : "");
     return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
       <div><h3>${esc(displayName(r))}</h3><div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(catOf(r) || "Other")}</span>${chips}</div></div>
       <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span></div>
@@ -3141,7 +3147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("t-log").innerHTML = log.length ? `<div class="t-log"><span class="label">Recent</span>${log.map((x) => `<div class="line"><span>${esc(x.what)}</span><span class="num ${x.amt < 0 ? "pay" : ""}">${x.amt < 0 ? "−" : "+"}${money(Math.abs(x.amt), true)} · ${esc(fmtDate(x.d, false))}</span></div>`).join("")}</div>` : "";
     truckDlg.showModal();
     routeOpen(truckDlg, "/truck", "Truck account");
-    setTimeout(() => $("t-bal").focus(), 0);
+    setTimeout(() => deskFocus($("t-bal")), 0);
   }
   $("t-cancel").onclick = () => truckDlg.close();
   $("truckFrm").addEventListener("submit", async (e) => {
@@ -3282,7 +3288,7 @@ document.addEventListener("DOMContentLoaded", () => {
     insProvChanged();
     insDlg.showModal();
     routeOpen(insDlg, "/insurance", "Tool insurance");
-    setTimeout(() => $("i-prov").focus(), 0);
+    setTimeout(() => deskFocus($("i-prov")), 0);
   }
   $("i-cancel").onclick = () => insDlg.close();
   $("i-print").onclick = () => { insDlg.close(); $("exportPrint").click(); };
@@ -3963,7 +3969,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateLookup(); renderPf();
     dlg.showModal();
     routeOpen(dlg, item ? `/tool/${encodeURIComponent(item.id)}/edit` : list === "wishlist" ? "/wishlist/add" : "/add", $("dlgTitle").textContent);
-    setTimeout(() => $("i-name").focus(), 0);
+    setTimeout(() => deskFocus($("i-name")), 0);
   }
   $("i-pn").addEventListener("input", updateLookup);
   $("cancelBtn").onclick = () => dlg.close();
