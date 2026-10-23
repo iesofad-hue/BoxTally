@@ -735,6 +735,8 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .m3d-turn { animation: none !important; }
 .photo .m3d-turn { width: 100%; height: 100%; padding: 14px 22px; object-fit: contain; } /* same box as .photo img */
 .shot .plate .m3d-turn { width: 100%; height: 100%; padding: 12px; object-fit: contain; } /* same box as .shot .plate img */
+.ri .thumb { position: relative; }
+.ri .thumb .m3d, .ri .thumb .m3d-turn { position: absolute; inset: 0; width: 100%; height: 100%; padding: 3px; object-fit: contain; } /* a list row's turning tool fills its little square */
 .viewer .stage.is3d { cursor: grab; }
 .viewer .stage.is3d:active { cursor: grabbing; }
 .viewer .stage.is3d .art { visibility: hidden; }

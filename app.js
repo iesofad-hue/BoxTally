@@ -940,6 +940,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<span class="art${cls ? " " + cls : ""}" data-art="${ART[key] ? key : "other"}" aria-hidden="true"><svg viewBox="0 0 160 100" focusable="false">${mirror}${floor}<g class="tool${tint ? " " + tint : ""}">${svg}</g></svg></span>`;
   };
   const thumb = (r) => { const p = photoOf(r); return p ? `<span class="thumb">${imgTag(p, "")}</span>` : `<span class="thumb art-bg">${artTag(artOf(r))}</span>`; };
+  // a list row's picture: like thumb(), but a drawing gets swapped for the 3D model, which turns while it's on screen
+  const rowThumb = (r) => { const p = photoOf(r), a = !p && artOf(r); return p ? thumb(r) : `<span class="thumb art-bg" data-m3d="${esc(m3dOf(a))}">${artTag(a)}</span>`; };
 
   function spark(r, w = 84, h = 26) {
     const pts = hist(r);
@@ -1371,7 +1373,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // List view: one dense row per tool, for big boxes.
   function rowItem(r, i = 0) {
     const owned = r.list === "owned", p = photoOf(r), ch = lastChange(r), dropped = !owned && ch && ch.to < ch.from;
-    const pic = `<button class="open" type="button" data-act="view" aria-label="${p ? "View photo of" : "See"} ${esc(displayName(r))}${p ? "" : " up close"}">${thumb(r)}</button>`;
+    const pic = `<button class="open" type="button" data-act="view" aria-label="${p ? "View photo of" : "See"} ${esc(displayName(r))}${p ? "" : " up close"}">${rowThumb(r)}</button>`;
     // a tool with no name shows its part number as the title, so say what kind of tool it is instead of repeating the number
     const a = displayName(r) === r.part_number && artOf(r), unnamed = a && a.key !== "other";
     let price, sub;
@@ -1991,14 +1993,15 @@ document.addEventListener("DOMContentLoaded", () => {
         el.setAttribute("data-m3d-done", "");
         const [key, size, drive, pn, look] = el.dataset.m3d.split("|");
         if (!t.has(key)) continue;
-        const square = el.classList.contains("plate");
-        t.picture(key, size, square ? 360 : 720, square ? 360 : 450, drive, pn, look).then((url) => {
+        // list rows get a small square picture; photo-rail plates stay still, cards are wide
+        const square = el.classList.contains("plate"), row = el.classList.contains("thumb"), [w, h] = row ? [168, 168] : square ? [360, 360] : [720, 450];
+        t.picture(key, size, w, h, drive, pn, look).then((url) => {
           if (!url || !el.isConnected) return;
           const art = el.querySelector(".art"); if (!art) return;
           const img = new Image(); img.className = "m3d"; img.alt = ""; img.src = url;
           // the drawing stays until the picture is ready to paint, then fades across (no blank tile in between);
           // once it shows, the card's tool slowly turns while it's on screen (see turn() in tool3d.js)
-          const show = () => { if (!el.isConnected) return; art.parentElement.appendChild(img); el.classList.add("has3d"); if (!square) t.turn?.(el, img, key, size, 720, 450, drive, pn, look); };
+          const show = () => { if (!el.isConnected) return; art.parentElement.appendChild(img); el.classList.add("has3d"); if (!square) t.turn?.(el, img, key, size, w, h, drive, pn, look); };
           (img.decode ? img.decode() : new Promise((ok) => { img.onload = ok; })).then(show, () => {});
         });
       }
