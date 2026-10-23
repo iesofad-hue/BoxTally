@@ -93,6 +93,7 @@ const CASES = [
   ["SG4ASABR", "pick"], ["SGASA204C", "set-pick"], ["YA145A", "set-pick"], ["SGSR1", "seal-puller"],
   // shop: pickups, mirrors, knives, scrapers, files, saws, creepers, jacks, pullers, lights
   ["PT5C", "pickup"], ["PT28E", "pickup"], ["UPT35", "pickup"], ["PTM143", "mirror"], ["UIM225", "mirror"],
+  ["PTM18AM", "pickup"], ["PTM2AM", "pickup"], ["PTM18AMO", "pickup"], ["PTM2AMG", "pickup"], ["PTM157", "mirror"],
   ["PK100", "knife"], ["KER1440", "knife"], ["CSA12C", "scraper"], ["PKB50", "scraper"], ["8MA", "file"], ["10R", "file"], ["HS18A", "hacksaw"],
   ["JCW60BL", "creeper"], ["FJ200", "floor-jack"], ["CG240", "puller"], ["CJ83C", "puller"], ["ECFLED84", "shop"],
   // diagnostics and storage

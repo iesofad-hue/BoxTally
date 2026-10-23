@@ -2,7 +2,7 @@
 // Keeps a copy of the page, its icons, fonts and the database library, so the site opens with no signal.
 // Your tools come from the copy the page itself saves in the browser; nothing about your box is stored here.
 // Bump VERSION whenever these files change in a way that needs old copies thrown away.
-const VERSION = "boxtally-v33";
+const VERSION = "boxtally-v34";
 // The 3D files (about 1 MB) aren't fetched up front any more: they're saved the first time a card loads them,
 // so a first visit on a weak signal only downloads what the page needs.
 const SHELL = ["./", "index.html", "vendor/supabase-2.116.0.js", "privacy.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];

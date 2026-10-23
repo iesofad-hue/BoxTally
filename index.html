@@ -1210,9 +1210,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // owner saved (list_prices; null when none was found)
   const listPrice = (r) => {
     if (Number(r.list_price) > 0) return Number(r.list_price);
-    const l = r.part_number && state.list && state.list[r.part_number];
+    const own = r.part_number && state.list && state.list[r.part_number];
+    const l = own && own.price != null ? own : state.list && state.list[colorBase(r.part_number)];
     return l && l.price != null ? Number(l.price) : null;
   };
+  // The same tool in another color: Snap-on adds a color letter to the red one's number
+  // (PTM18AM is the red pickup; PTM18AMO orange, PTM18AMG green...). Those share the red one's list price.
+  const COLOR_BASE = [/^(PTM\d{1,2}AM)[A-Z]{1,2}$/];
+  const colorBase = (pn) => { for (const re of COLOR_BASE) { const m = re.exec(pn || ""); if (m) return m[1]; } return null; };
   // A tool's value today: Snap-on's list price (what it costs to replace new), else eBay
   const nowPrice = (r) => listPrice(r) ?? ebayPrice(r);
   // what an owned tool counts for in "Box worth": list price or eBay today, else what you paid
@@ -1649,7 +1654,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^(PPC|PPR|PPB|PPSG)\d/, "punch-pin"], [/^(YA879|YA900|1210B|1512B|1816B)$/, "punch-pin"],
     [/^(SPBS|PBMP|PBS7|NPB|BLPPB|SAPB)/, "pry"], [/^PSN\d/, "trim-tool"], [/^703\d[A-Z]?$/, "pry"], [/^(6|12|16|20)50$/, "pry"],
     // magnetic pickups and mirrors (PT5C is a pickup; PT850 is an air impact)
-    [/^(PTM\d|UIM\d|TKSS\d|CF143|GA29[45]|GA5[123][AB]|US225|YA516)/, "mirror"], [/^(PT|PHT|PTS|PTIM|UPTM?|DPTM|ECFM)\d{1,2}[A-Z]{0,3}$/, "pickup"],
+    [/^(PTM\d{3}|UIM\d|TKSS\d|CF143|GA29[45]|GA5[123][AB]|US225|YA516)/, "mirror"], [/^(PT|PTM|PHT|PTS|PTIM|UPTM?|DPTM|ECFM)\d{1,2}[A-Z]{0,4}$/, "pickup"],
     [/^(DPTC\d|GA265|GA353|YA837)/, "pickup"], // claw pick-ups
     // knives, scrapers, saws
     [/^(KER\d|CRKBP|LBUK|PK(1\d\d|8\d)|YA40[35]A)/, "knife"], [/^(PK(5\d|500|70)|PKB|PKNC|PKRS|CSA\d|CSB\d|CS\d$|US7\d|MS\d{3,4}$)/, "scraper"],
@@ -1783,7 +1788,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   // A truer label for numbers whose drawing is borrowed from a close cousin (used when the tool has no name).
   const PN_LABEL = [[/^YA824/, "Spark plug boot pliers"], [/^IEDP/, "Electrical disconnect pliers"], [/^YA1005/, "Lug nut removal kit"], [/^SAPB/, "Alignment bar set"],
-    [/^PSN\d/, "Non-marring pry set"], [/^SPBSDC/, "Prybar & chisel set"], [/^SPBS\d{3}/, "Pry bar set"], [/^ECPRB/, "Project light"], [/^[O0]FCA/, "Spider filter wrench"], [/^TPGDL/, "Digital inflator gauge"]];
+    [/^PSN\d/, "Non-marring pry set"], [/^SPBSDC/, "Prybar & chisel set"], [/^SPBS\d{3}/, "Pry bar set"], [/^ECPRB/, "Project light"], [/^[O0]FCA/, "Spider filter wrench"], [/^TPGDL/, "Digital inflator gauge"], [/^PTM\d{1,2}[A-Z]/, "Magnetic pickup tool"]];
   const VARIANT_DEFAULT = { diag: "diag-tablet", torque: "torque-click" };
   // Cordless tools get a drawing for their battery platform. The name says it (14.4 V, 18V) or, failing
   // that, the part number: 14.4V tools carry 3-digit 7xx/8xx numbers (CT761, CTR814, CT861, CTR881), 18V tools
@@ -2252,7 +2257,7 @@ document.addEventListener("DOMContentLoaded", () => {
       sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at,seen_at,source,note").in("part_number", b),
       // how many people own or want each tool: only answered for signed-in people
       signedIn() ? sb.rpc("owner_counts", { pns: b }) : { data: [], error: null },
-      sb.from("list_prices").select("part_number,price,name,source,checked_at").in("part_number", b),
+      sb.from("list_prices").select("part_number,price,name,source,checked_at").in("part_number", [...new Set([...b, ...b.map(colorBase).filter(Boolean)])]),
     ])));
     if (res.every(([, , , , l]) => !l.error)) state.list = Object.fromEntries(res.flatMap(([, , , , l]) => l.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, , , o]) => !o.error)) state.owners = Object.fromEntries(res.flatMap(([, , , o]) => o.data || []).map((r) => [r.part_number, r]));
