@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=38">
+<link rel="stylesheet" href="/app.css?v=39">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -100,6 +100,20 @@
         <span class="sync" id="sync" data-mode="local"><i aria-hidden="true"></i><span id="syncText">Loading…</span></span>
         <span id="account"></span>
       </div>
+    </div>
+    <!-- first visit (an empty box): what BoxTally does and how to start, in place of the $0 totals -->
+    <div class="hero" id="hero" hidden>
+      <h2>Know what your box is worth.</h2>
+      <ul>
+        <li><strong>Add a tool by its part number.</strong> BoxTally draws it and fills in what it's worth today.</li>
+        <li><strong>Keep a wishlist</strong> with how much is left to save, and see when prices drop.</li>
+        <li><strong>Track your truck account</strong> and check your insurance covers the whole box.</li>
+      </ul>
+      <div class="hero-acts">
+        <button class="btn primary" type="button" id="heroAdd">Add my first tool</button>
+        <button class="btn-account" type="button" id="heroDemo">See a sample box</button>
+      </div>
+      <p class="hero-note" id="heroNote">No account needed to try it. Sign in to keep your box on every device.</p>
     </div>
     <div class="dash">
       <div class="tile">
@@ -165,7 +179,7 @@
   <form class="quick" id="quick" novalidate>
     <input id="q-pn" class="mono" placeholder="Part number, e.g. F80" aria-label="Part number" autocapitalize="characters" autocomplete="off">
     <button class="btn primary" type="submit" id="q-add">Add to box</button>
-    <button class="btn scanbtn" type="button" id="q-scan" title="Take a photo of the part number stamped on a tool or its package"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M7 12h10"/></svg>Scan</button>
+    <button class="btn scanbtn" type="button" id="q-scan" title="Take a photo of the part number stamped on a tool or its package"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M7 12h10"/></svg><span class="scan-t">Scan</span></button>
     <input type="file" id="scanInput" accept="image/*" capture="environment" hidden>
     <button class="btn" type="button" id="q-more">Add with details &amp; photo</button>
     <div class="scanpick" id="scanPick" hidden></div>
@@ -350,20 +364,26 @@
         </div>
         <input type="file" id="pfFile" accept="image/*" hidden>
       </div>
-      <label class="field full"><span class="label">Tool name</span><input id="i-name" placeholder="3/8&quot; drive dual 80 ratchet" maxlength="200"><small>Optional. Leave it blank and the card shows the store name, or the part number.</small></label>
       <label class="field"><span class="label">Part number</span><input id="i-pn" class="mono" placeholder="F80" autocapitalize="characters" autocomplete="off" maxlength="40"><a class="lookup" id="lookup" href="https://shop.snapon.com" target="_blank" rel="noopener" hidden>Look up on Snap-on ↗</a></label>
-      <label class="field"><span class="label">Category</span><select id="i-cat"></select></label>
-      <label class="field"><span class="label">Drawing</span><select id="i-art"></select></label>
-      <label class="field" data-only="owned" id="f-qty"><span class="label">How many</span><input id="i-qty" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="1"><small>Have more than one of this tool? Prices below are for one; box worth counts them all.</small></label>
+      <label class="field" data-only="owned" id="f-qty"><span class="label">How many</span><input id="i-qty" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="1"></label>
+      <label class="field full"><span class="label">Tool name</span><input id="i-name" placeholder="3/8&quot; drive dual 80 ratchet" maxlength="200"><small>Optional. Left blank, the card shows the store name or the part number.</small></label>
       <label class="field"><span class="label" id="l-price">Snap-on price you paid ($)</span><input id="i-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
-      <label class="field"><span class="label">Snap-on list price ($)</span><input id="i-list" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><small>Optional, private. From your receipt, your dealer or snapon.com. Counts before eBay.</small></label>
       <label class="field" data-only="owned"><span class="label">Date bought</span><input id="i-date" type="date"></label>
-      <label class="field" data-only="owned"><span class="label">Condition</span><select id="i-cond"></select></label>
-      <label class="field full" data-only="owned"><span class="label">Where it's kept</span><input id="i-loc" placeholder="Top chest, drawer 3" maxlength="120" list="locList" autocomplete="off"></label>
-      <label class="field" data-only="wishlist"><span class="label">Priority</span><select id="i-pri"></select></label>
       <label class="field" data-only="wishlist"><span class="label">Saved so far ($)</span><input id="i-saved" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
-      <label class="field full"><span class="label">Notes</span><textarea id="i-notes" placeholder="Warranty swapped once, came in a set, etc." maxlength="1000"></textarea></label>
+      <label class="field" data-only="wishlist"><span class="label">Priority</span><select id="i-pri"></select></label>
     </div>
+    <!-- everything else is optional, so it stays folded away until you want it -->
+    <details class="more" id="frmMore">
+      <summary><strong>More details</strong><span class="meta-line" id="moreSum"></span></summary>
+      <div class="grid2">
+        <label class="field"><span class="label">Category</span><select id="i-cat"></select></label>
+        <label class="field"><span class="label">Drawing</span><select id="i-art"></select></label>
+        <label class="field"><span class="label">Snap-on list price ($)</span><input id="i-list" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><small>Optional, private. From your receipt, your dealer or snapon.com. Counts before eBay.</small></label>
+        <label class="field" data-only="owned"><span class="label">Condition</span><select id="i-cond"></select></label>
+        <label class="field full" data-only="owned"><span class="label">Where it's kept</span><input id="i-loc" placeholder="Top chest, drawer 3" maxlength="120" list="locList" autocomplete="off"></label>
+        <label class="field full"><span class="label">Notes</span><textarea id="i-notes" placeholder="Warranty swapped once, came in a set, etc." maxlength="1000"></textarea></label>
+      </div>
+    </details>
     <p class="err" id="frmErr" hidden></p>
     <div class="formfoot">
       <button class="btn" type="button" id="cancelBtn">Cancel</button>
@@ -376,16 +396,26 @@
   <div class="v-img" id="vImg"></div>
   <div class="v-cap">
     <div><h2 id="vName"></h2><span class="meta-line" id="vMeta"></span> <span class="v-hint" id="vHint">· Click the photo to zoom</span></div>
+    <!-- what you can do with this tool (Edit, Lend, Bought it, Delete); filled in by openViewer -->
+    <div class="v-acts" id="vActs" hidden></div>
     <div class="actions"><button class="btn small" type="button" id="vPhoto">Replace photo</button><button class="btn small primary" type="button" id="vClose">Close</button></div>
   </div>
 </dialog>
+
+<!-- Phones: the app's sections along the bottom, like a phone app. Hidden on bigger screens and on shared boxes. -->
+<nav class="bnav" id="bnav" aria-label="Sections">
+  <button type="button" data-go="owned" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 7h4M10 12.5h4M10 17.5h4"/></svg><span>Box <b class="bn-count" id="bn-tools">0</b></span></button>
+  <button type="button" data-go="wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span>Wishlist <b class="bn-count" id="bn-wish">0</b></span></button>
+  <button type="button" data-go="add" class="bn-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add</span></button>
+  <button type="button" data-go="money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M16.5 7.5c-.8-1.2-2.5-2-4.5-2-2.5 0-4.2 1.3-4.2 3.1 0 4.3 8.7 2.4 8.7 6.8 0 1.9-1.9 3.2-4.5 3.2-2.1 0-3.9-.9-4.7-2.3"/></svg><span>Money</span></button>
+</nav>
 
 <button class="fab" id="fab" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span id="fabText">Add tool</span></button>
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script defer src="/drawings.js?v=38"></script>
-<script defer src="/app.js?v=38"></script>
+<script defer src="/drawings.js?v=39"></script>
+<script defer src="/app.js?v=39"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>

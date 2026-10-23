@@ -47,6 +47,9 @@ The site never loads, copies or hotlinks Snap-on's product photos (Snap-on limit
 
 ### Everyday features
 
+- **On a phone.** A bar along the bottom has Box, Wishlist, Add and Money. Box and Wishlist show the two totals and then the list, which starts as a compact row per tool (tap a row to open the tool, with its Edit, Lend, Bought it and Delete buttons). Money is its own screen (`/money`) with box worth, the truck account, tool insurance, prices and stats. Snap-on's store search shows on the Wishlist. On bigger screens everything shows at once, as before.
+- **First visit.** An empty box opens on a short welcome (what BoxTally does, "Add my first tool", "See a sample box") instead of $0 totals.
+- **Add form.** The basics come first (photo, part number, how many, name, what you paid, date); category, drawing, list price, condition, where it's kept and notes are folded under **More details**, which opens on its own when editing a tool or from **Add with details & photo**.
 - **Sample box.** A first-time visitor with an empty box can tap **See a sample box** to look around a pretend toolbox (with a truck account and lent-out tools). It lives in memory only and is never saved; **Start my own box** clears it.
 - **Undo.** Deleting a tool is instant, with an **Undo** button for a few seconds. A deleted tool's photo file is only removed once the Undo has passed.
 - **Add several at once.** Paste a list of part numbers (one per line, or separated by spaces or commas) into the add box. Up to 200 at a time; ones already on the list are skipped.

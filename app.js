@@ -1406,6 +1406,15 @@ document.addEventListener("DOMContentLoaded", () => {
     $("d-left-bar").firstElementChild.style.width = (cost && !state.readonly ? Math.round((saved / cost) * 100) : 0) + "%";
     setCount($("c-tools"), t.length);
     setCount($("c-wish"), w.length);
+    $("bn-tools").textContent = t.length; $("bn-wish").textContent = w.length;
+    syncBnav();
+    document.body.classList.toggle("has-items", state.loaded && state.items.length > 0);
+    document.body.classList.toggle("tab-owned", state.tab === "owned");
+    // an empty box (first visit, or signed in with nothing added yet) gets the welcome instead of $0 totals
+    const fresh = state.loaded && !state.items.length && !state.readonly && !state.demo;
+    document.body.classList.toggle("fresh-start", fresh);
+    $("hero").hidden = !fresh;
+    $("heroNote").hidden = !sb || signedIn();
     renderTruck();
     renderIns(worth);
     document.body.classList.toggle("readonly", !!state.readonly);
@@ -1746,6 +1755,12 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
     $("vPhoto").hidden = state.readonly || state.demo;
+    // the same things the card's buttons do, so a phone's compact list doesn't need a row of buttons per tool
+    const del = `<button class="btn small ghost danger" type="button" data-vact="del">Delete</button>`, edit = `<button class="btn small" type="button" data-vact="edit">Edit</button>`;
+    const acts = state.readonly ? "" : r.list === "owned"
+      ? (r.lent_to ? `<button class="btn small" type="button" data-vact="returned">Got it back</button>` : `<button class="btn small" type="button" data-vact="lend">Lend</button>`) + edit + del
+      : `<button class="btn small" type="button" data-vact="bought">Bought it</button>` + edit + del;
+    $("vActs").innerHTML = acts; $("vActs").hidden = !acts;
     viewer.showModal();
     routeOpen(viewer, `/tool/${encodeURIComponent(id)}/${slug(displayName(r)) || "tool"}`, displayName(r));
   }
@@ -2193,6 +2208,11 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCatalog().then(render);
   }
   $("localDemo").onclick = () => enterDemo();
+  $("heroDemo").onclick = () => enterDemo();
+  $("heroAdd").onclick = () => {
+    $("quick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    $("q-pn").focus({ preventScroll: true });
+  };
   $("demoExit").onclick = () => { state.introDone = false; state.railIntro = false; state.demoTruck = null; state.demoIns = null; loadItems(); scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); };
 
   /* ---------- share my box: a read-only link ---------- */
@@ -2305,6 +2325,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setTab(tab) {
     if (tab !== state.tab) state.introDone = false;
     state.tab = tab; state.confirm = null;
+    if (state.money) { state.money = false; document.body.classList.remove("screen-money"); }
     $("tab-tools").setAttribute("aria-selected", tab === "owned");
     $("tab-wish").setAttribute("aria-selected", tab === "wishlist");
     $("list").setAttribute("aria-labelledby", tab === "owned" ? "tab-tools" : "tab-wish");
@@ -2313,6 +2334,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   $("tab-tools").onclick = () => setTab("owned");
   $("tab-wish").onclick = () => setTab("wishlist");
+
+  /* ---------- phones: the bar along the bottom ----------
+     Box and Wishlist are the two lists. Money is its own screen with what the box is worth, the truck
+     account, tool insurance, prices and stats, so the lists don't have to scroll past all of that.
+     Add opens the add form for whichever list you're on. On bigger screens everything shows at once. */
+  function syncBnav() {
+    const on = state.money ? "money" : state.tab;
+    document.querySelectorAll("#bnav [data-go]").forEach((b) => { if (b.dataset.go === on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  }
+  function setMoney(on) {
+    if (on === !!state.money) return;
+    state.money = on; state.confirm = null;
+    document.body.classList.toggle("screen-money", on);
+    if (on) $("stats").open = true;
+    syncBnav();
+    if (!routeSync) go(tabPath());
+    scrollTo({ top: 0 });
+  }
+  $("bnav").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-go]"); if (!b) return;
+    const to = b.dataset.go;
+    if (to === "money") return setMoney(true);
+    if (to === "add") { if (state.money) setTab("owned"); return openForm(null); }
+    const same = !state.money && state.tab === to;
+    if (state.money && state.tab === to) setMoney(false); else setTab(to);
+    if (same) scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); // tapping the list you're on goes back to its top
+  });
   ["q", "fCat", "fSort"].forEach((id) => $(id).addEventListener("input", render));
 
   // A message at the bottom; with an action (like Undo) it stays a little longer and has a button.
@@ -2502,7 +2550,7 @@ document.addEventListener("DOMContentLoaded", () => {
       + (all.length > 200 ? " Only the first 200 at a time." : ""));
     return true;
   }
-  $("q-more").onclick = () => openForm(null, cleanPn($("q-pn").value));
+  $("q-more").onclick = () => openForm(null, cleanPn($("q-pn").value), true);
 
   const SHOP_CATS = ["Ratchets", "Socket sets", "Combination wrenches", "Torque wrenches", "Impact wrenches", "Screwdrivers", "Pliers", "Pry bars", "Tool storage", "Diagnostics"];
   $("shopCats").insertAdjacentHTML("beforeend", SHOP_CATS.map((c) => `<a href="${esc(storeLink(c))}" target="_blank" rel="noopener">${esc(c)}</a>`).join(""));
@@ -2682,14 +2730,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   $("list").addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-act]"); if (!btn) return;
-    const act = btn.dataset.act, id = btn.closest("[data-id]")?.dataset.id;
+    const btn = e.target.closest("[data-act]");
+    if (!btn) {
+      // a tap anywhere on a list row (not one of its buttons or links) opens the tool
+      const row = e.target.closest(".ri[data-id]");
+      if (row && !e.target.closest("a, button, input, select, textarea, form, label")) openViewer(row.dataset.id);
+      return;
+    }
+    itemAct(btn.dataset.act, btn.closest("[data-id]")?.dataset.id, btn);
+  });
+  // The viewer's buttons: close it, then do what the card's button would.
+  $("vActs").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-vact]"); if (!b || !viewing) return;
+    const id = viewing;
+    viewer.close();
+    itemAct(b.dataset.vact, id, null);
+    // Lend and Bought it ask their question on the tool's card or row: bring it into view
+    if (["lend", "bought"].includes(b.dataset.vact)) setTimeout(() => document.querySelector(`#list [data-id="${CSS.escape(id)}"]`)?.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" }), 60);
+  });
+  // What a tool's buttons do. btn is the button pressed on the card (null when it came from the viewer).
+  function itemAct(act, id, btn) {
     if (act === "demo") return enterDemo();
     const item = state.items.find((r) => r.id === id);
     if (item && act === "view") return openViewer(id); // anyone can look closer, even on a shared box
     if (!item || state.readonly) return;
     if (state.demo && act === "photo") return toast("This is the sample box, so photos are off. Tap \"Start my own box\" up top to make yours.");
-    if (act === "lend") { state.lendEdit = id; render(); setTimeout(() => { const f = document.querySelector(`[data-lend-form="${CSS.escape(id)}"] input`); if (f) f.focus(); }, 0); return; }
+    if (act === "lend") { state.lendEdit = id; render(); setTimeout(() => { const f = document.querySelector(`[data-lend-form="${CSS.escape(id)}"] input`); if (f) f.focus({ preventScroll: !btn }); }, 0); return; }
     if (act === "lend-cancel") { state.lendEdit = null; return render(); }
     if (act === "returned") return guard(() => saveItem({ ...item, lent_to: null, lent_at: null }), `${displayName(item)} is back in the box`);
     if (act === "photo") return pickPhotoFor(id);
@@ -2703,7 +2769,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (await guard(() => removeItem(item))) toast(`Deleted ${displayName(copy)}`, { label: "Undo", run: () => guard(() => restoreItem(copy), "Put back") });
         else render();
       };
-      const el = btn.closest("[data-id]");
+      const el = btn && btn.closest("[data-id]");
       if (reduce || !el || !el.animate) return go();
       // the card tips forward and drops out before it's gone
       return el.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "perspective(900px) rotateX(18deg) translateY(16px) scale(.92)" }], { duration: 260, easing: "cubic-bezier(.5, 0, .75, 0)", fill: "forwards" }).finished.then(go, go);
@@ -2717,7 +2783,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (act === "bought-truck") await truckCharge(cost);
       }, act === "bought-truck" ? `Moved to Owned and added ${money(cost, cost % 1)} to your truck account` : "Moved to Owned");
     }
-  });
+  }
 
   $("list").addEventListener("submit", (e) => {
     const lf = e.target.closest("[data-lend-form]");
@@ -2810,7 +2876,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const mine = !!pf.url || (it && hasMine(it) && !pf.remove);
     $("pfPick").innerHTML = ICON.cam + (mine ? "Change photo" : "Upload photo");
     $("pfRemove").hidden = !mine;
-    $("pfNote").textContent = pf.url ? "Saves when you tap Save. Only you see it." : mine ? "Your photo of this tool. Only you see it." : `Drawing: ${$("pfPrev")._label || "tool"}. Words like flex, deep, impact, set, dead blow, crimper or Phillips in the name pick the right one, and sizes like 11mm or 9/16 print on it. Wrong one? Pick it under Drawing. Add a photo of your own tool to use it instead; only you see your photos.`;
+    $("pfNote").textContent = pf.url ? "Saves when you tap Save. Only you see it." : mine ? "Your photo of this tool. Only you see it." : `Drawing: ${$("pfPrev")._label || "tool"}. Wrong one? Pick another under More details, or add your own photo (only you see it).`;
   }
   // typing a part number or name that says the drive moves a drive category to match (S80A → 1/2" Drive Tools)
   ["i-name", "i-pn"].forEach((id) => $(id).addEventListener("input", () => { const c = catOf({ name: $("i-name").value, part_number: cleanPn($("i-pn").value), category: $("i-cat").value }); if (c && c !== $("i-cat").value) $("i-cat").value = c; }));
@@ -2819,9 +2885,13 @@ document.addEventListener("DOMContentLoaded", () => {
   $("pfFile").addEventListener("change", () => { const f = $("pfFile").files[0]; if (!f) return; clearPf(); pf.file = f; pf.url = URL.createObjectURL(f); renderPf(); });
   $("pfRemove").onclick = () => { const had = !!pf.url; clearPf(); if (!had) pf.remove = true; renderPf(); };
   function updateLookup() { const pn = cleanPn($("i-pn").value); $("lookup").hidden = !pn; if (pn) $("lookup").href = storeLink(pn); }
-  function openForm(item, pn) {
+  // more: open "More details" straight away (the "Add with details & photo" button)
+  function openForm(item, pn, more) {
     state.editing = item; clearPf();
     const list = item ? item.list : state.tab;
+    // editing shows everything; adding starts with just the basics
+    $("frmMore").open = !!item || !!more;
+    $("moreSum").textContent = list === "owned" ? "Category, drawing, list price, condition, where it's kept, notes" : "Category, drawing, list price, notes";
     $("dlgTitle").textContent = item ? "Edit tool" : list === "owned" ? "Add tool" : "Add to wishlist";
     $("l-price").textContent = list === "owned" ? "Snap-on price you paid ($)" : "Your price ($)";
     document.querySelectorAll("[data-only]").forEach((el) => (el.hidden = el.dataset.only !== list));
@@ -2846,7 +2916,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateLookup(); renderPf();
     dlg.showModal();
     routeOpen(dlg, item ? `/tool/${encodeURIComponent(item.id)}/edit` : list === "wishlist" ? "/wishlist/add" : "/add", $("dlgTitle").textContent);
-    setTimeout(() => deskFocus($("i-name")), 0);
+    setTimeout(() => deskFocus($(item || pn ? "i-name" : "i-pn")), 0);
   }
   $("i-pn").addEventListener("input", updateLookup);
   $("cancelBtn").onclick = () => dlg.close();
@@ -2890,7 +2960,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let routeSync = false, routePending = true, routeBacking = false, routeQueue = [], baseTitle = document.title;
   const slug = (s) => String(s || "").toLowerCase().replace(/["']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
   const shareQ = () => (state.shareToken ? `?box=${encodeURIComponent(state.shareToken)}` : "");
-  const tabPath = () => (state.tab === "wishlist" ? "/wishlist" : "/");
+  const tabPath = () => (state.money ? "/money" : state.tab === "wishlist" ? "/wishlist" : "/");
   const here = () => location.pathname.replace(/\/index\.html$/, "/");
   // move to an address; while Back from closing something is still on its way, wait for it first
   function go(path, opts = {}) {
@@ -2921,6 +2991,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const [a, b, c] = seg;
     if (!a) return { tab: "owned" };
     if (a === "wishlist" && !b) return { tab: "wishlist" };
+    if (a === "money" && !b) return { money: true };
     if (a === "wishlist" && b === "add" && !c) return { tab: "wishlist", open: "add" };
     if (a === "add" && !b) return { tab: "owned", open: "add" };
     if (a === "tool" && b) return { open: c === "edit" ? "edit" : "tool", id: b };
@@ -2945,6 +3016,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const tab = item ? item.list : r.tab;
       if (tab && tab !== state.tab) setTab(tab);
+      if (r.money) setMoney(true);
+      else if (r.tab) setMoney(false);
       if (want && !want.open) {
         if (r.open === "tool") openViewer(item.id);
         else if (r.open === "edit") openForm(item);
@@ -2979,7 +3052,7 @@ document.addEventListener("DOMContentLoaded", () => {
     routeBacking = false; routeQueue = [];
     go("/");
     routeSync = true;
-    try { document.querySelectorAll("dialog[open]").forEach((d) => d.close()); if (state.tab !== "owned") setTab("owned"); }
+    try { document.querySelectorAll("dialog[open]").forEach((d) => d.close()); setMoney(false); if (state.tab !== "owned") setTab("owned"); }
     finally { routeSync = false; }
     document.title = baseTitle;
     scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
@@ -2993,9 +3066,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const m = document.createElement("meta"); m.name = "robots"; m.content = "noindex"; document.head.appendChild(m);
     document.title = "A shared toolbox · BoxTally";
   }
-  try { const v = localStorage.getItem(LS + "-view"); if (v === "list" || v === "drawers") state.view = v; } catch {}
+  // Phones start on the compact list (a tool per row) unless you picked a view; bigger screens on cards.
+  let savedView = null;
+  try { savedView = localStorage.getItem(LS + "-view"); } catch {}
+  if (["cards", "list", "drawers"].includes(savedView)) state.view = savedView;
+  else if (matchMedia("(max-width: 620px)").matches) state.view = "list";
   baseTitle = document.title;
   if (readRoute().tab === "wishlist") { routeSync = true; setTab("wishlist"); routeSync = false; }
+  if (readRoute().money) { routeSync = true; setMoney(true); routeSync = false; }
   renderAccount();
   render();
   if (!sb) { if (state.readonly) { loadShared(); return; } state.items = local.read(); state.loaded = true; render(); return; }

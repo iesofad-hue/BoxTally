@@ -2,8 +2,8 @@
 // Keeps a copy of the page, its icons, fonts and the database library, so the site opens with no signal.
 // Your tools come from the copy the page itself saves in the browser; nothing about your box is stored here.
 // Bump VERSION whenever these files change in a way that needs old copies thrown away.
-const VERSION = "boxtally-v38";
-// index.html loads app.css, drawings.js and app.js as "?v=38": keep that number the same as VERSION
+const VERSION = "boxtally-v39";
+// index.html loads app.css, drawings.js and app.js as "?v=" plus the number in VERSION: bump both together
 // (checker/versions.test.mjs checks it), so a new page never runs with an old copy of its code.
 const V = VERSION.split("-v")[1];
 // The 3D files (about 1 MB) aren't fetched up front any more: they're saved the first time a card loads them,

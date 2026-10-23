@@ -775,3 +775,81 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .ins-prem { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
 .ins-print { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 #insDlg .full { grid-column: 1 / -1; }
+
+/* ---------- the viewer's buttons for this tool (Edit, Lend, Bought it, Delete) ---------- */
+.v-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.v-acts[hidden] { display: none; }
+@media (max-width: 620px) {
+  /* phone: the tool's buttons get their own row, then Replace photo and Close */
+  .viewer .v-cap > div:first-child { flex-basis: 100%; }
+  .v-acts { flex: 1 1 auto; }
+  .v-acts .btn.danger { margin-left: auto; }
+  .viewer .v-cap > .actions { flex-basis: 100%; justify-content: flex-end; border-top: 1px solid var(--line); padding-top: 10px; }
+}
+.ri[data-id] { cursor: pointer; }
+
+/* ---------- phones: a bar of sections along the bottom, and Money on its own screen ---------- */
+.bnav { display: none; }
+@media (max-width: 620px) {
+  body:not(.readonly) .bnav {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 4; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -16px rgb(0 0 0 / .35);
+  }
+  .bnav button { font: inherit; font-size: .74rem; font-weight: 600; display: grid; justify-items: center; gap: 3px; padding: 6px 2px; min-height: 52px; border: 0; border-radius: 12px; background: none; color: var(--muted); cursor: pointer; }
+  .bnav button svg { width: 22px; height: 22px; }
+  .bnav button[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+  .bnav .bn-count { font-family: var(--f-mono); font-weight: 500; font-size: .7rem; opacity: .8; }
+  .bnav .bn-add { color: var(--accent-ink); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent) 55%, color-mix(in srgb, var(--accent) 88%, #000)); box-shadow: 0 6px 14px -8px var(--accent); margin-inline: 4px; }
+  body:not(.readonly) { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  body:not(.readonly) .fab { display: none !important; }
+  body:not(.readonly) .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  /* the bar switches lists, so the tabs up top aren't needed */
+  body:not(.readonly) .tabs { display: none; }
+
+  /* Box and Wishlist: just the two totals up top, then the list */
+  body:not(.readonly):not(.screen-money) .dash .truck,
+  body:not(.readonly):not(.screen-money) .dash .watch,
+  body:not(.readonly):not(.screen-money) .stats,
+  body:not(.readonly) .rail-wrap { display: none !important; }
+  body.has-items:not(.readonly) .top p { display: none; }
+  /* the add box: the bar's Add button opens the full form, so only the part number box and Scan stay */
+  body:not(.readonly) #q-more, body:not(.readonly) .quick .hint { display: none; }
+  body:not(.readonly) .quick input { flex: 1 1 100px; }
+  body:not(.readonly) .quick #q-add { order: 2; }
+  body:not(.readonly) .scanbtn:not(:disabled) .scan-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  body:not(.readonly) .scanbtn { padding-inline: 11px; }
+  /* Snap-on's store search is for finding the next tool, so it lives on the wishlist */
+  body:not(.readonly).tab-owned .shop { display: none; }
+  .ri-main { grid-template-columns: 56px minmax(0, 1fr) auto; }
+  .ri .thumb { width: 56px; height: 56px; }
+  body:not(.readonly) .ri .actions { display: none; }
+
+  /* Money: worth, wishlist, truck account, insurance, prices and stats; no list */
+  .screen-money:not(.readonly) .quick, .screen-money:not(.readonly) .shop, .screen-money:not(.readonly) .toolbar,
+  .screen-money:not(.readonly) #list, .screen-money:not(.readonly) .tabs { display: none !important; }
+  .screen-money:not(.readonly) .stats > summary { display: none; }
+}
+
+/* ---------- add/edit form: the basics first, the rest folded under "More details" ---------- */
+.more { margin-top: 14px; border-top: 1px solid var(--line); }
+.more > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; list-style: none; cursor: pointer; padding: 12px 0; }
+.more > summary::-webkit-details-marker { display: none; }
+.more > summary strong { font-weight: 600; }
+.more > summary strong::after { content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 0 3px 9px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .15s; }
+.more[open] > summary strong::after { transform: rotate(-135deg); margin-bottom: -1px; }
+.more[open] > summary .meta-line { display: none; }
+.more > .grid2 { padding-bottom: 4px; align-items: start; }
+
+/* ---------- first visit: the welcome in the dark band ---------- */
+.hero { display: grid; gap: 14px; max-width: 760px; }
+.hero[hidden] { display: none; }
+.hero h2 { font-family: var(--f-display); font-size: clamp(1.7rem, 5vw, 2.4rem); font-weight: 700; line-height: 1.05; text-transform: uppercase; letter-spacing: .01em; }
+.hero ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.hero li { position: relative; padding-left: 22px; color: var(--band-muted); line-height: 1.45; }
+.hero li strong { color: var(--band-fg); font-weight: 600; }
+.hero li::before { content: ""; position: absolute; left: 2px; top: .5em; width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--band-accent); }
+.hero-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.hero-note { color: var(--band-muted); font-size: .85rem; margin: 0; }
+.fresh-start .dash, .fresh-start #localBanner, .fresh-start .top p { display: none !important; }
+@media (max-width: 560px) { .hero-acts > * { flex: 1 1 auto; justify-content: center; } }

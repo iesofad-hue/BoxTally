@@ -14,12 +14,17 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
   page.on("pageerror", (e) => errors.push(e.message));
 
   await page.goto(BASE + "/", { waitUntil: "load" });
-  await page.locator("#localDemo, [data-act=demo]").first().click({ timeout: 15000 }).catch(() => fail(`${name}: no "See a sample box" button`));
+  // an empty box opens on the welcome, not on $0 totals
+  if (!(await page.locator("#hero").isVisible().catch(() => false))) fail(`${name}: no welcome on a first visit`);
+  await page.locator("#heroDemo:visible, #localDemo:visible, [data-act=demo]:visible").first().click({ timeout: 15000 }).catch(() => fail(`${name}: no "See a sample box" button`));
   await page.waitForFunction(() => /\$[1-9]/.test(document.getElementById("d-worth").textContent), null, { timeout: 15000 })
     .catch(() => fail(`${name}: "Box worth today" stayed at $0 after loading the sample box`));
 
-  const cards = await page.locator(".card").count();
-  if (cards < 5) fail(`${name}: only ${cards} tool cards in the sample box`);
+  // phones start on the compact list (.ri rows), bigger screens on cards
+  const TOOLS = "#list .card, #list .ri";
+  const cards = await page.locator(TOOLS).count();
+  if (cards < 5) fail(`${name}: only ${cards} tools showing in the sample box`);
+  if (width < 500 && !(await page.locator("#list .ri").count())) fail(`${name}: phone didn't start on the compact list`);
 
   // no sideways scrolling on a phone
   const extra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -35,7 +40,7 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
   });
 
   // every form opens from its address and fits the screen
-  const id = await page.evaluate(() => document.querySelector(".card[data-id]")?.dataset.id);
+  const id = await page.evaluate(() => document.querySelector("#list [data-id]")?.dataset.id);
   for (const [path, want] of [["/add", "dlg"], ["/wishlist/add", "dlg"], ["/truck", "truckDlg"], ["/insurance", "insDlg"], [`/tool/${id}`, "viewer"], [`/tool/${id}/edit`, "dlg"]]) {
     await visit(path);
     const d = await openDialog();
@@ -47,13 +52,32 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
 
   // adding a tool by part number puts a new card in the box
   await visit("/");
-  const before = await page.locator(".card").count();
+  const before = await page.locator(TOOLS).count();
   await visit("/add");
   await page.fill("#i-pn", "F80");
   await page.click("#saveBtn");
   await page.waitForFunction(() => !document.getElementById("dlg").open, null, { timeout: 8000 }).catch(() => fail(`${name}: the add form didn't close after Save`));
-  const after = await page.locator(".card").count();
-  if (after !== before + 1) fail(`${name}: adding F80 went from ${before} to ${after} cards`);
+  const after = await page.locator(TOOLS).count();
+  if (after !== before + 1) fail(`${name}: adding F80 went from ${before} to ${after} tools`);
+
+  if (width < 500) {
+    // the bar along the bottom: Money is its own screen with no list, and Box brings the list back
+    await page.click("#bnav [data-go=money]");
+    await page.waitForTimeout(300);
+    if (!page.url().endsWith("/money")) fail(`${name}: Money didn't go to /money`);
+    if (await page.locator("#list").isVisible()) fail(`${name}: the list still shows on the Money screen`);
+    if (!(await page.locator("#truckTile").isVisible())) fail(`${name}: no truck account on the Money screen`);
+    await page.click("#bnav [data-go=owned]");
+    await page.waitForTimeout(300);
+    if (!(await page.locator("#list").isVisible())) fail(`${name}: Box didn't bring the list back`);
+    // tapping a row opens the tool, with its Edit and Delete buttons
+    await page.locator("#list .ri h3").first().click();
+    await page.waitForTimeout(400);
+    const d = await openDialog();
+    if (!d || d.id !== "viewer") fail(`${name}: tapping a tool in the list didn't open it`);
+    else if (!(await page.locator("#vActs [data-vact=edit]").isVisible())) fail(`${name}: the opened tool has no Edit button`);
+    await page.keyboard.press("Escape");
+  }
 
   for (const e of errors) fail(`${name}: page error: ${e}`);
   console.log(`${name}: checked`);
