@@ -9,7 +9,7 @@ new Function("window", readFileSync(new URL("../drawings.js", import.meta.url), 
 const html = readFileSync(new URL("../app.js", import.meta.url), "utf8").split("\n");
 const from = html.findIndex((l) => /^  const ART = window\.BX_ART;/.test(l));
 const to = html.findIndex((l, i) => i > from && /^  \/\/ Where each drawing's bottom edge/.test(l));
-const { artOf } = new Function("state", "storeOf", "window", html.slice(from, to).join("\n") + "\nreturn { artOf };")({ catalog: {} }, () => null, window);
+const { artOf, catOf } = new Function("state", "storeOf", "window", html.slice(from, to).join("\n") + "\nreturn { artOf, catOf };")({ catalog: {} }, () => null, window);
 
 // [part number, drawing, drive, size]  (drive/size left out = not checked)
 const CASES = [
@@ -181,6 +181,13 @@ for (const [pn, key, look, label] of LOOKS) {
 // a name that says how it looks wins over the number's guess
 const longNamed = artOf({ part_number: "OEXM130B", name: "Long combination wrench 13mm", category: "Other" });
 if (!longNamed.look?.includes("long")) { bad++; console.log("name should make a long wrench:", longNamed.look); }
+// tools saved without a category ("Other") show the one their part number says
+const CATS = [["MAGMATR", "Shop & Tech"], ["CTINF9010", "Shop & Tech"], ["EESC337W", "Diagnostics"], ["PH3050BR", "Power Tools"], ["CTR827", "Power Tools"],
+  ["YA1005C", "General Hand Tools"], ["BOERM712", "Service Tools - Sets"], ["GSL832", '1/2" Drive Tools'], ["TL936", '1/4" Drive Tools'], ["SN36", '1/2" Drive Tools'],
+  ["87BCF", "Pliers"], ["HBBD56", "Hammers"], ["SAPB200O", "Prybars"], ["SGDMRC11A", "Screwdrivers"], ["ADHW8AO", "Wrenches"], ["PB206B", "Tool Storage"], ["ZZZ", "Other"]];
+for (const [pn, cat] of CATS) { const got = catOf({ part_number: pn, name: "", category: "Other" }); if (got !== cat) { bad++; console.log(`${pn.padEnd(12)} category ${got}, want ${cat}`); } }
+// a category someone picked stays
+if (catOf({ part_number: "MAGMATR", name: "", category: "Tool Storage" }) !== "Tool Storage") { bad++; console.log("picked category should stay"); }
 console.log(bad ? `${bad} of ${CASES.length + LOOKS.length + 6} wrong` : `all ${CASES.length + LOOKS.length + 6} part numbers right`);
 // how much of Snap-on's catalog we can read at all (catalog-part-numbers.tsv: number, catalog description)
 const rows = readFileSync(new URL("./catalog-part-numbers.tsv", import.meta.url), "utf8").trim().split("\n").slice(1);

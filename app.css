@@ -358,6 +358,8 @@ dialog h2 { font-size: 1.6rem; text-transform: uppercase; }
 .ri .open { border: 0; padding: 0; background: none; cursor: zoom-in; border-radius: 9px; }
 .ri h3 { font-family: var(--f-body); font-size: .95rem; font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
 .ri .idrow { margin-top: 2px; font-size: .78rem; gap: 6px; }
+.ri .idrow .kind { color: var(--ink); }
+.ri .idrow .kind + span::before { content: "· "; }
 .ri .chip { font-size: .64rem; padding: 2px 7px; }
 .ri-price { display: grid; justify-items: end; text-align: right; }
 .ri-price .num { font-size: 1.05rem; font-weight: 500; }

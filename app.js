@@ -537,8 +537,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const familyOf = (k) => (POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp"].includes(k) ? "shop" : k.split("-")[0]);
   // The drive category a tool belongs in. A hand-picked drive category that the name or part number
   // contradicts (S80A filed under 3/8" Drive Tools) shows, filters and sorts as the right one.
+  // The category a drawing kind belongs in, for tools saved without one ("Other", the quick add's default).
+  const KIND_CAT = {
+    wrench: "Wrenches", crowfoot: "Wrenches", filter: "Wrenches", lug: "Wrenches", strap: "Wrenches", pipe: "Wrenches",
+    torque: "Torque", screwdriver: "Screwdrivers", nutdriver: "Screwdrivers", pliers: "Pliers", snips: "Pliers",
+    pick: "Awls, Hooks and Picks", pry: "Prybars", punch: "Punches/Chisels", hammer: "Hammers", insulated: "Non-Conductive Composite",
+    general: "General Hand Tools", hexkeys: "General Hand Tools", pickup: "General Hand Tools", hacksaw: "General Hand Tools", wire: "General Hand Tools",
+    extractor: "General Hand Tools", tapdie: "General Hand Tools", drill: "General Hand Tools", puller: "General Hand Tools", seal: "General Hand Tools",
+    trim: "General Hand Tools", brake: "General Hand Tools", ball: "General Hand Tools", spring: "General Hand Tools", flaring: "General Hand Tools",
+    tubing: "General Hand Tools", bolt: "General Hand Tools", hand: "General Hand Tools", clamp: "General Hand Tools", feeler: "General Hand Tools",
+    caliper: "General Hand Tools", micrometer: "General Hand Tools", dial: "General Hand Tools", terminal: "General Hand Tools",
+    set: "Service Tools - Sets", disconnect: "Service Tools - Sets", power: "Power Tools",
+    storage: "Tool Storage", tool: "Tool Storage", bit: "Tool Storage",
+    shop: "Shop & Tech", flashlight: "Shop & Tech", floor: "Shop & Tech", jack: "Shop & Tech", grease: "Shop & Tech", drain: "Shop & Tech", funnel: "Shop & Tech",
+    blowgun: "Shop & Tech", air: "Shop & Tech", tire: "Shop & Tech", vise: "Shop & Tech", solder: "Shop & Tech", jump: "Shop & Tech", stool: "Shop & Tech",
+    diag: "Diagnostics", multimeter: "Diagnostics", testlight: "Diagnostics", battery: "Diagnostics", borescope: "Diagnostics", pressure: "Diagnostics",
+    thermometer: "Diagnostics", stethoscope: "Diagnostics",
+  };
+  const guessedCat = new Map();
+  function guessCat(r) {
+    const k = [r.name, storeOf(r) && storeOf(r).name, r.part_number, r.art].join("|");
+    if (!guessedCat.has(k)) {
+      const a = artOf({ ...r, category: null }), fam = familyOf(a.key);
+      const drive = DRIVE_KINDS.includes(fam) && Object.keys(CAT_DRIVE).find((c) => CAT_DRIVE[c] === a.drive);
+      guessedCat.set(k, drive || (DRIVE_KINDS.includes(fam) ? "General Hand Tools" : KIND_CAT[fam] || "Other"));
+    }
+    return guessedCat.get(k);
+  }
   function catOf(r) {
     const c = r && r.category;
+    // no category picked: go by what the tool is (MAGMATR is a magnetic mat, so Shop & Tech)
+    if (r && (!c || c === "Other")) return guessCat(r);
     if (!CAT_DRIVE[c]) return c;
     const d = saidDrive([r.name, storeOf(r) && storeOf(r).name].filter(Boolean).join(" ")) || pnDrive(r.part_number);
     return d && d !== CAT_DRIVE[c] ? Object.keys(CAT_DRIVE).find((k) => CAT_DRIVE[k] === d) : c;
@@ -1343,6 +1372,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function rowItem(r, i = 0) {
     const owned = r.list === "owned", p = photoOf(r), ch = lastChange(r), dropped = !owned && ch && ch.to < ch.from;
     const pic = `<button class="open" type="button" data-act="view" aria-label="${p ? "View photo of" : "See"} ${esc(displayName(r))}${p ? "" : " up close"}">${thumb(r)}</button>`;
+    // a tool with no name shows its part number as the title, so say what kind of tool it is instead of repeating the number
+    const a = displayName(r) === r.part_number && artOf(r), unnamed = a && a.key !== "other";
     let price, sub;
     if (owned) {
       const now = nowPrice(r), paid = Number(r.price) || 0, v = now ?? paid, diff = now != null && paid ? now - paid : null;
@@ -1358,7 +1389,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const chips = (owned ? qtyChip(r) + (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
       + (dropped ? `<span class="chip tag">Price dropped</span>` : "");
     return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
-      <div><h3>${esc(displayName(r))}</h3><div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(catOf(r) || "Other")}</span>${chips}</div></div>
+      <div><h3>${esc(displayName(r))}</h3><div class="idrow">${unnamed ? `<span class="kind">${esc(a.label)}</span>` : r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(catOf(r) || "Other")}</span>${chips}</div></div>
       <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span></div>
       <div class="actions">${owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       </div>${r.lent_to && !state.readonly ? `<span class="meta-line">Lent to ${esc(r.lent_to)} · ${lentDays(r)} days</span>` : ""}${lendForm(r)}${confirmHtml(r)}</article>`;
