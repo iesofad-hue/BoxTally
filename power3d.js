@@ -92,7 +92,7 @@ function drillBit(len = 40, r = 3) {
 /* ---------- battery packs ---------- */
 const PACKS = {
   "18": { L: 120, W: 80, H: 62, v: "18V", lo: mat.redp, hi: mat.black, btn: mat.black, panel: true, leds: 4 },
-  gen: { L: 108, W: 74, H: 52, v: "18V", lo: mat.black, hi: mat.grey, btn: mat.redp, panel: true, leds: 4 },
+  gen: { L: 108, W: 74, H: 52, v: "", lo: mat.black, hi: mat.grey, btn: mat.redp, panel: true, leds: 4 },
   "14": { L: 96, W: 64, H: 42, v: "14.4V", lo: mat.black, hi: mat.black, btn: mat.redp, panel: false, leds: 3 },
 };
 // slide-on pack, standing on the bench, slides on toward -x; release button and fuel gauge on the front (+x)
@@ -108,7 +108,7 @@ function battery(kind = "18", { top = false } = {}) {
   }
   if (p.lo === p.hi) g.add(at(rbox(L - 4, 3, W - 4, mat.redp, 1.5, 1), 0, yl + 3, 0)); // 14.4V: red stripe
   const lz = W / 2 + (p.panel ? 1.9 : 0.5), lx = p.panel ? -L * 0.1 : L * 0.1;
-  g.add(print(p.v, 40, 15, lx + 4, yl * 0.52, lz), print(p.v, 40, 15, lx + 4, yl * 0.52, -lz, WHITE, "-z"));
+  if (p.v) g.add(print(p.v, 40, 15, lx + 4, yl * 0.52, lz), print(p.v, 40, 15, lx + 4, yl * 0.52, -lz, WHITE, "-z")); // a pack of unknown voltage says none
   g.add(print(kind === "14" ? "Li-ion · 2.5 Ah" : "Li-ion · 5.0 Ah", 30, 5, lx + 4, yl * 0.52 - 10, lz, { color: "#9aa3ad" }));
   for (const s of [1, -1]) { // cooling slots along both sides of the top shell, and rubber bumpers on the corners
     for (let i = 0; i < 5; i++) g.add(at(box(2, hh * 0.38, 1.2, mat.hole, 0.3), -L * 0.3 + i * 5.5, yl - 2 + hh * 0.5, s * ((W - 6) / 2 + 0.1)));
@@ -132,20 +132,46 @@ function battery(kind = "18", { top = false } = {}) {
   }
   return g;
 }
-function batteryModel(kind) { const g = battery(kind, { top: true }); g.userData.yaw = -0.55; return g; }
+function batteryModel(kind) { const g = kind === "14" ? stickPack({ stem: true }) : battery(kind, { top: true }); g.userData.yaw = -0.55; return g; }
+// 14.4V MicroLithium pack (CTB8174): a stem that slides up into the tool's grip (or the back of a ratchet) and a
+// black foot that stays outside, with red release tabs on both sides and the fuel gauge on the front. The tools
+// stand on that small foot, not on a slide-on slab like the 18V line.
+const STICK = { L: 54, W: 46, H: 24, stem: 72 };
+function stickPack({ stem = false } = {}) {
+  const { L, W, H } = STICK, g = group();
+  g.add(at(rbox(L, H, W, mat.black, 7, 4), 0, H / 2, 0));
+  g.add(at(rbox(L - 8, 2.6, W - 8, mat.rubber, 1.2, 0.8), 0, 1.1, 0)); // rubber skid
+  g.add(at(rbox(L - 4, 2.4, W - 4, mat.hole, 1, 0.6), 0, H - 1.6, 0)); // seam under the grip
+  for (const s of [1, -1]) {
+    g.add(at(rbox(16, 10, 3, mat.redp, 2, 1), -2, H * 0.55, s * (W / 2 + 0.4))); // release tab
+    for (let i = 0; i < 3; i++) g.add(at(box(10, 0.8, 1, mat.hole, 0.1), -2, H * 0.55 - 3 + i * 3, s * (W / 2 + 1.9)));
+  }
+  g.add(print("14.4V", 22, 7, L * 0.16, H * 0.4, W / 2 + 0.1, WHITE));
+  g.add(at(rbox(1.4, 6, 18, mat.screen, 2, 0.5), L / 2 - 0.1, H * 0.5, 0), gauge(3, 2, L / 2 + 0.6, H * 0.5));
+  if (stem) { // on its own: the stem that goes into the tool, with its latch and contacts on top
+    const sw = W * 0.62, sl = L * 0.6, sh = STICK.stem;
+    g.add(at(rbox(sl, sh, sw, mat.black, 6, 3), -2, H + sh / 2 - 1, 0));
+    g.add(at(rbox(sl + 1, 3, sw + 1, mat.redp, 1.4, 1), -2, H + 8, 0));
+    for (const s of [1, -1]) g.add(at(rbox(sl * 0.7, sh * 0.6, 1.4, mat.rubber, 2, 0.5), -2, H + sh * 0.55, s * (sw / 2 + 0.3)));
+    for (let i = 0; i < 3; i++) g.add(at(box(2, 0.8, sw * 0.5, mat.brass, 0.2), -10 + i * 8, H + sh - 0.6, 0));
+    g.add(print("Li-ion · 2.5 Ah", 26, 5, -2, H + sh * 0.7, sw / 2 + 1.1, { color: "#9aa3ad" }));
+  }
+  return g;
+}
 
 /* ---------- pistol-grip tools ---------- */
 // body along x on top, grip down to a battery foot (cordless), a hose fitting (air) or a stand (heat gun)
 function pistol(o = {}) {
-  const { len = 150, R = 30, pk = "18", base = pk ? "pack" : "air", nose = "impact", drive = 12.7, body = mat.redp, trim = mat.rubber,
+  const { len = 150, R = 30, pk = "18", base = pk === "14" ? "stick" : pk ? "pack" : "air", nose = "impact", drive = 12.7, body = mat.redp, trim = mat.rubber,
     gearM = mat.satin, gripH = 92, gripT = 34, gripW = 46, rake = 6, boot = false, ledRing = false, tag = "", tag2 = "", px = 8,
     rearCap = trim, sx = 1.05, sz = 0.9, mode = false, regulator = false, xr = -R * 1.55, hammer = false, pn = "" } = o;
   const P = pk ? PACKS[pk] : null, g = group();
   let y0 = 0;
   if (base === "pack") { g.add(at(battery(pk), px, 0, 0)); y0 = P.H; }
+  if (base === "stick") { g.add(at(stickPack(), rake * 0.4, 0, 0)); y0 = STICK.H; }
   if (base === "air") y0 = 50;
   if (base === "stand") y0 = 0;
-  const footH = base === "pack" ? 15 : base === "stand" ? 20 : 0;
+  const footH = base === "pack" ? 15 : base === "stand" ? 20 : base === "stick" ? 4 : 0;
   const gB = y0 + footH, yb = gB + gripH + R, xf = xr + len, hw = gripW / 2;
   const zAt = (dy) => R * sz * Math.sqrt(Math.max(0, 1 - (dy / (R * sx)) ** 2)); // half-width of the body at height dy
   // grip, with a rubber overmold on the back half
@@ -347,7 +373,6 @@ function cratchet(kind = "gen", dr = "", { neck = 0, die = false, fast = false, 
     const pb = rbox(76, 36, 44, mat.black, 9, 6); b.add(at(pb, x1 + 30, 0, 0), at(rbox(70, 4, 46, mat.grey, 2, 1.4), x1 + 31, 10, 0));
     b.add(gauge(4, 3, x1 + 44, 18.4, 5, 1.3, "y"), at(rbox(10, 3, 14, mat.redp, 1.4, 1), x1 + 18, 18.2, 0));
     for (const s of [1, -1]) b.add(at(rbox(14, 9, 3, mat.redp, 2, 1), x1 + 8, -2, s * 22.4));
-    b.add(print("18V", 22, 9, x1 + 40, -2, 22.6));
     back = [x1 + 64, -18];
   } else if (kind === "14") { // stick pack inside the handle: black end cap with two release tabs
     b.add(xturn([[R * 0.9, x1 - 2], [R * 0.96, x1 + 2], [R * 0.96, x1 + 30], [R * 0.82, x1 + 37], [0.1, x1 + 38]], mat.black, { segs: 40 }));
@@ -477,7 +502,11 @@ function rightAngle(o = {}) {
   }
   // rear: speed dial for the polisher, then a battery foot or a cord
   if (pad) { g.add(at(zturn([[0.1, 0], [10, 0], [10, 6], [0.1, 6]], mat.black, { flutes: 14, flute: 0.06 }), xe + 20, yb + R * 0.7, -3)); g.children.at(-1).rotation.x = PI / 2 - 0.6; }
-  if (pk) {
+  if (pk === "14") { // stick pack slid into the back end: black cap with red release tabs
+    g.add(at(xturn([[R * 0.9, 2], [R * 0.96, -2], [R * 0.96, -30], [R * 0.82, -37], [0.1, -38]], mat.black, { segs: 40 }), xe, yb, 0));
+    for (const s of [1, -1]) g.add(at(rbox(14, 8, 4, mat.redp, 2, 1.2), xe - 14, yb, s * R * 0.95));
+    g.add(at(band(R * 0.97, -24, -22, mat.redp), xe, yb, 0), print("14.4V", 20, 6, xe - 14, yb + R * 0.55, R * 0.82 + 0.3));
+  } else if (pk) {
     const P = PACKS[pk], fx = xe - P.L / 2 + 30;
     g.add(ext(rp([[xe + 30, yb - R * 0.5], [xe + 18, P.H - 1], [fx - P.L / 2 + 2, P.H - 1], [fx - P.L / 2 + 5, P.H + 12], [xe - 14, yb + R * 0.72], [xe + 40, yb + R * 0.9]], [6, 6, 3, 8, 18, 12]), R * 2, 7, body));
     g.add(at(rbox(P.L - 8, 3, P.W - 9, mat.rubber, 1.4, 1), fx, P.H + 1, 0));
@@ -652,6 +681,7 @@ export const MODELS = {
   "cl18-ratchet": (o = {}) => cratchet("18", o.drive, neck3d(o)),
   "cl18-grinder": () => rightAngle({ pk: "18", tag: "18V" }),
   "cl18-cutoff": () => rightAngle({ pk: "18", cut: true, disc: 38, R: 22, len: 150, handle: false, tag: "18V", yb0: 46 }),
+  "cl14-polisher": () => rightAngle({ pk: "14", pad: true, bail: true, R: 24, len: 150, tag: "14.4V" }),
   "cl14-saw": (o = {}) => pistol({ pn: o.pn, pk: "14", nose: "saw", len: 220, R: 26, xr: -40, px: -4, tag: "14.4V", gripH: 84, gripT: 31, gripW: 42 }),
   "air-bit": () => airBits(),
   "cl18-saw": (o = {}) => { const s = pistol({ pn: o.pn, pk: "18", nose: "saw", len: 250, R: 30, xr: -46, px: -6, tag: "18V", gripH: 92, gripT: 35 }); return s; },

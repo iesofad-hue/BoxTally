@@ -466,9 +466,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const VARIANT_DEFAULT = { diag: "diag-tablet", torque: "torque-click" };
   // Cordless tools get a drawing for their battery platform. The name says it (14.4 V, 18V) or, failing
   // that, the part number: 14.4V tools carry 3-digit 7xx/8xx numbers (CT761, CTR814, CT861, CTR881), 18V tools
-  // 88xx/90xx/91xx (CT8850, CT9075, CDR9015), and packs CTB817x (14.4V) or CTB185/CTB818x (18V).
+  // 88xx/90xx/91xx (CT8850, CT9075, CDR9015), and packs CTB817x (14.4V) or CTB185/CTB818x (18V). The right-angle
+  // mini drills (CDRR2005) are 14.4V too.
   const CORDLESS = {
-    14: { "power-ratchet": "cl14-ratchet", power: "cl14-impact", "power-stubby": "cl14-impact", "power-12": "cl14-impact", "power-driver": "cl14-driver", "power-drill": "cl14-drill", "grinder-die": "cl14-die", battery: "cl14-battery", "cl18-saw": "cl14-saw" },
+    14: { "power-ratchet": "cl14-ratchet", power: "cl14-impact", "power-stubby": "cl14-impact", "power-12": "cl14-impact", "power-driver": "cl14-driver", "power-drill": "cl14-drill", "grinder-die": "cl14-die", battery: "cl14-battery", "cl18-saw": "cl14-saw", polisher: "cl14-polisher" },
     18: { "power-ratchet": "cl18-ratchet", power: "cl18-impact", "power-stubby": "cl18-impact", "power-12": "cl18-impact", "power-driver": "cl18-driver", "power-drill": "cl18-drill", battery: "cl18-battery", "grinder-angle": "cl18-grinder", cutoff: "cl18-cutoff" },
   };
   function voltOf(text, pn) {
@@ -477,6 +478,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (/^CTB817\d/.test(pn)) return 14;
     if (/^CTB(818\d|18\d)/.test(pn)) return 18;
     if (/^CTB[678]17\d/.test(pn)) return 14;
+    if (/^CDRR2005/.test(pn)) return 14;
     if (/^C[A-Z]{0,4}(7\d\d|8\d\d)(?!\d)/.test(pn)) return 14;
     if (/^C[A-Z]{0,4}(88\d\d|9[01]\d\d)(?!\d)/.test(pn)) return 18;
     return null;
@@ -503,7 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "pliers-strip": "Wire strippers", "pliers-crimp": "Crimpers", "pliers-hose": "Hose clamp pliers", tapdie: "Tap & die", file: "File", scraper: "Gasket scraper", tape: "Tape measure", knife: "Utility knife",
     "cl14-ratchet": "14.4V cordless ratchet", "cl14-impact": "14.4V cordless impact", "cl14-driver": "14.4V impact driver", "cl14-drill": "14.4V drill/driver", "cl14-die": "14.4V die grinder", "cl14-battery": "14.4V battery",
     "cl18-impact": "18V cordless impact", "cl18-driver": "18V impact driver", "cl18-drill": "18V drill/driver", "cl18-ratchet": "18V cordless ratchet",
-    "cl18-grinder": "18V angle grinder", "cl18-cutoff": "18V cut-off tool", "cl18-saw": "18V reciprocating saw", "cl14-saw": "14.4V reciprocating saw", "cl18-battery": "18V battery",
+    "cl18-grinder": "18V angle grinder", "cl18-cutoff": "18V cut-off tool", "cl18-saw": "18V reciprocating saw", "cl14-saw": "14.4V reciprocating saw", "cl14-polisher": "14.4V polisher", "cl18-battery": "18V battery",
     "floor-jack": "Floor jack", "jack-stand": "Jack stands", "grease-gun": "Grease gun", "drain-pan": "Oil drain pan", funnel: "Funnel", blowgun: "Blow gun", "air-hose": "Air hose",
     "tire-gauge": "Tire pressure gauge", "tire-inflator": "Tire inflator", "tire-plug": "Tire plug kit", vise: "Bench vise", clamp: "C-clamp",
     caliper: "Digital caliper", micrometer: "Micrometer", feeler: "Feeler gauge", "dial-indicator": "Dial indicator", "pressure-gauge": "Pressure tester", thermometer: "Infrared thermometer", stethoscope: "Mechanic's stethoscope",
@@ -873,9 +875,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   ART["wrench-speed"] = wrenchArt("speed", [], "13 mm");
   ART["wrench-rbox"] = wrenchArt("rbox", [], "13 × 15 mm");
-  // 14.4V drill: the 18V drill drawing with the smaller pack's print. 14.4V die grinder (CGRS861): the 14.4V ratchet's
-  // body with a collet nut and a carbide burr where the head was.
-  ART["cl14-drill"] = ART["cl18-drill"].replace('font-size="7" text-anchor="middle">18V', 'font-size="5.4" text-anchor="middle">14.4V').replace('font-size="6.4" text-anchor="middle">18V', 'font-size="5.6" text-anchor="middle">14.4V');
+  // 14.4V tools take a stick pack that slides up into the grip, so they stand on a small black foot with red
+  // release tabs instead of the 18V line's wide slide-on slab. cl14Foot() swaps the slab for that foot.
+  const cl14Foot = (svg, from, to, foot) => { const a = svg.indexOf(from), b = svg.indexOf(to, a); return a < 0 || b < 0 ? svg : svg.slice(0, a) + foot + svg.slice(b + to.length); };
+  const STICK_FOOT = (x, y) => `<rect class="d" x="${x}" y="${y}" width="32" height="15" rx="4"/><rect class="sh" x="${x + 3}" y="${y + 2.6}" width="14" height="1.2" rx=".6" opacity=".3"/>`
+    + `<rect class="g" x="${x - 1.6}" y="${y + 4.6}" width="3.2" height="6.4" rx="1.2"/><rect class="g" x="${x + 30.4}" y="${y + 4.6}" width="3.2" height="6.4" rx="1.2"/>`
+    + `<text class="txw" x="${x + 16}" y="${y + 11.4}" font-size="4.8" text-anchor="middle">14.4V</text>`;
+  for (const k of ["cl14-impact", "cl14-driver"]) ART[k] = cl14Foot(ART[k], '<path class="g" d="M72 70 H124 V74 H72 Z"/>', '<rect class="k" x="115" y="78" width="4.4" height="3" rx="1"/>', STICK_FOOT(85, 70));
+  ART["cl14-saw"] = cl14Foot(ART["cl14-saw"], '<path class="g" d="M104 66 H154 V70 H104 Z"/>', '<rect class="k" x="145" y="74" width="4.4" height="3" rx="1"/>', STICK_FOOT(110, 64));
+  // 14.4V drill: the 14.4V impact's body and foot with the 18V drill's chuck and bit, scaled to the slimmer body
+  { const d = ART["cl18-drill"], c = d.slice(d.indexOf('<rect class="k" x="37" y="16.0"')), b = ART["cl14-impact"];
+    ART["cl14-drill"] = b.slice(0, b.indexOf('<path class="s" d="M51 24.0')).replace('>3/8</text>', '>14.4V</text>') + `<g transform="translate(51 34) scale(.84) translate(-43 -29)">${c}</g>`; }
+  // 14.4V pack on its own: the stem that goes into the tool, standing on its foot
+  ART["cl14-battery"] = '<rect class="d" x="64" y="14" width="30" height="50" rx="4"/><rect class="g" x="63" y="50" width="32" height="3.4" rx="1.4"/><path class="kn" opacity=".5" d="M69 20 V46 M89 20 V46"/>'
+    + '<rect class="pit" x="70" y="15.6" width="4" height="2" rx=".6"/><rect class="pit" x="77" y="15.6" width="4" height="2" rx=".6"/><rect class="pit" x="84" y="15.6" width="4" height="2" rx=".6"/>'
+    + '<rect class="d" x="50" y="60" width="58" height="26" rx="6"/><rect class="sh" x="55" y="63" width="30" height="1.6" rx=".8" opacity=".4"/><rect class="g" x="46.6" y="66" width="4.4" height="12" rx="1.6"/><rect class="g" x="107" y="66" width="4.4" height="12" rx="1.6"/>'
+    + '<text class="txw" x="74" y="76" font-size="8" text-anchor="middle">14.4V</text><text class="txw" x="74" y="82.4" font-size="3.6" text-anchor="middle">LITHIUM 2.5 Ah</text>'
+    + '<circle class="led" cx="94" cy="74" r="1.5"/><circle class="led" cx="98.6" cy="74" r="1.5"/><circle class="ledoff" cx="103.2" cy="74" r="1.5"/>';
+  // 14.4V polisher: the stick pack's black cap in the back end instead of a red slide-on pack
+  ART["cl14-polisher"] = ART.polisher.replace('<path class="g" d="M120 34 H146 Q152 34 152 40 V50 Q152 56 146 56 H120 Z"/>',
+    '<path class="k" d="M120 34 H146 Q152 34 152 40 V50 Q152 56 146 56 H120 Z"/><rect class="g" x="128" y="33" width="3" height="24" rx="1"/><text class="txw" x="141" y="47" font-size="4.6" text-anchor="middle">14.4V</text>');
   ART["cl14-die"] = ART["cl14-ratchet"].slice(0, ART["cl14-ratchet"].indexOf('<text class="txw" x="64"'))
     + '<path class="s" d="M38 44 L56 41 V59 L38 56 Z"/><rect class="sh" x="40" y="44.6" width="13" height="1.5" rx=".75"/><path class="s" d="M39.4 50 L35.7 56.4 L28.3 56.4 L24.6 50 L28.3 43.6 L35.7 43.6 Z"/>'
     + '<rect class="s" x="12" y="48.6" width="14" height="2.8" rx="1"/><ellipse class="s" cx="13" cy="50" rx="5.4" ry="4.4"/><path class="nl" d="M9.4 47.6 L16.4 52.4 M9.4 52.4 L16.4 47.6"/>';
