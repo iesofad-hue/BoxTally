@@ -1536,6 +1536,17 @@ document.addEventListener("DOMContentLoaded", () => {
       return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}">${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
   }
 
+  // A "?" beside a panel's title opens a short, plain explanation of what the panel shows.
+  // Which ones are open is remembered, so they stay open when the panels redraw.
+  const helpOpen = new Set();
+  const phead = (title, key, text) => `<div class="phead"><h2>${title}</h2><button class="qmark" type="button" data-help="${key}" aria-expanded="${helpOpen.has(key)}" aria-controls="help-${key}" aria-label="What's this?">?</button></div><p class="explain" id="help-${key}"${helpOpen.has(key) ? "" : " hidden"}>${text}</p>`;
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-help]"); if (!b) return;
+    const k = b.dataset.help, on = !helpOpen.has(k);
+    on ? helpOpen.add(k) : helpOpen.delete(k);
+    b.setAttribute("aria-expanded", on);
+    const p = document.getElementById("help-" + k); if (p) p.hidden = !on;
+  });
   function activity() {
     const ev = [], nm = (r) => `<strong>${esc(displayName(r))}</strong>`;
     state.items.forEach((r) => {
@@ -1554,7 +1565,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ev = activity();
     const icon = (e) => { const p = e.r && ["add", "photo", "wish"].includes(e.kind) ? photoOf(e.r) : null; return p ? `<span class="ic img">${imgTag(p, "")}</span>` : `<span class="ic ${e.kind}">${{ add: ICON.add, wish: ICON.star, down: ICON.down, up: ICON.up, photo: ICON.cam, check: ICON.check }[e.kind]}</span>`; };
     if (!ev.length) return "";
-    return `<div class="panel feed"><h2><span class="live" aria-hidden="true"></span>Recent activity</h2><ol>${ev.map((e) => `<li>${icon(e)}<span class="what">${e.html}</span><span class="when">${rel(e.t)}</span></li>`).join("")}</ol></div>`;
+    return `<div class="panel feed">${phead(`<span class="live" aria-hidden="true"></span>Recent activity`, "feed", "The latest things that happened in your box: tools you added or bought, new photos, and eBay price changes on your tools.")}<ol>${ev.map((e) => `<li>${icon(e)}<span class="what">${e.html}</span><span class="when">${rel(e.t)}</span></li>`).join("")}</ol></div>`;
   }
   function renderInsights() {
     const box = $("insights");
@@ -1564,11 +1575,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]), max = entries.length ? entries[0][1] : 0;
       const warranty = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
       const html = feedHtml()
-        + (entries.length ? `<div class="panel"><h2>Worth by department</h2>${entries.map(([c, v]) => `<div class="cat"><div class="line"><span>${esc(c)}</span><span class="num">${money(Math.round(v))}</span></div><div class="bar"><span style="width:${max ? Math.max(3, (v / max) * 100) : 0}%"></span></div></div>`).join("")}</div>` : "")
+        + (entries.length ? `<div class="panel">${phead("Worth by department", "dept", "What your tools are worth today, added up by type of tool. Each tool counts at its Snap-on list price when there is one, otherwise its eBay price, otherwise what you paid.")}${entries.map(([c, v]) => `<div class="cat"><div class="line"><span>${esc(c)}</span><span class="num">${money(Math.round(v))}</span></div><div class="bar"><span style="width:${max ? Math.max(3, (v / max) * 100) : 0}%"></span></div></div>`).join("")}</div>` : "")
         + valueChartHtml()
         + runsHtml()
         + yearsHtml()
-        + (warranty.length ? `<div class="panel"><h2>Warranty pile</h2>${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}${r.part_number ? ` <span class="pn">${esc(r.part_number)}</span>` : ""}</span>${state.readonly ? "" : `<button class="btn small ghost" type="button" data-swap="${esc(r.id)}">Swapped</button>`}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span><div class="warr-actions"><button class="btn small primary" type="button" data-warr="share">${navigator.share ? "Send list" : "Copy list"}</button><button class="btn small" type="button" data-warr="print">Print</button></div></div>` : "")
+        + (warranty.length ? `<div class="panel">${phead("Warranty pile", "warranty", "Snap-on hand tools have a lifetime warranty: take a broken one to the truck and they swap it for a new one. Tap <strong>Broken</strong> on a tool to put it here, send the list to your dealer, then tap <strong>Swapped</strong> when you get the new one.")}${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}${r.part_number ? ` <span class="pn">${esc(r.part_number)}</span>` : ""}</span>${state.readonly ? "" : `<button class="btn small ghost" type="button" data-swap="${esc(r.id)}">Swapped</button>`}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span><div class="warr-actions"><button class="btn small primary" type="button" data-warr="share">${navigator.share ? "Send list" : "Copy list"}</button><button class="btn small" type="button" data-warr="print">Print</button></div></div>` : "")
         + whoHasHtml();
       const gaps = sizeRuns().reduce((n, g) => n + g.miss.length, 0);
       box.innerHTML = html; showStats(html, [warranty.length ? `${warranty.length} need${warranty.length === 1 ? "s" : ""} warranty` : "", gaps ? `${gaps} size${gaps === 1 ? "" : "s"} missing` : "", entries.length ? `${entries.length} department${entries.length === 1 ? "" : "s"}` : ""]);
@@ -1577,9 +1588,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const next = wl.filter((r) => wishCost(r) > 0).sort((a, b) => PRIS.indexOf(a.priority || "Want") - PRIS.indexOf(b.priority || "Want") || (wishCost(a) - (Number(a.saved) || 0)) - (wishCost(b) - (Number(b.saved) || 0)))[0];
       const pr = PRIS.map((p) => [p, wl.filter((r) => (r.priority || "Want") === p).reduce((s, r) => s + wishCost(r), 0)]);
       const html = feedHtml()
-        + (next ? `<div class="panel"><h2>Next up</h2><div class="nextup">${thumb(next)}<div class="cat"><strong>${esc(displayName(next))}</strong><span class="meta-line">${money(Math.max(wishCost(next) - (Number(next.saved) || 0), 0))} left of ${money(wishCost(next))}</span><div class="bar"><span style="width:${Math.min(100, Math.round(((Number(next.saved) || 0) / wishCost(next)) * 100))}%"></span></div></div></div></div>` : "")
+        + (next ? `<div class="panel">${phead("Next up", "next", "The wishlist tool to get next: your highest priority, with the least left to save. The bar shows how much you've saved toward it so far.")}<div class="nextup">${thumb(next)}<div class="cat"><strong>${esc(displayName(next))}</strong><span class="meta-line">${money(Math.max(wishCost(next) - (Number(next.saved) || 0), 0))} left of ${money(wishCost(next))}</span><div class="bar"><span style="width:${Math.min(100, Math.round(((Number(next.saved) || 0) / wishCost(next)) * 100))}%"></span></div></div></div></div>` : "")
         + whenHtml()
-        + (wl.length ? `<div class="panel"><h2>By priority</h2>${pr.map(([p, v]) => `<div class="cat"><div class="line"><span>${p}</span><span class="num">${money(Math.round(v))}</span></div></div>`).join("")}</div>` : "");
+        + (wl.length ? `<div class="panel">${phead("By priority", "priority", "What your wishlist adds up to for each priority: Need, Want and Someday.")}${pr.map(([p, v]) => `<div class="cat"><div class="line"><span>${p}</span><span class="num">${money(Math.round(v))}</span></div></div>`).join("")}</div>` : "");
       box.innerHTML = html; showStats(html, [next ? `Next up: ${displayName(next)}` : "", `${wl.length} on the wishlist`]);
     }
   }
@@ -1616,7 +1627,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const line = pts.map((p, i) => `${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
     const first = pts[0], last = pts[pts.length - 1], diff = Math.round(last.v - first.v);
     const fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    return `<div class="panel"><h2>Box value over time</h2><svg class="valchart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Box value went from ${money(Math.round(first.v))} to ${money(Math.round(last.v))}"><polygon class="area" points="0,${H} ${line} ${W},${H}"/><polyline class="ln" points="${line}"/></svg><div class="valrow"><span>${fmt(first.d)} · ${money(Math.round(first.v))}</span><span>${diff ? `<span class="delta ${diff > 0 ? "up" : "down"}">${signed(diff)}</span> · ` : ""}today ${money(Math.round(last.v))}</span></div><span class="meta-line">Uses eBay prices; tools without one count at what you paid.</span></div>`;
+    return `<div class="panel">${phead("Box value over time", "value", "How the total worth of your box has moved, using each tool's eBay price history. Tools without an eBay price count at what you paid.")}<svg class="valchart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Box value went from ${money(Math.round(first.v))} to ${money(Math.round(last.v))}"><polygon class="area" points="0,${H} ${line} ${W},${H}"/><polyline class="ln" points="${line}"/></svg><div class="valrow"><span>${fmt(first.d)} · ${money(Math.round(first.v))}</span><span>${diff ? `<span class="delta ${diff > 0 ? "up" : "down"}">${signed(diff)}</span> · ` : ""}today ${money(Math.round(last.v))}</span></div><span class="meta-line">Uses eBay prices; tools without one count at what you paid.</span></div>`;
   }
 
   /* ---------- sizes missing from a run ----------
@@ -1654,7 +1665,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function runsHtml() {
     const runs = sizeRuns();
     if (!runs.length) return "";
-    return `<div class="panel runs"><h2>Gaps in your sets</h2>${runs.map((g) => {
+    return `<div class="panel runs">${phead("Gaps in your sets", "gaps", "Looks at single sockets and wrenches you own from the same line (the same letters in the part number) and finds the sizes missing in between. For example, if you own FSM10, FSM12 and FSM13, then FSM11 is missing. Tap the button to put the missing ones on your wishlist.")}${runs.map((g) => {
       const what = `${g.drive ? g.drive + " " : ""}${g.metric ? "metric " : ""}${/^wrench/.test(g.key) ? "wrenches" : RUN_KIND[g.key] || "sockets"}`;
       return `<div class="run"><div class="line"><span><span class="pn">${esc(g.pre)}…${esc(g.style + g.suf)}</span> ${esc(what)}</span><span class="num">${g.all.length - g.miss.length} of ${g.all.length}</span></div>
         <div class="sizes">${g.all.map((x) => `<span class="sz${x.have ? " have" : ""}" title="${esc(x.pn)}${x.have ? "" : " missing"}">${esc(x.label)}</span>`).join("")}</div>
@@ -1674,7 +1685,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const years = Object.keys(by).sort().reverse();
     if (!years.length) return "";
     const anyPaid = years.some((y) => by[y].paid > 0), val = (b) => (anyPaid ? b.paid : b.worth), max = Math.max(1, ...years.map((y) => val(by[y])));
-    return `<div class="panel"><h2>Your box by year</h2>${years.map((y) => { const b = by[y];
+    return `<div class="panel">${phead("Your box by year", "years", "Your tools grouped by the year you bought them, with what you paid that year and what they're worth now. Handy at tax time. If you haven't entered what you paid, it shows what they're worth today instead.")}${years.map((y) => { const b = by[y];
       return `<div class="cat"><div class="line"><span>${y} · ${b.n} tool${b.n === 1 ? "" : "s"}</span><span class="num">${anyPaid ? `${money(Math.round(b.paid))} spent` : `${money(Math.round(b.worth))} today`}</span></div><div class="bar"><span style="width:${Math.max(3, (val(b) / max) * 100)}%"></span></div>${anyPaid && b.worth ? `<span class="meta-line">Worth ${money(Math.round(b.worth))} today</span>` : ""}</div>`; }).join("")}
       <span class="meta-line">${anyPaid ? "Handy at tax time if you write off your tools." : "Add what you paid to a tool to see what you spent each year."}</span></div>`;
   }
@@ -1696,7 +1707,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function whenHtml() {
     const w = whenPlan(); if (!w || state.readonly) return "";
     const ev = PAY_EVERY[w.every];
-    return `<div class="panel plan-ahead"><h2>When you can get it</h2><span class="meta-line">${w.owing ? `Your truck account is paid off ${fmtDate(w.t.end, false)}. After that, one tool at a time, each paid off in ${w.weeks} weeks:` : `One tool at a time, each paid off in ${w.weeks} weeks:`}</span>
+    return `<div class="panel plan-ahead">${phead("When you can get it", "when", "If you buy your wishlist off the truck one tool at a time, this shows when each one could start and when it would be paid off, always within your 8 to 10 weeks. It starts once what you owe now is paid off, uses your truck account's payment and interest, and goes Need first, then Want. Someday tools are left out.")}<span class="meta-line">${w.owing ? `Your truck account is paid off ${fmtDate(w.t.end, false)}. After that, one tool at a time, each paid off in ${w.weeks} weeks:` : `One tool at a time, each paid off in ${w.weeks} weeks:`}</span>
       <ol>${w.rows.map(({ r, p }) => `<li>${thumb(r)}<span class="what"><strong>${esc(displayName(r))}</strong><span class="meta-line">From ${fmtDate(p.start, false)} · ${money(p.pay, true)} ${ev.label}</span></span><span class="when-end">done ${fmtDate(p.end, false)}</span></li>`).join("")}</ol>
       ${w.t ? "" : `<span class="meta-line">Set up your truck account to use your own pay day and interest.</span>`}</div>`;
   }
@@ -1923,7 +1934,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const del = `<button class="btn small ghost danger" type="button" data-vact="del">Delete</button>`, edit = `<button class="btn small" type="button" data-vact="edit">Edit</button>`;
     const acts = state.readonly ? "" : r.list === "owned"
       ? (r.lent_to ? `<button class="btn small" type="button" data-vact="returned">Got it back</button>` : `<button class="btn small" type="button" data-vact="lend">Lend</button>`)
-        + (r.condition === "Needs warranty" ? `<button class="btn small" type="button" data-vact="swapped">Swapped</button>` : `<button class="btn small" type="button" data-vact="broken">Broken</button>`) + edit + del
+        + (r.condition === "Needs warranty" ? `<button class="btn small" type="button" data-vact="swapped" title="You got the new one: take it off the warranty list">Swapped</button>` : `<button class="btn small" type="button" data-vact="broken" title="Put it on your warranty list to swap on the truck">Broken</button>`) + edit + del
       : `<button class="btn small" type="button" data-vact="bought">Bought it</button>` + edit + del;
     $("vActs").innerHTML = acts; $("vActs").hidden = !acts;
     viewer.showModal();
@@ -2038,7 +2049,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const by = new Map();
     lent.forEach((r) => { const k = r.lent_to.trim(); if (!by.has(k)) by.set(k, []); by.get(k).push(r); });
     const people = [...by.entries()].sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
-    return `<div class="panel"><h2>Who has my stuff</h2>${people.map(([who, rs]) => `<div class="cat"><div class="line"><strong>${esc(who)}</strong><span class="num">${rs.length} tool${rs.length === 1 ? "" : "s"}</span></div>${rs.map((r) => `<span class="meta-line">${esc(displayName(r))} · ${lentDays(r)} day${lentDays(r) === 1 ? "" : "s"}</span>`).join("")}</div>`).join("")}</div>`;
+    return `<div class="panel">${phead("Who has my stuff", "lent", "Tools you've lent out and who has them. Tap <strong>Lend</strong> on a tool to add it here, and <strong>Got it back</strong> when it comes home.")}${people.map(([who, rs]) => `<div class="cat"><div class="line"><strong>${esc(who)}</strong><span class="num">${rs.length} tool${rs.length === 1 ? "" : "s"}</span></div>${rs.map((r) => `<span class="meta-line">${esc(displayName(r))} · ${lentDays(r)} day${lentDays(r) === 1 ? "" : "s"}</span>`).join("")}</div>`).join("")}</div>`;
   }
 
   /* ---------- truck account: balance, pay interval, interest, 8–10 week payoff ---------- */

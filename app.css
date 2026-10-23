@@ -997,3 +997,12 @@ dialog::backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; backgro
 /* the same for the little labels over each card's picture: many cards × blur made phones stutter on scroll */
 .photo .src, .photo .snap { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(18 24 32 / .74); }
 .photo .over .chip[class="chip"] { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(255 255 255 / .9); }
+
+/* ---------- "What's this?" on each panel ---------- */
+.phead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.qmark { flex: none; width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 700 .8rem var(--f-body); cursor: pointer; display: grid; place-items: center; position: relative; transition: background-color .15s, color .15s, border-color .15s; }
+.qmark::before { content: ""; position: absolute; inset: -9px; } /* a finger-sized tap area around the small circle */
+.qmark:hover, .qmark[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.explain { margin: 0; font-size: .84rem; line-height: 1.5; color: var(--muted); background: var(--sunk); border-radius: 10px; padding: 10px 12px; }
+.explain strong { color: var(--fg); }
+@media (prefers-reduced-motion: no-preference) { .explain:not([hidden]) { animation: rise .22s var(--ease); } }
