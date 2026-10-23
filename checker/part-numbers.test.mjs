@@ -3,10 +3,13 @@
 // Every number below is a real one from Snap-on's catalogs, with what the catalog says it is.
 import { readFileSync } from "node:fs";
 
-const html = readFileSync(new URL("../index.html", import.meta.url), "utf8").split("\n");
-const from = html.findIndex((l) => /^  const ART = \{/.test(l));
+// the drawings (drawings.js) set window.BX_ART; app.js reads them from there
+const window = {};
+new Function("window", readFileSync(new URL("../drawings.js", import.meta.url), "utf8"))(window);
+const html = readFileSync(new URL("../app.js", import.meta.url), "utf8").split("\n");
+const from = html.findIndex((l) => /^  const ART = window\.BX_ART;/.test(l));
 const to = html.findIndex((l, i) => i > from && /^  \/\/ Where each drawing's bottom edge/.test(l));
-const { artOf } = new Function("state", "storeOf", html.slice(from, to).join("\n") + "\nreturn { artOf };")({ catalog: {} }, () => null);
+const { artOf } = new Function("state", "storeOf", "window", html.slice(from, to).join("\n") + "\nreturn { artOf };")({ catalog: {} }, () => null, window);
 
 // [part number, drawing, drive, size]  (drive/size left out = not checked)
 const CASES = [

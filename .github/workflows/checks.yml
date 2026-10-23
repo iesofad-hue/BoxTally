@@ -22,6 +22,8 @@ jobs:
           node-version: 22
       - name: Part numbers
         run: node checker/part-numbers.test.mjs
+      - name: File versions
+        run: node checker/versions.test.mjs
       - name: eBay matching
         run: node checker/ebay-match.test.mjs
       - name: Install a hidden browser

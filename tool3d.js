@@ -53,7 +53,7 @@ export const keys = () => Object.keys(MODELS);
 // The drive ('1/2"') sets a ratchet's square, length and stamp, a socket's drive hole and a cordless impact's anvil.
 // A ratchet also carries its part number stamped on the handle, like the real one.
 // The look ("long+ind", "rev", "c-gm") is how this one differs inside its kind: a long wrench, a reversible
-// ratcheting one, the black industrial finish, a gunmetal cordless tool. See lookOf() in index.html.
+// ratcheting one, the black industrial finish, a gunmetal cordless tool. See lookOf() in app.js.
 function opts(key, size, drive, pn, look = "") {
   const o = { look: String(look || "").split("+").filter(Boolean) }; const d = String(drive || "").replace(/"/g, ""); if (DRIVES[d]) o.drive = d;
   if (/^[A-Z0-9-]{2,14}$/.test(pn || "")) o.pn = pn;

@@ -119,7 +119,7 @@ function knurling() {
 // (FH80, FHK80...) get the red dipped grip with molded ribs and a black end cap.
 // The drive sets the size: a 1/2" ratchet is a bigger tool all round than a 3/8" one (and a little longer for
 // its head), with a bigger square and its own drive stamped on the handle.
-// The look (read from the part number, see lookOf() in index.html) changes the line: compact (FCF72, short with a
+// The look (read from the part number, see lookOf() in app.js) changes the line: compact (FCF72, short with a
 // smaller head), extra long (FLLF80, 18"), a flex head on a round head (TNF72), a locking flex with its knurled
 // collar (FX80), a quick-release button (FR936) and a bent handle (FHBF80).
 const RATCHET_SIZE = { "1/4": [0.76, 0.94], "3/8": [1, 1], "1/2": [1.3, 1.06], "3/4": [1.8, 1.25] };
@@ -235,7 +235,7 @@ export function socket({ h = 26, r = 10.5, deep = false, impact = false, points 
 
 /* ---------- wrenches ---------- */
 // One builder for every Snap-on wrench family. style is the base build plus its details, read from the part
-// number in index.html (lookOf, WRENCH_LOOK):
+// number (lookOf, WRENCH_LOOK) in app.js:
 //   combo   open end (15°) + 12-point box with a 15° offset: OEX, SOEX     ratchet  open end + ratcheting box: OEXR, OXIR
 //   speed   speed open end (short lower jaw) + box: SRXR                     rbox     ratcheting box on both ends: R, RB, RYA, BXOR
 //   box     box on both ends, 10° offset: XB, XS                             open     open on both ends: DS, VS      flare  flare-nut ends: RXFM

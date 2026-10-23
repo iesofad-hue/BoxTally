@@ -626,7 +626,7 @@ function airBits() {
   const g = group(["chisel", "punch", "fork"].map((t, i) => { const b = bit(t); b.position.set(0, 5.1, -30 + i * 30); b.rotation.y = 0.04 * (i - 1); return b; }));
   g.position.x = -95; return group(g);
 }
-// long-neck and high-speed cordless ratchets, read from the look (see lookOf() in index.html)
+// long-neck and high-speed cordless ratchets, read from the look (see lookOf() in app.js)
 const neck3d = (o = {}) => { const l = o.look || []; return { neck: l.includes("xneck") ? 64 : l.includes("neck") ? 34 : 0, fast: l.includes("fast") }; };
 export const MODELS = {
   // generic cordless line: grey/black packs, black overmold
