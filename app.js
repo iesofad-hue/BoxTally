@@ -615,7 +615,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const w = firstHit(PAINT_WORDS, text); if (w) return w;
     const m = pn.match(/^C[A-Z]{1,6}\d{3,4}([A-Z]*)$/); if (!m) return null;
     const code = m[1].replace(/(DB|K\d|J\d?|W\d)$/, "").replace(/^A(?=[A-Z])/, "");
-    return PAINT[code] || null;
+    return PAINT[code] || PAINT[code.slice(-1)] || null; // CT861AMG: the last letter is the color (G green)
   }
   const GRIP_KINDS = /^(wrench-adjust|pliers|pry|screwdriver|pick|trim-tool|set-pliers|set-screwdriver|set-pick)/;
   function lookOf(kind, pn, text, chosen) {

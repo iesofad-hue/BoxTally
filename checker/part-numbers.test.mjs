@@ -172,7 +172,7 @@ const LOOKS = [
   ["FR936", "ratchet", "qr", "Quick-release ratchet"], ["FHBF80", "ratchet-flex-soft", "bent", "Bent-handle flex ratchet"], ["S80", "ratchet", "", "Ratchet"],
   ["CTR827", "cl14-ratchet", "neck", "14.4V long-neck ratchet"], ["CTR868GMDB", "cl14-ratchet", "c-gm+neck", "Gunmetal 14.4V long-neck ratchet"], ["CTR869", "cl14-ratchet", "xneck", "14.4V extra-long ratchet"],
   ["CTR881", "cl14-ratchet", "fast", "14.4V high-speed ratchet"], ["CDR9050", "cl18-drill", "hammer", "18V hammer drill"], ["CT861G", "cl14-impact", "c-g", "Green 14.4V cordless impact"],
-  ["CTR861HV", "cl14-ratchet", "c-hv", "Hi-viz 14.4V cordless ratchet"], ["CGRS861", "cl14-die", "", "14.4V die grinder"],
+  ["CTR861HV", "cl14-ratchet", "c-hv", "Hi-viz 14.4V cordless ratchet"], ["CT861AMG", "cl14-impact", "c-g", "Green 14.4V cordless impact"], ["CGRS861", "cl14-die", "", "14.4V die grinder"],
 ];
 for (const [pn, key, look, label] of LOOKS) {
   const a = artOf({ part_number: pn, name: "", category: "Other" }), got = (a.look || []).join("+");
