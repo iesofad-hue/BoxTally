@@ -4033,14 +4033,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!routeSync) go(path, { open: true });
     else if (path !== here()) history.replaceState(history.state, "", path + shareQ()); // tidy a pasted link, e.g. a renamed tool
   }
-  // a dialog closed (its button, Esc, a tap outside, or Save): take its address off again
+  // a dialog closed (its button, Esc, a tap outside, or Save): go to the page underneath as a new step,
+  // like leaving a page on any other site, so Back takes you to what you just closed, then on back from there
   function routeClosed(d) {
     if (!d._route) return;
     const was = d._route; d._route = null;
     if (!document.querySelector("dialog[open]")) document.title = baseTitle;
     if (was !== here() || routeSync) return; // Back already moved the address
-    if (history.state && history.state.bx === "open") { routeBacking = true; history.back(); }
-    else go(tabPath(), { replace: true }); // it was opened straight from a link, so there's nothing to go back to
+    go(tabPath());
   }
   document.querySelectorAll("dialog").forEach((d) => d.addEventListener("close", () => routeClosed(d)));
   function readRoute() {
