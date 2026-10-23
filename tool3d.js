@@ -228,8 +228,8 @@ let raf = 0, last = 0, avg = 0, most = matchMedia("(pointer: coarse)").matches ?
 const seen = typeof IntersectionObserver === "function" && new IntersectionObserver((list) => {
   for (const e of list) { const c = cards.get(e.target); if (!c) continue; c.on = e.isIntersecting; if (!c.on) rest(c); }
   wake();
-}, { threshold: 0.25 });
-function rest(c) { c.t0 = 0; c.el.classList.remove("turning"); if (c.canvas) { c.canvas.remove(); c.canvas = null; } }
+}, { rootMargin: "48px 0px" }); // a card rests only once it is fully off screen, so its jump back to the still picture is never seen
+function rest(c) { c.a = 0; c.at = 0; c.el.classList.remove("turning"); if (c.canvas) { c.canvas.remove(); c.canvas = null; } }
 function keep(id, t) {
   tables.delete(id); tables.set(id, t);
   // keep the newest few dozen; older ones are rebuilt if their card comes back
@@ -247,8 +247,9 @@ function tick(now) {
   const on = [...cards.values()].filter((c) => c.on);
   if (!on.length || quiet()) { on.forEach(rest); return; }
   raf = requestAnimationFrame(tick);
-  // hold still while the page is scrolling: copying 3D frames then is what makes a scroll stutter
-  if (now - last < 30 || now - scrolled < 180 || document.querySelector("dialog[open] .m3d-live")) return;
+  // hold still while the page is scrolling, but only if frames are heavy enough to make a scroll stutter:
+  // small list-row pictures are cheap, so they keep turning smoothly instead of stopping and starting
+  if (now - last < 30 || (avg > 5 && now - scrolled < 180) || document.querySelector("dialog[open] .m3d-live")) return;
   last = now;
   const t0 = performance.now();
   let built = false;
@@ -257,8 +258,9 @@ function tick(now) {
     if (!tables.has(c.id)) { if (built) return; built = true; } // build at most one new model per frame
     try {
       const t = tableFor(c);
-      if (!c.t0) c.t0 = now;
-      const src = draw(t, c.w, c.h, ((now - c.t0) / TURN) * PI * 2);
+      // turn on from the angle it stopped at: after a pause for scrolling it carries on, it doesn't jump ahead
+      c.a += (Math.min(now - (c.at || now), 50) / TURN) * PI * 2; c.at = now;
+      const src = draw(t, c.w, c.h, c.a);
       if (!c.canvas) { c.canvas = document.createElement("canvas"); c.canvas.className = "m3d m3d-turn"; c.canvas.width = c.w; c.canvas.height = c.h; c.ctx = c.canvas.getContext("2d"); }
       c.ctx.clearRect(0, 0, c.w, c.h); c.ctx.drawImage(src, 0, 0);
       if (!c.canvas.isConnected) { c.img.after(c.canvas); c.el.classList.add("turning"); }
@@ -272,7 +274,7 @@ calm.addEventListener?.("change", () => { if (quiet()) cards.forEach(rest); else
 // Called once a card's still picture is showing: from then on the card turns while it's on screen.
 export function turn(el, img, key, size = "", w = 640, h = 400, drive = "", pn = "", look = "") {
   if (!seen || !MODELS[key] || cards.has(el)) return;
-  cards.set(el, { el, img, key, size, drive, pn, look, w, h, id: [key, size, drive, pn, look].join("|"), on: false, t0: 0, canvas: null });
+  cards.set(el, { el, img, key, size, drive, pn, look, w, h, id: [key, size, drive, pn, look].join("|"), on: false, a: 0, at: 0, canvas: null });
   seen.observe(el);
 }
 
