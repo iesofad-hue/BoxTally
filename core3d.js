@@ -359,6 +359,21 @@ export function screwdriver({ tip = "flat", len = 230, hlen = 100, r = 12.5, sha
   else parts.push(at(lobed([[shaftR, 0], [shaftR, 4], [shaftR * 0.86, 6], [shaftR * 0.86, 11], [shaftR * 0.62, 12], [0.1, 12.2]], mat.chrome, { lobes: 6, lobe: 0.2, amt: (y) => smooth(4, 6, y), segs: 72 }), ex - 2, 0, 0));
   return group(parts);
 }
+// a 1/4" hex screwdriver bit lying along x: hex shank with its retaining groove, a short neck (a long round
+// shaft on power bits), then the tip: Phillips (4 flutes, Tri-Wing 3), Torx star, hex, square or flat blade
+export function insertBit({ tip = "ph", long = false } = {}) {
+  const R = 3.67, r = 2.6, shaft = long ? 44 : 3, x = 18 + 3 + shaft; // 1/4" across the flats
+  const parts = [turned([[0.1, 0], [R * 0.9, 0], [R, 0.6], [R, 8], [R * 0.8, 9.6], [R * 0.8, 11.4], [R, 13], [R, 18], [r, 21], [0.1, 21]], mat.chrome, { segs: 6 }),
+    at(cyl(r, shaft + 0.2, mat.chrome, { along: "x" }), 21 + shaft / 2, 0, 0)];
+  if (tip === "tx") parts.push(at(lobed([[r, 0], [r, 1.6], [2.2, 3.2], [2.2, 8], [1.8, 9], [0.1, 9.2]], mat.chrome, { lobes: 6, lobe: 0.2, amt: (y) => smooth(1.6, 3.2, y), segs: 72 }), x, 0, 0));
+  else if (tip === "hex" || tip === "sq") parts.push(at(turned([[0.1, 0], [r, 0], [r, 1], [tip === "sq" ? 2.2 : 2.3, 2.4], [tip === "sq" ? 2.2 : 2.3, 8], [1.9, 9], [0.1, 9]], mat.chrome, { segs: tip === "sq" ? 4 : 6 }), x, 0, 0));
+  else if (tip === "flat" || tip === "clutch") {
+    const g = new THREE.BoxGeometry(10, r * 1.4, r * 2, 10, 1, 1), p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) { const u = (p.getX(i) + 5) / 10; p.setZ(i, p.getZ(i) * (1 + 0.3 * u)); p.setY(i, p.getY(i) * (1 - 0.75 * u)); }
+    g.computeVertexNormals(); parts.push(at(mesh(g, mat.chrome), x + 4, 0, 0));
+  } else parts.push(at(lobed([[r, 0], [r, 1.6], [2.2, 4.4], [1.1, 7.6], [0.3, 9], [0.1, 9.2]], mat.chrome, { lobes: tip === "tw" ? 3 : 4, lobe: 0.34, amt: (y) => smooth(1.6, 5, y), segs: 64, spin: PI / 4 }), x, 0, 0));
+  return group(parts);
+}
 export function nutdriver() {
   return group(handle(100), bolster(100, 12.5, 4.5), at(cyl(4.5, 96, mat.chrome, { along: "x" }), 158, 0, 0),
     at(turned([[0.1, 0], [4.5, 0], [4.5, 2], [6.8, 6], [7.2, 8], [7.2, 22], [6.6, 24], [0.1, 24]], mat.chrome), 205, 0, 0),

@@ -193,7 +193,9 @@ document.addEventListener("DOMContentLoaded", () => {
     [/insulated|non-?conductive|1000 ?v\b/i, "insulated"], [/^(?!.*impact).*torque/i, "torque"],
     ...[[/wrench|spanner/, "set-wrench"], [/screw ?driver/, "set-screwdriver"], [/plier|cutter/, "set-pliers"], [/\bpick|\bhook/, "set-pick"],
       [/punch|chisel/, "set-punch"], [/\bbits?\b/, "set-bit"], [/ratchet/, "set-kit"], [/socket/, "set"]]
-      .map(([tool, key]) => [new RegExp(`(?=.*${tool.source})(?=.*\\b(sets?|kit|\\d+\\s*-?\\s*(pc|pcs|piece)s?)\\b)`, "i"), key]), [/nut ?driver/i, "nutdriver"], [/screw ?driver|bit ?driver|ratchet(ing)? bit|bit ?drive/i, "screwdriver"],
+      .map(([tool, key]) => [new RegExp(`(?=.*${tool.source})(?=.*\\b(sets?|kit|\\d+\\s*-?\\s*(pc|pcs|piece)s?)\\b)`, "i"), key]),
+    // one screwdriver bit ("Phillips #2 bit", "T25 power bit"), not a bit socket, holder, set or drill bit
+    [/^(?!.*(socket|\bdrive\b|\bdr\b|holder|case|\bsets?\b|\bkit\b|drill|hammer|chisel|router|cobalt|step)).*\b(insert |power |screwdriver )?bit\b/i, "insert-bit"], [/nut ?driver/i, "nutdriver"], [/screw ?driver|bit ?driver|ratchet(ing)? bit|bit ?drive/i, "screwdriver"],
     [/test ?light|circuit tester/i, "testlight"], [/multi ?meter|\bdmm\b|volt ?meter|clamp ?meter/i, "multimeter"], [/pick-?up tool|magnetic pick|telescop/i, "pickup"],
     [/hex keys?|allen|l-?keys?|torx keys?|hex wrench/i, "hexkeys"], [/crow ?foot/i, "crowfoot"],
     [/impact.*socket|socket.*impact/i, "socket"], [/ratchet(ing)?.*wrench|wrench.*ratchet/i, "wrench"],
@@ -261,6 +263,39 @@ document.addEventListener("DOMContentLoaded", () => {
     if (/^1\d\d/.test(s)) { const f = fracDigits(s.slice(1)); if (f && f !== '1"') return "1-" + f; } // BLPSB12114 = 1-1/4"
     return "";
   }
+  // Screwdriver bits (1/4" hex insert and power bits): { tip, size, mods } from the number, or null.
+  // SDM bits are SDM + length digit (2 = 1", 3 = 1-15/16", 4 = 2-3/4", 5 = 3-1/2", 6 = 6") + tip digit
+  // (1 flat, 2 Phillips, 3 Reed & Prince on the 1" ones, 4 clutch, 5 Pozidriv on the 1" ones, 6 Phillips
+  // installer/removal) + size: SDM222 is a Phillips #2. SDMT torx (SDMT25D, SDMT325B = 1-15/16" T25,
+  // SDMTR tamper resistant, SDMTW wobble), SDM27xx/37xx hex in 64ths (SDM2708D 1/8"), SDMM27xx metric hex,
+  // SDMA/SDMB 3" and longer power bits. BTW Tri-Wing, BTS Scrulox (square); Blue-Point BLPHB/BLPTB/BLPFB/BLPSQB.
+  const BIT_CLUTCH = { 2: '3/32"', 3: '1/8"', 4: '5/32"', 5: '3/16"', 6: '1/4"', 7: '5/16"' };
+  function bitTip(p) {
+    let m;
+    const T = (tip, size = "", ...mods) => ({ tip, size, mods });
+    if ((m = p.match(/^BLPHBM(\d{1,2})$/))) return T("hex", m[1] + "mm");
+    if ((m = p.match(/^BLPHB(\d{1,4})$/))) return T("hex", fracDigits(m[1]));
+    if ((m = p.match(/^BLPTB(\d{1,2})(TP)?$/))) return T("tx", "T" + m[1], ...(m[2] ? ["tr"] : []));
+    if ((m = p.match(/^BLPFB(\d{1,4})$/))) return T("flat", fracDigits(m[1]));
+    if ((m = p.match(/^BLPSQB(\d)$/))) return T("sq", "#" + m[1]);
+    if ((m = p.match(/^BTW(\d)A?$/))) return T("tw", "#" + m[1]);
+    if ((m = p.match(/^BTS(\d)$/))) return T("sq", "#" + m[1]);
+    if ((m = p.match(/^SDMT(R|W|AS|A)?(\d{1,3})[A-D]?$/))) {
+      const n = m[2], lenDigit = n.length === 3 && /^[3-6]/.test(n), t = n.length === 3 ? (lenDigit ? +n.slice(1) : +n / 10) : +n;
+      return T("tx", "T" + t, ...(m[1] === "R" ? ["tr"] : m[1] === "W" ? ["wob"] : []), ...(lenDigit && n[0] >= "4" ? ["long"] : []));
+    }
+    if ((m = p.match(/^SDMM27(\d{2}(\.\d)?)[A-Z]?$/))) return T("hex", +m[1] + "mm");
+    if ((m = p.match(/^SDM(A4|[23])7(\d{2})[A-Z]?$/))) return T("hex", inch32(+m[2] / 2), ...(m[1] === "A4" ? ["long"] : []));
+    if ((m = p.match(/^SDM(A4|B[4-6])2(\d)A?$/))) return T("ph", "#" + m[2], "long");
+    if ((m = p.match(/^SDMW22(\d)A?$/))) return T("ph", "#" + m[1], "wob");
+    if ((m = p.match(/^SDM([2-6])([1-6])(\d)(IR)?[A-Z]{0,2}$/))) {
+      const [, l, t, n] = m, one = l === "2";
+      const tip = { 1: "flat", 2: "ph", 3: one ? "rp" : "ph", 4: one ? "clutch" : null, 5: one ? "pz" : "ph", 6: "ph" }[t];
+      if (!tip) return null;
+      return T(tip, tip === "flat" || tip === "rp" ? "" : tip === "clutch" ? BIT_CLUTCH[n] || "" : "#" + n, ...(l >= "4" ? ["long"] : []));
+    }
+    return null;
+  }
   const tooth = "72|80|100|720|737|747|830|832|860|870|872|880|936|940|949";
   const RATCHET_PN = new RegExp(`^C?(?<d>[TFSL])(?<mods>[ABCFHKLMNORSXYZ]{0,4})(?<teeth>${tooth})(?!\\d)[A-Z]{0,4}$`);
   // Ratchets: letters between the drive and the tooth count say the shape. L long, F or X flex,
@@ -297,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^(\d{1,2}(MA|R|HR|T|CR|FMK)|HBF(?!E)[A-Z0-9]*|SGHBF[A-Z0-9]*|5N[A-Z]{2,3}|SGHF\d{3}[A-Z]*)$/, "file"],
     // socket sets start with the drive and piece count: 211SFSY is 3/8" 11 pieces, 310IMMYA 1/2"
     [/^([1-4])\d{2}(?!CN|ND|SSD)([A-Z]+)$/, (m) => (/^A?(TM|F|S|L)?X[A-Z]?$/.test(m[2]) ? "set-extension" : /TX|AM|LE|FA|TMA|TMP/.test(m[2]) ? "set-bit" : "set"), (m) => ({ 1: '1/4"', 2: '3/8"', 3: '1/2"', 4: '3/4"' })[m[1]]],
-    [/^\d{3}C?NDL?M?\d*$/, "nutdriver"], [/^\d{2,3}SSDP$/, "screwdriver-phillips"], [/^\d{2,3}SSD$/, "screwdriver"], // 102NDL10 nut drivers, 30SSD/120SSDP offset screwdrivers
+    [/^\d{3}C?NDL?M?\d*$|^\d{3}CNDD$/, "nutdriver"], [/^1206GS$/, "adapter"], [/^1605TA$/, "set"], [/^\d{2,3}SSDP$/, "screwdriver-phillips"], [/^\d{2,3}SSD$/, "screwdriver"], // 102NDL10 nut drivers, 30SSD/120SSDP offset screwdrivers
     // wrenches
     [/^(S?OEX[LSR]?S?M?|GOEXM?|OXIR?M?|OSHM?|SOEXRM?|BOER[MFS]*|FHOM|G?VSM?)[5-8]\d\d[A-Z]{0,3}$/, "set-wrench"],
     [/^BLPCWSM?\d{3}$/, "set-wrench"], [/^SRXRM?\d{3}[A-Z]?$/, "set-wrench"], [/^RTBM?\d{3}$/, "set-wrench"], [/^RTB(?<m>M)?(?<n>\d{1,2})$/, "wrench-ratchet", null, wrenchSize], // T-handle ratcheting box
@@ -318,6 +353,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // screwdrivers, nut drivers, hex keys
     [/^(CN)?G?S[GH]D(X|TX|TRX|ET?)L?\d0[A-Z]{0,2}$/, "set-screwdriver"], [/^(CN)?S[GH]DXL?\d/, "set-screwdriver"], // SGDX60BR, SGDTX50BR (SGDTX320BR is one driver)
     [/^(SGDMRC10\d|SGRMINI|SGT(X|RX)L?\d|SDDD\d)/, "set-screwdriver"],
+    [/^(SDM(\d{1,3}KT|400A)|SHORTORX|YA52PBSQC)$/, "set-bit"], [/^(SDM|BLP(HBM?|TB|FB|SQB)\d|BT[WS]\d)/, (m) => (bitTip(m.input) ? "insert-bit" : null), null, (m) => bitTip(m.input).size],
+    [/^(CM6551|ST50A)$/, "set-screwdriver"], [/^(YA35[56]|A199A|SSR\d)$/, "screwdriver"], [/^DHW\d$/, "wrench-ratchet"], // starters; DHW1 ratcheting bit wrench
     [/^(IHT|CNSGD|CSSC)/, "insulated"], [/^(C?NDD|NDL)/, "nutdriver"],
     [/^(G?S[GSDH]D|BSGD|SGR|SSDM|SSM?\d[A-Z]?$)/, "screwdriver"], [/^AW(?!P)/, "hexkeys"], // SS5A, SSM3 starters
     // picks, punches, pry bars
@@ -326,16 +363,19 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^(PP[A-Z]*\d{2,3}[A-Z]*K|PPC7\d\dA$|PPCSG\d|PPVP|PPSD|PGH\d|DPFT)/, "set-punch"], [/^(PCSG|BPPC\d|PPC(8\d\d|1[2-9]B|40[6-8]B))/, "punch"],
     [/^(PPC|PPR|PPB|PPSG)\d/, "punch-pin"], [/^(YA879|YA900|1210B|1512B|1816B)$/, "punch-pin"],
     [/^(SPBS|PBMP|PBS7|NPB|BLPPB|SAPB)/, "pry"], [/^PSN\d/, "trim-tool"], [/^703\d[A-Z]?$/, "pry"], [/^(6|12|16|20)50$/, "pry"],
+    [/^(1412A|1658C|24(20|30|38)[AC]|2842C|3260B|UB222PK)$/, "pry"], // pinch and slate bars
+    // repair kits: RKRF80 for 80-tooth ratchets, RKBB1 breaker bar, TMXKLRK / FXKLP locking extension parts
+    [/^(RKR|RKBB)[A-Z0-9-]*$|^[TF]M?XKL(RK|P)$/, "repair-kit"],
     // magnetic pickups and mirrors (PT5C is a pickup; PT850 is an air impact)
     [/^(PTM\d{3}|UIM\d|TKSS\d|CF143|GA29[45]|GA5[123][AB]|US225|YA516)/, "mirror"], [/^(PT|PTM|PHT|PTS|PTIM|UPTM?|DPTM|ECFM)\d{1,2}[A-Z]{0,4}$/, "pickup"],
     [/^(DPTC\d|GA265|GA353|YA837)/, "pickup"], // claw pick-ups
     // knives, scrapers, saws
-    [/^(KER\d|CRKBP|LBUK|PK(1\d\d|8\d)|YA40[35]A)/, "knife"], [/^(PK(5\d|500|70)|PKB|PKNC|PKRS|CSA\d|CSB\d|CS\d$|US7\d|MS\d{3,4}$)/, "scraper"],
+    [/^(KER\d|CRKBP|LBUK|PK(1\d\d|8\d)|YA40[35]A|YA405-\d|YA18[0-6]0A|YA58[01]A(-1)?)/, "knife"], [/^(YA817|YA818|A23[78])$/, "set-punch"], [/^BP1004S$/, "hammer-ballpeen"], [/^(PK(5\d|500|70|23A)|USS\d|PKB|PKNC|PKRS|CSA\d|CSB\d|CS\d$|US7\d|MS\d{3,4}$)/, "scraper"],
     [/^HS(G|M|BM)?\d/, "hacksaw"],
     // shop equipment
     [/^JCW/, "creeper"], [/^FJ\d/, "floor-jack"], [/^CGG\d/, "grease-gun"], [/^CGR[RS]\d/, "grinder-die"], [/^(CG|CJ)\d/, "puller"],
     [/^ECHD/, "headlamp"], [/^ECPN/, "flashlight"], [/^EC(?!FM)[A-Z]/, "shop"],
-    [/^MAGM/, "magmat"], [/^C0100$/, "tool-bag"], [/^PB\d{3}[A-Z]?$/, "bit-case"], [/^TPGDL/, "tire-inflator"], [/^YA1005/, "extractor"],
+    [/^MAGM/, "magmat"], [/^(JCKS?\d|CKM\d)/, "magmat"], [/^C[0O](100|710|612A?)$/, "tool-bag"], [/^(PB\d{2,3}[A-Z]?|PAKPB\d{3})$/, "bit-case"], [/^TPGDL/, "tire-inflator"], [/^YA1005/, "extractor"],
     // diagnostics
     [/^EEDM/, "multimeter"], [/^EE(TH|SC)/, "diag-handheld"], [/^(ZEE|EE)/, "diag-tablet"],
     // storage (KER above is a knife)
@@ -359,13 +399,15 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^TM6[23][AB]$/, "speeder", at('1/4"')], [/^TMR4$/, "nutdriver"], [/^TMXM\d/, "adapter", at('1/4"')], [/^GAF\d/, "adapter"],
     // special sockets: A17 drag link, BW/DW 3/4" lug, WH weatherhead, PP pipe plug, TTWY twist, B2191 pentagon
     [/^A80A?$/, "extractor"], [/^A(15|17|26|172)A?$/, "socket", at('1/2"')], [/^IM\d{3}[PR]$/, "other"], [/^GLD\d{3}$/, "socket", at('3/4"')],
-    [/^(BWDM?|BW|DW)\d{3,4}[A-Z]?$/, "socket", at('3/4"')], [/^(WH\d{3}|TTWY\d{3}A?|B\d{4})$/, "socket", at('1/2"')], [/^PPM?\d{3}A$/, "socket"],
+    [/^(BWDM?|BW|DW)\d{2,4}[A-Z]?$/, "socket", at('3/4"')], [/^(WH\d{3}|TTWY\d{3}A?|B\d{4})$/, "socket", at('1/2"')], [/^PPM?\d{3}A$/, "socket"],
     [/^BPR(?<d>[TFSL])R?\d{3}/, "ratchet", D],
     [RATCHET_PN, ratchetKind, D, null, /^C?[TFSL]M?I?X[A-Z]/],
     [/^(?<d>[TFSL])M?[67]7A?$/, "adapter", D], // TM77, F77, S77A ratchet adaptors
     [/^(?<d>[TFL])R?S70A?$|^TMS70A?$/, "speeder", (m) => ({ T: '1/4"', F: '3/8"', L: '1/2"' })[m.input[0]]], // ratchet spinners (LRS70A is 1/2")
     [/^(?<d>[TFSL])(MS|N)?4[A-Z]{0,2}$/, "speeder", D], // TMS4E, F4LB, S4, SN4B
-    [/^(?<d>[TFL])(M5|5L|52B|9TURBO|11TURBO|MRT8)$/, "speeder", D],
+    [/^(?<d>[TFL])(M5|5L|52B|9TURBO|11TURBO|MRT8)$/, "speeder", D], [/^S13TURBO$/, "speeder", at('1/2"')], [/^(TH10TURBO|TURBOT\d{3})$/, "speeder"],
+    [/^L53(HB|A)$/, "breaker", at('1"')], [/^BPR703$/, "set-kit"], // 1" handles; BPR703 three quick-release ratchets
+    [/^MB?304(?<n>[236])A?$/, "extension", at('1/4"'), (m) => ({ 2: '2"', 3: '4"', 6: '6"' })[m.groups.n]], [/^YA515A$/, "extension", at('1/4"')], // GM3042A lock button hex shank 2"
     [/^C?(?<d>[TFS])H?BB\d/, "breaker", D], [/^C?(?<d>[TFS])H?N\d{2}[A-Z]?$/, "breaker", D], [/^(?<d>[TFSL])([6-9]|1\d|2\d)L[A-Z]$/, "breaker", D],
     [/^TM10G$/, "breaker", at('1/4"')], [/^L8112A?$/, "breaker", at('3/4"')],
     [/^P?(?<d>[TFS])M?U8[A-Z]?$/, "ujoint", D], [/^S8$/, "ujoint", at('1/2"')], [/^L82A?$/, "ujoint", at('3/4"')], [/^IPM80{1,2}A?$/, "ujoint", at('1/4"')],
@@ -376,7 +418,8 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^(PA\d[A-Z]$|CA\d|A2A$|A3011A$|RWA\d)/, "adapter"],
     // bit sockets: TTX25E/FTX40E Torx, TMA8E/FAM6E hex, TMP22E Phillips, FBS8 bit holder
     [/^P?(?<d>[TFS])TX[BRL]?(?<n>\d{1,2})(TP)?E?\d?$/, "socket-bit", DE, (m) => "T" + +m.groups.n],
-    [/^(?<d>[TFS])M?A(?<x>[BDLMXS]*)(?<n>\d{1,2}(\.\d)?)L?[AE]\d?$/, "socket-bit", DE, (m) => (/M/.test(m.groups.x) ? m.groups.n + "mm" : inch32(+m.groups.n))],
+    [/^TUAM(?<n>\d)E(?<e>3)?$/, "socket-bit", (m) => (m.groups.e ? '3/8"' : '1/4"'), (m) => m.groups.n + "mm"], // universal stubby hex drivers
+    [/^(?<d>[TFS])M?A(?<x>[BDLMXS]*)(?<n>\d{1,2}(\.\d)?)L?[AE]\d?A?$/, "socket-bit", DE, (m) => (/M/.test(m.groups.x) ? m.groups.n + "mm" : inch32(+m.groups.n))],
     [/^(?<d>[TF])M?[PC]\d{2,3}E\d?$/, "socket-bit", DE], [/^(?<d>[TF])M?U?BSM?\d/, "socket-bit", D],
     [/^(?<d>[FS])TSM(?<n>\d{1,2})L?E2?$/, "socket-bit", D, (m) => m.groups.n + "mm"], // triple square
     [/^SP(DL)?\d{2}E2?$|^SW\d{2}E2?A?$/, "socket-bit", at('1/2"')], [/^LAW\d{3}E2?$/, "socket-bit", at('3/4"')],
@@ -413,6 +456,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^BLPTXK(?<n>[\d.]+)$/, "extension", at('1/4"')],
     [/^BLPHS?M[O0]?(?<dr>14|38|12)(?<n>\d{1,3})$/, "socket-bit", (m) => BLP_DR[m.groups.dr], (m) => (m.groups.n.length > 1 ? +m.groups.n / 10 : m.groups.n) + "mm"], // BLPHSM1440 = 1/4" drive 4 mm hex
     [/^BLPH(?<dr>14|38|12)(?<n>\d{1,4})$/, "socket-bit", (m) => BLP_DR[m.groups.dr], (m) => fracDigits(m.groups.n)],
+    [/^BLPTMBS(?<dr>14|38)14$/, "socket-bit", (m) => BLP_DR[m.groups.dr]], // bit holders
     [/^BLPTS?(?<dr>14|38|12)(?<n>\d{1,2})(TP)?$/, "socket-bit", (m) => BLP_DR[m.groups.dr], (m) => "T" + m.groups.n],
     [/^BLPP(?<dr>14|38|12)\d$/, "socket-bit", (m) => BLP_DR[m.groups.dr]],
     [/^BLPUJ(?<dr>14|38|12)$/, "ujoint", (m) => BLP_DR[m.groups.dr]], [/^BLPBB(?<dr>14|38|12)\d+$/, "breaker", (m) => BLP_DR[m.groups.dr]],
@@ -462,7 +506,17 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   // A truer label for numbers whose drawing is borrowed from a close cousin (used when the tool has no name).
   const PN_LABEL = [[/^YA824/, "Spark plug boot pliers"], [/^IEDP/, "Electrical disconnect pliers"], [/^YA1005/, "Lug nut removal kit"], [/^SAPB/, "Alignment bar set"],
-    [/^PSN\d/, "Non-marring pry set"], [/^SPBSDC/, "Prybar & chisel set"], [/^SPBS\d{3}/, "Pry bar set"], [/^ECPRB/, "Project light"], [/^[O0]FCA/, "Spider filter wrench"], [/^TPGDL/, "Digital inflator gauge"], [/^PTM\d{1,2}[A-Z]/, "Magnetic pickup tool"]];
+    [/^PSN\d/, "Non-marring pry set"], [/^SPBSDC/, "Prybar & chisel set"], [/^SPBS\d{3}/, "Pry bar set"], [/^ECPRB/, "Project light"], [/^[O0]FCA/, "Spider filter wrench"], [/^TPGDL/, "Digital inflator gauge"], [/^PTM\d{1,2}[A-Z]/, "Magnetic pickup tool"],
+    [/^(1412A|1658C|24(20|30|38)[AC]|2842C)$/, "Pinch bar"], [/^3260B$/, "Slate bar"], [/^UB222PK$/, "Mini utility bars (10 pk)"],
+    [/^RKR\w*JT$/, "Flex joint repair kit"], [/^RKR\w*LM$/, "Locking mechanism repair kit"], [/^RKBB/, "Breaker bar repair kit"], [/^RKR(881B|S77)$/, "Adapter repair kit"],
+    [/^RKRSSDMR/, "Ratchet screwdriver service kit"], [/^RKR/, "Ratchet repair kit"], [/^[TF]M?XKLRK$/, "Locking extension repair kit"], [/^[TF]M?XKLP$/, "Extension locking pins (5 pk)"],
+    [/^YA405-/, "Hobby knife blade"], [/^YA18[0-6]0A/, "Utility blades (100 pk)"], [/^YA58[01]A-1/, "Replacement cutter blades"], [/^YA58[01]A/, "Multi-purpose cutter"],
+    [/^(YA81[78]|GA23[78])$/, "Steel stamp set"], [/^BP1004S/, "Ball peen hammer set"], [/^PK23A/, "Putty knife"], [/^USS/, "Scraper set"],
+    [/^JCK/, "Fender cover"], [/^CKM/, "Shop mat"], [/^C0710/, "Storage pouch"], [/^(PB\d\d[A-Z]$|PAKPB)/, "Storage case"],
+    [/^(YA35[56]|GA199A|SSR)/, "Screw starter"], [/^DHW/, "Ratcheting bit wrench"], [/^CM6551/, "Miniature screwdriver set"], [/^ST50A/, "Offset screwdriver set"],
+    [/^1206GS/, "Drive adapter set"], [/^1605TA/, "1/8\" drive service set"], [/^BPR703/, "Quick-release ratchet set"], [/^L53HB/, "Plain handle"], [/^L53A/, "Sliding T-handle"],
+    [/^(TH10|S13)TURBO/, "Turbo T-handle"], [/^TURBOT/, "Turbo T-handle set"], [/^GMB304/, "Friction ball hex shank"], [/^GM304/, "Lock button hex shank"], [/^YA515A/, "Locking extension"],
+    [/^TUAM/, "Universal stubby hex driver"], [/^BLPTMBS/, "Bit holder"], [/^SHORTORX/, "Torx bit set with bit wrench"], [/^SDM400A/, "Master bit kit"], [/^107CNDD/, "Insulated nut driver set"]];
   const VARIANT_DEFAULT = { diag: "diag-tablet", torque: "torque-click" };
   // Cordless tools get a drawing for their battery platform. The name says it (14.4 V, 18V) or, failing
   // that, the part number: 14.4V tools carry 3-digit 7xx/8xx numbers (CT761, CTR814, CT861, CTR881), 18V tools
@@ -513,7 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extractor: "Bolt extractors", "hand-impact": "Hand impact driver", flashlight: "Flashlight", hacksaw: "Hacksaw", snips: "Aviation snips", "bolt-cutter": "Bolt cutters", "tubing-cutter": "Tubing cutter",
     flaring: "Flaring tool", "wire-brush": "Wire brush", "drill-bits": "Drill bit set", "hammer-body": "Body hammer & dolly", "hammer-sledge": "Sledge hammer",
     "lug-wrench": "Lug wrench", "strap-wrench": "Strap wrench", "pipe-wrench": "Pipe wrench", "terminal-tool": "Terminal tool kit", solder: "Soldering iron", "socket-rail": "Socket rail", stool: "Shop stool",
-    creeper: "Creeper", magtray: "Magnetic tray", magmat: "Magnetic mat", "tool-bag": "Kit bag", "bit-case": "Bit case", "air-bit": "Air hammer bits", "set-extension": "Extension set", "disconnect-set": "Disconnect tool set", mirror: "Inspection mirror", headlamp: "Headlamp", polisher: "Polisher", cutoff: "Cut-off tool", rivet: "Rivet gun", heatgun: "Heat gun",
+    creeper: "Creeper", magtray: "Magnetic tray", magmat: "Magnetic mat", "tool-bag": "Kit bag", "bit-case": "Bit case", "air-bit": "Air hammer bits", "insert-bit": "Screwdriver bit", "repair-kit": "Repair kit", "set-extension": "Extension set", "disconnect-set": "Disconnect tool set", mirror: "Inspection mirror", headlamp: "Headlamp", polisher: "Polisher", cutoff: "Cut-off tool", rivet: "Rivet gun", heatgun: "Heat gun",
     torque: "Digital torque wrench", insulated: "Insulated screwdriver", pry: "Pry bar", punch: "Chisel", hammer: "Hammer", general: "Hand tool", set: "Socket set", storage: "Roll cab & top chest", shop: "Shop light", diag: "Lab scope", other: "Drawing",
   };
   const DRIVE_KINDS = ["ratchet", "socket", "extension", "breaker", "ujoint", "adapter", "speeder"];
@@ -544,7 +598,7 @@ document.addEventListener("DOMContentLoaded", () => {
     wrench: "Wrenches", crowfoot: "Wrenches", filter: "Wrenches", lug: "Wrenches", strap: "Wrenches", pipe: "Wrenches",
     torque: "Torque", screwdriver: "Screwdrivers", nutdriver: "Screwdrivers", pliers: "Pliers", snips: "Pliers",
     pick: "Awls, Hooks and Picks", pry: "Prybars", punch: "Punches/Chisels", hammer: "Hammers", insulated: "Non-Conductive Composite",
-    general: "General Hand Tools", hexkeys: "General Hand Tools", pickup: "General Hand Tools", hacksaw: "General Hand Tools", wire: "General Hand Tools",
+    general: "General Hand Tools", repair: "General Hand Tools", insert: "Screwdrivers", hexkeys: "General Hand Tools", pickup: "General Hand Tools", hacksaw: "General Hand Tools", wire: "General Hand Tools",
     extractor: "General Hand Tools", tapdie: "General Hand Tools", drill: "General Hand Tools", puller: "General Hand Tools", seal: "General Hand Tools",
     trim: "General Hand Tools", brake: "General Hand Tools", ball: "General Hand Tools", spring: "General Hand Tools", flaring: "General Hand Tools",
     tubing: "General Hand Tools", bolt: "General Hand Tools", hand: "General Hand Tools", clamp: "General Hand Tools", feeler: "General Hand Tools",
@@ -648,6 +702,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const code = m[1].replace(/(DB|K\d|J\d?|W\d)$/, "").replace(/^A(?=[A-Z])/, "");
     return PAINT[code] || PAINT[code.slice(-1)] || null; // CT861AMG: the last letter is the color (G green)
   }
+  const BIT_WORDS = [[/pozi/i, "pz"], [/tri-?wing/i, "tw"], [/scrulox|square|robertson/i, "sq"], [/reed/i, "rp"], [/clutch/i, "clutch"], [/phillips|\bph\s?\d/i, "ph"], [/torx|\bt\d{1,2}\b|star/i, "tx"], [/\bhex\b|allen/i, "hex"], [/flat|slot/i, "flat"]];
+  const BIT_NAME = { ph: "Phillips", pz: "Pozidriv", tx: "Torx", hex: "Hex", flat: "Flat tip", sq: "Square", tw: "Tri-Wing", clutch: "Clutch", rp: "Reed & Prince" };
   const GRIP_KINDS = /^(wrench-adjust|pliers|pry|screwdriver|pick|trim-tool|set-pliers|set-screwdriver|set-pick)/;
   function lookOf(kind, pn, text, chosen) {
     const t = [], fam = familyOf(kind), p = pn.replace(/^G(?=[A-Z])/, "");
@@ -683,6 +739,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (/^PHG\d+RP/.test(pn) || /roll ?pin/i.test(text)) t.push("rp");
       }
     }
+    // screwdriver bits: the tip ("t-ph" Phillips, "t-tx" Torx...), then tamper-resistant, wobble or long power bit
+    if (kind === "insert-bit") {
+      const b = bitTip(p), w = firstHit(BIT_WORDS, text);
+      t.push("t-" + (w || (b ? b.tip : "ph")));
+      for (const x of b ? b.mods : []) t.push(x);
+      if (/tamper|security/i.test(text) && !t.includes("tr")) t.push("tr");
+      if (/wobble/i.test(text) && !t.includes("wob")) t.push("wob");
+      if (/power bit|\b[3-6](\s?1\/2)?\s?("|in\b|inch)/i.test(text) && !t.includes("long")) t.push("long");
+    }
     // colored grips: ADHW8AO, SRPCR107O and SAPB200O are orange, ...G green
     if (GRIP_KINDS.test(kind)) { const m = pn.match(/\d[A-Z]{0,3}?(O|G)$/), w = firstHit(PAINT_WORDS, text); if (w || m) t.push(w || (m[1] === "O" ? "c-o" : "c-g")); }
     return t;
@@ -705,6 +770,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let out = label;
     const n = (look.find((w) => /^n\d+$/.test(w)) || "").slice(1);
     if (kind === "air-bit" && (n || look.includes("rp"))) out = (n ? n + " pc " : "") + (look.includes("rp") ? "roll pin punch bit set" : "air hammer bit set"), out = out.charAt(0).toUpperCase() + out.slice(1);
+    if (kind === "insert-bit") { const tip = (look.find((w) => /^t-/.test(w)) || "t-ph").slice(2); out = (look.includes("tr") ? "Tamper-resistant " : "") + BIT_NAME[tip] + (look.includes("wob") ? " wobble" : "") + (look.includes("long") ? " power bit" : " bit"); }
     if (kind === "set-wrench" && spec) { const ws = spec.split(";")[0].split("+"); out = SET_LABEL[["rev", "long", "short", "midget", "deep", "flex"].find((w) => ws.includes(w))] || SET_LABEL[ws[0]] || label; }
     for (const [re, w, flex, plain] of LOOK_LABEL) {
       if (!re.test(kind) || !look.includes(w)) continue;
@@ -751,7 +817,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const SIZE_SLOT = {
     socket: "13", "socket-12": "13", "socket-deep": "13", "socket-impact": "13", "socket-swivel": "13", "socket-spark": "5/8", "socket-o2": "7/8", "socket-bit": "T40",
     wrench: "13 mm", "wrench-ratchet": "13 mm", "wrench-flare": "13 × 15 mm", "wrench-box": "13 × 15 mm", "wrench-open": "13 × 15 mm", "wrench-speed": "13 mm", "wrench-rbox": "13 × 15 mm",
-    "set-wrench": "SET", "set-bit": "BITS", "set-kit": "KIT",
+    "insert-bit": "#2", "set-wrench": "SET", "set-bit": "BITS", "set-kit": "KIT",
     power: "3/8", "power-stubby": "3/8", "power-12": "1/2", "air-impact": "1/2 AIR", extension: '6"',
     "cl14-ratchet": "3/8", "cl14-impact": "3/8", "cl18-impact": "1/2", "cl18-ratchet": "3/8",
   };
@@ -786,6 +852,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const t = text.replace(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?(?:dr\b|drive)/gi, " ");
     const fromPn = ((g) => (g && familyOf(g.key) === familyOf(kind) && g.size) || "")(pnGuess(pn));
     if (kind === "extension") { const m = t.match(/(\d{1,2}(?:\.\d)?)\s*(?:"|″|in\b|inch)/i); return m ? m[1] + '"' : fromPn || null; }
+    if (kind === "insert-bit") {
+      const m = t.match(/#\s?(\d)\b/) || t.match(/\b(T\d{1,2})\b/i) || t.match(/\b(\d{1,2}(?:\.\d)?)\s*mm\b/i) || t.match(new RegExp(`(${FR})`));
+      return m ? (/#/.test(m[0]) ? "#" + m[1] : /^\d/.test(m[1]) && !m[1].includes("/") ? m[1] + "mm" : /\//.test(m[1]) ? m[1] + '"' : m[1].toUpperCase()) : fromPn || "";
+    }
     if (kind === "socket-bit") {
       const m = t.match(/\b(E?T\d{1,2})\b/i) || t.match(/\b(\d{1,2}(?:\.\d)?)\s*mm\b/i) || t.match(new RegExp(`(${FR})`));
       return m ? (/^\d/.test(m[1]) && !m[1].includes("/") ? m[1] + "mm" : m[1].toUpperCase()) : fromPn || null;
@@ -943,6 +1013,15 @@ document.addEventListener("DOMContentLoaded", () => {
       return out;
     },
   };
+  // a screwdriver bit's tip, swapped into its drawing by the look ("t-tx" Torx, "t-hex"...); Phillips is the drawing's own
+  const BIT_TIP_ART = {
+    flat: '<path class="s" d="M101 46 L130 44.4 L137 45.4 V54.6 L130 55.6 L101 54 Z"/><path class="nl" opacity=".4" d="M106 50 H136"/>',
+    tx: '<path class="s" d="M101 45.4 H131 L137 47.4 V52.6 L131 54.6 H101 Z"/><path class="nl" opacity=".5" d="M104 48 H135 M104 52 H135"/>',
+    hex: '<path class="s" d="M101 46 H135 L137.4 48 V52 L135 54 H101 Z"/><path class="nl" opacity=".4" d="M103 50 H136"/>',
+    sq: '<path class="s" d="M101 46.4 H131 L135 47.8 V52.2 L131 53.6 H101 Z"/><path class="nl" opacity=".4" d="M103 50 H133"/>',
+    tw: '<path class="s" d="M101 45.6 H118 L136 49 Q138.6 50 136 51 L118 54.4 H101 Z"/><path class="nl" opacity=".5" d="M110 47.4 L134 50"/>',
+    clutch: '<path class="s" d="M101 45.4 H126 Q132 45.4 134 48 V52 Q132 54.6 126 54.6 H101 Z"/><path class="nl" opacity=".5" d="M120 50 H134"/>',
+  };
   // what a 3D model needs: kind|size|drive|part number. A set sends what's in it ("set:combo;10mm,11mm...") as its size.
   const m3dOf = (a) => [a.key, a.spec ? "set:" + a.spec : a.size || "", a.drive || "", a.pn || "", (a.look || []).join("+")].join("|");
   const artTag = (a, cls = "", { refl = false } = {}) => {
@@ -952,6 +1031,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let svg = built || (typeof a === "object" && a.spec && SET_ART[key] && SET_ART[key](a.spec)) || ART[key] || ART.other;
     const slot = SIZE_SLOT[key];
     if (!built && typeof a === "object" && a.size != null && slot) svg = svg.replace(`>${slot}</text>`, `>${esc(a.size)}</text>`);
+    if (key === "insert-bit") { const tip = BIT_TIP_ART[(look.find((w) => /^t-/.test(w)) || "").slice(2)]; if (tip || look.includes("tr")) svg = svg.replace(/<g data-tip="1">.*?<\/g>/, (g) => `<g data-tip="1">${tip || g.slice(16, -4)}${look.includes("tr") ? '<circle class="pit" cx="134" cy="50" r="1.2"/>' : ""}</g>`); }
     if (typeof a === "object" && key === "set") {
       // the socket set's label and its five sockets: real sizes when the name gives a range, blank when it doesn't
       svg = svg.replace(/>3\/8 DR \u00b7 MM<\/text>/, `>${esc([(a.drive || "").replace('"', "") ? a.drive.replace('"', "") + " DR" : "", a.unit || ""].filter(Boolean).join(" \u00b7 ") || "SOCKETS")}</text>`);

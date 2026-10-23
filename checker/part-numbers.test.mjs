@@ -60,6 +60,13 @@ const CASES = [
   ["IMM100A", "socket-impact", '1/2"', "10mm"], ["SIMM100A", "socket-impact", '1/2"', "10mm"], ["SIMMF14", "socket-impact", '1/2"', "14mm"], ["SIML160", "socket-impact", '1/2"', '1/2"'],
   ["IPL16C", "socket-swivel", '1/2"', '1/2"'], ["IPLM10C", "socket-swivel", '1/2"', "10mm"], ["SIP18A", "socket-swivel", '1/2"'], ["IPLM18B", "socket-swivel", '1/2"', "18mm"],
   ["IM182A", "socket-impact", '3/4"', '9/16"'], ["IMM172A", "socket-impact", '3/4"', "17mm"], ["SIM242", "socket-impact", '3/4"', '3/4"'],
+  // screwdriver bits: [part number, "insert-bit", no drive, size]
+  ["SDM222ZB", "insert-bit", null, "#2"], ["SDM423B", "insert-bit", null, "#3"], ["SDMT150D", "insert-bit", null, "T15"], ["SDMT307A", "insert-bit", null, "T7"], ["SDMTA55", "insert-bit", null, "T55"],
+  ["SDM2704D", "insert-bit", null, '1/16"'], ["SDM3705", "insert-bit", null, '5/64"'], ["SDMA4720", "insert-bit", null, '5/16"'], ["SDMM2702.5B", "insert-bit", null, "2.5mm"],
+  ["SDM242G", "insert-bit", null, '3/32"'], ["SDM211B", "insert-bit", null, null], ["BLPHB964", "insert-bit", null, '9/64"'], ["BLPHBM4", "insert-bit", null, "4mm"], ["BTW0A", "insert-bit", null, "#0"],
+  ["SDM400A", "set-bit"], ["SDM32KT", "set-bit"], ["SHORTORX", "set-bit"],
+  ["TUAM6E3", "socket-bit", '3/8"', "6mm"], ["TMAM2E2A", "socket-bit", '3/8"', "2mm"], ["BLPTMBS3814", "socket-bit", '3/8"'], ["GM3043", "extension", '1/4"', '4"'],
+  ["S13TURBO", "speeder", '1/2"'], ["L53HB", "breaker", '1"'], ["BWD48", "socket", '3/4"'], ["YA1860A", "knife"], ["YA817", "set-punch"], ["PB24A", "bit-case"], ["C0612A", "tool-bag"],
   // bit, Torx, E-Torx, spark plug
   ["FTX40E", "socket-bit", '3/8"', "T40"], ["TTX25E", "socket-bit", '1/4"', "T25"], ["TTXL25E", "socket-bit"], ["FTXB27E", "socket-bit"],
   ["FA8E", "socket-bit", '3/8"', '1/4"'], ["FAM6E", "socket-bit", '3/8"', "6mm"], ["FAM6A", "socket-bit"], ["FABLM6E", "socket-bit", '3/8"', "6mm"],
@@ -176,6 +183,14 @@ const LOOKS = [
   ["FR936", "ratchet", "qr", "Quick-release ratchet"], ["FHBF80", "ratchet-flex-soft", "bent", "Bent-handle flex ratchet"], ["S80", "ratchet", "", "Ratchet"],
   ["CTR827", "cl14-ratchet", "neck", "14.4V long-neck ratchet"], ["CTR868GMDB", "cl14-ratchet", "c-gm+neck", "Gunmetal 14.4V long-neck ratchet"], ["CTR869", "cl14-ratchet", "xneck", "14.4V extra-long ratchet"],
   ["PHG1004RPBK", "air-bit", "n4+rp", "4 pc roll pin punch bit set"], ["PHG1005BK", "air-bit", "n5", "5 pc air hammer bit set"], ["PHG1066BK", "air-bit", "n6", "6 pc air hammer bit set"],
+  // screwdriver bits: tip from the number, size printed, long power bits, tamper-resistant and wobble Torx
+  ["SDM222ZB", "insert-bit", "t-ph", "Phillips bit"], ["SDM522A", "insert-bit", "t-ph+long", "Phillips power bit"], ["SDM252C", "insert-bit", "t-pz", "Pozidriv bit"],
+  ["SDM213B", "insert-bit", "t-flat", "Flat tip bit"], ["SDM244G", "insert-bit", "t-clutch", "Clutch bit"], ["SDM231A", "insert-bit", "t-rp", "Reed & Prince bit"],
+  ["SDMT25D", "insert-bit", "t-tx", "Torx bit"], ["SDMT325B", "insert-bit", "t-tx", "Torx bit"], ["SDMT425", "insert-bit", "t-tx+long", "Torx power bit"],
+  ["SDMTR20", "insert-bit", "t-tx+tr", "Tamper-resistant Torx bit"], ["SDMTW15A", "insert-bit", "t-tx+wob", "Torx wobble bit"], ["SDMW222A", "insert-bit", "t-ph+wob", "Phillips wobble bit"],
+  ["SDM2708D", "insert-bit", "t-hex", "Hex bit"], ["SDMA4712", "insert-bit", "t-hex+long", "Hex power bit"], ["BTW2A", "insert-bit", "t-tw", "Tri-Wing bit"], ["BTS1", "insert-bit", "t-sq", "Square bit"],
+  ["BLPTB25TP", "insert-bit", "t-tx+tr", "Tamper-resistant Torx bit"], ["RKRF80", "repair-kit", "", "Ratchet repair kit"], ["RKRF841JT", "repair-kit", "", "Flex joint repair kit"],
+  ["FXKLP", "repair-kit", "", "Extension locking pins (5 pk)"], ["2430C", "pry", "", "Pinch bar"], ["JCK7D", "magmat", "", "Fender cover"],
   ["CTR881", "cl14-ratchet", "fast", "14.4V high-speed ratchet"], ["CDR9050", "cl18-drill", "hammer", "18V hammer drill"], ["CT861G", "cl14-impact", "c-g", "Green 14.4V cordless impact"],
   ["CTR861HV", "cl14-ratchet", "c-hv", "Hi-viz 14.4V cordless ratchet"], ["CT861AMG", "cl14-impact", "c-g", "Green 14.4V cordless impact"], ["CGRS861", "cl14-die", "", "14.4V die grinder"],
 ];
@@ -183,17 +198,22 @@ for (const [pn, key, look, label] of LOOKS) {
   const a = artOf({ part_number: pn, name: "", category: "Other" }), got = (a.look || []).join("+");
   if (a.key !== key || got !== look || a.label !== label) { bad++; console.log(`${pn.padEnd(12)} looks ${a.key} ${got} "${a.label}", want ${key} ${look} "${label}"`); }
 }
+// a bit named in words gets its tip from the name; a bit socket stays a bit socket
+for (const [name, key, look] of [["Torx T25 bit", "insert-bit", "t-tx"], ["#2 Phillips power bit, 3\"", "insert-bit", "t-ph+long"], ["3/8\" drive T40 bit socket", "socket-bit", ""], ["Bit holder", null, ""]]) {
+  const a = artOf({ part_number: "", name, category: "Other" }), got = (a.look || []).join("+");
+  if ((key && a.key !== key) || (!key && a.key === "insert-bit") || (key === "insert-bit" && got !== look)) { bad++; console.log(`"${name}" reads ${a.key} ${got}, want ${key} ${look}`); }
+}
 // a name that says how it looks wins over the number's guess
 const longNamed = artOf({ part_number: "OEXM130B", name: "Long combination wrench 13mm", category: "Other" });
 if (!longNamed.look?.includes("long")) { bad++; console.log("name should make a long wrench:", longNamed.look); }
 // tools saved without a category ("Other") show the one their part number says
 const CATS = [["MAGMATR", "Shop & Tech"], ["CTINF9010", "Shop & Tech"], ["EESC337W", "Diagnostics"], ["PH3050BR", "Power Tools"], ["CTR827", "Power Tools"],
   ["YA1005C", "General Hand Tools"], ["BOERM712", "Service Tools - Sets"], ["GSL832", '1/2" Drive Tools'], ["TL936", '1/4" Drive Tools'], ["SN36", '1/2" Drive Tools'],
-  ["87BCF", "Pliers"], ["HBBD56", "Hammers"], ["SAPB200O", "Prybars"], ["SGDMRC11A", "Screwdrivers"], ["ADHW8AO", "Wrenches"], ["PB206B", "Tool Storage"], ["ZZZ", "Other"]];
+  ["87BCF", "Pliers"], ["HBBD56", "Hammers"], ["SAPB200O", "Prybars"], ["SGDMRC11A", "Screwdrivers"], ["ADHW8AO", "Wrenches"], ["PB206B", "Tool Storage"], ["SDMT25D", "Screwdrivers"], ["RKRF80", "General Hand Tools"], ["ZZZ", "Other"]];
 for (const [pn, cat] of CATS) { const got = catOf({ part_number: pn, name: "", category: "Other" }); if (got !== cat) { bad++; console.log(`${pn.padEnd(12)} category ${got}, want ${cat}`); } }
 // a category someone picked stays
 if (catOf({ part_number: "MAGMATR", name: "", category: "Tool Storage" }) !== "Tool Storage") { bad++; console.log("picked category should stay"); }
-console.log(bad ? `${bad} of ${CASES.length + LOOKS.length + 6} wrong` : `all ${CASES.length + LOOKS.length + 6} part numbers right`);
+console.log(bad ? `${bad} of ${CASES.length + LOOKS.length + 10} wrong` : `all ${CASES.length + LOOKS.length + 10} part numbers right`);
 // how much of Snap-on's catalog we can read at all (catalog-part-numbers.tsv: number, catalog description)
 const rows = readFileSync(new URL("./catalog-part-numbers.tsv", import.meta.url), "utf8").trim().split("\n").slice(1);
 const known = rows.filter((l) => artOf({ part_number: l.split("\t")[0], name: "", category: "Other" }).key !== "other").length;
