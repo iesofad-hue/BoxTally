@@ -74,7 +74,7 @@ function ovalHead(nx = 40, nw = 8.2, cx = 5, a = 22, b = 16) {
 const ellipse = (cx, a, b, n = 72) => poly(Array.from({ length: n }, (_, i) => [cx + a * Math.cos((i * 2 * PI) / n), b * Math.sin((i * 2 * PI) / n)]));
 // Head: the Snap-on oval with a raised polished crown and the sculpted reversing lever lying on top.
 // The round (sealed) head keeps its gear cover plate, screws and quick-release button.
-function ratchetHead({ round = false, thumb = false, drive = 9.5 } = {}) {
+function ratchetHead({ round = false, thumb = false, drive = 9.5, qr = false } = {}) {
   const R = round ? 19.5 : 17.5, top = 7.8;
   const g = group(slab(round ? pear(R, 32, 8.2, 0.42) : ovalHead(), 12, 1.8));
   if (round) {
@@ -85,7 +85,13 @@ function ratchetHead({ round = false, thumb = false, drive = 9.5 } = {}) {
     g.add(at(turned([[4.6, 0], [6.6, 0], [6.6, 1], [5.8, 1.7], [4.6, 1.7]], mat.chrome, { along: "y" }), 0, top + 0.8, 0));
     const gapR = mesh(new THREE.TorusGeometry(4.65, 0.4, 6, 32), mat.hole); gapR.rotation.x = PI / 2; gapR.position.y = top + 2.4; g.add(gapR);
     const btn = sphere(4.3, mat.chrome); btn.scale.y = 0.55; btn.position.y = top + 2.1; g.add(btn);
-  } else g.add(at(slab(ellipse(4, 17.5, 11.5), 0.4, 0.6, brushed), 0, top + 0.2, 0)); // raised satin crown
+  } else {
+    g.add(at(slab(ellipse(4, 17.5, 11.5), 0.4, 0.6, brushed), 0, top + 0.2, 0)); // raised satin crown
+    if (qr) { // quick-release button over the gear
+      g.add(at(turned([[4.4, 0], [6.2, 0], [6.2, 0.8], [5.4, 1.4], [4.4, 1.4]], mat.chrome, { along: "y" }), 0, top + 0.7, 0));
+      const btn = sphere(4.1, mat.chrome); btn.scale.y = 0.5; btn.position.y = top + 1.9; g.add(btn);
+    }
+  }
   if (thumb) // knurled thumbwheel over the gear
     g.add(at(lobed([[0.1, 0], [10.8, 0], [11.4, 0.6], [11.4, 2.8], [10.8, 3.4], [0.1, 3.4]], mat.satin, { lobes: 32, lobe: 0.03, along: "y", segs: 128 }), -2, top + 0.6, 0));
   // reversing lever: a teardrop paddle pivoting behind the gear, its wide end toward the handle, with grip ridges
@@ -113,11 +119,18 @@ function knurling() {
 // (FH80, FHK80...) get the red dipped grip with molded ribs and a black end cap.
 // The drive sets the size: a 1/2" ratchet is a bigger tool all round than a 3/8" one (and a little longer for
 // its head), with a bigger square and its own drive stamped on the handle.
+// The look (read from the part number, see lookOf() in index.html) changes the line: compact (FCF72, short with a
+// smaller head), extra long (FLLF80, 18"), a flex head on a round head (TNF72), a locking flex with its knurled
+// collar (FX80), a quick-release button (FR936) and a bent handle (FHBF80).
 const RATCHET_SIZE = { "1/4": [0.76, 0.94], "3/8": [1, 1], "1/2": [1.3, 1.06], "3/4": [1.8, 1.25] };
-export function ratchet({ len = 200, grip = true, flex = false, round = false, thumb = false, drive = "3/8", pn = "" } = {}) {
+export function ratchet({ len = 200, grip = true, flex = false, round = false, thumb = false, drive = "3/8", pn = "", look = [] } = {}) {
   if (!RATCHET_SIZE[drive]) drive = "3/8";
+  const is = (w) => look.includes(w), compact = is("compact");
+  if (is("flex")) flex = true;
+  if (is("xlong")) len = 450; else if (compact) len = 160;
   const [k, stretch] = RATCHET_SIZE[drive]; len *= stretch;
-  const head = ratchetHead({ round, thumb, drive: DRIVES[drive] / k }), parts = [];
+  const head = ratchetHead({ round, thumb, drive: DRIVES[drive] / k, qr: is("qr") }), parts = [];
+  if (compact) head.scale.setScalar(0.86);
   const b0 = flex ? 50 : 28, gl = grip ? Math.min(100, len * 0.48) : 0, gx = len - gl - 20; // grip from gx to len+4
   const hl = Math.min(46, len * 0.3); // hard handle: the wider grip zone at the end
   if (grip) parts.push(slab(poly([[b0, -8], [b0 + 18, -6.2], [len - 6, -6], [len, -3.6], [len, 3.6], [len - 6, 6], [b0 + 18, 6.2], [b0, 8]]), 7, 1.4, mat.satin));
@@ -145,9 +158,16 @@ export function ratchet({ len = 200, grip = true, flex = false, round = false, t
     const kn = mesh(new THREE.PlaneGeometry(k1 - k0, 9.2), knurling(), false); kn.rotation.x = -PI / 2; kn.position.set((k0 + k1) / 2, 5.62, 0); parts.push(kn);
     parts.push(at(cyl(2.6, 7.4, mat.hole, { segs: 20 }), len - 6, 1.4, 0));
   }
+  if (is("lock") && flex) // locking flex: a knurled collar behind the yoke slides forward to hold the head
+    parts.push(at(lobed([[0.1, 0], [8.4, 0], [9, 1], [9, 9], [8.4, 10], [0.1, 10]], mat.satin, { lobes: 28, lobe: 0.04 }), 55, 0, 0));
+  let handle = null;
+  if (is("bent")) { // bent handle: everything behind the neck tips up
+    const p = b0 + 14, inner = group(parts.splice(0)); inner.position.x = -p;
+    handle = group(inner); handle.position.x = p; handle.rotation.z = 0.3; parts.push(handle);
+  }
   if (flex) { // head on a pinned yoke, tipped up
     head.add(at(box(14, 8, 9, mat.chrome, 2.5), 38, 0, 0));
-    const piv = group(head); head.position.x = -42; piv.position.x = 42; piv.rotation.z = -0.42;
+    const piv = group(head); head.position.x = -4 - head.scale.x * 38; piv.position.x = 42; piv.rotation.z = -0.42;
     parts.push(piv, at(box(16, 8.4, 3.2, mat.chrome, 1.2), 46, 0, 6.3), at(box(16, 8.4, 3.2, mat.chrome, 1.2), 46, 0, -6.3),
       at(cyl(3.2, 17.4, mat.satin, { along: "z" }), 42, 0, 0), at(cyl(1.4, 17.8, mat.hole, { along: "z", segs: 12 }), 42, 0, 0));
   } else parts.push(head);
@@ -214,11 +234,21 @@ export function socket({ h = 26, r = 10.5, deep = false, impact = false, points 
 }
 
 /* ---------- wrenches ---------- */
-// Combination wrench: open end on the left, offset 12-point box end on the right, I-beam shank with the size stamped in it.
-export function openHead(gap) {
+// One builder for every Snap-on wrench family. style is the base build plus its details, read from the part
+// number in index.html (lookOf, WRENCH_LOOK):
+//   combo   open end (15°) + 12-point box with a 15° offset: OEX, SOEX     ratchet  open end + ratcheting box: OEXR, OXIR
+//   speed   speed open end (short lower jaw) + box: SRXR                     rbox     ratcheting box on both ends: R, RB, RYA, BXOR
+//   box     box on both ends, 10° offset: XB, XS                             open     open on both ends: DS, VS      flare  flare-nut ends: RXFM
+// details: long (SOEXL), short (OEX080B, XS), midget (OXI), 6pt (OSH), flex (hinged box: FHOM, BOERF), rev (switch on
+// the ratcheting box: BOER, SOEXR), off25 (RYA, BXOR), deep (60° offset: XO), s (S-shaped: SBX), slim (LTA), angle (VS).
+export function openHead(gap, { speed = false } = {}) {
   const R = gap * 0.6 + 8, w = gap / 2, tip = Math.asin(Math.min(0.95, (w + 2.6) / R));
-  const s = new THREE.Shape(); s.moveTo(-R * Math.cos(tip) + 0.8, w); s.lineTo(2, w); s.lineTo(2, -w); s.lineTo(-R * Math.cos(tip) + 0.8, -w);
-  s.absarc(0, 0, R, -PI + tip, PI - tip, false); s.closePath();
+  const s = new THREE.Shape(); s.moveTo(-R * Math.cos(tip) + 0.8, w); s.lineTo(2, w); s.lineTo(2, -w);
+  if (speed) { // the lower jaw stops short, so the wrench slips round the nut and ratchets on its flats
+    const xt = -R * 0.42, a = Math.acos(xt / R);
+    s.lineTo(xt + 1.2, -w); s.quadraticCurveTo(xt, -w, xt, -w - 1.4); s.lineTo(xt, -R * Math.sin(a) + 0.6); s.absarc(0, 0, R, -a, PI - tip, false);
+  } else { s.lineTo(-R * Math.cos(tip) + 0.8, -w); s.absarc(0, 0, R, -PI + tip, PI - tip, false); }
+  s.closePath();
   return { shape: s, R };
 }
 export function boxHead(gap, { slot = false } = {}) {
@@ -233,39 +263,70 @@ function flareShape(gap, R) {
   for (let k = 11; k >= -11; k--) { const t = (k * PI) / 12; if (Math.abs(t) < PI - b - 0.02) { const rr = k % 2 ? gap * 0.5 : gap * 0.56; s.lineTo(rr * Math.cos(t), rr * Math.sin(t)); } }
   s.lineTo(-ri * Math.cos(b), -sw); s.closePath(); return s;
 }
-export function wrench({ gap = 13, left = "open", right = "box", size = "", ratcheting = false, long = false } = {}) {
-  const len = (110 + gap * 4) * (long ? 1.32 : 1), xe = len / 2 - 6, T = 3.2 + gap * 0.07, top = T / 2 + 1;
-  const w = (x) => 3.6 + 0.12 * gap + 1.6 * (Math.abs(x) / xe) ** 2.2; // shank half-width, flaring into the heads
-  const xs = Array.from({ length: 21 }, (_, i) => -xe + (2 * xe * i) / 20);
-  const strip = (lo, hi, x0, x1) => { const q = xs.filter((x) => x >= x0 && x <= x1); return poly([...q.map((x) => [x, lo(x)]), ...q.slice().reverse().map((x) => [x, hi(x)])]); };
+const WRENCH_ENDS = { combo: ["open", "box"], ratchet: ["open", "ratchet"], speed: ["speed", "box"], rbox: ["ratchet", "ratchet"], box: ["box", "box"], open: ["open", "open"], flare: ["flare", "flare"] };
+// how long a wrench of this size and style is, end to end of the shank
+export const wrenchLen = (gap, has) => (110 + gap * 4) * (has("long") ? 1.38 : has("midget") ? 0.58 : has("short") ? 0.78 : 1);
+export function wrench({ gap = 13, gap2 = null, size = "", size2 = "", style = "combo", look = [] } = {}) {
+  const [base, ...mods] = String(style).split("+"), all = new Set([...mods, ...look]), has = (w) => all.has(w);
+  const [L, Rt] = WRENCH_ENDS[base] || WRENCH_ENDS.combo, two = L !== "open" && L !== "speed";
+  const gR = two ? gap2 || gap * 1.12 : gap; // a double box wrench has a bigger size on the right
+  const len = wrenchLen(Math.max(gap, gR), has), xe = len / 2 - 6, thin = has("slim") ? 0.7 : 1;
+  const T = (3.2 + gap * 0.07) * thin * (has("midget") ? 1.15 : 1), top = T / 2 + 1;
+  const lean = has("long") ? 0.84 : has("midget") ? 1.12 : 1;
+  const w = (x) => (3.6 + 0.12 * gap + 1.6 * (Math.abs(x) / xe) ** 2.2) * lean * thin; // shank half-width, flaring into the heads
+  // the shank's centreline in plan: straight, or an S between the heads (SBX)
+  const A = has("s") ? len * 0.09 : 0, c = (x) => A * Math.sin((PI * x) / xe), slope = (x) => Math.atan((A * PI * Math.cos((PI * x) / xe)) / xe);
+  const xs = Array.from({ length: 41 }, (_, i) => -xe + (2 * xe * i) / 40);
+  const strip = (lo, hi, x0, x1) => { const q = xs.filter((x) => x >= x0 && x <= x1); return poly([...q.map((x) => [x, c(x) + lo(x)]), ...q.slice().reverse().map((x) => [x, c(x) + hi(x)])]); };
   const parts = [slab(strip((x) => -w(x), (x) => w(x), -xe, xe), T, 1, mat.satin)];
-  const rx = xe - 18; // raised chrome rails along both edges, satin web sunk between them: the I-beam
-  for (const s of [-1, 1]) parts.push(at(slab(strip((x) => s * (w(x) - 0.3), (x) => s * (w(x) - 1.7), -rx, rx), 0.7, 0.45), 0, top + 0.35, 0));
-  parts.push(at(slab(strip((x) => -(w(x) - 1.9), (x) => w(x) - 1.9, -rx + 4, rx - 4), 0.1, 0.1, brushed), 0, top + 0.06, 0));
-  const end = (kind, sd) => {
-    const g = group();
-    if (kind === "open") {
-      const h = openHead(gap); g.add(slab(h.shape, T + 1.2, 1.4, mat.satin)); g.rotation.y = (sd < 0 ? 0 : PI) + 0.26; g.position.x = sd * (xe + h.R * 0.62);
-      return g;
+  const rx = xe - Math.min(18, xe * 0.3); // raised chrome rails along both edges, satin web sunk between them: the I-beam
+  if (!has("slim")) {
+    for (const s of [-1, 1]) parts.push(at(slab(strip((x) => s * (w(x) - 0.3), (x) => s * (w(x) - 1.7), -rx, rx), 0.7, 0.45), 0, top + 0.35, 0));
+    parts.push(at(slab(strip((x) => -(w(x) - 1.9), (x) => w(x) - 1.9, -rx + 4, rx - 4), 0.1, 0.1, brushed), 0, top + 0.06, 0));
+  } else parts.push(at(slab(strip((x) => -(w(x) - 0.6), (x) => w(x) - 0.6, -rx, rx), 0.2, 0.2), 0, top - 0.2, 0));
+  // the offset each box end is raised by: 15° on combinations, 10° on box wrenches, 25° on RYA, 60° on deep offset XO
+  const tilt = has("deep") ? 0.95 : has("off25") ? 0.42 : base === "box" ? 0.17 : base === "rbox" ? 0.06 : 0.2;
+  const end = (kind, sd, g) => {
+    const out = group(), y0 = c(sd * xe), turnZ = -slope(sd * xe);
+    if (kind === "open" || kind === "speed") {
+      const h = openHead(g, { speed: kind === "speed" }), head = group(slab(h.shape, T + 1.2, 1.4, mat.satin));
+      // 15° on combinations; a four-way angle head (VS) has 15° at one end and 60° at the other
+      const ang = base === "open" && has("angle") && sd > 0 ? 1.05 : 0.26;
+      head.rotation.y = (sd < 0 ? 0 : PI) + ang; head.position.set(sd * (xe + h.R * 0.62), 0, -y0);
+      return head;
     }
-    const R = gap * 0.55 + 7.5, H = T + (kind === "box" ? 2.4 : 3.2);
+    const ratch = kind === "ratchet", R = g * 0.55 + (ratch ? 8.6 : 7.5), H = T + (ratch ? 3.6 : kind === "box" ? 2.4 : 3.2);
     let sh;
-    if (kind === "flare") sh = flareShape(gap, R);
-    else { sh = hull([...ring(0, 0, R, 48), ...ring(-R * 1.05, 0, w(xe) + 0.6, 16)]); sh.holes.push(ratcheting ? circle(gap * 0.5 + 3.2) : starPath(12, gap * 0.5, gap * 0.56, PI / 12)); }
-    const head = slab(sh, H, 1.4, mat.satin); g.add(head);
-    if (kind === "box" && !ratcheting) { const c = new THREE.Shape(); c.absarc(0, 0, gap * 0.56 + 1.7, 0, 2 * PI); c.holes.push(starPath(12, gap * 0.5, gap * 0.56, PI / 12)); g.add(at(slab(c, 0.2, 0.2, mat.chrome), 0, H / 2 + 1.25, 0)); } // polished chamfer ring
-    if (ratcheting) { // gear ring with its 12-point bore, and the cover ring
-      const gr = circle(gap * 0.5 + 3.25); gr.holes.push(starPath(12, gap * 0.5, gap * 0.56, PI / 12));
-      g.add(slab(gr, H + 0.6, 0.3, mat.oxide));
-      const cv = circle(gap * 0.5 + 5.6); cv.holes.push(circle(gap * 0.5 + 3.4)); g.add(at(slab(cv, 0.3, 0.2, mat.chrome), 0, H / 2 + 1.3, 0));
+    if (kind === "flare") sh = flareShape(g, R);
+    else {
+      sh = hull([...ring(0, 0, R, 48), ...ring(-R * 1.05, 0, w(xe) + 0.6, 16)]);
+      sh.holes.push(ratch ? circle(g * 0.5 + 3.2) : has("6pt") ? starPath(3, g * 0.55, g * 0.55, PI / 6) : starPath(12, g * 0.5, g * 0.56, PI / 12));
     }
-    if (kind === "flare") g.rotation.y = sd < 0 ? 0 : PI; else g.rotation.y = sd < 0 ? PI : 0; // slot outward / neck toward the shank
-    const piv = group(g), dx = 6 + R * 0.62; g.position.x = sd * dx; piv.position.x = sd * (xe - 6);
-    if (kind === "box") piv.rotation.z = sd * 0.2; // 15-degree style offset: the box end is raised off the bench
+    const head = group(slab(sh, H, 1.4, mat.satin));
+    if (kind === "box") { const ch = new THREE.Shape(); ch.absarc(0, 0, g * 0.56 + 1.7, 0, 2 * PI); ch.holes.push(has("6pt") ? starPath(3, g * 0.55, g * 0.55, PI / 6) : starPath(12, g * 0.5, g * 0.56, PI / 12)); head.add(at(slab(ch, 0.2, 0.2, mat.chrome), 0, H / 2 + 1.25, 0)); } // polished chamfer ring
+    if (ratch) { // gear ring with its 12-point bore, and the cover ring
+      const gr = circle(g * 0.5 + 3.25); gr.holes.push(starPath(12, g * 0.5, g * 0.56, PI / 12));
+      head.add(slab(gr, H + 0.6, 0.3, mat.oxide));
+      const cv = circle(g * 0.5 + 5.6); cv.holes.push(circle(g * 0.5 + 3.4)); head.add(at(slab(cv, 0.3, 0.2, mat.chrome), 0, H / 2 + 1.3, 0));
+      if (has("rev")) { // the reversing switch: a small paddle lying on the head between the gear and the shank
+        const lv = group(slab(hull([...ring(0, 0, 2.4, 12), ...ring(-R * 0.62, 0, 3.6, 16)]), 1.4, 0.5));
+        [2.2, 3.8].forEach((d) => lv.add(at(box(0.5, 0.4, 5.2, mat.hole, 0.1), -R * 0.62 + d, 1, 0)));
+        lv.add(at(cyl(1.6, 1.6, mat.satin), 0, 0.6, 0));
+        lv.rotation.y = 0.35; lv.position.set(-R * 0.62, H / 2 + 1.8, 0); head.add(lv);
+      }
+    }
+    if (kind === "flare") head.rotation.y = sd < 0 ? 0 : PI; else head.rotation.y = sd < 0 ? PI : 0; // slot outward / neck toward the shank
+    const piv = group(head), dx = 6 + R * 0.62; head.position.x = sd * dx;
+    piv.position.set(sd * (xe - 6), 0, -y0); piv.rotation.y = turnZ;
+    if (has("flex") && sd > 0) { // the box end hangs off a pin through a knuckle at the end of the shank, tipped up
+      piv.add(at(box(10, T + 2, w(xe) * 2 + 1, mat.satin, 1.6), sd * 2, 0, 0), at(cyl(1.8, w(xe) * 2 + 3, mat.chrome, { along: "z" }), sd * 2, 0, 0));
+      const hinge = group(head); hinge.position.x = sd * 2; head.position.x = sd * (dx + 5); hinge.rotation.z = sd * 0.55; piv.add(hinge);
+    } else if (kind !== "flare") piv.rotation.z = sd * tilt; // the offset: the box end is raised off the bench
     return piv;
   };
-  parts.push(end(left, -1), end(right, 1));
-  if (size) parts.push(decal(size, Math.min(44, rx * 2 - 20), 6.4, 0, top + 0.35, 0, { font: "800 80px ui-sans-serif, Helvetica, Arial, sans-serif" }));
+  parts.push(end(L, -1, gap), end(Rt, 1, gR));
+  const label = two && size2 ? `${size} × ${size2}` : size;
+  if (label && !has("slim")) { const d = decal(label.replace(/mm/g, "") + (/mm/.test(label) && two ? " mm" : ""), Math.min(44, rx * 2 - 20), 6.4, 0, top + 0.35, 0, { font: "800 80px ui-sans-serif, Helvetica, Arial, sans-serif", rz: -slope(0) }); parts.push(d); }
   return group(parts);
 }
 
@@ -480,12 +541,14 @@ export function socketRail({ n = 7, drive = "3/8", sae = false, list = null, kin
   return rail;
 }
 // A wrench set the way Snap-on shows it: side by side in a black rack, biggest at the back, box ends lined up.
-// sizes: ["8mm", ... "19mm"] or ['5/16"', ...]; member: combo, long, ratchet, box, open, flare.
+// sizes: ["8mm", ... "19mm"] or ['5/16"', ...]; member: the wrench style ("ratchet+rev" for BOERM712, "combo+long"
+// for SOEXLM710B, "speed" for SRXRM710), so every set shows the wrenches that are really in it.
 const gapOf = (z) => { const m = String(z).match(/^([\d.]+)mm$/), f = String(z).replace(/"/g, "").match(/^(?:(\d)-)?(\d+)\/(\d+)$/); return m ? +m[1] : f ? 25.4 * ((+f[1] || 0) + f[2] / f[3]) : /^\d+"?$/.test(z) ? 25.4 * parseFloat(z) : 13; };
 export function wrenchSet({ sizes = ["10mm", "11mm", "12mm", "13mm", "14mm"], member = "combo" } = {}) {
-  const g = group(), ends = { combo: ["open", "box"], long: ["open", "box"], ratchet: ["open", "box"], box: ["box", "box"], open: ["open", "open"], flare: ["flare", "flare"] }[member] || ["open", "box"];
+  member = { long: "combo+long" }[member] || member;
+  const g = group(), has = (w) => member.split("+").includes(w);
   let z = 0, xmax = 0;
-  const ws = sizes.slice().reverse().map((s) => { const gap = gapOf(s), w = wrench({ gap, size: s.replace(/"$/, ""), left: ends[0], right: ends[1], ratcheting: member === "ratchet", long: member === "long" }); const R = gap * 0.55 + 7.5; return { w, R, half: ((110 + gap * 4) * (member === "long" ? 1.32 : 1)) / 2 + R }; });
+  const ws = sizes.slice().reverse().map((s) => { const gap = gapOf(s), w = wrench({ gap, size: s.replace(/"$/, ""), style: member }); const R = gap * 0.55 + 7.5; return { w, R, half: wrenchLen(gap, has) / 2 + R }; });
   // nested like shingles in the rack
   ws.forEach((o, i) => { z += i ? (ws[i - 1].R + o.R) * 0.62 : 0; o.w.position.set(-o.half, 6 + (ws.length - i) * 2.6, z); xmax = Math.max(xmax, o.half); g.add(o.w); });
   ws.forEach((o) => { o.w.position.x += xmax * 0.5; o.w.position.z -= z / 2; }); // right ends line up

@@ -139,7 +139,7 @@ function batteryModel(kind) { const g = battery(kind, { top: true }); g.userData
 function pistol(o = {}) {
   const { len = 150, R = 30, pk = "18", base = pk ? "pack" : "air", nose = "impact", drive = 12.7, body = mat.redp, trim = mat.rubber,
     gearM = mat.satin, gripH = 92, gripT = 34, gripW = 46, rake = 6, boot = false, ledRing = false, tag = "", tag2 = "", px = 8,
-    rearCap = trim, sx = 1.05, sz = 0.9, mode = false, regulator = false, xr = -R * 1.55 } = o;
+    rearCap = trim, sx = 1.05, sz = 0.9, mode = false, regulator = false, xr = -R * 1.55, hammer = false } = o;
   const P = pk ? PACKS[pk] : null, g = group();
   let y0 = 0;
   if (base === "pack") { g.add(at(battery(pk), px, 0, 0)); y0 = P.H; }
@@ -245,6 +245,13 @@ function pistol(o = {}) {
   if (nose === "drill") {
     N.add(xturn([[r0 * 1.04, -2], [r0 * 1.08, 1], [r0 * 1.08, 12], [r0 * 0.94, 15], [0.1, 15]], mat.black, { flutes: 24, flute: 0.022 }));
     const ticks = mesh(new THREE.CylinderGeometry(r0 * 1.085, r0 * 1.085, 5.5, 48, 1, true, -PI / 2 - 1.1, 2.2), label("1  4  7  10  13  16  ◆", 120, 10, WHITE), false); ticks.geometry.rotateZ(-PI / 2); N.add(at(ticks, 3.2, 0, 0));
+    if (hammer) { // hammer drill: a red mode collar (drive, drill, hammer) and the side handle clamped behind the chuck
+      N.add(xturn([[r0 * 1.1, -10], [r0 * 1.12, -8], [r0 * 1.12, -3], [r0 * 1.08, -1.5]], mat.redp, { flutes: 12, flute: 0.04, segs: 48 }));
+      const mk = mesh(new THREE.CylinderGeometry(r0 * 1.125, r0 * 1.125, 4, 48, 1, true, -PI / 2 - 0.7, 1.4), label("DRILL  ·  HAMMER", 90, 10, WHITE), false); mk.geometry.rotateZ(-PI / 2); N.add(at(mk, -5.5, 0, 0));
+      const sh = group(xturn([[R * 0.62, 18], [R * 0.66, 20], [R * 0.66, 27], [R * 0.62, 29]], mat.black, { segs: 40 }));
+      const arm = group(at(cyl(4.5, 30, mat.black), 0, -R * 0.66 - 12, 0), at(xturn([[0.1, 0], [10, 0], [11, 6], [11, 52], [10, 60], [6, 64], [0.1, 64]], mat.rubber, { flutes: 18, flute: 0.05 }), 0, 0, 0));
+      arm.children[1].rotation.z = -PI / 2; arm.children[1].position.y = -R * 0.66 - 26; arm.position.x = 23.5; arm.rotation.x = 0.55; sh.add(arm); N.add(sh);
+    }
     N.add(xturn([[R * 0.55, 14], [R * 0.6, 17], [R * 0.6, 36], [R * 0.55, 40], [R * 0.4, 42]], mat.rubber, { flutes: 18, flute: 0.06 }));
     N.add(xturn([[R * 0.42, 41], [R * 0.4, 48], [R * 0.3, 53], [R * 0.16, 54.5], [0.1, 54.5]], mat.chrome));
     for (let i = 0; i < 3; i++) { const a = (i * 2 * PI) / 3; N.add(at(cyl(1.6, 4, mat.steel, { along: "x", segs: 8 }), 55.5, Math.sin(a) * 3.6, Math.cos(a) * 3.6)); }
@@ -307,44 +314,55 @@ function rhead(r = 19, t = 15, drive = 9.5) {
   g.userData.bottom = -t / 2 - 2.6 - drive;
   return g;
 }
-function cratchet(kind = "gen", dr = "") {
+// neck: extra length of chrome neck between the head and the housing (CTR827/CTR868 long neck, CTR869 extra long).
+// die: the same 14.4V body with a collet and a carbide burr in place of the ratchet head (CGRS861).
+function cratchet(kind = "gen", dr = "", { neck = 0, die = false, fast = false } = {}) {
   const K = { gen: { R: 20, hr: 19, drive: 9.5, len: 196 }, "14": { R: 18.5, hr: 18, drive: 9.5, len: 206 }, "18": { R: 22, hr: 21, drive: 9.5, len: 262 } }[kind];
-  const { R, hr, len } = K, drive = DRIVES[dr] && DRIVES[dr] <= 12.7 ? DRIVES[dr] : K.drive, x1 = 64 + len, g = group(rhead(hr, 15, drive));
-  g.add(xturn([[R * 0.6, 44], [R * 0.72, 50], [R * 0.78, 62], [R * 0.82, 66]], mat.satin));
-  g.add(band(R * 0.84, 64.5, 66.5));
-  g.add(xturn([[R * 0.82, 65], [R * 0.95, 70], [R, 90], [R * 0.95, 130], [R * 0.93, 200], [R * 0.98, x1 - 20], [R, x1 - 6], [R * 0.9, x1], [0.1, x1]], mat.redp, { segs: 48 }));
+  const { R, hr } = K, len = K.len - (die ? 36 : 0), drive = DRIVES[dr] && DRIVES[dr] <= 12.7 ? DRIVES[dr] : K.drive, x1 = 64 + len;
+  const g = group(), head = die ? group() : rhead(hr, 15, drive), b = group(); g.add(head, b); b.position.x = neck;
+  if (die) { // carbide burr, collet shank, hex collet nut and a slim satin nose
+    head.add(xturn([[0.1, 0], [3, 0.4], [5, 3], [5.4, 8], [4.6, 13], [3, 15]], mat.steel, { flutes: 10, flute: 0.12 }));
+    head.add(at(cyl(3, 26, mat.chrome, { along: "x" }), 28, 0, 0), at(cyl(9, 12, mat.chrome, { along: "x", segs: 6 }), 46, 0, 0));
+    head.add(xturn([[7, 52], [10, 54], [10.6, 60], [R * 0.6, 62]], mat.satin));
+    head.userData.bottom = -9;
+  } else if (neck) g.add(at(cyl(R * 0.6, neck + 6, mat.chrome, { along: "x" }), 44 + neck / 2, 0, 0), band(R * 0.62, 44 + neck * 0.5 - 1, 44 + neck * 0.5 + 1));
+  b.add(xturn([[R * 0.6, 44], [R * 0.72, 50], [R * 0.78, 62], [R * 0.82, 66]], mat.satin));
+  b.add(band(R * 0.84, 64.5, 66.5));
+  b.add(xturn([[R * 0.82, 65], [R * 0.95, 70], [R, 90], [R * 0.95, 130], [R * 0.93, Math.min(200, x1 - 30)], [R * 0.98, x1 - 20], [R, x1 - 6], [R * 0.9, x1], [0.1, x1]], mat.redp, { segs: 48 }));
   // rubber grip with rings
-  const gp = [[R * 0.95, 118]]; for (let x = 124; x < 206; x += 6) gp.push([R * 0.98 + 0.4, x], [R * 0.98 + 0.4, x + 3.6], [R * 0.95, x + 4.4], [R * 0.95, x + 5.4]); gp.push([R * 0.93, 212]);
-  g.add(xturn(gp, mat.rubber, { segs: 40 }));
-  for (let i = 0; i < 4; i++) for (const s of [1, -1]) g.add(slit(R * 1.0 + 0.2, 2, 0.8, s, 80 + i * 5));
+  const ge = Math.min(206, x1 - 26), gp = [[R * 0.95, 118]]; for (let x = 124; x < ge; x += 6) gp.push([R * 0.98 + 0.4, x], [R * 0.98 + 0.4, x + 3.6], [R * 0.95, x + 4.4], [R * 0.95, x + 5.4]); gp.push([R * 0.93, ge + 6]);
+  b.add(xturn(gp, mat.rubber, { segs: 40 }));
+  for (let i = 0; i < 4; i++) for (const s of [1, -1]) b.add(slit(R * 1.0 + 0.2, 2, 0.8, s, 80 + i * 5));
   // paddle switch on top, light at the front
-  g.add(at(ext(rp([[0, -4], [10, 0.6], [80, 0.8], [83, 4.6], [10, 6], [0, 2]], 2), 17, 3, mat.chrome), 96, R * 0.98 - 1, 0));
-  g.add(at(cyl(4.2, 20, mat.black, { along: "z" }), 98, R * 0.98, 0));
-  g.add(at(sphere(2.6, M.ledW), 71, R * 0.62, 0));
-  g.add(print(drive > 11 ? "1/2" : drive > 9 ? "3/8" : "1/4", 16, 7, 26, 9.2, 0, { color: "#30363e" }, "y"));
-  g.add(screw(150, R * 0.4, R * 0.9), screw(x1 - 22, R * 0.4, R * 0.94));
+  b.add(at(ext(rp([[0, -4], [10, 0.6], [80, 0.8], [83, 4.6], [10, 6], [0, 2]], 2), 17, 3, mat.chrome), 96, R * 0.98 - 1, 0));
+  b.add(at(cyl(4.2, 20, mat.black, { along: "z" }), 98, R * 0.98, 0));
+  if (!die) b.add(at(sphere(2.6, M.ledW), 71, R * 0.62, 0));
+  if (!die) g.add(print(drive > 11 ? "1/2" : drive > 9 ? "3/8" : "1/4", 16, 7, 26, 9.2, 0, { color: "#30363e" }, "y"));
+  if (fast || die) b.add(print(die ? "DIE GRINDER" : "HIGH SPEED", 34, 6, 104, 0, R + 0.4, WHITE));
+  b.add(screw(150, R * 0.4, R * 0.9), screw(x1 - 22, R * 0.4, R * 0.94));
   let back;
   if (kind === "gen") { // small slide pack on the back, gauge on top
-    const pb = rbox(76, 36, 44, mat.black, 9, 6); g.add(at(pb, x1 + 30, 0, 0), at(rbox(70, 4, 46, mat.grey, 2, 1.4), x1 + 31, 10, 0));
-    g.add(gauge(4, 3, x1 + 44, 18.4, 5, 1.3, "y"), at(rbox(10, 3, 14, mat.redp, 1.4, 1), x1 + 18, 18.2, 0));
-    for (const s of [1, -1]) g.add(at(rbox(14, 9, 3, mat.redp, 2, 1), x1 + 8, -2, s * 22.4));
-    g.add(print("18V", 22, 9, x1 + 40, -2, 22.6));
+    const pb = rbox(76, 36, 44, mat.black, 9, 6); b.add(at(pb, x1 + 30, 0, 0), at(rbox(70, 4, 46, mat.grey, 2, 1.4), x1 + 31, 10, 0));
+    b.add(gauge(4, 3, x1 + 44, 18.4, 5, 1.3, "y"), at(rbox(10, 3, 14, mat.redp, 1.4, 1), x1 + 18, 18.2, 0));
+    for (const s of [1, -1]) b.add(at(rbox(14, 9, 3, mat.redp, 2, 1), x1 + 8, -2, s * 22.4));
+    b.add(print("18V", 22, 9, x1 + 40, -2, 22.6));
     back = [x1 + 64, -18];
   } else if (kind === "14") { // stick pack inside the handle: black end cap with two release tabs
-    g.add(xturn([[R * 0.9, x1 - 2], [R * 0.96, x1 + 2], [R * 0.96, x1 + 30], [R * 0.82, x1 + 37], [0.1, x1 + 38]], mat.black, { segs: 40 }));
-    for (const s of [1, -1]) g.add(at(rbox(14, 8, 4, mat.redp, 2, 1.2), x1 + 14, 0, s * R * 0.95));
-    g.add(band(R * 0.97, x1 + 22, x1 + 24, mat.redp));
-    g.add(print("14.4V", 20, 6, x1 + 14, R * 0.55, R * 0.82 + 0.3)); g.children.at(-1).rotation.x = -0.6;
+    b.add(xturn([[R * 0.9, x1 - 2], [R * 0.96, x1 + 2], [R * 0.96, x1 + 30], [R * 0.82, x1 + 37], [0.1, x1 + 38]], mat.black, { segs: 40 }));
+    for (const s of [1, -1]) b.add(at(rbox(14, 8, 4, mat.redp, 2, 1.2), x1 + 14, 0, s * R * 0.95));
+    b.add(band(R * 0.97, x1 + 22, x1 + 24, mat.redp));
+    b.add(print("14.4V", 20, 6, x1 + 14, R * 0.55, R * 0.82 + 0.3)); b.children.at(-1).rotation.x = -0.6;
     back = [x1 + 30, -R * 0.96];
   } else { // 18V: slim foot under the back of the handle with the slide pack underneath
     const P = PACKS["18"], fx = x1 - P.L / 2 + 6, py = -R - 4 - P.H;
-    g.add(at(rbox(P.L - 6, 13, R * 1.7, mat.redp, 5, 4), fx, -R + 1.5, 0));
-    g.add(ext(rp([[fx - P.L / 2 - 26, -R * 0.4], [fx - P.L / 2 + 6, -R - 5], [fx - P.L / 2 + 10, -R + 4], [fx - P.L / 2 - 10, -R * 0.2]], 4), R * 1.6, 5, mat.redp));
-    g.add(at(rbox(P.L - 8, 3, P.W - 9, mat.rubber, 1.4, 1), fx, -R - 3.6, 0));
-    g.add(at(battery("18"), fx, py, 0));
+    b.add(at(rbox(P.L - 6, 13, R * 1.7, mat.redp, 5, 4), fx, -R + 1.5, 0));
+    b.add(ext(rp([[fx - P.L / 2 - 26, -R * 0.4], [fx - P.L / 2 + 6, -R - 5], [fx - P.L / 2 + 10, -R + 4], [fx - P.L / 2 - 10, -R * 0.2]], 4), R * 1.6, 5, mat.redp));
+    b.add(at(rbox(P.L - 8, 3, P.W - 9, mat.rubber, 1.4, 1), fx, -R - 3.6, 0));
+    b.add(at(battery("18"), fx, py, 0));
     back = [fx + P.L / 2, py];
   }
-  const w = rest(g, [0, g.children[0].userData.bottom], back); w.userData.yaw = -0.28; return w;
+  back[0] += neck;
+  const w = rest(g, [die ? 46 : 0, head.userData.bottom], back); w.userData.yaw = -0.28; return w;
 }
 
 /* ---------- air tools that lie on the bench ---------- */
@@ -608,6 +626,8 @@ function airBits() {
   const g = group(["chisel", "punch", "fork"].map((t, i) => { const b = bit(t); b.position.set(0, 5.1, -30 + i * 30); b.rotation.y = 0.04 * (i - 1); return b; }));
   g.position.x = -95; return group(g);
 }
+// long-neck and high-speed cordless ratchets, read from the look (see lookOf() in index.html)
+const neck3d = (o = {}) => { const l = o.look || []; return { neck: l.includes("xneck") ? 64 : l.includes("neck") ? 34 : 0, fast: l.includes("fast") }; };
 export const MODELS = {
   // generic cordless line: grey/black packs, black overmold
   power: (o) => imp(sized({ pk: "gen", len: 120, R: 29, drive: 9.5, tag: "3/8", tag2: "BRUSHLESS", gearM: mat.oxide }, o)),
@@ -615,17 +635,19 @@ export const MODELS = {
   "power-12": (o) => imp(sized({ pk: "gen", len: 142, R: 33, drive: 12.7, tag: "1/2", tag2: "HIGH TORQUE", gearM: mat.oxide, gripH: 96, gripT: 36, gripW: 48 }, o)),
   "power-driver": () => pistol({ pk: "gen", nose: "driver", len: 108, R: 27, tag: "1/4 HEX", gearM: mat.oxide, mode: true }),
   "power-drill": () => pistol({ pk: "gen", nose: "drill", len: 108, R: 28, tag2: "2-SPEED" }),
-  "power-ratchet": (o = {}) => cratchet("gen", o.drive),
+  "power-ratchet": (o = {}) => cratchet("gen", o.drive, neck3d(o)),
   // 14.4V: slimmer tools, smaller black packs
   "cl14-impact": (o) => imp(sized({ pk: "14", len: 108, R: 26, drive: 9.5, tag: "3/8", tag2: "14.4V", gripH: 84, gripT: 31, gripW: 42, px: 6 }, o)),
   "cl14-driver": () => pistol({ pk: "14", nose: "driver", len: 100, R: 25, tag: "1/4", tag2: "14.4V", gripH: 82, gripT: 31, gripW: 42, px: 6 }),
-  "cl14-ratchet": (o = {}) => cratchet("14", o.drive),
+  "cl14-ratchet": (o = {}) => cratchet("14", o.drive, neck3d(o)),
+  "cl14-drill": () => pistol({ pk: "14", nose: "drill", len: 100, R: 26, tag2: "14.4V 2-SPEED", gripH: 84, gripT: 31, gripW: 42, px: 6 }),
+  "cl14-die": () => cratchet("14", "", { die: true }),
   "cl14-battery": () => batteryModel("14"),
   // 18V: chunky tools with rubber nose boots and a ring light
   "cl18-impact": (o) => imp(sized({ pk: "18", len: 126, R: 31, drive: 12.7, tag: "1/2", tag2: "18V BRUSHLESS", boot: true, ledRing: true, gripH: 94, gripT: 36, gripW: 48 }, o)),
   "cl18-driver": () => pistol({ pk: "18", nose: "driver", len: 110, R: 29, tag: "1/4", tag2: "18V", boot: true, ledRing: true, mode: true, gripH: 92, gripT: 35 }),
-  "cl18-drill": () => pistol({ pk: "18", nose: "drill", len: 112, R: 30, tag2: "18V 2-SPEED", gripH: 92, gripT: 35 }),
-  "cl18-ratchet": (o = {}) => cratchet("18", o.drive),
+  "cl18-drill": (o = {}) => { const h = o.look?.includes("hammer"); return pistol({ pk: "18", nose: "drill", len: 112, R: 30, tag2: h ? "18V HAMMER DRILL" : "18V 2-SPEED", gripH: 92, gripT: 35, hammer: h }); },
+  "cl18-ratchet": (o = {}) => cratchet("18", o.drive, neck3d(o)),
   "cl18-grinder": () => rightAngle({ pk: "18", tag: "18V" }),
   "cl18-cutoff": () => rightAngle({ pk: "18", cut: true, disc: 38, R: 22, len: 150, handle: false, tag: "18V", yb0: 46 }),
   "cl14-saw": () => pistol({ pk: "14", nose: "saw", len: 220, R: 26, xr: -40, px: -4, tag: "14.4V", gripH: 84, gripT: 31, gripW: 42 }),

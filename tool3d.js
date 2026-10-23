@@ -30,11 +30,11 @@ const SET_SOCKET = { "socket-12": { points: 12 }, "socket-deep": { deep: true },
 const MODELS = {
   // Snap-on ratchets are hard-handle (chrome) unless the part is a soft grip one; "-soft" keys get the red grip.
   ...Object.fromEntries([["ratchet", {}], ["ratchet-long", { len: 280 }], ["ratchet-stubby", { len: 115 }], ["ratchet-flex", { flex: true }], ["ratchet-long-flex", { len: 280, flex: true }],
-    ["ratchet-round", { round: true }], ["ratchet-thumbwheel", { thumb: true }]].flatMap(([k, o]) => [[k, (x = {}) => ratchet({ ...o, drive: x.drive, pn: x.pn, grip: false })], [k + "-soft", (x = {}) => ratchet({ ...o, drive: x.drive, pn: x.pn, grip: true })]])),
-  "ratchet-hard": (x = {}) => ratchet({ drive: x.drive, pn: x.pn, grip: false }),
+    ["ratchet-round", { round: true }], ["ratchet-thumbwheel", { thumb: true }]].flatMap(([k, o]) => [[k, (x = {}) => ratchet({ ...o, drive: x.drive, pn: x.pn, look: x.look, grip: false })], [k + "-soft", (x = {}) => ratchet({ ...o, drive: x.drive, pn: x.pn, look: x.look, grip: true })]])),
+  "ratchet-hard": (x = {}) => ratchet({ drive: x.drive, pn: x.pn, look: x.look, grip: false }),
   socket: (o) => lying(socket(o)), "socket-12": (o) => lying(socket({ ...o, points: 12 })), "socket-deep": (o) => lying(socket({ ...o, deep: true })), "socket-impact": (o) => lying(socket({ ...o, impact: true, r: 12 })),
   "socket-spark": (o) => lying(socket({ ...o, deep: true, r: 11.5, spark: true })), "socket-o2": (o) => lying(socket({ ...o, deep: true, r: 13, slot: true }), 0.9, 0.2), "socket-swivel": (o) => lying(socket({ ...o, swivel: true })), "socket-bit": (o) => lying(socket({ ...o, h: 20, bit: true })),
-  wrench: (o) => wrench(o), "wrench-open": (o) => wrench({ ...o, right: "open" }), "wrench-box": (o) => wrench({ ...o, left: "box" }), "wrench-ratchet": (o) => wrench({ ...o, ratcheting: true }), "wrench-flare": (o) => wrench({ ...o, left: "flare", right: "flare" }),
+  ...Object.fromEntries([["wrench", "combo"], ["wrench-open", "open"], ["wrench-box", "box"], ["wrench-ratchet", "ratchet"], ["wrench-flare", "flare"], ["wrench-speed", "speed"], ["wrench-rbox", "rbox"]].map(([k, style]) => [k, (o) => wrench({ ...o, style })])),
   screwdriver: () => screwdriver(), "screwdriver-phillips": () => screwdriver({ tip: "phillips" }), "screwdriver-torx": () => screwdriver({ tip: "torx" }),
   "screwdriver-stubby": () => screwdriver({ len: 120, hlen: 70, r: 14 }), "screwdriver-stubby-phillips": () => screwdriver({ tip: "phillips", len: 120, hlen: 70, r: 14 }),
   insulated: () => screwdriver({ m: mat.yellow, insulated: true }), nutdriver: () => nutdriver(),
@@ -52,16 +52,50 @@ export const keys = () => Object.keys(MODELS);
 // The wrench gap and printed size come from the size the page already worked out ("13 mm", '9/16"').
 // The drive ('1/2"') sets a ratchet's square, length and stamp, a socket's drive hole and a cordless impact's anvil.
 // A ratchet also carries its part number stamped on the handle, like the real one.
-function opts(key, size, drive, pn) {
-  const o = {}; const d = String(drive || "").replace(/"/g, ""); if (DRIVES[d]) o.drive = d;
+// The look ("long+ind", "rev", "c-gm") is how this one differs inside its kind: a long wrench, a reversible
+// ratcheting one, the black industrial finish, a gunmetal cordless tool. See lookOf() in index.html.
+function opts(key, size, drive, pn, look = "") {
+  const o = { look: String(look || "").split("+").filter(Boolean) }; const d = String(drive || "").replace(/"/g, ""); if (DRIVES[d]) o.drive = d;
   if (/^[A-Z0-9-]{2,14}$/.test(pn || "")) o.pn = pn;
   if (/^set:/.test(size || "")) { const [member, list] = size.slice(4).split(";"); o.member = member; o.sizes = (list || "").split(",").filter(Boolean); return o; }
   if (!size) return o;
+  // two sizes on a box or ratcheting box wrench: "10 × 11 mm", "3/8 × 7/16"
+  const pair = String(size).match(/^([\d.\/]+)\s*×\s*([\d.\/]+)\s*(mm)?$/);
+  if (pair) { const v = (z) => (pair[3] ? +z : /\//.test(z) ? (25.4 * z.split("/")[0]) / z.split("/")[1] : NaN); if (v(pair[1]) > 4 && v(pair[2]) < 40) { o.gap = v(pair[1]); o.gap2 = v(pair[2]); o.size = pair[1] + (pair[3] ? "mm" : ""); o.size2 = pair[2] + (pair[3] ? "mm" : ""); } return o; }
   const mm = String(size).match(/^(\d+(?:\.\d)?)\s*mm$/i), fr = String(size).match(/^(\d+)\/(\d+)"?$/);
   const gap = mm ? +mm[1] : fr ? (25.4 * fr[1]) / fr[2] : null;
   if (gap && gap > 4 && gap < 40) { o.gap = gap; if (/^socket/.test(key) && key !== "socket-bit") o.r = Math.max(7, gap * 0.6 + 3.2); }
   if (!/×/.test(size)) o.size = String(size).replace(/\s+/g, "");
   return o;
+}
+
+// Build a model and give it its finish: black industrial chrome for the G tools, the cordless colors
+// (gunmetal, green, orange, hi-viz, blue) for housings, and colored grips. Paint swaps the red; the
+// industrial finish swaps every bright metal for black chrome.
+const PAINT = { "c-gm": 0x4b5057, "c-g": 0x2f9e44, "c-o": 0xe8590c, "c-hv": 0xc9d81b, "c-mb": 0x1f63c6 };
+const tints = new Map(), shared = new WeakSet(); // tinted materials are shared by every model, so never disposed
+function tinted(m, how) {
+  const id = m.uuid + how;
+  if (!tints.has(id)) {
+    if (tints.size > 400) tints.clear(); // a model's own one-off materials would otherwise pile up
+    const t = m.clone();
+    if (how === "ind") { t.color.set(0x2c3036); t.roughness = Math.max(0.16, m.roughness * 0.9 + 0.06); t.envMapIntensity = 1.25; }
+    else t.color.set(PAINT[how]);
+    tints.set(id, t); shared.add(t);
+  }
+  return tints.get(id);
+}
+const isRed = (m) => { if (!m.color || m.emissive?.getHex()) return false; const c = m.color.getHSL({}); return (c.h < 0.03 || c.h > 0.97) && c.s > 0.7 && c.l > 0.1; }; // the paint and dip, not the LEDs
+const isBright = (m) => m.metalness >= 0.6 && m.color && m.color.getHSL({}).l > 0.55;
+function build(key, size, drive, pn, look) {
+  const o = opts(key, size, drive, pn, look), model = MODELS[key](o);
+  const paint = o.look.find((w) => PAINT[w]), ind = o.look.includes("ind");
+  if (paint || ind) model.traverse((m) => {
+    if (!m.isMesh || Array.isArray(m.material) || m.material.map) return;
+    if (paint && isRed(m.material)) m.material = tinted(m.material, paint);
+    else if (ind && isBright(m.material)) m.material = tinted(m.material, "ind");
+  });
+  return model;
 }
 
 /* ---------- the studio: lights, floor and camera ---------- */
@@ -127,13 +161,13 @@ function makeRenderer(canvas) {
   r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.setClearColor(0x000000, 0);
   return r;
 }
-const disposeTree = (o) => o.traverse((m) => { if (m.geometry) m.geometry.dispose(); if (m.material && m.material !== brightChrome && !Object.values(mat).includes(m.material)) { m.material.map?.dispose(); m.material.dispose(); } });
+const disposeTree = (o) => o.traverse((m) => { if (m.geometry) m.geometry.dispose(); if (m.material && m.material !== brightChrome && !shared.has(m.material) && !Object.values(mat).includes(m.material)) { m.material.map?.dispose(); m.material.dispose(); } });
 
 /* ---------- still pictures for cards, made one at a time with a single hidden renderer ---------- */
 // A card's tool sits on a turntable: a pivot under the middle of the tool, so turning it spins the tool
 // in place. The camera is framed to fit the tool at every angle, so the still and the turning card match.
-function turntable(key, size, drive, pn) {
-  const model = MODELS[key](opts(key, size, drive, pn)), pivot = new THREE.Group(); pivot.add(model);
+function turntable(key, size, drive, pn, look) {
+  const model = build(key, size, drive, pn, look), pivot = new THREE.Group(); pivot.add(model);
   model.rotation.y = model.userData.yaw ?? -0.32;
   const b = new THREE.Box3().setFromObject(model), c = b.getCenter(new THREE.Vector3());
   model.position.x -= c.x; model.position.z -= c.z; model.position.y -= b.min.y;
@@ -163,13 +197,13 @@ function draw(t, w, h, turn) {
   s.st.scene.remove(t.pivot);
   return s.r.domElement;
 }
-export function picture(key, size = "", w = 640, h = 400, drive = "", pn = "") {
-  const id = [key, size, w, h, drive, pn].join("|");
+export function picture(key, size = "", w = 640, h = 400, drive = "", pn = "", look = "") {
+  const id = [key, size, w, h, drive, pn, look].join("|");
   if (!MODELS[key]) return Promise.resolve(null);
   if (!cache.has(id)) cache.set(id, (queue = queue.then(() => new Promise((ok) => requestAnimationFrame(() => {
     try {
       // the model built for the picture is kept for the card to turn, unless nothing is going to turn
-      const tid = [key, size, drive, pn].join("|"), t = tables.get(tid) || turntable(key, size, drive, pn);
+      const tid = [key, size, drive, pn, look].join("|"), t = tables.get(tid) || turntable(key, size, drive, pn, look);
       draw(t, w, h, 0).toBlob((b) => { if (quiet()) { if (!tables.has(tid)) disposeTree(t.pivot); } else keep(tid, t); ok(b ? URL.createObjectURL(b) : null); }, "image/png");
     } catch (e) { console.error("3D picture failed", key, e); ok(null); }
   })))));
@@ -202,7 +236,7 @@ function keep(id, t) {
   for (const [old, o] of tables) { if (tables.size <= 24) break; if (old === id) continue; tables.delete(old); disposeTree(o.pivot); }
   return t;
 }
-const tableFor = (c) => keep(c.id, tables.get(c.id) || turntable(c.key, c.size, c.drive, c.pn));
+const tableFor = (c) => keep(c.id, tables.get(c.id) || turntable(c.key, c.size, c.drive, c.pn, c.look));
 function wake() { if (!raf && !broken && !quiet()) raf = requestAnimationFrame(tick); }
 function tick(now) {
   raf = 0;
@@ -232,19 +266,19 @@ function tick(now) {
 }
 calm.addEventListener?.("change", () => { if (quiet()) cards.forEach(rest); else wake(); });
 // Called once a card's still picture is showing: from then on the card turns while it's on screen.
-export function turn(el, img, key, size = "", w = 640, h = 400, drive = "", pn = "") {
+export function turn(el, img, key, size = "", w = 640, h = 400, drive = "", pn = "", look = "") {
   if (!seen || !MODELS[key] || cards.has(el)) return;
-  cards.set(el, { el, img, key, size, drive, pn, w, h, id: [key, size, drive, pn].join("|"), on: false, t0: 0, canvas: null });
+  cards.set(el, { el, img, key, size, drive, pn, look, w, h, id: [key, size, drive, pn, look].join("|"), on: false, t0: 0, canvas: null });
   seen.observe(el);
 }
 
 /* ---------- the spin-around view ---------- */
-export function viewer(el, key, size = "", drive = "", pn = "") {
+export function viewer(el, key, size = "", drive = "", pn = "", look = "") {
   if (!MODELS[key]) return null;
   const canvas = document.createElement("canvas"); canvas.className = "m3d-live"; el.appendChild(canvas);
   const r = makeRenderer(canvas); r.setPixelRatio(Math.min(2, devicePixelRatio || 1));
   const st = studio(r), cam = new THREE.PerspectiveCamera(28, 1.6);
-  const model = MODELS[key](opts(key, size, drive, pn)); const bx = stage(st, model), radius = bx.getBoundingSphere(new THREE.Sphere()).radius;
+  const model = build(key, size, drive, pn, look); const bx = stage(st, model), radius = bx.getBoundingSphere(new THREE.Sphere()).radius;
   const ctl = new OrbitControls(cam, canvas);
   Object.assign(ctl, { enableDamping: true, enablePan: false, autoRotate: !matchMedia("(prefers-reduced-motion: reduce)").matches, autoRotateSpeed: 1.6, minPolarAngle: 0.15, maxPolarAngle: PI / 2 - 0.06 });
   let raf = 0, alive = true;

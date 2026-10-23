@@ -70,8 +70,8 @@ const CASES = [
   ["SOEX12", "wrench", null, '3/8"'], ["SOEXM10", "wrench", null, "10 mm"], ["SOEXM100", "wrench", null, "10 mm"], ["GOEXM100B", "wrench", null, "10 mm"],
   ["OXI8B", "wrench", null, '1/4"'], ["OXIM55SB", "wrench", null, "5.5 mm"], ["OSH12B", "wrench"], ["OEXL12B", "wrench"], ["FHOM8B", "wrench", null, "8 mm"],
   ["SOEXR12", "wrench-ratchet", null, '3/8"'], ["SOEXRM8", "wrench-ratchet", null, "8 mm"], ["OEXRM10", "wrench-ratchet"], ["OXIR12", "wrench-ratchet"],
-  ["BOER8", "wrench-ratchet"], ["BOERMF12A", "wrench-ratchet", null, "12 mm"], ["R1214C", "wrench-ratchet", null, "3/8 × 7/16"], ["RBM1011C", "wrench-ratchet", null, "10 × 11 mm"],
-  ["BXOR1012", "wrench-ratchet"], ["XB1214A", "wrench-box", null, "3/8 × 7/16"], ["XBM1214A", "wrench-box", null, "12 × 14 mm"], ["XS67A", "wrench-box"], ["XO1012", "wrench-box"],
+  ["BOER8", "wrench-ratchet"], ["BOERMF12A", "wrench-ratchet", null, "12 mm"], ["R1214C", "wrench-rbox", null, "3/8 × 7/16"], ["RBM1011C", "wrench-rbox", null, "10 × 11 mm"],
+  ["BXOR1012", "wrench-rbox"], ["XB1214A", "wrench-box", null, "3/8 × 7/16"], ["XBM1214A", "wrench-box", null, "12 × 14 mm"], ["XS67A", "wrench-box"], ["XO1012", "wrench-box"],
   ["XDHM1012", "wrench-box"], ["CX1012", "crowfoot"], ["VO810B", "wrench-open", null, "1/4 × 5/16"], ["DSM89", "wrench-open"], ["VS8B", "wrench-open", null, '1/4"'],
   ["RXH1214", "wrench-flare"], ["FAD8B", "wrench-adjust"],
   ["OEX710B", "set-wrench"], ["SOEXM710", "set-wrench"], ["OEXSM710B", "set-wrench"], ["OEX707B", "set-wrench"], ["OEXM725", "set-wrench"], ["XB605A", "set-wrench"], ["RB604C", "set-wrench"],
@@ -100,9 +100,9 @@ const CASES = [
   ["EEDM504F", "multimeter"], ["EEMS341", "diag-tablet"], ["EETH400", "diag-handheld"], ["KRA4107", "storage"], ["KRL1022", "storage"], ["KMP3415", "storage"], ["KRSC326", "storage-cart"],
   // cordless (14.4V: 7xx/8xx, 18V: 88xx/9xxx)
   ["CT861", "cl14-impact"], ["CT861DB", "cl14-impact"], ["CT825", "cl14-impact"], ["CTR814DB", "cl14-ratchet"], ["CTR867", "cl14-ratchet"], ["CTR761", "cl14-ratchet"], ["CTR881GMDB", "cl14-ratchet"],
-  ["CTS861", "cl14-driver"], ["CDR861", "power-drill"], ["CTB8174", "cl14-battery"], ["CT9075", "cl18-impact"], ["CT8850", "cl18-impact"], ["CT9010", "cl18-impact"],
+  ["CTS861", "cl14-driver"], ["CDR861", "cl14-drill"], ["CTB8174", "cl14-battery"], ["CT9075", "cl18-impact"], ["CT8850", "cl18-impact"], ["CT9010", "cl18-impact"],
   ["CDR9015", "cl18-drill"], ["CTGR8850", "cl18-grinder"], ["CTGRS8825", "grinder-die"], ["CTRS8850", "cl18-saw"], ["CTB185", "cl18-battery"], ["CTB8185", "cl18-battery"],
-  ["CTC772A", "charger"], ["CGRS861", "grinder-die"], ["CTPP861", "polisher"], ["CTLED861", "shop"], ["CTRG9050", "rivet"], ["CGG8850", "grease-gun"],
+  ["CTC772A", "charger"], ["CGRS861", "cl14-die"], ["CTPP861", "polisher"], ["CTLED861", "shop"], ["CTRG9050", "rivet"], ["CGG8850", "grease-gun"],
   // air
   ["FAR72A", "air-ratchet"], ["IM31", "air-impact"], ["IM6100", "air-impact"], ["MG725", "air-impact"], ["MG325", "air-impact"], ["PT850", "air-impact"], ["PT350", "air-impact"],
   ["PH3050", "air-hammer"], ["PTGR200", "grinder-die"],
@@ -119,7 +119,7 @@ const CASES = [
   ["GSP936", "ratchet", '1/2"'], ["PALMRAT", "ratchet", '3/8"'], ["BTWOS", "ratchet-stubby"], ["LRS70A", "speeder", '1/2"'], ["TM62B", "speeder", '1/4"'],
   ["BLPSB12114", "socket", '1/2"', '1-1/4"'], ["BLPSM144.5", "socket", '1/4"', "4.5mm"], ["BLPEXTK126", "extension", '1/2"', '6"'], ["BLPEXTL1418", "extension", '1/4"', '18"'],
   ["BLPH14316", "socket-bit", '1/4"', '3/16"'], ["BLPTS1430", "socket-bit", '1/4"', "T30"], ["BLPUJ12", "ujoint", '1/2"'], ["BLPBB146", "breaker", '1/4"'], ["BLPSD14", "speeder", '1/4"'],
-  ["R810C", "wrench-ratchet", null, "1/4 × 5/16"], ["RBM78SC", "wrench-ratchet", null, "7 × 8 mm"], ["RYAM910", "wrench-ratchet"], ["RTBM10", "wrench-ratchet", null, "10 mm"], ["RTB607", "set-wrench"],
+  ["R810C", "wrench-rbox", null, "1/4 × 5/16"], ["RBM78SC", "wrench-rbox", null, "7 × 8 mm"], ["RYAM910", "wrench-rbox"], ["RTBM10", "wrench-ratchet", null, "10 mm"], ["RTB607", "set-wrench"],
   ["XBM1214SA", "wrench-box"], ["VSM5210B", "wrench-open", null, "10 mm"], ["VS814A", "set-wrench"], ["OXI709SBK", "set-wrench"], ["BLPCW516", "wrench", null, '5/16"'], ["BLPCWS711", "set-wrench"],
   ["96CF", "pliers-needle"], ["196CF", "pliers-needle"], ["411BCP", "pliers-needle"], ["912AEP", "pliers-needle"], ["91ACP", "pliers-pump"], ["47ACP", "pliers"], ["LP30A", "set-punch"],
   ["SGDTX50BR", "set-screwdriver"], ["SGDTX320BR", "screwdriver-torx"], ["SGDET70", "set-screwdriver"], ["GSHDX80R", "set-screwdriver"], ["SGDMRC103A", "set-screwdriver"],
@@ -151,13 +151,34 @@ if (named.key !== "socket-deep" || named.drive !== '1/2"') { bad++; console.log(
 // numbers we can't read get a plain drawing, not a wrong tool
 for (const pn of ["ZZ123", "YA480B", "A78", "GA98A"]) { const a = artOf({ part_number: pn, name: "", category: "Other" }); if (a.key !== "other") { bad++; console.log(`${pn} should be unknown, got ${a.key}`); } }
 // what's in a set, read from its number (count, sizes, kind of piece)
-for (const [pn, spec] of [["BOERM712", "ratchet;8mm,9mm,10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"], ["SOEXLM710B", "long;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"],
-  ["SRXRM710", "ratchet;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"], ["206AFX", 'extension;1.5",3",4",6",8",11"'], ["208AFX", 'extension;1.5",3",4",6",8",11",18",24"'],
+for (const [pn, spec] of [["BOERM712", "ratchet+rev;8mm,9mm,10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"], ["SOEXLM710B", "combo+long;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"],
+  ["SRXRM710", "speed;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"], ["206AFX", 'extension;1.5",3",4",6",8",11"'], ["208AFX", 'extension;1.5",3",4",6",8",11",18",24"'],
   ["305ASX", 'extension;2",3",5",8",11"'], ["207IPLFM", "socket-swivel;10mm,11mm,12mm,13mm,14mm,15mm,16mm"], ["310IMMYA", "socket-impact;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"]]) {
   const a = artOf({ part_number: pn, name: "", category: "Other" });
   if (a.spec !== spec) { bad++; console.log(`${pn} set holds ${a.spec}, want ${spec}`); }
 }
-console.log(bad ? `${bad} of ${CASES.length + 5} wrong` : `all ${CASES.length + 5} part numbers right`);
+// how a tool looks inside its kind, read from the number: [part number, kind, look, label]
+const LOOKS = [
+  ["SRXRM13", "wrench-speed", "", "Speed open-end wrench"], ["RBM1213C", "wrench-rbox", "", "Ratcheting box wrench"], ["SOEXLM13", "wrench", "long", "Long combination wrench"],
+  ["OXIM13B", "wrench", "midget", "Midget combination wrench"], ["OSHM130B", "wrench", "6pt", "6-point combination wrench"], ["GOEXM13B", "wrench", "ind", "Industrial combination wrench"],
+  ["FHOM13B", "wrench", "flex", "Flex-head combination wrench"], ["OEXRM13", "wrench-ratchet", "", "Ratcheting wrench"], ["BOERM13", "wrench-ratchet", "rev", "Reversible ratcheting wrench"],
+  ["BOERMF13A", "wrench-ratchet", "rev+flex", "Flex-head ratcheting wrench"], ["RYAM1314", "wrench-rbox", "off25", "Offset ratcheting box wrench"], ["XOM1214", "wrench-box", "deep", "Deep offset box wrench"],
+  ["SBXM1213", "wrench-box", "s", "S-shaped box wrench"], ["LTAM1214", "wrench-box", "slim", "Slimline box wrench"], ["VSM5213B", "wrench-open", "angle", "Angle-head open-end wrench"],
+  ["OEXM130B", "wrench", "", "Combination wrench"], ["FCF72", "ratchet-flex", "compact", "Compact flex-head ratchet"], ["FLLF80", "ratchet-long-flex", "xlong", "Extra-long flex-head ratchet"],
+  ["TNF72", "ratchet-round", "flex", "Round swivel-head ratchet"], ["GSL832", "ratchet-long", "ind", "Industrial long-handle ratchet"], ["FX80", "ratchet-flex", "lock", "Locking flex-head ratchet"],
+  ["FR936", "ratchet", "qr", "Quick-release ratchet"], ["FHBF80", "ratchet-flex-soft", "bent", "Bent-handle flex ratchet"], ["S80", "ratchet", "", "Ratchet"],
+  ["CTR827", "cl14-ratchet", "neck", "14.4V long-neck ratchet"], ["CTR868GMDB", "cl14-ratchet", "c-gm+neck", "Gunmetal 14.4V long-neck ratchet"], ["CTR869", "cl14-ratchet", "xneck", "14.4V extra-long ratchet"],
+  ["CTR881", "cl14-ratchet", "fast", "14.4V high-speed ratchet"], ["CDR9050", "cl18-drill", "hammer", "18V hammer drill"], ["CT861G", "cl14-impact", "c-g", "Green 14.4V cordless impact"],
+  ["CTR861HV", "cl14-ratchet", "c-hv", "Hi-viz 14.4V cordless ratchet"], ["CGRS861", "cl14-die", "", "14.4V die grinder"],
+];
+for (const [pn, key, look, label] of LOOKS) {
+  const a = artOf({ part_number: pn, name: "", category: "Other" }), got = (a.look || []).join("+");
+  if (a.key !== key || got !== look || a.label !== label) { bad++; console.log(`${pn.padEnd(12)} looks ${a.key} ${got} "${a.label}", want ${key} ${look} "${label}"`); }
+}
+// a name that says how it looks wins over the number's guess
+const longNamed = artOf({ part_number: "OEXM130B", name: "Long combination wrench 13mm", category: "Other" });
+if (!longNamed.look?.includes("long")) { bad++; console.log("name should make a long wrench:", longNamed.look); }
+console.log(bad ? `${bad} of ${CASES.length + LOOKS.length + 6} wrong` : `all ${CASES.length + LOOKS.length + 6} part numbers right`);
 // how much of Snap-on's catalog we can read at all (catalog-part-numbers.tsv: number, catalog description)
 const rows = readFileSync(new URL("./catalog-part-numbers.tsv", import.meta.url), "utf8").trim().split("\n").slice(1);
 const known = rows.filter((l) => artOf({ part_number: l.split("\t")[0], name: "", category: "Other" }).key !== "other").length;

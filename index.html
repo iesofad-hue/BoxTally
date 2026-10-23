@@ -640,6 +640,11 @@ footer #iosHint { margin: 0 0 8px; }
 .art .k { fill: var(--ink); } .art .bl { fill: #2f6fd6; stroke: var(--ink); stroke-width: 2.2; } .art .floor { fill: url(#bx-floor); stroke: none; } .art .d { fill: url(#bx-dark); } .art .w { fill: #f6f9ff; } .art .pit { fill: #39424e; }
 .art .rc { fill: #aeb8c5; stroke-width: 1.2; } .art .ball { fill: url(#bx-ball); } .art .scr { fill: url(#bx-screen); stroke-width: 1.4; } .art .ring { fill: #8e99a6; stroke-width: 1.2; }
 .art .sh { fill: #fff; opacity: .6; stroke: none; }
+/* finishes and paint read from the part number: black industrial chrome (GSL832), cordless colors (CTR868GMDB gunmetal), orange grips (ADHW8AO) */
+.art .ind :is(.s, .sv) { fill: url(#bx-steel-ind); } .art .ind .tsg { stroke: #4a5059; } .art .ind .sh { opacity: .25; } .art .ind .tx { fill: #e8ecf1; } .art .ind .rc { fill: #2a2f36; }
+.art .c-gm { --grip: #4b5057; } .art .c-gm .g { fill: url(#bx-grip-gm); } .art .c-g { --grip: #2f9e44; } .art .c-g .g { fill: url(#bx-grip-g); }
+.art .c-o { --grip: #e8590c; } .art .c-o .g { fill: url(#bx-grip-o); } .art .c-hv { --grip: #c9d81b; } .art .c-hv .g { fill: url(#bx-grip-hv); }
+.art .c-mb { --grip: #1f63c6; } .art .c-mb .g { fill: url(#bx-grip-mb); }
 .art .shl { fill: none; stroke: #fff; stroke-width: 1.4; stroke-opacity: .75; stroke-linecap: round; }
 .art .shd { fill: #000; opacity: .1; stroke: none; }
 .art .kn { fill: none; stroke: #fff; stroke-opacity: .42; stroke-width: 1.4; stroke-linecap: round; }
@@ -821,6 +826,13 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
   <linearGradient id="bx-steel-v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6f7c8b"/><stop offset=".1" stop-color="#c9d2dc"/><stop offset=".18" stop-color="#ffffff"/><stop offset=".3" stop-color="#e4eaf0"/><stop offset=".46" stop-color="#7a8695"/><stop offset=".54" stop-color="#4e5a68"/><stop offset=".66" stop-color="#d9e0e7"/><stop offset=".78" stop-color="#ffffff"/><stop offset=".92" stop-color="#93a0ad"/><stop offset="1" stop-color="#b8c2cd"/></linearGradient>
   <!-- tool-truck red, with a soft highlight along the top -->
   <linearGradient id="bx-grip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a8e"/><stop offset=".12" stop-color="#f24a51"/><stop offset=".3" stop-color="#d7232b"/><stop offset=".62" stop-color="#b8121b"/><stop offset=".84" stop-color="#8e0d14"/><stop offset="1" stop-color="#b01a22"/></linearGradient>
+  <!-- the same paint in Snap-on's other colors, and black industrial chrome -->
+  <linearGradient id="bx-grip-gm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9aa1a9"/><stop offset="0.12" stop-color="#6c737c"/><stop offset="0.3" stop-color="#555b63"/><stop offset="0.62" stop-color="#43484f"/><stop offset="0.84" stop-color="#2c3035"/><stop offset="1" stop-color="#3f444b"/></linearGradient>
+  <linearGradient id="bx-grip-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9be3a6"/><stop offset="0.12" stop-color="#4fc265"/><stop offset="0.3" stop-color="#2f9e44"/><stop offset="0.62" stop-color="#23843a"/><stop offset="0.84" stop-color="#17602a"/><stop offset="1" stop-color="#237a37"/></linearGradient>
+  <linearGradient id="bx-grip-o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc08f"/><stop offset="0.12" stop-color="#ff8c3a"/><stop offset="0.3" stop-color="#e8590c"/><stop offset="0.62" stop-color="#c94a07"/><stop offset="0.84" stop-color="#973704"/><stop offset="1" stop-color="#b84508"/></linearGradient>
+  <linearGradient id="bx-grip-hv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4ffa8"/><stop offset="0.12" stop-color="#e2f04a"/><stop offset="0.3" stop-color="#c9d81b"/><stop offset="0.62" stop-color="#a9b612"/><stop offset="0.84" stop-color="#7d870b"/><stop offset="1" stop-color="#98a412"/></linearGradient>
+  <linearGradient id="bx-grip-mb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9cc2ff"/><stop offset="0.12" stop-color="#4f8ef0"/><stop offset="0.3" stop-color="#1f63c6"/><stop offset="0.62" stop-color="#174fa3"/><stop offset="0.84" stop-color="#0f3672"/><stop offset="1" stop-color="#1a4a94"/></linearGradient>
+  <linearGradient id="bx-steel-ind" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a929c"/><stop offset=".18" stop-color="#5a626c"/><stop offset=".34" stop-color="#3a4049"/><stop offset=".46" stop-color="#22262c"/><stop offset=".52" stop-color="#121418"/><stop offset=".6" stop-color="#262a30"/><stop offset=".74" stop-color="#3c434c"/><stop offset=".86" stop-color="#6a727c"/><stop offset="1" stop-color="#2e333a"/></linearGradient>
   <linearGradient id="bx-yel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0b8"/><stop offset=".2" stop-color="#ffd659"/><stop offset=".6" stop-color="#f4bd2a"/><stop offset=".9" stop-color="#c88f08"/><stop offset="1" stop-color="#dba21a"/></linearGradient>
   <linearGradient id="bx-dark-v" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#14171b"/><stop offset=".2" stop-color="#5b636e"/><stop offset=".45" stop-color="#2a2f36"/><stop offset=".8" stop-color="#3e454f"/><stop offset="1" stop-color="#14171b"/></linearGradient>
   <linearGradient id="bx-dark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5e6671"/><stop offset=".16" stop-color="#3d444d"/><stop offset=".5" stop-color="#262b31"/><stop offset=".86" stop-color="#14171b"/><stop offset="1" stop-color="#2c323a"/></linearGradient>
@@ -1603,6 +1615,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return "";
   }
   const tooth = "72|80|100|720|737|747|830|832|860|870|872|880|936|940|949";
+  const RATCHET_PN = new RegExp(`^C?(?<d>[TFSL])(?<mods>[ABCFHKLMNORSXYZ]{0,4})(?<teeth>${tooth})(?!\\d)[A-Z]{0,4}$`);
   // Ratchets: letters between the drive and the tooth count say the shape. L long, F or X flex,
   // K or C stubby, H soft grip (softGrip below); 8xx/7x7 teeth and the TS72/TMR fingertips are round heads.
   function ratchetKind(m) {
@@ -1641,12 +1654,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // wrenches
     [/^(S?OEX[LSR]?S?M?|GOEXM?|OXIR?M?|OSHM?|SOEXRM?|BOER[MFS]*|FHOM|G?VSM?)[5-8]\d\d[A-Z]{0,3}$/, "set-wrench"],
     [/^BLPCWSM?\d{3}$/, "set-wrench"], [/^SRXRM?\d{3}[A-Z]?$/, "set-wrench"], [/^RTBM?\d{3}$/, "set-wrench"], [/^RTB(?<m>M)?(?<n>\d{1,2})$/, "wrench-ratchet", null, wrenchSize], // T-handle ratcheting box
+    [/^SRXR(?<m>M)?(?<n>\d{1,2})[A-Z]?$/, "wrench-speed", null, wrenchSize], // SRXRM13: speed open end
     [/^VSM52(?<n>\d{2})B$/, "wrench-open", null, (m) => m.groups.n + " mm"], // four way angle head
     [/^(SOEXR|OEXR|OXIR|BOER)(?<m>M)?[FS]?(?<n>\d{1,3})[A-Z]*$/, "wrench-ratchet", null, wrenchSize],
     [/^(S?OEX[LS]?|GOEX|WOEX|OSH|OXI|FHO)(?<m>M)?(?<n>\d{1,3})[A-Z]*$/, "wrench", null, wrenchSize],
     [/^BLPCW(?<m>M)?(?<n>\d{1,4})$/, "wrench", null, (m) => (m.groups.m ? m.groups.n + " mm" : fracDigits(m.groups.n))],
     [/^(X[A-Z]{0,2}|CXM?|SBXM?|LTAM?|DSM?|VOM?|RB[MYAZ]*|R|RYAM?|BXORM?|CRB)(?<n>\d{3})(?<k>K?[A-Z]?)$/, (m) => (/K/.test(m.groups.k) || !pairOf(m.groups.n) ? "set-wrench" : null)],
-    [/^(?:R|RB|RYA|RBZ|BXOR)(?<m>M)?(?<n>\d{2,4})[A-Z]{0,2}$/, "wrench-ratchet", null, pairSize], // R810C, RBM78SC, R3640SA
+    [/^(?:R|RB|RYA|RBZ|BXOR)(?<m>M)?(?<n>\d{2,4})[A-Z]{0,2}$/, "wrench-rbox", null, pairSize], // R810C, RBM78SC, R3640SA: ratcheting box on both ends
     [/^(XID|XB|XS|XSO|XO|XDH|XLE|SBX|LTA|CRB)(?<m>M)?(?<n>\d{2,4})[A-Z]{0,2}$/, "wrench-box", null, pairSize],
     [/^CX(?<m>M)?(?<n>\d{2,4})[A-Z]?$/, "crowfoot", null, pairSize],
     [/^(DS|VO)(?<m>M)?(?<n>\d{2,4})[A-Z]?$/, "wrench-open", null, pairSize],
@@ -1680,10 +1694,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // storage (KER above is a knife)
     [/^KR(SC|BC)/, "storage-cart"], [/^K[A-Z]{1,4}\d/, "storage"],
     // cordless: CT impact, CTR ratchet, CDR drill, CTS screwdriver, CTGR grinder, CTB battery, CTC charger
-    [/^CTB\d/, "battery"], [/^CTC\d/, "charger"], [/^CTRS\d/, "cl18-saw"], [/^CTRG\d/, "rivet"], [/^CTR\d/, "power-ratchet"],
+    [/^CTB\d/, "battery"], [/^CTC\d/, "charger"], [/^CTRS\d/, "cl18-saw"], [/^CTRG\d/, "rivet"], [/^CTR\d/, "power-ratchet", (m) => (/^CTR[78][12]\d(?!\d)/.test(m.input) ? '1/4"' : /^CTR[78]\d\d(?!\d)/.test(m.input) ? '3/8"' : null)],
     [/^C?TGRS\d/, "grinder-die"], [/^CTGR\d/, "grinder-angle"], [/^CTS[RS]?\d/, "power-driver"], [/^CDR[RS]?\d/, "power-drill"],
     [/^CT(BF|PP)\d/, "polisher"], [/^CT(L|FL|LED|LAR|LZ|LUV|LUH|LU)\d/, "shop"], [/^CTG\d/, "thermometer"], [/^CTINF/, "tire-inflator"],
-    [/^CT(Q|J)?\d/, "power"],
+    [/^CT(Q|J)?\d/, "power", (m) => (/^CT825/.test(m.input) ? '1/4"' : /^CT[78]\d\d(?!\d)/.test(m.input) ? '3/8"' : /^CT91\d\d/.test(m.input) ? '3/4"' : /^CT(88|90)\d\d/.test(m.input) ? '1/2"' : null)],
     // air tools (FAR72 is an air ratchet, not a 72-tooth 3/8" ratchet)
     [/^(FAR|PTR)\d/, "air-ratchet"], [/^(IM(3\d|\d{4})[A-Z]?|MG\d{3,4}[A-Z]*|PT\d{3}[A-Z]?)$/, "air-impact"], [/^PH\d{3,4}/, "air-hammer"], [/^PHG?\d{2,4}[A-Z]*$/, "air-bit"], [/^PTGR\d/, "grinder-die"],
     [/^PIT\d/, "hand-impact"],
@@ -1700,7 +1714,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^A80A?$/, "extractor"], [/^A(15|17|26|172)A?$/, "socket", at('1/2"')], [/^IM\d{3}[PR]$/, "other"], [/^GLD\d{3}$/, "socket", at('3/4"')],
     [/^(BWDM?|BW|DW)\d{3,4}[A-Z]?$/, "socket", at('3/4"')], [/^(WH\d{3}|TTWY\d{3}A?|B\d{4})$/, "socket", at('1/2"')], [/^PPM?\d{3}A$/, "socket"],
     [/^BPR(?<d>[TFSL])R?\d{3}/, "ratchet", D],
-    [new RegExp(`^C?(?<d>[TFSL])(?<mods>[ABCFHKLMNORSXYZ]{0,4})(?<teeth>${tooth})(?!\\d)[A-Z]{0,4}$`), ratchetKind, D, null, /^C?[TFSL]M?I?X[A-Z]/],
+    [RATCHET_PN, ratchetKind, D, null, /^C?[TFSL]M?I?X[A-Z]/],
     [/^(?<d>[TFSL])M?[67]7A?$/, "adapter", D], // TM77, F77, S77A ratchet adaptors
     [/^(?<d>[TFL])R?S70A?$|^TMS70A?$/, "speeder", (m) => ({ T: '1/4"', F: '3/8"', L: '1/2"' })[m.input[0]]], // ratchet spinners (LRS70A is 1/2")
     [/^(?<d>[TFSL])(MS|N)?4[A-Z]{0,2}$/, "speeder", D], // TMS4E, F4LB, S4, SN4B
@@ -1784,7 +1798,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const VARIANT_WORDS = {
     ratchet: [[/(long|extra).{0,24}flex|flex.{0,24}long/i, "ratchet-long-flex"], [/thumb ?wheel/i, "ratchet-thumbwheel"], [/round[- ]?head|sealed head/i, "ratchet-round"], [/flex/i, "ratchet-flex"], [/stubby|stubbie|short|compact/i, "ratchet-stubby"], [/long|\bxl\b/i, "ratchet-long"]],
     socket: [[/spark ?plug/i, "socket-spark"], [/o2|oxygen sensor|sensor socket/i, "socket-o2"], [/oil filter|filter (cap|socket)/i, "filter-wrench"], [/swivel|universal|u-?joint|wobble/i, "socket-swivel"], [/impact/i, "socket-impact"], [/torx|\bhex\b|allen|\bbit\b|driver socket|triple square|spline/i, "socket-bit"], [/deep/i, "socket-deep"], [/12[- ]?(pt|point)/i, "socket-12"]],
-    wrench: [[/oil filter|filter wrench/i, "filter-wrench"], [/adjustable|crescent/i, "wrench-adjust"], [/flare|line wrench|tube nut/i, "wrench-flare"], [/ratchet/i, "wrench-ratchet"], [/combination/i, "wrench"], [/box/i, "wrench-box"], [/open[- ]?end/i, "wrench-open"]],
+    wrench: [[/oil filter|filter wrench/i, "filter-wrench"], [/adjustable|crescent/i, "wrench-adjust"], [/flare|line wrench|tube nut/i, "wrench-flare"], [/speed open|ratcheting open/i, "wrench-speed"],
+      [/ratchet(ing)? box(?!.{0,12}open)|double box.{0,16}ratchet/i, "wrench-rbox"], [/ratchet/i, "wrench-ratchet"], [/combination/i, "wrench"], [/box/i, "wrench-box"], [/open[- ]?end/i, "wrench-open"]],
     pliers: [[/strip/i, "pliers-strip"], [/crimp/i, "pliers-crimp"], [/hose ?clamp/i, "pliers-hose"], [/needle|long ?nose/i, "pliers-needle"], [/diagonal|\bdikes?\b|nipper|side ?cut|flush ?cut|cutter/i, "pliers-diag"], [/locking|vise/i, "pliers-locking"], [/water ?pump|adjustable joint|channel|groove ?joint|tongue/i, "pliers-pump"], [/snap ?ring|retaining ring|circlip/i, "pliers-snap"]],
     power: [[/rivet/i, "rivet"], [/heat gun/i, "heatgun"], [/polisher|buffer|sander/i, "polisher"], [/cut-?off/i, "cutoff"], [/air.{0,16}(hammer|chisel)/i, "air-hammer"], [/air.{0,16}ratchet|pneumatic ratchet/i, "air-ratchet"], [/(cordless|electric|battery|\d+(\.\d)?\s?v\b).{0,24}ratchet|ratchet.{0,12}cordless/i, "power-ratchet"],
       [/\bsaw\b|reciprocat|sawzall/i, "cl18-saw"], [/die grinder|straight grinder/i, "grinder-die"], [/grinder|cut-?off/i, "grinder-angle"], [/impact driver|hex driver|1\/4.{0,6}hex|screw ?driver/i, "power-driver"], [/drill/i, "power-drill"],
@@ -1806,7 +1821,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // that, the part number: 14.4V tools carry 3-digit 7xx/8xx numbers (CT761, CTR814, CT861, CTR881), 18V tools
   // 88xx/90xx/91xx (CT8850, CT9075, CDR9015), and packs CTB817x (14.4V) or CTB185/CTB818x (18V).
   const CORDLESS = {
-    14: { "power-ratchet": "cl14-ratchet", power: "cl14-impact", "power-stubby": "cl14-impact", "power-12": "cl14-impact", "power-driver": "cl14-driver", battery: "cl14-battery", "cl18-saw": "cl14-saw" },
+    14: { "power-ratchet": "cl14-ratchet", power: "cl14-impact", "power-stubby": "cl14-impact", "power-12": "cl14-impact", "power-driver": "cl14-driver", "power-drill": "cl14-drill", "grinder-die": "cl14-die", battery: "cl14-battery", "cl18-saw": "cl14-saw" },
     18: { "power-ratchet": "cl18-ratchet", power: "cl18-impact", "power-stubby": "cl18-impact", "power-12": "cl18-impact", "power-driver": "cl18-driver", "power-drill": "cl18-drill", battery: "cl18-battery", "grinder-angle": "cl18-grinder", cutoff: "cl18-cutoff" },
   };
   function voltOf(text, pn) {
@@ -1822,7 +1837,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const ART_LABEL = {
     ratchet: "Ratchet", "ratchet-long": "Long-handle ratchet", "ratchet-stubby": "Stubby ratchet", "ratchet-flex": "Flex-head ratchet",
     socket: "6-point socket", "socket-12": "12-point socket", "socket-deep": "Deep socket", "socket-impact": "Impact socket", "socket-swivel": "Swivel socket", "socket-bit": "Bit socket",
-    wrench: "Combination wrench", "wrench-ratchet": "Ratcheting wrench", "wrench-flare": "Flare-nut wrench", "wrench-box": "Box-end wrench", "wrench-open": "Open-end wrench", "wrench-adjust": "Adjustable wrench",
+    wrench: "Combination wrench", "wrench-ratchet": "Ratcheting wrench", "wrench-flare": "Flare-nut wrench", "wrench-box": "Box-end wrench", "wrench-open": "Open-end wrench", "wrench-adjust": "Adjustable wrench", "wrench-speed": "Speed open-end wrench", "wrench-rbox": "Ratcheting box wrench",
     pliers: "Slip-joint pliers", "pliers-needle": "Needle-nose pliers", "pliers-diag": "Diagonal cutters", "pliers-locking": "Locking pliers", "pliers-pump": "Water-pump pliers", "pliers-snap": "Snap-ring pliers",
     pick: "Hook pick", "pick-straight": "Straight pick", "pick-45": "45° pick", "pick-complex": "Complex pick",
     screwdriver: "Flat screwdriver", "screwdriver-phillips": "Phillips screwdriver", "screwdriver-torx": "Torx screwdriver", "screwdriver-stubby": "Stubby screwdriver", "screwdriver-stubby-phillips": "Stubby Phillips", "screwdriver-ratchet": "Ratcheting screwdriver",
@@ -1839,7 +1854,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "hammer-ballpeen": "Ball peen hammer", "hammer-deadblow": "Dead blow hammer", "hammer-mallet": "Rubber mallet", "punch-pin": "Punch",
     "socket-spark": "Spark plug socket", "socket-o2": "O2 sensor socket", "filter-wrench": "Oil filter wrench", "torque-click": "Click torque wrench", "torque-angle": "Torque angle gauge",
     "pliers-strip": "Wire strippers", "pliers-crimp": "Crimpers", "pliers-hose": "Hose clamp pliers", tapdie: "Tap & die", file: "File", scraper: "Gasket scraper", tape: "Tape measure", knife: "Utility knife",
-    "cl14-ratchet": "14.4V cordless ratchet", "cl14-impact": "14.4V cordless impact", "cl14-driver": "14.4V impact driver", "cl14-battery": "14.4V battery",
+    "cl14-ratchet": "14.4V cordless ratchet", "cl14-impact": "14.4V cordless impact", "cl14-driver": "14.4V impact driver", "cl14-drill": "14.4V drill/driver", "cl14-die": "14.4V die grinder", "cl14-battery": "14.4V battery",
     "cl18-impact": "18V cordless impact", "cl18-driver": "18V impact driver", "cl18-drill": "18V drill/driver", "cl18-ratchet": "18V cordless ratchet",
     "cl18-grinder": "18V angle grinder", "cl18-cutoff": "18V cut-off tool", "cl18-saw": "18V reciprocating saw", "cl14-saw": "14.4V reciprocating saw", "cl18-battery": "18V battery",
     "floor-jack": "Floor jack", "jack-stand": "Jack stands", "grease-gun": "Grease gun", "drain-pan": "Oil drain pan", funnel: "Funnel", blowgun: "Blow gun", "air-hose": "Air hose",
@@ -1905,9 +1920,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const m = pn.match(/^(?<p>[A-Z]+?)(?<m>M?)(?<f>[5-8])(?<n>\d\d)[A-Z]{0,3}$/);
       const n = m ? +m.groups.n : 7, p = m ? m.groups.p : pn;
       if (!(n >= 2 && n <= 20)) return null;
-      const member = /^(S?OEXR|S?OXR|OXIR|BOER|SRXR|SOEXR)/.test(p) ? "ratchet" : /^(G?S?OEXL|OEXL)/.test(p) ? "long" : /^(R?XF|RXH|RXS|SRXF)/.test(p) ? "flare"
-        : /^(X|SBX|LTA|CRB|RB)/.test(p) ? "box" : /^(G?VS|DS|VO)/.test(p) ? "open" : "combo";
-      const mm = metric ?? !!(m && m.groups.m);
+      // what each wrench in it looks like: "ratchet+rev" for BOERM712, "combo+long" for SOEXLM710B, "speed" for SRXRM710
+      const member = wrenchLook(pn.replace(/^G(?=[A-Z])/, ""), false) || "combo";
+      const mm = metric ?? !!(m && (m.groups.m || /M[A-Z]?$/.test(p)));
       const sizes = mm ? run(RUN.wrenchMM, n, n >= 10 ? RUN.wrenchMM[Math.max(0, 14 - n)] : "10mm", range) : run(RUN.wrenchSAE, n, n >= 10 ? '1/4"' : '5/16"', range);
       return member + ";" + sizes.join(",");
     }
@@ -1927,6 +1942,97 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return null;
   }
+  /* ---------- how one tool looks within its kind ----------
+     Snap-on families look different inside one kind of tool: SOEXL wrenches are long and slim, OXI midget,
+     BOER reversible ratcheting ones carry a switch on the box end, XO box wrenches have a deep 60° offset,
+     SRXR a speed open end; FCF72 is a compact flex ratchet, FLLF80 an extra-long one, TNF72 a round swivel
+     head; a leading G is the black industrial finish; cordless tools come in colors (CTR868GMDB is gunmetal)
+     and with long necks. lookOf() turns the number (and the name) into a few words such as "long", "rev",
+     "ind" or "c-gm" that the drawings and the 3D models read. */
+  // wrench families, by part number without the industrial G: the base build, then its details
+  const WRENCH_LOOK = [
+    [/^(R?XF|RXH|RXS|SRXF)/, "flare"], [/^BOERM?F/, "ratchet+rev+flex"], [/^BOERM?S/, "ratchet+rev+short"], [/^(BOER|SOEXR)/, "ratchet+rev"], [/^OXIR/, "ratchet+short"],
+    [/^(OEXR|S?OXR|RTB)/, "ratchet"], [/^SRXR/, "speed"], [/^(RYA|BXOR|RBYA)/, "rbox+off25"], [/^(R|RB|RBZ)M?\d+SC?$/, "rbox+short"], [/^(R|RB|RBZ)M?\d/, "rbox"],
+    [/^(S?OEX|WOEX)L/, "combo+long"], [/^S?OEXS/, "combo+short"], [/^OXIM?\d+(\.\d)?SB/, "combo+midget+6pt"], [/^OXI/, "combo+midget"], [/^OSH/, "combo+6pt"], [/^FHO/, "combo+flex"],
+    [/^XOM?\d/, "box+deep"], [/^XSO?M?\d/, "box+short"], [/^SBX/, "box+s"], [/^LTA/, "box+slim"], [/^(X|CRB)/, "box"],
+    [/^VS/, "open+angle"], [/^(DS|VO|COE|ANWR)/, "open"], [/^(S?OEX|WOEX|BLPCW)/, "combo"],
+  ];
+  // one wrench (not a set): a 3-digit SAE size is the short handle (OEX080B), and so is SOEXM100 next to SOEXM10
+  const wrenchLook = (pn, one = true) => (one && /^(S?OEX\d{3}|SOEXM\d{3})(?!\d)/.test(pn) ? "combo+short" : firstHit(WRENCH_LOOK, pn) || "");
+  const WRENCH_BASE = { wrench: "combo", "wrench-ratchet": "ratchet", "wrench-speed": "speed", "wrench-rbox": "rbox", "wrench-box": "box", "wrench-open": "open", "wrench-flare": "flare" };
+  const WRENCH_WORDS = [[/\blong\b/i, "long"], [/short|stubby/i, "short"], [/midget/i, "midget"], [/6[- ]?(pt|point)/i, "6pt"], [/flex/i, "flex"], [/reversible/i, "rev"], [/deep/i, "deep"], [/s-?shaped/i, "s"], [/slim/i, "slim"], [/angle head|four ?way/i, "angle"]];
+  // Snap-on paint codes after the model number: CTR868GMDB gunmetal (DB = tool only), CT861G green, CTR861HV hi-viz
+  const PAINT = { GM: "c-gm", G: "c-g", O: "c-o", HV: "c-hv", MB: "c-mb" };
+  const PAINT_WORDS = [[/gun ?metal/i, "c-gm"], [/green/i, "c-g"], [/orange/i, "c-o"], [/hi[- ]?vi[sz]|yellow/i, "c-hv"], [/blue/i, "c-mb"]];
+  function paintOf(pn, text) {
+    const w = firstHit(PAINT_WORDS, text); if (w) return w;
+    const m = pn.match(/^C[A-Z]{1,6}\d{3,4}([A-Z]*)$/); if (!m) return null;
+    const code = m[1].replace(/(DB|K\d|J\d?|W\d)$/, "").replace(/^A(?=[A-Z])/, "");
+    return PAINT[code] || null;
+  }
+  const GRIP_KINDS = /^(wrench-adjust|pliers|pry|screwdriver|pick|trim-tool|set-pliers|set-screwdriver|set-pick)/;
+  function lookOf(kind, pn, text, chosen) {
+    const t = [], fam = familyOf(kind), p = pn.replace(/^G(?=[A-Z])/, "");
+    // black industrial finish: GOEXM13B, GSL832, GTM830 (the number reads the same without its G)
+    if (["ratchet", "socket", "wrench", "breaker", "extension", "ujoint", "adapter", "speeder", "set"].includes(fam)
+      && ((/^G[A-Z]/.test(pn) && ((g) => g && familyOf(g.key) === fam)(pnGuess(p))) || /industrial|black (finish|chrome|oxide)/i.test(text))) t.push("ind");
+    if (fam === "wrench" && kind !== "wrench-adjust") {
+      const [base, ...more] = (chosen ? "" : wrenchLook(p)).split("+");
+      if (!base || base === WRENCH_BASE[kind]) t.push(...more);
+      for (const [re, w] of WRENCH_WORDS) if (re.test(text) && !t.includes(w)) t.push(w);
+    }
+    if (fam === "ratchet") {
+      const m = chosen ? null : p.match(RATCHET_PN), mods = m ? m.groups.mods : "", round = /round/.test(kind);
+      if ((m && m.groups.d === "F" && /C/.test(mods) && m.groups.teeth === "72") || /compact/i.test(text)) t.push("compact");
+      if (/LL/.test(mods) || /extra[- ]?long/i.test(text)) t.push("xlong");
+      if (/X/.test(mods) || /locking flex/i.test(text)) t.push("lock");
+      if (round && (/F/.test(mods) || (m && /^7[34]7$/.test(m.groups.teeth)) || /swivel|flex/i.test(text))) t.push("flex");
+      if ((/R/.test(mods) && !/MR/.test(mods)) || /quick[- ]?release/i.test(text)) t.push("qr");
+      if ((/[BO]/.test(mods) && /F/.test(mods)) || /bent|offset/i.test(text)) t.push("bent");
+    }
+    if (fam === "power") {
+      const c = paintOf(pn, text); if (c) t.push(c);
+      if (/ratchet/.test(kind)) {
+        if (/^CTR869/.test(pn) || /extra[- ]?long/i.test(text)) t.push("xneck");
+        else if (/^CTR(\d\d7|868)/.test(pn) || /long[- ]?neck|extended/i.test(text)) t.push("neck");
+        if (/^CTR881/.test(pn) || /high[- ]?speed/i.test(text)) t.push("fast");
+      }
+      if (/drill/.test(kind) && (/^CDR(88|90)50/.test(pn) || /hammer/i.test(text))) t.push("hammer");
+    }
+    // colored grips: ADHW8AO, SRPCR107O and SAPB200O are orange, ...G green
+    if (GRIP_KINDS.test(kind)) { const m = pn.match(/\d[A-Z]{0,3}?(O|G)$/), w = firstHit(PAINT_WORDS, text); if (w || m) t.push(w || (m[1] === "O" ? "c-o" : "c-g")); }
+    return t;
+  }
+  // a truer name for the card: "Long combination wrench", "Reversible ratcheting wrench set", "Gunmetal 14.4V long-neck ratchet"
+  const LOOK_LABEL = [
+    [/^wrench$/, "long", "Long combination wrench"], [/^wrench$/, "midget", "Midget combination wrench"], [/^wrench$/, "short", "Short combination wrench"],
+    [/^wrench$/, "flex", "Flex-head combination wrench"], [/^wrench$/, "6pt", "6-point combination wrench"],
+    [/^wrench-ratchet$/, "flex", "Flex-head ratcheting wrench"], [/^wrench-ratchet$/, "rev", "Reversible ratcheting wrench"], [/^wrench-rbox$/, "off25", "Offset ratcheting box wrench"],
+    [/^wrench-box$/, "deep", "Deep offset box wrench"], [/^wrench-box$/, "s", "S-shaped box wrench"], [/^wrench-box$/, "slim", "Slimline box wrench"], [/^wrench-box$/, "short", "Short box wrench"],
+    [/^wrench-open$/, "angle", "Angle-head open-end wrench"],
+    [/^ratchet/, "compact", "Compact flex-head ratchet", "Compact ratchet"], [/^ratchet/, "xlong", "Extra-long flex-head ratchet", "Extra-long ratchet"], [/^ratchet/, "lock", "Locking flex-head ratchet"],
+    [/^ratchet-round/, "flex", "Round swivel-head ratchet"], [/^ratchet/, "bent", "Bent-handle flex ratchet"], [/^ratchet/, "qr", null, "Quick-release ratchet"],
+    [/^cl1\d-ratchet$/, "xneck", (v) => v + "V extra-long ratchet"], [/^cl1\d-ratchet$/, "neck", (v) => v + "V long-neck ratchet"], [/^cl1\d-ratchet$/, "fast", (v) => v + "V high-speed ratchet"],
+    [/drill$/, "hammer", (v) => (v ? v + "V hammer drill" : "Hammer drill")],
+  ];
+  const SET_LABEL = { rev: "Reversible ratcheting wrench set", ratchet: "Ratcheting wrench set", long: "Long wrench set", short: "Short wrench set", midget: "Midget wrench set", speed: "Speed wrench set", rbox: "Ratcheting box wrench set", deep: "Deep offset wrench set", box: "Box-end wrench set", open: "Open-end wrench set", flare: "Flare-nut wrench set", flex: "Flex-head wrench set" };
+  const PAINT_NAME = { "c-gm": "Gunmetal", "c-g": "Green", "c-o": "Orange", "c-hv": "Hi-viz", "c-mb": "Blue" };
+  function lookLabel(kind, look, label, spec) {
+    let out = label;
+    if (kind === "set-wrench" && spec) { const ws = spec.split(";")[0].split("+"); out = SET_LABEL[["rev", "long", "short", "midget", "deep", "flex"].find((w) => ws.includes(w))] || SET_LABEL[ws[0]] || label; }
+    for (const [re, w, flex, plain] of LOOK_LABEL) {
+      if (!re.test(kind) || !look.includes(w)) continue;
+      const v = (kind.match(/^cl(1\d)/) || [])[1] === "14" ? "14.4" : (kind.match(/^cl(1\d)/) || [])[1] || "";
+      const pick = /flex/.test(kind) || w === "flex" || w === "lock" || w === "bent" ? flex : plain || flex;
+      if (pick) { out = typeof pick === "function" ? pick(v) : pick; break; }
+    }
+    if (look.includes("ind")) out = "Industrial " + out.charAt(0).toLowerCase() + out.slice(1);
+    const c = look.find((w) => PAINT_NAME[w]);
+    if (c && familyOf(kind) === "power") out = PAINT_NAME[c] + " " + out;
+    return out;
+  }
+  // cordless ratchets and impacts carry their drive in the number (CTR827 is 1/4", CT861 3/8")
+  const CORDLESS_DRIVE = /^(cl1[48]-(ratchet|impact)|power(-ratchet|-12|-stubby)?)$/;
   function artOf(r) {
     const chosen = r.art === "ratchet-hard" ? "ratchet" : r.art && ART[r.art] ? r.art : null;
     const text = [r.name, storeOf(r) && storeOf(r).name].filter(Boolean).join(" ");
@@ -1945,11 +2051,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Drive size: what the name says, then the part number's drive letter, then the category. The part number
     // beats the category because the add form starts on 3/8" Drive Tools, so an S80A saved without changing
     // it would otherwise read as 3/8".
-    const drive = saidDrive(text) || ((DRIVE_KINDS.includes(familyOf(kind)) || /^set/.test(kind)) && g && g.drive) || CAT_DRIVE[r.category] || null;
+    const drive = saidDrive(text) || ((DRIVE_KINDS.includes(familyOf(kind)) || /^set/.test(kind) || CORDLESS_DRIVE.test(kind)) && g && g.drive) || CAT_DRIVE[r.category] || null;
     const spec = ["set", "set-wrench", "set-extension"].includes(kind) ? setSpec(kind, pn, text, drive) : null;
     // a set with no range in its name shows what its part number says: "12 pc · 8mm–19mm"
     const z = spec && spec.split(";")[1].split(","), size = sizeOf(kind, text, pn, drive) || (z && z.length > 1 ? `${z.length} pc · ${z[0]}–${z[z.length - 1]}` : null);
-    return { key: kind, drive, size, spec, nums: kind === "set" ? setNums(setRange(text)) || specNums(spec) : null, unit: kind === "set" ? (setRange(text) || {}).unit || (spec ? (/mm/.test(spec) ? "MM" : "SAE") : null) : null, label: (!chosen && !key && g && kind === g.key && firstHit(PN_LABEL, pn)) || ART_LABEL[kind] || "Drawing", pn };
+    const look = lookOf(kind, pn, text, chosen), named = !chosen && !key && g && kind === g.key && firstHit(PN_LABEL, pn);
+    return { key: kind, drive, size, spec, look, nums: kind === "set" ? setNums(setRange(text)) || specNums(spec) : null, unit: kind === "set" ? (setRange(text) || {}).unit || (spec ? (/mm/.test(spec) ? "MM" : "SAE") : null) : null, label: named || lookLabel(kind, look, ART_LABEL[kind] || "Drawing", spec), pn };
   }
   /* ---------- the size printed on a drawing: 11mm, 9/16", T40, 1/2 × 9/16 ...
      Read from the tool's name first, then from Snap-on's part number when the
@@ -1957,7 +2064,7 @@ document.addEventListener("DOMContentLoaded", () => {
      no number rather than a wrong one. */
   const SIZE_SLOT = {
     socket: "13", "socket-12": "13", "socket-deep": "13", "socket-impact": "13", "socket-swivel": "13", "socket-spark": "5/8", "socket-o2": "7/8", "socket-bit": "T40",
-    wrench: "13 mm", "wrench-ratchet": "13 mm", "wrench-flare": "13 × 15 mm", "wrench-box": "13 × 15 mm", "wrench-open": "13 × 15 mm",
+    wrench: "13 mm", "wrench-ratchet": "13 mm", "wrench-flare": "13 × 15 mm", "wrench-box": "13 × 15 mm", "wrench-open": "13 × 15 mm", "wrench-speed": "13 mm", "wrench-rbox": "13 × 15 mm",
     "set-wrench": "SET", "set-bit": "BITS", "set-kit": "KIT",
     power: "3/8", "power-stubby": "3/8", "power-12": "1/2", "air-impact": "1/2 AIR", extension: '6"',
     "cl14-ratchet": "3/8", "cl14-impact": "3/8", "cl18-impact": "1/2", "cl18-ratchet": "3/8",
@@ -2014,7 +2121,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Where each drawing's bottom edge is and how wide it is, so its shadow (and reflection) sit right under it
   // instead of on one fixed line. Measured once per kind of tool in a hidden SVG.
   const artBox = {};
-  function artBounds(key) {
+  function artBounds(key, svg) {
     if (artBox[key]) return artBox[key];
     let box = { y: 92, x: 14, w: 132 };
     try {
@@ -2025,7 +2132,7 @@ document.addEventListener("DOMContentLoaded", () => {
         m.style.cssText = "position:absolute;left:-9999px;top:0;width:160px;height:100px;visibility:hidden";
         document.body.appendChild(m);
       }
-      m.innerHTML = `<g>${ART[key] || ART.other}</g>`;
+      m.innerHTML = `<g>${svg || ART[key] || ART.other}</g>`;
       const b = m.firstChild.getBBox();
       if (b.height) box = { y: Math.min(96, b.y + b.height), x: b.x, w: b.width };
     } catch (e) { /* not measurable yet: use the old fixed floor */ }
@@ -2036,20 +2143,83 @@ document.addEventListener("DOMContentLoaded", () => {
      extensions lie in their clip rail shortest in front. */
   const sizeMM = (z) => { const m = String(z).match(/^([\d.]+)mm$/); return m ? +m[1] : fracVal(String(z).replace(/[^\d\/-]/g, "")) * 25.4; };
   const f1 = (x) => +x.toFixed(1);
+  /* ---------- wrench drawings put together from how the wrench is made ----------
+     The pieces of the hand-drawn combination wrench (a 15° open end, a 12-point box with its chamfer ring),
+     assembled per family: long and slim, short, midget, a ratcheting box (with a switch when it's
+     reversible), a speed open end with its short lower jaw, a 6-point box, a hinged flex head, ratcheting
+     boxes on both ends, an S-shaped shank. base: combo, ratchet, speed, rbox, box, open, flare. */
+  const star = (n, rOut, rIn) => "M" + Array.from({ length: n * 2 }, (_, i) => { const a = -Math.PI / 2 + (i * Math.PI) / n, r = i % 2 ? rIn : rOut; return `${f1(r * Math.cos(a))} ${f1(r * Math.sin(a))}`; }).join(" L") + " Z";
+  const WA = { // where the two heads sit and how big they are: [left x, right x, open radius, box radius, shank half-height left, right]
+    std: [28, 134, 18, 17, 6, 5], long: [19, 142, 14, 13.4, 4.4, 3.8], short: [42, 120, 17, 16, 6, 5.2], midget: [52, 110, 16.5, 15.5, 6.2, 5.6],
+  };
+  function wrenchArt(base, mods = [], size = "") {
+    const has = (w) => mods.includes(w);
+    const [xl, xr, rO, rB, hl, hr] = WA[["long", "midget", "short"].find(has) || "std"];
+    const slim = has("slim") ? 0.75 : 1, two = ["box", "rbox", "flare"].includes(base), y = 50;
+    const at = (x, rot, body, sx = 1) => `<g transform="translate(${f1(x)} ${y})${rot ? ` rotate(${rot})` : ""}${sx !== 1 ? ` scale(${sx} 1)` : ""}">${body}</g>`;
+    // open end facing -x around (0,0); a speed open end has a short lower jaw so it slips round the nut
+    const open = (R, speed) => {
+      const g = R * 0.345, tx = Math.sqrt(R * R - g * g), k = R / 18, tr = g + 0.8;
+      const jaw = speed ? `A${R} ${R} 0 1 1 ${f1(-R * 0.5)} ${f1(R * 0.866)} L${f1(-R * 0.42)} ${f1(tr)}` : `A${R} ${R} 0 1 1 ${f1(-tx)} ${f1(g)} L-1 ${f1(tr)}`;
+      return `<path class="s" d="M${f1(-tx)} ${f1(-g)} ${jaw} L-1 ${f1(tr)} A${f1(tr)} ${f1(tr)} 0 0 0 -1 ${f1(-tr)} Z"/><path class="sh" d="M${f1(-12 * k)} ${f1(-8.4 * k)} A${f1(15 * k)} ${f1(15 * k)} 0 0 1 ${f1(10 * k)} ${f1(-11.6 * k)} L${f1(9 * k)} ${f1(-10 * k)} A${f1(13 * k)} ${f1(13 * k)} 0 0 0 ${f1(-11 * k)} ${f1(-7.2 * k)} Z"/>`;
+    };
+    // box ends around (0,0), the shank coming in from -x
+    const shine = (R) => { const k = R / 17; return `<path class="sh" d="M${f1(-12.5 * k)} ${f1(-6 * k)} A${f1(14 * k)} ${f1(14 * k)} 0 0 1 ${f1(-2 * k)} ${f1(-13.7 * k)} L${f1(-1.6 * k)} ${f1(-11.8 * k)} A${f1(12 * k)} ${f1(12 * k)} 0 0 0 ${f1(-10.6 * k)} ${f1(-5.2 * k)} Z"/>`; };
+    const neck = (R) => { const k = R / 17; return `<path class="s" d="M${f1(-20 * k)} ${f1(-6.8 * k * slim)} L${f1(-10 * k)} ${f1(-10.5 * k * slim)} V${f1(10.5 * k * slim)} L${f1(-20 * k)} ${f1(6.8 * k * slim)} Z"/>`; };
+    const box = (R) => neck(R) + `<circle class="s" r="${f1(R)}"/><circle class="nl" r="${f1(R * 0.74)}" opacity=".45"/><path class="pit" d="${has("6pt") ? star(3, R * 0.5, R * 0.5) : star(12, R * 0.553, R * 0.46)}"/>` + shine(R);
+    const ratchet = (R, lever) => neck(R) + `<circle class="s" r="${f1(R)}"/><circle class="d" r="${f1(R * 0.7)}"/><circle class="nl" r="${f1(R * 0.59)}" stroke="#fff" stroke-opacity=".5" stroke-dasharray="1.4 1.6"/><path class="pit" d="${star(12, R * 0.46, R * 0.39)}"/>`
+      + (lever ? `<rect class="d" x="${f1(-R * 0.86)}" y="${f1(-R * 0.62)}" width="4.6" height="${f1(R * 1.24)}" rx="2.3"/><rect class="sh" x="${f1(-R * 0.82)}" y="${f1(-R * 0.5)}" width="1.2" height="${f1(R)}" rx=".6"/><circle class="s" cx="${f1(-R * 0.63)}" cy="0" r="1.9"/>` : `<rect class="d" x="-7" y="${f1(-R - 3.4)}" width="14" height="4.6" rx="2.3"/>`) + shine(R);
+    const flare = (R) => `<circle class="s" r="${f1(R)}"/><path class="pit" d="${star(3, R * 0.5, R * 0.5)}"/><rect class="gp" x="${f1(-R * 0.2)}" y="${f1(-R - 1.5)}" width="${f1(R * 0.4)}" height="${f1(R * 0.9)}"/><path class="nl" d="M${f1(-R * 0.2)} ${f1(-R + 0.5)} V${f1(-R * 0.45)} M${f1(R * 0.2)} ${f1(-R + 0.5)} V${f1(-R * 0.45)}"/>` + shine(R);
+    const end = (kind, R, lever) => (kind === "ratchet" ? ratchet(R, lever) : kind === "flare" ? flare(R) : box(R));
+    let out = "";
+    if (has("s")) { // S-shaped box wrench: the heads sit off the line, joined by a curved shank
+      const a = [24, 41], b = [136, 59];
+      out += `<path class="to" stroke-width="12.6" d="M${a[0]} ${a[1]} C70 ${a[1]} 90 ${b[1]} ${b[0]} ${b[1]}"/><path class="tsg" stroke-width="9.4" d="M${a[0]} ${a[1]} C70 ${a[1]} 90 ${b[1]} ${b[0]} ${b[1]}"/>`;
+      out += `<g transform="translate(${a[0]} ${a[1]}) scale(-1 1)">${box(15)}</g><g transform="translate(${b[0]} ${b[1]})">${box(16.5)}</g>`;
+      return out;
+    }
+    // heads: two boxes (smaller size on the left) or an open end on the left
+    const lR = two ? rB * 0.88 : rO, sL = two ? xl - 6 : xl, sR = has("flex") ? xr - 7 : xr;
+    const x0 = sL + (two ? lR * 0.62 : 10), x1 = sR - rB * 0.94;
+    out += `<path class="s" d="M${f1(x0)} ${f1(y - hl * slim)} L${f1(x1)} ${f1(y - hr * slim)} V${f1(y + hr * slim)} L${f1(x0)} ${f1(y + hl * slim)} Z"/>`;
+    const r0 = x0 + 8, r1 = x1 - 6;
+    if (r1 - r0 > 14 && !has("slim")) out += `<rect class="rc" x="${f1(r0)}" y="${f1(y - 2.9)}" width="${f1(r1 - r0)}" height="5.8" rx="2.9"/><rect class="sh" x="${f1(r0)}" y="${f1(y - hl + 1.4)}" width="${f1(r1 - r0)}" height="1.4" rx=".7"/>`;
+    else out += `<rect class="sh" x="${f1(x0 + 4)}" y="${f1(y - hl * slim + 1)}" width="${f1(x1 - x0 - 8)}" height="1.2" rx=".6"/>`;
+    if (size && r1 - r0 > 22 && !has("slim")) out += `<text class="tx" x="${f1((r0 + r1) / 2)}" y="${y + 1.9}" font-size="${f1(Math.min(4.8, (r1 - r0) / 8))}" text-anchor="middle">${esc(size)}</text>`;
+    if (base === "open" || base === "combo" || base === "speed" || base === "ratchet") out += at(xl, -15, open(rO, base === "speed"));
+    else out += at(sL, 0, end(base === "rbox" ? "ratchet" : base, lR), -1);
+    if (base === "open") out += at(xr - 1, has("angle") ? 60 : 15, open(rO * 0.88), -1);
+    else {
+      if (has("flex")) out += `<rect class="s" x="${f1(x1 - 2)}" y="${y - 5.5}" width="9" height="11" rx="2"/><path class="nl" d="M${f1(x1 + 2.5)} ${y - 6.5} V${y + 6.5}"/><circle class="pit" cx="${f1(x1 + 2.5)}" cy="${y}" r="1.4"/>`;
+      out += at(xr, 0, end(base === "rbox" || base === "ratchet" ? "ratchet" : base === "flare" ? "flare" : "box", rB + (base === "ratchet" || base === "rbox" ? 1 : 0), has("rev")));
+    }
+    return out;
+  }
+  ART["wrench-speed"] = wrenchArt("speed", [], "13 mm");
+  ART["wrench-rbox"] = wrenchArt("rbox", [], "13 × 15 mm");
+  // 14.4V drill: the 18V drill drawing with the smaller pack's print. 14.4V die grinder (CGRS861): the 14.4V ratchet's
+  // body with a collet nut and a carbide burr where the head was.
+  ART["cl14-drill"] = ART["cl18-drill"].replace('font-size="7" text-anchor="middle">18V', 'font-size="5.4" text-anchor="middle">14.4V').replace('font-size="6.4" text-anchor="middle">18V', 'font-size="5.6" text-anchor="middle">14.4V');
+  ART["cl14-die"] = ART["cl14-ratchet"].slice(0, ART["cl14-ratchet"].indexOf('<text class="txw" x="64"'))
+    + '<path class="s" d="M38 44 L56 41 V59 L38 56 Z"/><rect class="sh" x="40" y="44.6" width="13" height="1.5" rx=".75"/><path class="s" d="M39.4 50 L35.7 56.4 L28.3 56.4 L24.6 50 L28.3 43.6 L35.7 43.6 Z"/>'
+    + '<rect class="s" x="12" y="48.6" width="14" height="2.8" rx="1"/><ellipse class="s" cx="13" cy="50" rx="5.4" ry="4.4"/><path class="nl" d="M9.4 47.6 L16.4 52.4 M9.4 52.4 L16.4 47.6"/>';
   const SET_ART = {
     "set-wrench": (spec) => {
       const [member, list] = spec.split(";"), z = list.split(",").reverse(), n = z.length; if (n < 2) return null;
+      const [b0, ...mods] = member.split("+"), base = b0 === "long" ? "combo" : b0, has = (w) => mods.includes(w) || (w === "long" && b0 === "long");
       const lo = sizeMM(z[n - 1]), hi = sizeMM(z[0]), dy = Math.min(9, 58 / (n - 1)), y0 = 76 - dy * (n - 1);
       let out = `<rect class="k" x="104" y="${f1(y0 - 7)}" width="12" height="${f1(dy * (n - 1) + 16)}" rx="2.4"/><rect class="d" x="106" y="${f1(y0 - 5)}" width="8" height="${f1(dy * (n - 1) + 12)}" rx="1.6" opacity=".6"/>`;
       z.forEach((sz, i) => {
         const t = hi > lo ? (sizeMM(sz) - lo) / (hi - lo) : 0.5, y = y0 + i * dy, r = 4.6 + t * 3.2, w = 1.5 + t * 0.9;
-        const xr = 146 - r, len = (member === "long" ? 112 : 94) + t * 26, xl = Math.max(8 + r, xr - len);
-        const end = (x, kind) => kind === "open"
-          ? `<path class="s" d="M${f1(x + r * 0.5)} ${f1(y - w)} L${f1(x)} ${f1(y - r * 0.95)} Q${f1(x - r * 1.1)} ${f1(y - r * 0.8)} ${f1(x - r * 1.2)} ${f1(y - r * 0.3)} L${f1(x - r * 0.35)} ${f1(y - r * 0.32)} L${f1(x - r * 0.35)} ${f1(y + r * 0.32)} L${f1(x - r * 1.2)} ${f1(y + r * 0.3)} Q${f1(x - r * 1.1)} ${f1(y + r * 0.8)} ${f1(x)} ${f1(y + r * 0.95)} L${f1(x + r * 0.5)} ${f1(y + w)} Z"/>`
+        const xr = 146 - r, len = (has("long") ? 112 : has("midget") ? 62 : has("short") ? 76 : 94) + t * (has("midget") ? 12 : 26), xl = Math.max(8 + r, xr - len);
+        // a speed wrench's open end has a short lower jaw; a reversible ratcheting box has its switch across the head
+        const end = (x, kind) => kind === "open" || kind === "speed"
+          ? `<path class="s" d="M${f1(x + r * 0.5)} ${f1(y - w)} L${f1(x)} ${f1(y - r * 0.95)} Q${f1(x - r * 1.1)} ${f1(y - r * 0.8)} ${f1(x - r * 1.2)} ${f1(y - r * 0.3)} L${f1(x - r * 0.35)} ${f1(y - r * 0.32)} L${f1(x - r * 0.35)} ${f1(y + r * 0.32)} ${kind === "speed" ? `L${f1(x - r * 0.62)} ${f1(y + r * 0.42)} Q${f1(x - r * 0.4)} ${f1(y + r * 0.85)} ${f1(x)} ${f1(y + r * 0.95)}` : `L${f1(x - r * 1.2)} ${f1(y + r * 0.3)} Q${f1(x - r * 1.1)} ${f1(y + r * 0.8)} ${f1(x)} ${f1(y + r * 0.95)}`} L${f1(x + r * 0.5)} ${f1(y + w)} Z"/>`
           : `<ellipse class="s" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r)}" ry="${f1(r * 0.86)}"/>` + (kind === "ratchet"
-            ? `<ellipse class="d" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.66)}" ry="${f1(r * 0.56)}"/><ellipse class="pit" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.38)}" ry="${f1(r * 0.32)}"/>`
+            ? `<ellipse class="d" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.66)}" ry="${f1(r * 0.56)}"/><ellipse class="pit" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.38)}" ry="${f1(r * 0.32)}"/>` + (has("rev") && x > 100 ? `<rect class="d" x="${f1(x - r * 0.95)}" y="${f1(y - r * 0.5)}" width="${f1(r * 0.34)}" height="${f1(r)}" rx="${f1(r * 0.17)}"/>` : "")
             : `<ellipse class="pit" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.5)}" ry="${f1(r * 0.42)}"/><ellipse class="nl" cx="${f1(x)}" cy="${f1(y)}" rx="${f1(r * 0.64)}" ry="${f1(r * 0.55)}" opacity=".35"/>`);
-        const left = member === "box" || member === "flare" ? "box" : "open", right = member === "open" ? "open" : member === "ratchet" ? "ratchet" : "box";
+        const left = base === "rbox" ? "ratchet" : ["box", "flare"].includes(base) ? "box" : base === "speed" ? "speed" : "open";
+        const right = base === "open" ? "open" : ["ratchet", "rbox"].includes(base) ? "ratchet" : "box";
         out += `<path class="s" d="M${f1(xl)} ${f1(y - w)} L${f1(xr)} ${f1(y - w * 1.25)} V${f1(y + w * 1.25)} L${f1(xl)} ${f1(y + w)} Z"/><rect class="sh" x="${f1(xl + 6)}" y="${f1(y - w + 0.4)}" width="${f1(xr - xl - 12)}" height=".9" rx=".45"/>`;
         out += end(xl, left) + end(xr, right);
         if (dy >= 5.6) out += `<text class="txe" x="${f1((xl + xr) / 2 - 8)}" y="${f1(y + 1.3)}" font-size="${f1(Math.min(3.6, dy * 0.5))}" text-anchor="middle">${esc(sz.replace("mm", ""))}</text>`;
@@ -2071,23 +2241,27 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   };
   // what a 3D model needs: kind|size|drive|part number. A set sends what's in it ("set:combo;10mm,11mm...") as its size.
-  const m3dOf = (a) => [a.key, a.spec ? "set:" + a.spec : a.size || "", a.drive || "", a.pn || ""].join("|");
+  const m3dOf = (a) => [a.key, a.spec ? "set:" + a.spec : a.size || "", a.drive || "", a.pn || "", (a.look || []).join("+")].join("|");
   const artTag = (a, cls = "", { refl = false } = {}) => {
-    const key = typeof a === "string" ? a : a.key;
-    let svg = (typeof a === "object" && a.spec && SET_ART[key] && SET_ART[key](a.spec)) || ART[key] || ART.other;
+    const key = typeof a === "string" ? a : a.key, look = (typeof a === "object" && a.look) || [];
+    // a wrench whose family looks different from the plain drawing is put together from its pieces
+    const built = WRENCH_BASE[key] && (look.some((w) => w !== "ind") || !ART[key]) ? wrenchArt(WRENCH_BASE[key], look, a.size ?? SIZE_SLOT[key] ?? "") : null;
+    let svg = built || (typeof a === "object" && a.spec && SET_ART[key] && SET_ART[key](a.spec)) || ART[key] || ART.other;
     const slot = SIZE_SLOT[key];
-    if (typeof a === "object" && a.size != null && slot) svg = svg.replace(`>${slot}</text>`, `>${esc(a.size)}</text>`);
+    if (!built && typeof a === "object" && a.size != null && slot) svg = svg.replace(`>${slot}</text>`, `>${esc(a.size)}</text>`);
     if (typeof a === "object" && key === "set") {
       // the socket set's label and its five sockets: real sizes when the name gives a range, blank when it doesn't
       svg = svg.replace(/>3\/8 DR \u00b7 MM<\/text>/, `>${esc([(a.drive || "").replace('"', "") ? a.drive.replace('"', "") + " DR" : "", a.unit || ""].filter(Boolean).join(" \u00b7 ") || "SOCKETS")}</text>`);
       const nums = a.nums || ["", "", "", "", ""];
       let i = 0; svg = svg.replace(/>(8|10|12|14|17)<\/text>/g, () => `>${esc(nums[i++])}</text>`);
     }
-    const bb = artBounds(ART[key] ? key : "other");
+    const bb = built ? artBounds(key + "|" + look.join("+"), built) : artBounds(ART[key] ? key : "other");
+    // the finish and paint: black industrial chrome, gunmetal or green housings, orange grips
+    const tint = look.filter((w) => w === "ind" || /^c-/.test(w)).join(" ");
     const floor = `<ellipse class="floor" cx="${(bb.x + bb.w / 2).toFixed(1)}" cy="${Math.min(bb.y + 2.5, 95).toFixed(1)}" rx="${Math.max(18, Math.min(68, bb.w * 0.47)).toFixed(1)}" ry="5.5"/>`;
     // the big views stand the tool on a polished floor: a faded mirror image under it
-    const mirror = refl ? `<g class="refl" mask="url(#bx-refl)"><g transform="matrix(1 0 0 -1 0 ${(2 * bb.y + 1).toFixed(1)})">${svg}</g></g>` : "";
-    return `<span class="art${cls ? " " + cls : ""}" data-art="${ART[key] ? key : "other"}" aria-hidden="true"><svg viewBox="0 0 160 100" focusable="false">${mirror}${floor}<g class="tool">${svg}</g></svg></span>`;
+    const mirror = refl ? `<g class="refl" mask="url(#bx-refl)"><g transform="matrix(1 0 0 -1 0 ${(2 * bb.y + 1).toFixed(1)})"${tint ? ` class="${tint}"` : ""}>${svg}</g></g>` : "";
+    return `<span class="art${cls ? " " + cls : ""}" data-art="${ART[key] ? key : "other"}" aria-hidden="true"><svg viewBox="0 0 160 100" focusable="false">${mirror}${floor}<g class="tool${tint ? " " + tint : ""}">${svg}</g></svg></span>`;
   };
   const thumb = (r) => { const p = photoOf(r); return p ? `<span class="thumb">${imgTag(p, "")}</span>` : `<span class="thumb art-bg">${artTag(artOf(r))}</span>`; };
 
@@ -2432,7 +2606,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!p) {
       // no photo of your own yet: BoxTally's drawing of this kind of tool
       const a = artOf(r);
-      return `<div class="photo art-bg" data-m3d="${esc(m3dOf(a))}"><button class="open" type="button" data-act="view" aria-label="See ${esc(displayName(r))} up close">${artTag(a, "", { refl: true })}</button>${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
+      return `<div class="photo art-bg" data-m3d="${esc(m3dOf(a))}"><button class="open" type="button" data-act="view" aria-label="See ${esc(displayName(r))} up close">${artTag(a, "", { refl: true })}</button>${over}<span class="src" title="BoxTally drawing">${esc(a.label)}${a.size && !/^(power|air|cl1)/.test(a.key) ? " · " + esc(a.size) : ""}${a.drive ? " · " + esc(a.drive) + " drive" : ""}</span>${snap}${busy}</div>`;
     }
     return `<div class="photo"><button class="open" type="button" data-act="view" aria-label="View photo of ${esc(displayName(r))}">${imgTag(p, displayName(r))}</button>${over}<span class="src">${photoLabel(p)}</span>${snap}${busy}</div>`;
   }
@@ -2944,15 +3118,15 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!t) return;
       for (const el of todo) {
         el.setAttribute("data-m3d-done", "");
-        const [key, size, drive, pn] = el.dataset.m3d.split("|");
+        const [key, size, drive, pn, look] = el.dataset.m3d.split("|");
         if (!t.has(key)) continue;
         const square = el.classList.contains("plate");
-        t.picture(key, size, square ? 360 : 720, square ? 360 : 450, drive, pn).then((url) => {
+        t.picture(key, size, square ? 360 : 720, square ? 360 : 450, drive, pn, look).then((url) => {
           if (!url || !el.isConnected) return;
           const art = el.querySelector(".art"); if (!art) return;
           const img = new Image(); img.className = "m3d"; img.alt = ""; img.src = url;
           // once the picture shows, the card's tool slowly turns while it's on screen (see turn() in tool3d.js)
-          img.onload = () => { art.parentElement.appendChild(img); el.classList.add("has3d"); t.turn?.(el, img, key, size, square ? 360 : 720, square ? 360 : 450, drive, pn); };
+          img.onload = () => { art.parentElement.appendChild(img); el.classList.add("has3d"); t.turn?.(el, img, key, size, square ? 360 : 720, square ? 360 : 450, drive, pn, look); };
         });
       }
     });
