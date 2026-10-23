@@ -50,6 +50,14 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
     await page.waitForTimeout(300);
   }
 
+  // the truck form shows the plan you're on (the same payment as the tile), and its ✕ closes it
+  await visit("/truck");
+  const pays = await page.evaluate(() => [document.querySelector('[data-truck="pay"]')?.textContent.match(/\$[\d.,]+/)?.[0], document.querySelector("#t-plan .hero strong")?.textContent]);
+  if (!pays[0] || pays[0] !== pays[1]) fail(`${name}: truck tile says ${pays[0]} but the form says ${pays[1]}`);
+  await page.click("#truckDlg .dlg-x");
+  await page.waitForTimeout(300);
+  if (await openDialog()) fail(`${name}: the ✕ didn't close the truck form`);
+
   // the sample box owns FSM10, 12, 13 and 15, so Stats shows 11 and 14 missing
   const gaps = await page.evaluate(() => document.querySelector(".runs")?.textContent || "");
   if (!/4 of 6/.test(gaps)) fail(`${name}: "Gaps in your sets" didn't find FSM11 and FSM14 missing`);

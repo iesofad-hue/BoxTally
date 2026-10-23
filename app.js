@@ -1855,10 +1855,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const wishN = rowsOf("wishlist").length;
     $("watch").innerHTML = changes.length
       ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Based on eBay prices.</span>`
-      : `<div class="watch-empty"><span class="note">${trackedN ? `eBay prices for your ${trackedN} part number${trackedN === 1 ? "" : "s"} refresh every few hours.` : "Add tools by part number and their eBay prices fill in on their own."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
+      : `<div class="watch-empty"><span class="note">${trackedN ? `Prices for your ${trackedN} tool${trackedN === 1 ? "" : "s"} with a part number update on their own a few times a day.` : "Add tools by part number and their eBay prices fill in on their own."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
     if (trackedN && !state.readonly) {
       const pns = state.items.filter((r) => r.part_number), withList = pns.filter((r) => listPrice(r) != null).length;
-      $("watch").insertAdjacentHTML("beforeend", `<div class="watch-empty"><span class="note">${withList} of ${pns.length} tool${pns.length === 1 ? "" : "s"} have a Snap-on list price.</span>${state.admin ? `<button class="btn-watch" type="button" data-list-prices>Manage list prices →</button>` : ""}</div>`);
+      $("watch").insertAdjacentHTML("beforeend", `<div class="watch-empty"><span class="note">${withList === pns.length ? (pns.length === 1 ? "It has Snap-on's own price." : `All ${pns.length} have Snap-on's own price.`) : `${withList} of ${pns.length} have Snap-on's own price so far. The rest use eBay for now.`}</span>${state.admin ? `<button class="btn-watch" type="button" data-list-prices>Manage list prices →</button>` : ""}</div>`);
     }
     $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
       ? `<label class="alert-opt"><input type="checkbox" id="alertDrops"${state.alerts && state.alerts.email_drops ? " checked" : ""}><span>Email me when something on my wishlist drops</span></label>` : "");
@@ -2191,7 +2191,26 @@ document.addEventListener("DOMContentLoaded", () => {
     if ($("t-bal").value === "" || !(bal > 0) || !(apr >= 0) || apr > 100) return null;
     return truckPlan(bal, apr, $("t-every").value, $("t-weeks").value);
   }
+  // True when the form still holds the saved plan (only the dealer name may differ).
+  function truckFormSame() {
+    const raw = getTruck(), t = truckPlanned(raw);
+    return !!raw && !t.legacy && round2(Number($("t-bal").value)) === truckLeftPrincipal(t) && Number($("t-apr").value || 0) === t.apr
+      && $("t-every").value === t.every && Number($("t-weeks").value) === t.weeks;
+  }
   function renderTruckPlan() {
+    if (truckFormSame()) {
+      // Nothing changed yet: show the plan you're on now, not a fresh one starting today.
+      const t = truckPlanned(getTruck()), ev = PAY_EVERY[t.every], left = Number(t.balance) || 0, base = truckLeftPrincipal(t);
+      const n = t.pay > 0 ? Math.ceil(left / t.pay - 1e-9) : 0;
+      $("t-plan").innerHTML = `<div class="hero"><span class="label">Payment ${ev.label}</span><strong>${money(t.pay, true)}</strong></div>
+      <div><span class="label">Weekly</span><strong>${money(ev.days === 7 ? t.pay : t.perWeek, true)}</strong></div>
+      <div><span class="label">Monthly</span><strong>${money(t.perMonth, true)}</strong></div>
+      <div><span class="label">Left</span><strong>${money(base, true)}</strong></div>
+      <div><span class="label">Interest left</span><strong>${money(round2(left - base), true)}</strong></div>
+      <div class="hero"><span class="label">Left with interest</span><strong>${money(left, true)}</strong></div>
+      <span class="all">${left > 0 ? `Your plan now: ${n} more payment${n === 1 ? "" : "s"}, ${payoff(t).text}.` : "All paid off."} Change anything above to see a new plan.</span>`;
+      return;
+    }
     const p = truckFormPlan();
     if (!p) { $("t-plan").innerHTML = ""; return; }
     const ev = PAY_EVERY[p.every];
@@ -2231,7 +2250,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!PAY_EVERY[$("t-every").value]) return err("Pick how often you pay.");
     const raw = getTruck(), t = truckPlanned(raw) || { log: [] };
     const dealer = $("t-dealer").value.trim().slice(0, 60);
-    const same = raw && !t.legacy && round2(bal) === truckLeftPrincipal(t) && apr === t.apr && $("t-every").value === t.every && weeks === t.weeks;
+    const same = truckFormSame();
     let next;
     if (same) next = { ...t, dealer }; // only the name changed: keep the plan and its dates
     else {
@@ -3051,7 +3070,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!rows.length) { toast("Add some tools first, then you can download them."); return; }
     const url = URL.createObjectURL(new Blob([toCsv(rows)], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
-    a.href = url; a.download = `snapon-toolbox-${today()}.csv`;
+    a.href = url; a.download = `boxtally-${today()}.csv`;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     toast(`Downloaded ${rows.length} tool${rows.length === 1 ? "" : "s"}`);
@@ -3271,9 +3290,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   // The BoxTally name at the top always takes you back to the front of the box, whatever's open.
-  // An open window covers the page (and its name), so each one gets the BoxTally mark in its corner too.
-  const markSvg = document.querySelector("#homeLink .mark svg").outerHTML;
-  document.querySelectorAll("dialog").forEach((d) => d.insertAdjacentHTML("beforeend", `<a class="dlg-home" href="/" data-home title="BoxTally home" aria-label="BoxTally home">${markSvg}</a>`));
+  // Every window gets a ✕ in its top corner, where people look for one. It stays put while the window scrolls.
+  document.querySelectorAll("dialog").forEach((d) => {
+    d.insertAdjacentHTML("afterbegin", `<div class="dlg-x-pin"><button class="dlg-x" type="button" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`);
+    d.querySelector(".dlg-x").addEventListener("click", () => d.close());
+  });
   document.addEventListener("click", (e) => {
     const a = e.target.closest("#homeLink, [data-home]"); if (!a) return;
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; // a new tab or window works like a normal link

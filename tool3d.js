@@ -138,9 +138,10 @@ function stage(st, model) {
   return fit;
 }
 // Point the camera down at the tool from the front and move in until the tool fills the frame.
-function frame(camera, box, aspect, fill = 0.86) {
+// pts: the points that must stay in view (the box's corners unless given).
+function frame(camera, box, aspect, fill = 0.86, pts = null) {
   camera.aspect = aspect; camera.updateProjectionMatrix();
-  const pts = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z));
+  pts = pts || [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z));
   const dir = new THREE.Vector3(0.12, 0.7, 1).normalize(), target = box.getCenter(new THREE.Vector3()), v = new THREE.Vector3();
   let d = box.getBoundingSphere(new THREE.Sphere()).radius * 3;
   for (let i = 0; i < 5; i++) {
@@ -174,7 +175,12 @@ function turntable(key, size, drive, pn, look) {
   const fit = new THREE.Box3();
   for (let i = 0; i < 16; i++) { pivot.rotation.y = (i * PI) / 8; pivot.updateMatrixWorld(true); fit.union(new THREE.Box3().setFromObject(pivot)); }
   pivot.rotation.y = 0;
-  return { pivot, fit, r: Math.max(260, fit.getBoundingSphere(new THREE.Sphere()).radius * 1.3), cams: new Map() };
+  // As it turns, the tool sweeps out a round drum, not a square box. Framing the drum (how far the tool's
+  // farthest point reaches from the middle) instead of the box's corners lets the tool fill the card.
+  let reach = 0; const v = new THREE.Vector3(); pivot.updateMatrixWorld(true);
+  pivot.traverse((m) => { const pos = m.isMesh && m.geometry.attributes.position; if (!pos) return; for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld); reach = Math.max(reach, Math.hypot(v.x, v.z)); } });
+  const drum = reach > 0 ? Array.from({ length: 48 }, (_, i) => new THREE.Vector3(reach * Math.cos((i * PI) / 12), i < 24 ? fit.min.y : fit.max.y, reach * Math.sin((i * PI) / 12))) : null;
+  return { pivot, fit, drum, r: Math.max(260, fit.getBoundingSphere(new THREE.Sphere()).radius * 1.3), cams: new Map() };
 }
 // the key light's shadow covers the whole tool, from a socket to a roll cab
 function light(st, r) {
@@ -183,7 +189,7 @@ function light(st, r) {
 }
 function camFor(t, w, h) {
   const id = w + "x" + h;
-  if (!t.cams.has(id)) { const cam = new THREE.PerspectiveCamera(28, w / h); frame(cam, t.fit, w / h); t.cams.set(id, cam); }
+  if (!t.cams.has(id)) { const cam = new THREE.PerspectiveCamera(28, w / h); frame(cam, t.fit, w / h, 0.86, t.drum); t.cams.set(id, cam); }
   return t.cams.get(id);
 }
 let still = null, queue = Promise.resolve();
