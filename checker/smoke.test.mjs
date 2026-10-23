@@ -41,7 +41,7 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
 
   // every form opens from its address and fits the screen
   const id = await page.evaluate(() => document.querySelector("#list [data-id]")?.dataset.id);
-  for (const [path, want] of [["/add", "dlg"], ["/wishlist/add", "dlg"], ["/truck", "truckDlg"], ["/insurance", "insDlg"], [`/tool/${id}`, "viewer"], [`/tool/${id}/edit`, "dlg"]]) {
+  for (const [path, want] of [["/add", "dlg"], ["/wishlist/add", "dlg"], ["/truck", "truckDlg"], ["/insurance", "insDlg"], ["/box-check", "checkDlg"], [`/tool/${id}`, "viewer"], [`/tool/${id}/edit`, "dlg"]]) {
     await visit(path);
     const d = await openDialog();
     if (!d || d.id !== want) fail(`${name}: ${path} didn't open ${want}`);
@@ -49,6 +49,20 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
     await page.keyboard.press("Escape");
     await page.waitForTimeout(300);
   }
+
+  // the sample box owns FSM10, 12, 13 and 15, so Stats shows 11 and 14 missing
+  const gaps = await page.evaluate(() => document.querySelector(".runs")?.textContent || "");
+  if (!/4 of 6/.test(gaps)) fail(`${name}: "Gaps in your sets" didn't find FSM11 and FSM14 missing`);
+  // box check: tapping a tool ticks it off
+  await visit("/box-check");
+  const found = async () => parseInt(await page.locator("#ck-count").innerText().catch(() => ""), 10);
+  const n0 = await found();
+  await page.locator("#ck-list .ck-row:not(:disabled)").first().click();
+  await page.waitForTimeout(200);
+  if ((await found()) !== n0 + 1) fail(`${name}: box check didn't count a ticked tool`);
+  await page.click("#ck-reset");
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(300);
 
   // adding a tool by part number puts a new card in the box
   await visit("/");

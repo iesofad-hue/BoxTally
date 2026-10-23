@@ -237,6 +237,9 @@ function keep(id, t) {
   return t;
 }
 const tableFor = (c) => keep(c.id, tables.get(c.id) || turntable(c.key, c.size, c.drive, c.pn, c.look));
+let scrolled = 0;
+addEventListener("scroll", () => { scrolled = performance.now(); }, { passive: true, capture: true });
+addEventListener("touchmove", () => { scrolled = performance.now(); }, { passive: true });
 function wake() { if (!raf && !broken && !quiet()) raf = requestAnimationFrame(tick); }
 function tick(now) {
   raf = 0;
@@ -244,7 +247,8 @@ function tick(now) {
   const on = [...cards.values()].filter((c) => c.on);
   if (!on.length || quiet()) { on.forEach(rest); return; }
   raf = requestAnimationFrame(tick);
-  if (now - last < 30 || document.querySelector("dialog[open] .m3d-live")) return;
+  // hold still while the page is scrolling: copying 3D frames then is what makes a scroll stutter
+  if (now - last < 30 || now - scrolled < 180 || document.querySelector("dialog[open] .m3d-live")) return;
   last = now;
   const t0 = performance.now();
   let built = false;

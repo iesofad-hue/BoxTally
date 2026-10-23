@@ -946,6 +946,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const pick = (r) => { const o = {}; FIELDS.forEach((k) => { if (r[k] !== undefined) o[k] = r[k]; }); if (signedIn() && !state.dbArt) delete o.art; if (signedIn() && !state.dbQty) delete o.qty; if (o.date_bought === "") o.date_bought = null; return o; };
 
   async function saveItem(item) {
+    // prices only need fetching for a part number the page hasn't seen; lending, swapping or editing a
+    // tool you already have shows up right away
+    const pn = item.part_number, known = !pn || state.items.some((x) => x.part_number === pn);
     if (state.demo) {
       // the sample box lives in memory only; nothing is saved
       const row = { ...item, id: item.id || "demo-" + newId(), created_at: item.created_at || new Date().toISOString() };
@@ -967,7 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!item.id) state.flash = new Set([row.id]);
       state.items = next;
     }
-    await pricesSoon();
+    if (!known) await pricesSoon();
     render();
   }
   // Several new tools at once (pasted part numbers), saved in one go.
@@ -1563,15 +1566,19 @@ document.addEventListener("DOMContentLoaded", () => {
       const html = feedHtml()
         + (entries.length ? `<div class="panel"><h2>Worth by department</h2>${entries.map(([c, v]) => `<div class="cat"><div class="line"><span>${esc(c)}</span><span class="num">${money(Math.round(v))}</span></div><div class="bar"><span style="width:${max ? Math.max(3, (v / max) * 100) : 0}%"></span></div></div>`).join("")}</div>` : "")
         + valueChartHtml()
-        + (warranty.length ? `<div class="panel"><h2>Warranty pile</h2>${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}</span>${r.part_number ? `<span class="pn">${esc(r.part_number)}</span>` : ""}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span><div class="warr-actions"><button class="btn small primary" type="button" data-warr="share">${navigator.share ? "Send list" : "Copy list"}</button><button class="btn small" type="button" data-warr="print">Print</button></div></div>` : "")
+        + runsHtml()
+        + yearsHtml()
+        + (warranty.length ? `<div class="panel"><h2>Warranty pile</h2>${warranty.map((r) => `<div class="cat"><div class="line"><span>${esc(displayName(r))}${r.part_number ? ` <span class="pn">${esc(r.part_number)}</span>` : ""}</span>${state.readonly ? "" : `<button class="btn small ghost" type="button" data-swap="${esc(r.id)}">Swapped</button>`}</div></div>`).join("")}<span class="meta-line">Take these to the truck next time it stops.</span><div class="warr-actions"><button class="btn small primary" type="button" data-warr="share">${navigator.share ? "Send list" : "Copy list"}</button><button class="btn small" type="button" data-warr="print">Print</button></div></div>` : "")
         + whoHasHtml();
-      box.innerHTML = html; showStats(html, [warranty.length ? `${warranty.length} need${warranty.length === 1 ? "s" : ""} warranty` : "", entries.length ? `${entries.length} department${entries.length === 1 ? "" : "s"}` : ""]);
+      const gaps = sizeRuns().reduce((n, g) => n + g.miss.length, 0);
+      box.innerHTML = html; showStats(html, [warranty.length ? `${warranty.length} need${warranty.length === 1 ? "s" : ""} warranty` : "", gaps ? `${gaps} size${gaps === 1 ? "" : "s"} missing` : "", entries.length ? `${entries.length} department${entries.length === 1 ? "" : "s"}` : ""]);
     } else {
       const wl = rowsOf("wishlist");
       const next = wl.filter((r) => wishCost(r) > 0).sort((a, b) => PRIS.indexOf(a.priority || "Want") - PRIS.indexOf(b.priority || "Want") || (wishCost(a) - (Number(a.saved) || 0)) - (wishCost(b) - (Number(b.saved) || 0)))[0];
       const pr = PRIS.map((p) => [p, wl.filter((r) => (r.priority || "Want") === p).reduce((s, r) => s + wishCost(r), 0)]);
       const html = feedHtml()
         + (next ? `<div class="panel"><h2>Next up</h2><div class="nextup">${thumb(next)}<div class="cat"><strong>${esc(displayName(next))}</strong><span class="meta-line">${money(Math.max(wishCost(next) - (Number(next.saved) || 0), 0))} left of ${money(wishCost(next))}</span><div class="bar"><span style="width:${Math.min(100, Math.round(((Number(next.saved) || 0) / wishCost(next)) * 100))}%"></span></div></div></div></div>` : "")
+        + whenHtml()
         + (wl.length ? `<div class="panel"><h2>By priority</h2>${pr.map(([p, v]) => `<div class="cat"><div class="line"><span>${p}</span><span class="num">${money(Math.round(v))}</span></div></div>`).join("")}</div>` : "");
       box.innerHTML = html; showStats(html, [next ? `Next up: ${displayName(next)}` : "", `${wl.length} on the wishlist`]);
     }
@@ -1612,12 +1619,146 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<div class="panel"><h2>Box value over time</h2><svg class="valchart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Box value went from ${money(Math.round(first.v))} to ${money(Math.round(last.v))}"><polygon class="area" points="0,${H} ${line} ${W},${H}"/><polyline class="ln" points="${line}"/></svg><div class="valrow"><span>${fmt(first.d)} · ${money(Math.round(first.v))}</span><span>${diff ? `<span class="delta ${diff > 0 ? "up" : "down"}">${signed(diff)}</span> · ` : ""}today ${money(Math.round(last.v))}</span></div><span class="meta-line">Uses eBay prices; tools without one count at what you paid.</span></div>`;
   }
 
+  /* ---------- sizes missing from a run ----------
+     Own FM10, FM12 and FM13 and the gap is FM11: same letters before and after the size, so the same kind
+     of socket or wrench. Only gaps inside what you already have count, so it never guesses at sizes past
+     your biggest or below your smallest. Three-digit numbers carry a style digit (FS121 is 12/32" + 1). */
+  const RUN_KIND = { socket: "sockets", "socket-12": "12-point sockets", "socket-deep": "deep sockets", "socket-impact": "impact sockets", "socket-swivel": "swivel sockets" };
+  function sizeRuns() {
+    const groups = new Map();
+    rowsOf("owned").forEach((r) => {
+      const pn = r.part_number || "", g = pnGuess(pn);
+      if (!g || !g.size || !/^(socket|wrench)/.test(g.key) || /^socket-(bit|spark|o2)/.test(g.key)) return;
+      const m = pn.match(/^([A-Z]+?)(\d{1,3})([A-Z]*)$/); if (!m) return;
+      const metric = /mm/.test(g.size), three = m[2].length === 3;
+      if (three && !/[012]$/.test(m[2])) return;
+      const n = three ? Math.floor(+m[2] / 10) : +m[2], style = three ? m[2].slice(-1) : "";
+      if (!metric && !three && n > (SAE_MAX[g.drive] || 48)) return; // a 2-digit number with a style digit: too unsure
+      const k = `${m[1]}|${style}|${m[3]}`;
+      const grp = groups.get(k) || { pre: m[1], style, suf: m[3], metric, key: g.key, drive: g.drive, have: new Set() };
+      grp.have.add(n); groups.set(k, grp);
+    });
+    const out = [];
+    for (const grp of groups.values()) {
+      if (grp.have.size < 2) continue;
+      const sizes = [...grp.have].sort((a, b) => a - b), lo = sizes[0], hi = sizes[sizes.length - 1];
+      const step = grp.metric || sizes.some((x) => x % 2) ? 1 : 2; // inch sockets go up by 1/16" (2/32) unless you own odd ones
+      const all = []; for (let x = lo; x <= hi; x += step) all.push(x);
+      const miss = all.filter((x) => !grp.have.has(x));
+      if (!miss.length || miss.length > 8) continue;
+      const pn = (x) => grp.pre + x + grp.style + grp.suf, label = (x) => (grp.metric ? x + "mm" : inch32(x).replace('"', ""));
+      out.push({ ...grp, all: all.map((x) => ({ pn: pn(x), label: label(x), have: grp.have.has(x) })), miss: miss.map(pn) });
+    }
+    return out;
+  }
+  function runsHtml() {
+    const runs = sizeRuns();
+    if (!runs.length) return "";
+    return `<div class="panel runs"><h2>Gaps in your sets</h2>${runs.map((g) => {
+      const what = `${g.drive ? g.drive + " " : ""}${g.metric ? "metric " : ""}${/^wrench/.test(g.key) ? "wrenches" : RUN_KIND[g.key] || "sockets"}`;
+      return `<div class="run"><div class="line"><span><span class="pn">${esc(g.pre)}…${esc(g.style + g.suf)}</span> ${esc(what)}</span><span class="num">${g.all.length - g.miss.length} of ${g.all.length}</span></div>
+        <div class="sizes">${g.all.map((x) => `<span class="sz${x.have ? " have" : ""}" title="${esc(x.pn)}${x.have ? "" : " missing"}">${esc(x.label)}</span>`).join("")}</div>
+        ${state.readonly ? "" : `<button class="btn small" type="button" data-runadd="${esc(g.miss.join(" "))}">Add ${g.miss.length === 1 ? g.miss[0] : `the ${g.miss.length} missing`} to wishlist</button>`}</div>`;
+    }).join("")}<span class="meta-line">Part numbers are worked out from the ones you own. Check them on the truck before you buy.</span></div>`;
+  }
+
+  /* ---------- your box by year: what went in, what you paid, what it's worth now ---------- */
+  function yearsHtml() {
+    if (state.readonly) return "";
+    const by = {};
+    rowsOf("owned").forEach((r) => {
+      const y = String(r.date_bought || r.created_at || "").slice(0, 4); if (!/^\d{4}$/.test(y)) return;
+      const b = by[y] || (by[y] = { n: 0, paid: 0, worth: 0 });
+      b.n += qtyOf(r); b.paid += (Number(r.price) || 0) * qtyOf(r); b.worth += worthAll(r);
+    });
+    const years = Object.keys(by).sort().reverse();
+    if (!years.length) return "";
+    const anyPaid = years.some((y) => by[y].paid > 0), val = (b) => (anyPaid ? b.paid : b.worth), max = Math.max(1, ...years.map((y) => val(by[y])));
+    return `<div class="panel"><h2>Your box by year</h2>${years.map((y) => { const b = by[y];
+      return `<div class="cat"><div class="line"><span>${y} · ${b.n} tool${b.n === 1 ? "" : "s"}</span><span class="num">${anyPaid ? `${money(Math.round(b.paid))} spent` : `${money(Math.round(b.worth))} today`}</span></div><div class="bar"><span style="width:${Math.max(3, (val(b) / max) * 100)}%"></span></div>${anyPaid && b.worth ? `<span class="meta-line">Worth ${money(Math.round(b.worth))} today</span>` : ""}</div>`; }).join("")}
+      <span class="meta-line">${anyPaid ? "Handy at tax time if you write off your tools." : "Add what you paid to a tool to see what you spent each year."}</span></div>`;
+  }
+
+  /* ---------- wishlist: when each tool fits on the truck account ----------
+     One tool at a time, in priority order, each on its own 8 to 10 week plan that starts when the one
+     before it (or what you owe now) is paid off. Uses your truck account's pay interval and interest. */
+  function whenPlan() {
+    const wl = rowsOf("wishlist").filter((r) => (r.priority || "Want") !== "Someday" && wishCost(r) - (Number(r.saved) || 0) > 0)
+      .sort((a, b) => PRIS.indexOf(a.priority || "Want") - PRIS.indexOf(b.priority || "Want") || (wishCost(a) - (Number(a.saved) || 0)) - (wishCost(b) - (Number(b.saved) || 0)));
+    if (!wl.length) return null;
+    const t = state.readonly ? null : truckPlanned(getTruck());
+    const owing = !!t && Number(t.balance) > 0 && !!t.end && t.end > today();
+    let start = owing ? t.end : today();
+    const every = t && PAY_EVERY[t.every] ? t.every : "weekly", weeks = t && t.weeks ? clampWeeks(t.weeks) : TRUCK_MAX_WEEKS, apr = (t && t.apr) || 0;
+    const rows = wl.slice(0, 5).map((r) => { const p = truckPlan(round2(wishCost(r) - (Number(r.saved) || 0)), apr, every, weeks, start); start = p.end; return { r, p }; });
+    return { rows, owing, t, every, weeks };
+  }
+  function whenHtml() {
+    const w = whenPlan(); if (!w || state.readonly) return "";
+    const ev = PAY_EVERY[w.every];
+    return `<div class="panel plan-ahead"><h2>When you can get it</h2><span class="meta-line">${w.owing ? `Your truck account is paid off ${fmtDate(w.t.end, false)}. After that, one tool at a time, each paid off in ${w.weeks} weeks:` : `One tool at a time, each paid off in ${w.weeks} weeks:`}</span>
+      <ol>${w.rows.map(({ r, p }) => `<li>${thumb(r)}<span class="what"><strong>${esc(displayName(r))}</strong><span class="meta-line">From ${fmtDate(p.start, false)} · ${money(p.pay, true)} ${ev.label}</span></span><span class="when-end">done ${fmtDate(p.end, false)}</span></li>`).join("")}</ol>
+      ${w.t ? "" : `<span class="meta-line">Set up your truck account to use your own pay day and interest.</span>`}</div>`;
+  }
+
+  /* ---------- box check: go through the box drawer by drawer and see what's missing ----------
+     Tools are grouped by where they're kept (or their department when that's blank). What you've ticked
+     is kept in this browser only, so you can stop halfway and carry on later. */
+  const checkDlg = $("checkDlg"), CHECK_LS = () => `${LS}-check-${state.demo ? "demo" : state.user ? state.user.id : "local"}`;
+  const checkGet = () => { try { return new Set(JSON.parse(localStorage.getItem(CHECK_LS()) || "[]")); } catch { return new Set(); } };
+  const checkSet = (ids) => { try { localStorage.setItem(CHECK_LS(), JSON.stringify([...ids])); } catch {} };
+  function renderCheck() {
+    const found = checkGet(), only = $("ck-missing").checked, rows = rowsOf("owned");
+    const isFound = (r) => found.has(String(r.id)) || !!r.lent_to;
+    const groups = {};
+    rows.forEach((r) => { const g = (r.location || "").trim() || deptOf(catOf(r)); (groups[g] || (groups[g] = [])).push(r); });
+    const n = rows.filter(isFound).length, all = rows.length;
+    $("ck-bar").firstElementChild.style.width = (all ? (n / all) * 100 : 0) + "%";
+    $("ck-count").innerHTML = !all ? "Add some tools first." : n === all ? `<strong>All ${all} found.</strong> Nothing's missing.` : `<strong>${n} of ${all}</strong> found · ${all - n} still to find`;
+    $("ck-list").innerHTML = Object.keys(groups).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).map((g) => {
+      const list = groups[g].sort((a, b) => displayName(a).localeCompare(displayName(b))), left = list.filter((r) => !isFound(r)).length;
+      const show = only ? list.filter((r) => !isFound(r)) : list;
+      if (!show.length) return "";
+      return `<section class="ck-group"><h3>${esc(g)}<span class="count">${left ? `${left} left` : "✓"}</span></h3>${show.map((r) => {
+        const f = isFound(r);
+        return `<button type="button" class="ck-row${f ? " on" : ""}" data-ck="${esc(r.id)}" aria-pressed="${f}"${r.lent_to ? " disabled" : ""}>${thumb(r)}<span class="what"><strong>${esc(displayName(r))}${qtyOf(r) > 1 ? ` ×${qtyOf(r)}` : ""}</strong><span class="meta-line">${esc([r.part_number, r.lent_to ? `lent to ${r.lent_to}` : ""].filter(Boolean).join(" · "))}</span></span><span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></button>`;
+      }).join("")}</section>`;
+    }).join("") || (only && all ? `<p class="meta-line">Everything's been found.</p>` : "");
+  }
+  function openCheck() {
+    renderCheck();
+    checkDlg.showModal();
+    routeOpen(checkDlg, "/box-check", "Box check");
+  }
+  $("boxCheck").onclick = () => { if (!rowsOf("owned").length) return toast("Add some tools first, then you can check your box."); openCheck(); };
+  $("ck-list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-ck]"); if (!b) return;
+    const ids = checkGet(), id = b.dataset.ck, on = !ids.has(id);
+    on ? ids.add(id) : ids.delete(id);
+    checkSet(ids);
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on);
+    if (on && navigator.vibrate) try { navigator.vibrate(8); } catch {}
+    // the row ticks right away; the counts catch up a moment later so a fast run of taps stays smooth
+    clearTimeout(renderCheck._t); renderCheck._t = setTimeout(renderCheck, $("ck-missing").checked ? 450 : 0);
+  });
+  $("ck-missing").addEventListener("change", renderCheck);
+  $("ck-reset").onclick = () => { checkSet(new Set()); renderCheck(); toast("Box check started over"); };
+  $("ck-done").onclick = () => {
+    const found = checkGet(), miss = rowsOf("owned").filter((r) => !found.has(String(r.id)) && !r.lent_to);
+    checkDlg.close();
+    toast(!miss.length ? "Box check done. Everything's there." : `${miss.length} not found yet: ${miss.slice(0, 3).map(displayName).join(", ")}${miss.length > 3 ? "…" : ""}`);
+  };
+
   /* ---------- warranty list: send to the dealer or print ---------- */
   function warrantyText() {
     const rows = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
     return "Warranty list\n" + rows.map((r) => `- ${displayName(r)}${r.part_number ? ` (${r.part_number})` : ""}${r.notes ? ` - ${r.notes}` : ""}`).join("\n");
   }
   $("insights").addEventListener("click", async (e) => {
+    const sw = e.target.closest("[data-swap]");
+    if (sw) return itemAct("swapped", sw.dataset.swap, sw);
+    const ra = e.target.closest("[data-runadd]");
+    if (ra) { if (await addMany(ra.dataset.runadd.split(" "), "wishlist")) burst(...centerOf(ra), 14); return; }
     const b = e.target.closest("[data-warr]"); if (!b) return;
     const text = warrantyText();
     if (b.dataset.warr === "share") {
@@ -1781,7 +1922,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // the same things the card's buttons do, so a phone's compact list doesn't need a row of buttons per tool
     const del = `<button class="btn small ghost danger" type="button" data-vact="del">Delete</button>`, edit = `<button class="btn small" type="button" data-vact="edit">Edit</button>`;
     const acts = state.readonly ? "" : r.list === "owned"
-      ? (r.lent_to ? `<button class="btn small" type="button" data-vact="returned">Got it back</button>` : `<button class="btn small" type="button" data-vact="lend">Lend</button>`) + edit + del
+      ? (r.lent_to ? `<button class="btn small" type="button" data-vact="returned">Got it back</button>` : `<button class="btn small" type="button" data-vact="lend">Lend</button>`)
+        + (r.condition === "Needs warranty" ? `<button class="btn small" type="button" data-vact="swapped">Swapped</button>` : `<button class="btn small" type="button" data-vact="broken">Broken</button>`) + edit + del
       : `<button class="btn small" type="button" data-vact="bought">Bought it</button>` + edit + del;
     $("vActs").innerHTML = acts; $("vActs").hidden = !acts;
     viewer.showModal();
@@ -2208,6 +2350,8 @@ document.addEventListener("DOMContentLoaded", () => {
       o(2, '3/8" drive flex head ratchet', "", '3/8" Drive Tools', 148, 300, "Top chest, drawer 1", { lent_to: "Mike", lent_at: day(6) }),
       o(3, '3/8" drive 6-point deep socket set, 10–19 mm', "", "Service Tools - Sets", 289, 260, "Top chest, drawer 2"),
       o(4, "13 mm 6-point swivel socket", "", '3/8" Drive Tools', 39, 200, "Top chest, drawer 2"),
+      o(14, "", "FSM10", '3/8" Drive Tools', 18, 700, "Top chest, drawer 2"), o(15, "", "FSM12", '3/8" Drive Tools', 18, 700, "Top chest, drawer 2"),
+      o(16, "", "FSM13", '3/8" Drive Tools', 18, 520, "Top chest, drawer 2"), o(17, "", "FSM15", '3/8" Drive Tools', 19, 520, "Top chest, drawer 2"),
       o(5, "Flank drive combination wrench set, 10–19 mm", "OEXM710B", "Wrenches", 640, 380, "Roll cab, drawer 1"),
       o(6, "10 × 12 mm flare nut wrench", "", "Wrenches", 58, 120, "Roll cab, drawer 1"),
       o(7, '1/2" drive click-type torque wrench', "", "Torque", 495, 90, "Roll cab, drawer 3"),
@@ -2377,15 +2521,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!routeSync) go(tabPath());
     scrollTo({ top: 0 });
   }
+  // Box, Wishlist and Money cross-fade into each other instead of jumping (browsers that can't, just switch)
+  const fade = (fn) => (!reduce && document.startViewTransition && state.loaded ? document.startViewTransition(fn) : fn());
   $("bnav").addEventListener("click", (e) => {
     const b = e.target.closest("[data-go]"); if (!b) return;
     const to = b.dataset.go;
+    if (to !== "add" && (to === "money" ? !state.money : state.money || state.tab !== to)) return fade(() => bnavGo(to));
+    bnavGo(to);
+  });
+  function bnavGo(to) {
     if (to === "money") return setMoney(true);
     if (to === "add") { if (state.money) setTab("owned"); return openForm(null); }
     const same = !state.money && state.tab === to;
     if (state.money && state.tab === to) setMoney(false); else setTab(to);
     if (same) scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); // tapping the list you're on goes back to its top
-  });
+  }
   ["q", "fCat", "fSort"].forEach((id) => $(id).addEventListener("input", render));
 
   // A message at the bottom; with an action (like Undo) it stays a little longer and has a button.
@@ -2438,7 +2588,7 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!viewer.open && el.querySelector(".photo.art-bg")) { el.classList.add("live"); liveLight(px - 0.5, py - 0.5); }
           // no lean while a card has a form open, so typing stays steady
           if (!reduce && !el.querySelector("form, .confirm")) {
-            const k = el.classList.contains("tile") ? 6 : 4;
+            const k = el.classList.contains("tile") ? 3 : 2; // just a hint of lean
             el.style.setProperty("--rx", ((0.5 - py) * k).toFixed(2) + "deg"); el.style.setProperty("--ry", ((px - 0.5) * k).toFixed(2) + "deg");
           }
         }
@@ -2785,6 +2935,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (act === "returned") return guard(() => saveItem({ ...item, lent_to: null, lent_at: null }), `${displayName(item)} is back in the box`);
     if (act === "photo") return pickPhotoFor(id);
     if (act === "edit") return openForm(item);
+    // Snap-on swaps broken hand tools on the truck: a broken one goes on the warranty list, and comes off as new
+    if (act === "broken" || act === "swapped") {
+      const before = { ...item }, broke = act === "broken";
+      return guard(() => saveItem({ ...item, condition: broke ? "Needs warranty" : "New" })).then((ok) => ok && toast(broke ? `${displayName(item)} is on your warranty list` : `${displayName(item)} swapped. Marked as new.`, { label: "Undo", run: () => guard(() => saveItem(before)) }));
+    }
     if (act === "bought") { state.confirm = { id, kind: act }; return render(); }
     if (act === "cancel") { state.confirm = null; return render(); }
     if (act === "del") {
@@ -3020,7 +3175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (a === "wishlist" && b === "add" && !c) return { tab: "wishlist", open: "add" };
     if (a === "add" && !b) return { tab: "owned", open: "add" };
     if (a === "tool" && b) return { open: c === "edit" ? "edit" : "tool", id: b };
-    if (["truck", "insurance", "share", "delete-account"].includes(a) && !b) return { open: a };
+    if (["truck", "insurance", "share", "delete-account", "box-check"].includes(a) && !b) return { open: a };
     return { tab: "owned", unknown: true };
   }
   // make the page match the address: on arrival, and on Back and Forward
@@ -3029,7 +3184,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const r = readRoute();
     const ro = state.readonly, me = signedIn() && !state.demo;
     const item = r.id ? state.items.find((x) => String(x.id) === r.id) : null;
-    const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : null;
+    const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : r.open === "box-check" ? checkDlg : null;
     const ok = !r.unknown && (!r.open || (r.open === "tool" ? !!item : r.open === "edit" ? !!item && !ro : r.open === "share" || r.open === "delete-account" ? me && !ro : !ro));
     routeSync = true;
     try {
@@ -3051,6 +3206,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (r.open === "insurance") Promise.resolve(state.insP).then(() => { if (readRoute().open === "insurance" && !insDlg.open) { routeSync = true; try { openIns(); } finally { routeSync = false; } } });
         else if (r.open === "share") openShare();
         else if (r.open === "delete-account") openDel();
+        else if (r.open === "box-check") openCheck();
       }
       if (!want) document.title = baseTitle;
     } finally { routeSync = false; }

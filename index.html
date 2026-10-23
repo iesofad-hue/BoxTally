@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=40">
+<link rel="stylesheet" href="/app.css?v=41">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -216,6 +216,7 @@
     <span class="export" id="exportBox">
       <button class="btn small" type="button" id="exportCsv" title="Download a spreadsheet of your box and wishlist">Download CSV</button>
       <button class="btn small" type="button" id="exportPrint" title="Print a tool list, or save it as a PDF">Print / PDF</button>
+      <button class="btn small" type="button" id="boxCheck" title="Go through your box drawer by drawer and see if anything's missing">Box check</button>
     </span>
   </div>
 
@@ -285,6 +286,24 @@
       <span class="spacer" style="flex:1"></span>
       <button class="btn" type="button" id="i-cancel">Cancel</button>
       <button class="btn primary" type="submit" id="i-save">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="checkDlg" class="check-dlg">
+  <form id="checkFrm" novalidate>
+    <h2>Box check</h2>
+    <p class="meta-line">Tap each tool as you spot it. Anything lent out already counts as found. Your progress is kept on this device until you start over.</p>
+    <div class="ck-top">
+      <div class="pbar" id="ck-bar"><span></span></div>
+      <p class="ck-count" id="ck-count" aria-live="polite"></p>
+      <label class="pf-check"><input type="checkbox" id="ck-missing"><span>Only show what I haven't found</span></label>
+    </div>
+    <div class="ck-list" id="ck-list"></div>
+    <div class="formfoot">
+      <button class="btn ghost" type="button" id="ck-reset">Start over</button>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn primary" type="button" id="ck-done">Done</button>
     </div>
   </form>
 </dialog>
@@ -415,8 +434,8 @@
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script defer src="/drawings.js?v=40"></script>
-<script defer src="/app.js?v=40"></script>
+<script defer src="/drawings.js?v=41"></script>
+<script defer src="/app.js?v=41"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>
