@@ -736,3 +736,29 @@ alter table public.items drop column if exists photo_shared;
 -- "How many people own this tool" is only answered for signed-in people. While there are only
 -- a few accounts, a count of 1 would tell a stranger what's in someone's box.
 revoke execute on function public.owner_counts(text[]) from anon;
+
+-- How many of the same tool are in the box; share links show it too.
+alter table public.items add column if not exists qty int not null default 1
+  check (qty between 1 and 999);
+
+create or replace function public.shared_box(t text)
+returns json
+language sql stable security definer set search_path = '' as $$
+  select json_build_object(
+    'title', s.title,
+    'show_prices', s.show_prices,
+    'items', coalesce((
+      select json_agg(json_build_object(
+        'id', i.id, 'list', i.list, 'name', i.name, 'part_number', i.part_number, 'category', i.category,
+        'condition', i.condition, 'priority', i.priority, 'created_at', i.created_at, 'art', i.art, 'qty', i.qty,
+        'price', case when s.show_prices then i.price else 0 end,
+        'date_bought', case when s.show_prices then i.date_bought end
+      ) order by i.created_at)
+      from public.items i
+      where i.user_id = s.user_id and (i.list = 'owned' or s.show_wishlist)
+    ), '[]'::json))
+  from public.box_shares s
+  where s.token = t and char_length(t) = 20;
+$$;
+revoke execute on function public.shared_box(text) from public;
+grant execute on function public.shared_box(text) to anon, authenticated;

@@ -325,6 +325,8 @@ a.pn span { color: var(--accent); }
 .chip.bad { color: var(--bad); background: var(--bad-soft); }
 .chip.need { background: var(--accent); color: var(--accent-ink); }
 .chip.tag { background: var(--tag); color: var(--tag-ink); }
+.chip.qty { text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.photo .over .chip.qty { background: rgb(16 21 28 / .82); color: #fff; font-size: .8rem; padding: 3px 10px; box-shadow: 0 1px 2px rgb(16 21 28 / .2); }
 .prices { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding-block: 10px; border-block: 1px solid var(--line); }
 .prices > div { display: grid; gap: 2px; min-width: 0; }
 .price-big { font-family: var(--f-display); font-size: 1.8rem; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
@@ -1116,6 +1118,7 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
       <label class="field"><span class="label">Part number</span><input id="i-pn" class="mono" placeholder="F80" autocapitalize="characters" autocomplete="off" maxlength="40"><a class="lookup" id="lookup" href="https://shop.snapon.com" target="_blank" rel="noopener" hidden>Look up on Snap-on ↗</a></label>
       <label class="field"><span class="label">Category</span><select id="i-cat"></select></label>
       <label class="field"><span class="label">Drawing</span><select id="i-art"></select></label>
+      <label class="field" data-only="owned" id="f-qty"><span class="label">How many</span><input id="i-qty" type="number" min="1" max="999" step="1" inputmode="numeric" placeholder="1"><small>Have more than one of this tool? Prices below are for one; box worth counts them all.</small></label>
       <label class="field"><span class="label" id="l-price">Snap-on price you paid ($)</span><input id="i-price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
       <label class="field"><span class="label">Snap-on list price ($)</span><input id="i-list" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><small>Optional, private. From your receipt, your dealer or snapon.com. Counts before eBay.</small></label>
       <label class="field" data-only="owned"><span class="label">Date bought</span><input id="i-date" type="date"></label>
@@ -1161,7 +1164,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const CONDS = ["New", "Good", "Worn", "Needs warranty"];
   const PRIS = ["Need", "Want", "Someday"];
   const PN_RE = /^[A-Z0-9][A-Z0-9./-]{0,39}$/;
-  const FIELDS = ["list", "name", "part_number", "category", "price", "list_price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "art", "from_wishlist", "lent_to", "lent_at"];
+  const FIELDS = ["list", "name", "part_number", "category", "price", "list_price", "date_bought", "condition", "location", "priority", "saved", "notes", "photo_path", "photo_at", "art", "from_wishlist", "lent_to", "lent_at", "qty"];
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -1222,6 +1225,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const nowPrice = (r) => listPrice(r) ?? ebayPrice(r);
   // what an owned tool counts for in "Box worth": list price or eBay today, else what you paid
   const worthOf = (r) => nowPrice(r) ?? (Number(r.price) || 0);
+  // How many of the same tool are in the box (2 of the same ratchet, say). Prices are for one;
+  // the box totals count every one of them. Wishlist tools are always 1.
+  const qtyOf = (r) => (r.list === "owned" ? Math.max(1, Math.min(999, Math.floor(Number(r.qty)) || 1)) : 1);
+  const worthAll = (r) => worthOf(r) * qtyOf(r);
+  const paidAll = (r) => (Number(r.price) || 0) * qtyOf(r);
+  const pieces = (rows) => rows.reduce((s, r) => s + qtyOf(r), 0);
+  const qtyChip = (r) => (qtyOf(r) > 1 ? `<span class="chip qty" title="${qtyOf(r)} of this tool">${qtyOf(r)}x</span>` : "");
   // a wishlist tool: the price you typed in, else list price, else eBay
   const wishCost = (r) => Number(r.price) || nowPrice(r) || 0;
 
@@ -2110,7 +2120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     read() { try { const v = JSON.parse(localStorage.getItem(LS)); return Array.isArray(v) ? v : []; } catch { return []; } },
     write(rows) { localStorage.setItem(LS, JSON.stringify(rows)); },
   };
-  const pick = (r) => { const o = {}; FIELDS.forEach((k) => { if (r[k] !== undefined) o[k] = r[k]; }); if (signedIn() && !state.dbArt) delete o.art; if (o.date_bought === "") o.date_bought = null; return o; };
+  const pick = (r) => { const o = {}; FIELDS.forEach((k) => { if (r[k] !== undefined) o[k] = r[k]; }); if (signedIn() && !state.dbArt) delete o.art; if (signedIn() && !state.dbQty) delete o.qty; if (o.date_bought === "") o.date_bought = null; return o; };
 
   async function saveItem(item) {
     if (state.demo) {
@@ -2209,6 +2219,8 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         state.items = await fetchAllItems();
         state.dbArt = state.items.length ? "art" in state.items[0] : !(await sb.from("items").select("art").limit(1)).error;
+        // the "How many" box only shows once the database has the qty column
+        state.dbQty = state.items.length ? "qty" in state.items[0] : !(await sb.from("items").select("qty").limit(1)).error;
       }
       catch {
         const c = readCache();
@@ -2374,7 +2386,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function filtered() {
     const q = $("q").value.trim().toLowerCase(), cat = $("fCat").value;
     const rows = rowsOf(state.tab).filter((r) => (!cat || catOf(r) === cat) && (!q || [displayName(r), r.part_number, r.notes, r.location].some((f) => String(f || "").toLowerCase().includes(q))));
-    const worth = (r) => (state.tab === "owned" ? worthOf(r) : wishCost(r));
+    const worth = (r) => (state.tab === "owned" ? worthAll(r) : wishCost(r));
     const chg = (r) => { const c = lastChange(r); return c ? c.to - c.from : 0; };
     const by = {
       date: (a, b) => String(b.date_bought || "").localeCompare(String(a.date_bought || "")) || String(addedAt(b)).localeCompare(String(addedAt(a))),
@@ -2465,7 +2477,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const now = nowPrice(r), paid = Number(r.price) || 0, diff = now != null && paid ? now - paid : null;
     const mine = !state.readonly && !state.demo;
     const chips = (r.condition ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r);
-    const badge = "";
+    const badge = qtyChip(r);
     return `<article class="card${fresh(r)}${r.lent_to ? " lent" : ""}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
@@ -2474,6 +2486,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : listPrice(r) != null ? `<span class="src-tag">Snap-on</span> list price` : `<span class="src-tag">eBay</span> typical new price`}</span>`
           : `<span class="no-price">${r.part_number ? "No price found yet." : "Add a part number to get its price."}</span>`}</div>
       </div>
+      ${qtyOf(r) > 1 ? `<span class="meta-line qty-line">${qtyOf(r)} in ${mine || state.demo ? "your" : "this"} box · ${money(worthAll(r), worthAll(r) % 1)} together</span>` : ""}
       ${listLine(r)}${ebayLine(r)}${ownersLine(r)}
       ${r.location ? `<span class="meta-line">Kept in ${esc(r.location)}</span>` : ""}
       ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
@@ -2514,7 +2527,7 @@ document.addEventListener("DOMContentLoaded", () => {
       price = cost ? money(cost, cost % 1) : "—";
       sub = !cost ? "" : left ? `${money(left, left % 1)} left` : "Ready to buy";
     }
-    const chips = (owned ? (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
+    const chips = (owned ? qtyChip(r) + (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
       + (dropped ? `<span class="chip tag">Price dropped</span>` : "");
     return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
       <div><h3>${esc(displayName(r))}</h3><div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(catOf(r) || "Other")}</span>${chips}</div></div>
@@ -2529,9 +2542,9 @@ document.addEventListener("DOMContentLoaded", () => {
     rows.forEach((r) => { const k = String(r.location || "").trim(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
     const keys = [...groups.keys()].sort((a, b) => (a ? 0 : 1) - (b ? 0 : 1) || a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
     return keys.map((k, gi) => {
-      const g = groups.get(k), worth = g.reduce((sum, r) => sum + worthOf(r), 0);
+      const g = groups.get(k), worth = g.reduce((sum, r) => sum + worthAll(r), 0), n = pieces(g);
       const open = !state.closedDrawers.has(k);
-      return `<details class="drawer" data-drawer="${esc(k)}" style="--i:${Math.min(gi, 12)}"${open ? " open" : ""}><summary><span class="dname">${k ? esc(k) : "No drawer set"}</span><span class="dmeta">${g.length} tool${g.length === 1 ? "" : "s"} · ${money(Math.round(worth))}</span></summary>`
+      return `<details class="drawer" data-drawer="${esc(k)}" style="--i:${Math.min(gi, 12)}"${open ? " open" : ""}><summary><span class="dname">${k ? esc(k) : "No drawer set"}</span><span class="dmeta">${n} tool${n === 1 ? "" : "s"} · ${money(Math.round(worth))}</span></summary>`
         + `<div class="rows">${g.map((r, i) => rowItem(r, i)).join("")}</div>`
         + (k ? "" : `<p class="dhint">Tap Edit and fill in "Where it's kept" to file these into drawers.</p>`) + `</details>`;
     }).join("");
@@ -2547,10 +2560,11 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- render ---------- */
   function render() {
     const t = rowsOf("owned"), w = rowsOf("wishlist");
-    const paid = t.reduce((s, r) => s + (Number(r.price) || 0), 0);
-    const worth = t.reduce((s, r) => s + worthOf(r), 0);
-    const onList = t.filter((r) => listPrice(r) != null).length;
-    const onEbay = t.filter((r) => listPrice(r) == null && ebayPrice(r) != null).length;
+    const paid = t.reduce((s, r) => s + paidAll(r), 0);
+    const worth = t.reduce((s, r) => s + worthAll(r), 0);
+    const nTools = pieces(t);
+    const onList = pieces(t.filter((r) => listPrice(r) != null));
+    const onEbay = pieces(t.filter((r) => listPrice(r) == null && ebayPrice(r) != null));
     const pricedFrom = [onList ? `${onList} at Snap-on list` : "", onEbay ? `${onEbay} from eBay` : ""].filter(Boolean).join(", ");
     if (!state.loaded) {
       ["d-worth", "d-left"].forEach((k) => { $(k).textContent = "$…"; $(k).classList.add("loading-num"); });
@@ -2558,7 +2572,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else { ["d-worth", "d-left"].forEach((k) => $(k).classList.remove("loading-num")); }
     if (state.loaded) countTo($("d-worth"), Math.round(worth));
     if (state.loaded) $("d-worth-sub").innerHTML = t.length
-      ? `${t.length} tool${t.length === 1 ? "" : "s"}${hidePaid() || !paid ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}<br>${onList + onEbay ? `${pricedFrom}${onList + onEbay < t.length ? ", the rest at what you paid" : ""}` : "Valued at what you paid until prices come in"}`
+      ? `${nTools} tool${nTools === 1 ? "" : "s"}${hidePaid() || !paid ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}<br>${onList + onEbay ? `${pricedFrom}${onList + onEbay < nTools ? ", the rest at what you paid" : ""}` : "Valued at what you paid until prices come in"}`
       : "Add tools to see their value.";
     const cost = w.reduce((s, r) => s + wishCost(r), 0), saved = w.reduce((s, r) => s + Math.min(Number(r.saved) || 0, wishCost(r)), 0);
     if (state.loaded) countTo($("d-left"), Math.round(Math.max(cost - (state.readonly ? 0 : saved), 0)));
@@ -2708,7 +2722,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const box = $("insights");
     if (state.tab === "owned") {
       const totals = {};
-      rowsOf("owned").forEach((r) => { const d = deptOf(catOf(r)); totals[d] = (totals[d] || 0) + worthOf(r); });
+      rowsOf("owned").forEach((r) => { const d = deptOf(catOf(r)); totals[d] = (totals[d] || 0) + worthAll(r); });
       const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]), max = entries.length ? entries[0][1] : 0;
       const warranty = rowsOf("owned").filter((r) => r.condition === "Needs warranty");
       const html = feedHtml()
@@ -2734,7 +2748,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!owned.length) return [];
     const dayOf = (v) => String(v || "").slice(0, 10);
     const today = new Date().toISOString().slice(0, 10);
-    const tools = owned.map((r) => ({ from: dayOf(r.date_bought) || dayOf(r.created_at) || today, h: hist(r), paid: Number(r.price) || 0 }));
+    const tools = owned.map((r) => ({ from: dayOf(r.date_bought) || dayOf(r.created_at) || today, h: hist(r), paid: Number(r.price) || 0, n: qtyOf(r) }));
     let start = tools.reduce((m, t) => (t.from < m ? t.from : m), today);
     const histStart = tools.flatMap((t) => t.h.map((x) => x.d)).sort()[0];
     if (histStart && histStart > start) start = histStart; // before any price was tracked there's nothing to chart but what you paid
@@ -2749,7 +2763,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (t.from > d) return s;
       let p = null; for (const x of t.h) { if (x.d <= d) p = x.p; else break; }
       if (p == null && t.h.length) p = t.h[0].p;
-      return s + (p ?? t.paid);
+      return s + (p ?? t.paid) * t.n;
     }, 0) }));
   }
   function valueChartHtml() {
@@ -3869,11 +3883,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const csvText = (v) => { let s = String(v ?? ""); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const csvNum = (n) => (n == null || n === "" || !Number.isFinite(Number(n)) ? "" : String(Math.round(Number(n) * 100) / 100));
   function toCsv(rows) {
-    const head = ["List", "Tool", "Part number", "Category", "Condition", "Date bought", "Price paid / your price", "eBay price", "Where it's kept", "Lent to", "Priority", "Saved so far", "Notes", "Store link"];
+    const head = ["List", "Tool", "Part number", "Category", "How many", "Condition", "Date bought", "Price paid / your price", "eBay price", "Where it's kept", "Lent to", "Priority", "Saved so far", "Notes", "Store link"];
     const lines = rows.map((r) => {
       const owned = r.list === "owned";
       return [
-        csvText(owned ? "Owned" : "Wishlist"), csvText(displayName(r)), csvText(r.part_number), csvText(catOf(r)),
+        csvText(owned ? "Owned" : "Wishlist"), csvText(displayName(r)), csvText(r.part_number), csvText(catOf(r)), csvNum(qtyOf(r)),
         csvText(owned ? r.condition : ""), csvText(owned ? r.date_bought || "" : ""), csvNum(Number(r.price) || ""),
         csvNum(ebayPrice(r)),
         csvText(owned ? r.location : ""), csvText(owned ? r.lent_to || "" : ""), csvText(owned ? "" : r.priority || "Want"), csvNum(owned ? "" : Number(r.saved) || ""),
@@ -3894,19 +3908,19 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   function printHtml() {
     const owned = rowsOf("owned").sort(byCatName), wish = rowsOf("wishlist").sort(byCatName);
-    const paid = owned.reduce((s, r) => s + (Number(r.price) || 0), 0);
-    const worth = owned.reduce((s, r) => s + worthOf(r), 0);
+    const paid = owned.reduce((s, r) => s + paidAll(r), 0);
+    const worth = owned.reduce((s, r) => s + worthAll(r), 0), nOwned = pieces(owned);
     const who = state.user ? state.user.user_metadata?.full_name || state.user.email || "" : "";
     const m = (n) => (n ? money(n, true) : "");
     const pol = getIns();
-    const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(catOf(r))}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(nowPrice(r))}</td><td>${esc(r.location || "")}</td></tr>`).join("");
+    const ownedRows = owned.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(catOf(r))}</td><td class="n">${qtyOf(r)}</td><td>${esc(r.condition || "")}</td><td>${esc(r.date_bought ? fmtDate(r.date_bought) : "")}</td><td class="n">${m(Number(r.price) || 0)}</td><td class="n">${m(nowPrice(r))}</td><td>${esc(r.location || "")}</td></tr>`).join("");
     const wishRows = wish.map((r) => `<tr><td>${esc(displayName(r))}</td><td class="pn">${esc(r.part_number)}</td><td>${esc(catOf(r))}</td><td>${esc(r.priority || "Want")}</td><td class="n">${m(wishCost(r))}</td><td class="n">${m(Number(r.saved) || 0)}</td></tr>`).join("");
     return `<h1>BoxTally</h1>
       <p class="meta">Tool list as of ${esc(fmtDate(today()))}${who ? ` · ${esc(who)}` : ""}</p>
       ${pol ? `<p class="meta">Insured with ${esc(pol.provider)}${pol.policy_number ? ` · policy ${esc(pol.policy_number)}` : ""}${Number(pol.coverage) ? ` · coverage ${money(pol.coverage, true)}` : ""}</p>` : ""}
       <h2>Owned tools</h2>
-      ${owned.length ? `<p class="totals"><span>${owned.length} tool${owned.length === 1 ? "" : "s"}</span><span>Paid ${money(paid, true)}</span><span>Worth today ${money(worth, true)}</span></p>
-      <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Condition</th><th>Bought</th><th class="n">Paid</th><th class="n">eBay now</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
+      ${owned.length ? `<p class="totals"><span>${nOwned} tool${nOwned === 1 ? "" : "s"}</span><span>Paid ${money(paid, true)}</span><span>Worth today ${money(worth, true)}</span></p>
+      <table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th class="n">Qty</th><th>Condition</th><th>Bought</th><th class="n">Paid (each)</th><th class="n">eBay now</th><th>Kept in</th></tr></thead><tbody>${ownedRows}</tbody></table>` : `<p>No owned tools yet.</p>`}
       ${wish.length ? `<h2>Wishlist</h2><table><thead><tr><th>Tool</th><th>Part number</th><th>Category</th><th>Priority</th><th class="n">Price</th><th class="n">Saved</th></tr></thead><tbody>${wishRows}</tbody></table>` : ""}
       <p class="foot">Prices today are Snap-on list prices where we could confirm them (checked weekly), otherwise typical eBay asking prices for new tools (refreshed every few hours). BoxTally is not affiliated with Snap-on.</p>`;
   }
@@ -3962,6 +3976,8 @@ document.addEventListener("DOMContentLoaded", () => {
     $("i-art").value = item?.art && ART[item.art] ? item.art : "";
     $("i-art").closest(".field").hidden = signedIn() && !state.dbArt;
     $("i-price").value = item?.price ? Number(item.price) : "";
+    $("i-qty").value = item ? qtyOf(item) : 1;
+    if (signedIn() && !state.dbQty) $("f-qty").hidden = true;
     $("i-list").value = item?.list_price ? Number(item.list_price) : "";
     $("i-date").value = item?.date_bought || (list === "owned" ? today() : "");
     $("i-cond").value = item?.condition || "Good";
@@ -3991,7 +4007,7 @@ document.addEventListener("DOMContentLoaded", () => {
       name, part_number: pn, category: $("i-cat").value, art: $("i-art").value || null, price: Math.max(0, Number($("i-price").value) || 0), notes: $("i-notes").value.trim(),
       list_price: Number($("i-list").value) > 0 ? Math.round(Number($("i-list").value) * 100) / 100 : null,
       ...(list === "owned"
-        ? { date_bought: $("i-date").value || null, condition: $("i-cond").value, location: $("i-loc").value.trim() }
+        ? { date_bought: $("i-date").value || null, condition: $("i-cond").value, location: $("i-loc").value.trim(), qty: Math.max(1, Math.min(999, Math.round(Number($("i-qty").value)) || 1)) }
         : { priority: $("i-pri").value, saved: Math.max(0, Number($("i-saved").value) || 0) }),
     };
     const oldPath = state.editing ? state.editing.photo_path : null;
