@@ -178,7 +178,7 @@ export function ratchet({ len = 200, grip = true, flex = false, round = false, t
 /* ---------- sockets ---------- */
 // Socket: standing on its drive end with the opening up. Deep, impact (black), 12-point, spark plug,
 // slotted O2 sensor, swivel and bit sockets are variations. The size is printed on the barrel.
-export function socket({ h = 26, r = 10.5, deep = false, impact = false, points = 6, bit = false, size = "", spark = false, slot = false, swivel = false, drive = "" } = {}) {
+export function socket({ h = 26, r = 10.5, deep = false, impact = false, points = 6, bit = false, size = "", spark = false, slot = false, swivel = false, drive = "", pn = "" } = {}) {
   if (deep) h = 54;
   const dsq = DRIVES[drive]; // a bigger drive needs a fatter barrel round its square, and a taller one
   if (dsq) { r = Math.max(r, dsq * 0.82 + 2.2); if (dsq > 10) h *= 1.18; if (dsq < 7) h *= 0.85; }
@@ -219,6 +219,8 @@ export function socket({ h = 26, r = 10.5, deep = false, impact = false, points 
   if (size) {
     const y = deep ? top * 0.58 : (12 + top) / 2;
     g.add(band(size, r + 0.15, deep ? 9 : Math.min(9, top - 15), y, { a: slot ? -0.4 : 0, color: impact ? "#e9edf1" : "#20252c" }));
+    // the part number round the side of the barrel, like the real stamp (turn the socket to read it)
+    if (pn && !slot) g.add(band(pn, r + 0.15, deep ? 5 : Math.min(4.6, top - 17), y, { a: -1.75, span: 1.9, color: impact ? "#e9edf1" : "#20252c" }));
   }
   if (swivel) { // universal joint and female drive under the socket
     g.position.y = J;
@@ -266,7 +268,7 @@ function flareShape(gap, R) {
 const WRENCH_ENDS = { combo: ["open", "box"], ratchet: ["open", "ratchet"], speed: ["speed", "box"], rbox: ["ratchet", "ratchet"], box: ["box", "box"], open: ["open", "open"], flare: ["flare", "flare"] };
 // how long a wrench of this size and style is, end to end of the shank
 export const wrenchLen = (gap, has) => (110 + gap * 4) * (has("long") ? 1.38 : has("midget") ? 0.58 : has("short") ? 0.78 : 1);
-export function wrench({ gap = 13, gap2 = null, size = "", size2 = "", style = "combo", look = [] } = {}) {
+export function wrench({ gap = 13, gap2 = null, size = "", size2 = "", style = "combo", look = [], pn = "" } = {}) {
   const [base, ...mods] = String(style).split("+"), all = new Set([...mods, ...look]), has = (w) => all.has(w);
   const [L, Rt] = WRENCH_ENDS[base] || WRENCH_ENDS.combo, two = L !== "open" && L !== "speed";
   const gR = two ? gap2 || gap * 1.12 : gap; // a double box wrench has a bigger size on the right
@@ -327,6 +329,9 @@ export function wrench({ gap = 13, gap2 = null, size = "", size2 = "", style = "
   parts.push(end(L, -1, gap), end(Rt, 1, gR));
   const label = two && size2 ? `${size} × ${size2}` : size;
   if (label && !has("slim")) { const d = decal(label.replace(/mm/g, "") + (/mm/.test(label) && two ? " mm" : ""), Math.min(44, rx * 2 - 20), 6.4, 0, top + 0.35, 0, { font: "800 80px ui-sans-serif, Helvetica, Arial, sans-serif", rz: -slope(0) }); parts.push(d); }
+  // the part number on the open-end half of the shank, so two wrenches of one size can be told apart
+  const room = rx - 30;
+  if (pn && room >= 14 && !has("slim")) { const x = -(26 + room / 2); parts.push(decal(pn, Math.min(room, pn.length * 3.4), 3.8, x, top + 0.35, -c(x), { rz: -slope(x) })); }
   return group(parts);
 }
 

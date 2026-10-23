@@ -139,7 +139,7 @@ function batteryModel(kind) { const g = battery(kind, { top: true }); g.userData
 function pistol(o = {}) {
   const { len = 150, R = 30, pk = "18", base = pk ? "pack" : "air", nose = "impact", drive = 12.7, body = mat.redp, trim = mat.rubber,
     gearM = mat.satin, gripH = 92, gripT = 34, gripW = 46, rake = 6, boot = false, ledRing = false, tag = "", tag2 = "", px = 8,
-    rearCap = trim, sx = 1.05, sz = 0.9, mode = false, regulator = false, xr = -R * 1.55, hammer = false } = o;
+    rearCap = trim, sx = 1.05, sz = 0.9, mode = false, regulator = false, xr = -R * 1.55, hammer = false, pn = "" } = o;
   const P = pk ? PACKS[pk] : null, g = group();
   let y0 = 0;
   if (base === "pack") { g.add(at(battery(pk), px, 0, 0)); y0 = P.H; }
@@ -205,6 +205,7 @@ function pistol(o = {}) {
   g.add(screw(xf - 18, yb - R * 0.5, zAt(-R * 0.5)), screw(xf - 18, yb - R * 0.5, -zAt(-R * 0.5), -1), screw(xr + 62, yb + R * 0.55, zAt(R * 0.55)), screw(xr + 62, yb + R * 0.55, -zAt(R * 0.55), -1));
   if (tag) g.add(print(tag, Math.min(34, len * 0.24), 10, xr + len * 0.64, yb + R * 0.12, zAt(R * 0.12) + 0.5));
   if (tag2) g.add(print(tag2, 36, 6, xr + len * 0.62, yb - R * 0.25, zAt(-R * 0.25) + 0.5, { color: "#d9dde2" }));
+  if (pn) g.add(print(pn, Math.min(40, pn.length * 4.4), 8, xr + len * 0.62, yb + R * 0.12, -zAt(R * 0.12) - 0.5, WHITE, "-z")); // part number on the other side
   if (regulator) { // power regulator knob on the back
     g.add(at(xturn([[0.1, -10], [R * 0.5, -10], [R * 0.55, -8], [R * 0.55, -1], [R * 0.4, 0]], mat.satin, { flutes: 16, flute: 0.05 }), xr, yb, 0));
     g.add(at(box(2, R * 0.75, 4, mat.redp, 0.4), xr - 10.3, yb, 0));
@@ -316,7 +317,7 @@ function rhead(r = 19, t = 15, drive = 9.5) {
 }
 // neck: extra length of chrome neck between the head and the housing (CTR827/CTR868 long neck, CTR869 extra long).
 // die: the same 14.4V body with a collet and a carbide burr in place of the ratchet head (CGRS861).
-function cratchet(kind = "gen", dr = "", { neck = 0, die = false, fast = false } = {}) {
+function cratchet(kind = "gen", dr = "", { neck = 0, die = false, fast = false, pn = "" } = {}) {
   const K = { gen: { R: 20, hr: 19, drive: 9.5, len: 196 }, "14": { R: 18.5, hr: 18, drive: 9.5, len: 206 }, "18": { R: 22, hr: 21, drive: 9.5, len: 262 } }[kind];
   const { R, hr } = K, len = K.len - (die ? 36 : 0), drive = DRIVES[dr] && DRIVES[dr] <= 12.7 ? DRIVES[dr] : K.drive, x1 = 64 + len;
   const g = group(), head = die ? group() : rhead(hr, 15, drive), b = group(); g.add(head, b); b.position.x = neck;
@@ -339,6 +340,7 @@ function cratchet(kind = "gen", dr = "", { neck = 0, die = false, fast = false }
   if (!die) b.add(at(sphere(2.6, M.ledW), 71, R * 0.62, 0));
   if (!die) g.add(print(drive > 11 ? "1/2" : drive > 9 ? "3/8" : "1/4", 16, 7, 26, 9.2, 0, { color: "#30363e" }, "y"));
   if (fast || die) b.add(print(die ? "DIE GRINDER" : "HIGH SPEED", 34, 6, 104, 0, R + 0.4, WHITE));
+  if (pn) b.add(print(pn, Math.min(36, pn.length * 4), 6, 104, 0, -R - 0.4, WHITE, "-z")); // part number on the other side
   b.add(screw(150, R * 0.4, R * 0.9), screw(x1 - 22, R * 0.4, R * 0.94));
   let back;
   if (kind === "gen") { // small slide pack on the back, gauge on top
@@ -612,7 +614,7 @@ function solderingIron() {
 /* ---------- the catalog ---------- */
 const imp = (o) => pistol({ nose: "impact", mode: true, ...o });
 // the item's own drive (a 3/8" 18V impact) replaces the model's usual anvil and stamp
-const sized = (base, o = {}) => (o.drive && DRIVES[o.drive] ? { ...base, drive: DRIVES[o.drive], tag: o.drive } : base);
+const sized = (base, o = {}) => { const b = o.pn ? { ...base, pn: o.pn } : base; return o.drive && DRIVES[o.drive] ? { ...b, drive: DRIVES[o.drive], tag: o.drive } : b; };
 // Air hammer bits lying side by side: .401 round shank with a turned retaining collar, then a flat chisel,
 // a tapered punch and a forked panel cutter.
 function airBits() {
@@ -627,38 +629,38 @@ function airBits() {
   g.position.x = -95; return group(g);
 }
 // long-neck and high-speed cordless ratchets, read from the look (see lookOf() in app.js)
-const neck3d = (o = {}) => { const l = o.look || []; return { neck: l.includes("xneck") ? 64 : l.includes("neck") ? 34 : 0, fast: l.includes("fast") }; };
+const neck3d = (o = {}) => { const l = o.look || []; return { neck: l.includes("xneck") ? 64 : l.includes("neck") ? 34 : 0, fast: l.includes("fast"), pn: o.pn }; };
 export const MODELS = {
   // generic cordless line: grey/black packs, black overmold
   power: (o) => imp(sized({ pk: "gen", len: 120, R: 29, drive: 9.5, tag: "3/8", tag2: "BRUSHLESS", gearM: mat.oxide }, o)),
   "power-stubby": (o) => imp(sized({ pk: "gen", len: 94, R: 28, drive: 9.5, tag: "3/8", gearM: mat.oxide, gripH: 88 }, o)),
   "power-12": (o) => imp(sized({ pk: "gen", len: 142, R: 33, drive: 12.7, tag: "1/2", tag2: "HIGH TORQUE", gearM: mat.oxide, gripH: 96, gripT: 36, gripW: 48 }, o)),
-  "power-driver": () => pistol({ pk: "gen", nose: "driver", len: 108, R: 27, tag: "1/4 HEX", gearM: mat.oxide, mode: true }),
-  "power-drill": () => pistol({ pk: "gen", nose: "drill", len: 108, R: 28, tag2: "2-SPEED" }),
+  "power-driver": (o = {}) => pistol({ pn: o.pn, pk: "gen", nose: "driver", len: 108, R: 27, tag: "1/4 HEX", gearM: mat.oxide, mode: true }),
+  "power-drill": (o = {}) => pistol({ pn: o.pn, pk: "gen", nose: "drill", len: 108, R: 28, tag2: "2-SPEED" }),
   "power-ratchet": (o = {}) => cratchet("gen", o.drive, neck3d(o)),
   // 14.4V: slimmer tools, smaller black packs
   "cl14-impact": (o) => imp(sized({ pk: "14", len: 108, R: 26, drive: 9.5, tag: "3/8", tag2: "14.4V", gripH: 84, gripT: 31, gripW: 42, px: 6 }, o)),
-  "cl14-driver": () => pistol({ pk: "14", nose: "driver", len: 100, R: 25, tag: "1/4", tag2: "14.4V", gripH: 82, gripT: 31, gripW: 42, px: 6 }),
+  "cl14-driver": (o = {}) => pistol({ pn: o.pn, pk: "14", nose: "driver", len: 100, R: 25, tag: "1/4", tag2: "14.4V", gripH: 82, gripT: 31, gripW: 42, px: 6 }),
   "cl14-ratchet": (o = {}) => cratchet("14", o.drive, neck3d(o)),
-  "cl14-drill": () => pistol({ pk: "14", nose: "drill", len: 100, R: 26, tag2: "14.4V 2-SPEED", gripH: 84, gripT: 31, gripW: 42, px: 6 }),
-  "cl14-die": () => cratchet("14", "", { die: true }),
+  "cl14-drill": (o = {}) => pistol({ pn: o.pn, pk: "14", nose: "drill", len: 100, R: 26, tag2: "14.4V 2-SPEED", gripH: 84, gripT: 31, gripW: 42, px: 6 }),
+  "cl14-die": (o = {}) => cratchet("14", "", { die: true, pn: o.pn }),
   "cl14-battery": () => batteryModel("14"),
   // 18V: chunky tools with rubber nose boots and a ring light
   "cl18-impact": (o) => imp(sized({ pk: "18", len: 126, R: 31, drive: 12.7, tag: "1/2", tag2: "18V BRUSHLESS", boot: true, ledRing: true, gripH: 94, gripT: 36, gripW: 48 }, o)),
-  "cl18-driver": () => pistol({ pk: "18", nose: "driver", len: 110, R: 29, tag: "1/4", tag2: "18V", boot: true, ledRing: true, mode: true, gripH: 92, gripT: 35 }),
-  "cl18-drill": (o = {}) => { const h = o.look?.includes("hammer"); return pistol({ pk: "18", nose: "drill", len: 112, R: 30, tag2: h ? "18V HAMMER DRILL" : "18V 2-SPEED", gripH: 92, gripT: 35, hammer: h }); },
+  "cl18-driver": (o = {}) => pistol({ pn: o.pn, pk: "18", nose: "driver", len: 110, R: 29, tag: "1/4", tag2: "18V", boot: true, ledRing: true, mode: true, gripH: 92, gripT: 35 }),
+  "cl18-drill": (o = {}) => { const h = o.look?.includes("hammer"); return pistol({ pn: o.pn, pk: "18", nose: "drill", len: 112, R: 30, tag2: h ? "18V HAMMER DRILL" : "18V 2-SPEED", gripH: 92, gripT: 35, hammer: h }); },
   "cl18-ratchet": (o = {}) => cratchet("18", o.drive, neck3d(o)),
   "cl18-grinder": () => rightAngle({ pk: "18", tag: "18V" }),
   "cl18-cutoff": () => rightAngle({ pk: "18", cut: true, disc: 38, R: 22, len: 150, handle: false, tag: "18V", yb0: 46 }),
-  "cl14-saw": () => pistol({ pk: "14", nose: "saw", len: 220, R: 26, xr: -40, px: -4, tag: "14.4V", gripH: 84, gripT: 31, gripW: 42 }),
+  "cl14-saw": (o = {}) => pistol({ pn: o.pn, pk: "14", nose: "saw", len: 220, R: 26, xr: -40, px: -4, tag: "14.4V", gripH: 84, gripT: 31, gripW: 42 }),
   "air-bit": () => airBits(),
-  "cl18-saw": () => { const s = pistol({ pk: "18", nose: "saw", len: 250, R: 30, xr: -46, px: -6, tag: "18V", gripH: 92, gripT: 35 }); return s; },
+  "cl18-saw": (o = {}) => { const s = pistol({ pn: o.pn, pk: "18", nose: "saw", len: 250, R: 30, xr: -46, px: -6, tag: "18V", gripH: 92, gripT: 35 }); return s; },
   "cl18-battery": () => batteryModel("18"),
   battery: () => batteryModel("gen"),
   charger: () => charger(),
   // air tools: composite black housings, satin metal, hose fitting under the grip
   "air-impact": (o) => pistol(sized({ pk: null, nose: "impact", len: 130, R: 31, drive: 12.7, body: M.comp, trim: mat.rubber, rearCap: mat.satin, tag: "1/2", tag2: "AIR · 90 PSI", regulator: true, gripH: 98 }, o)),
-  "air-hammer": () => pistol({ pk: null, nose: "hammer", len: 96, R: 26, body: M.comp, rearCap: mat.satin, tag2: "AIR HAMMER", gripH: 96, gripT: 32, gripW: 42 }),
+  "air-hammer": (o = {}) => pistol({ pn: o.pn, pk: null, nose: "hammer", len: 96, R: 26, body: M.comp, rearCap: mat.satin, tag2: "AIR HAMMER", gripH: 96, gripT: 32, gripW: 42 }),
   "air-ratchet": () => airRatchet(),
   "grinder-die": () => dieGrinder(),
   cutoff: () => airCutoff(),
@@ -666,7 +668,7 @@ export const MODELS = {
   "grinder-angle": () => rightAngle({ cord: true, tag: "115 mm" }),
   polisher: () => rightAngle({ pk: "gen", pad: true, bail: true, R: 28, len: 180, tag: "600-3000" }),
   rivet: () => rivetGun(),
-  heatgun: () => pistol({ pk: null, base: "stand", nose: "heat", len: 150, R: 33, tag2: "1500 W", gripH: 80, gripT: 34 }),
+  heatgun: (o = {}) => pistol({ pn: o.pn, pk: null, base: "stand", nose: "heat", len: 150, R: 33, tag2: "1500 W", gripH: 80, gripT: 34 }),
   jump: () => jumpStarter(),
   "grease-gun": () => greaseGun(),
   solder: () => solderingIron(),

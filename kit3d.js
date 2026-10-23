@@ -1,7 +1,25 @@
 // BoxTally 3D kit: the materials and shape helpers every tool model is built from.
 // Sizes are in millimetres. Flat tools lie on the bench: x runs along the tool, y is up, z points at the camera.
-import * as THREE from "three";
-export { THREE };
+import * as T3 from "three";
+
+// Detail: the spin-around view builds its tool with Q.hd on, which doubles how finely every round
+// shape is cut (barrels, knurling, handles, curved outlines) and prints stamps at twice the resolution.
+// Cards and list rows stay at the lighter level, since many of them draw at once.
+// Round shapes cut into fewer than 16 sides are left alone: those are hex nuts, hex bits and squares on purpose.
+export const Q = { hd: false };
+const more = (n, d) => { const v = n ?? d; return Q.hd && v >= 16 ? v * 2 : v; };
+const moreExtrude = (o = {}) => (Q.hd ? { ...o, curveSegments: (o.curveSegments ?? 12) * 2, bevelSegments: (o.bevelSegments ?? 3) * 2 } : o);
+export const THREE = {
+  ...T3,
+  LatheGeometry: class extends T3.LatheGeometry { constructor(pts, n, a, b) { super(pts, more(n, 12), a, b); } },
+  CylinderGeometry: class extends T3.CylinderGeometry { constructor(rt, rb, h, n, hs, open, a, b) { super(rt, rb, h, more(n, 32), hs, open, a, b); } },
+  SphereGeometry: class extends T3.SphereGeometry { constructor(r, w, h, ...rest) { super(r, more(w, 32), more(h, 16), ...rest); } },
+  TorusGeometry: class extends T3.TorusGeometry { constructor(r, t, rs, ts, arc) { super(r, t, more(rs, 12), more(ts, 48), arc); } },
+  TubeGeometry: class extends T3.TubeGeometry { constructor(path, ts, r, rs, closed) { super(path, more(ts, 64), r, more(rs, 8), closed); } },
+  CapsuleGeometry: class extends T3.CapsuleGeometry { constructor(r, len, cs, rs) { super(r, len, cs, more(rs, 8)); } },
+  CircleGeometry: class extends T3.CircleGeometry { constructor(r, n, a, b) { super(r, more(n, 32), a, b); } },
+  ExtrudeGeometry: class extends T3.ExtrudeGeometry { constructor(shapes, o) { super(shapes, moreExtrude(o)); } },
+};
 
 /* ---------- materials ---------- */
 export const mat = {
@@ -70,11 +88,12 @@ export const group = (...kids) => { const g = new THREE.Group(); kids.flat().for
 
 // printed size: dark text on a transparent strip, for socket barrels and wrench shanks
 export function label(text, w, h, { color = "#20252c", font = "700 80px ui-monospace, Menlo, monospace" } = {}) {
-  const c = document.createElement("canvas"); c.width = 512; c.height = Math.round((512 * h) / w);
+  const k = Q.hd ? 2 : 1, c = document.createElement("canvas"); c.width = 512 * k; c.height = Math.round((512 * k * h) / w);
+  font = font.replace(/(\d+)px/, (_, n) => n * k + "px");
   const x = c.getContext("2d"); x.fillStyle = color; x.font = font; x.textAlign = "center"; x.textBaseline = "middle";
-  const fit = Math.min(1, (c.width * 0.9) / x.measureText(text).width); x.font = font.replace(/\d+px/, Math.round(80 * fit) + "px");
+  const fit = Math.min(1, (c.width * 0.9) / x.measureText(text).width); x.font = font.replace(/\d+px/, Math.round(80 * k * fit) + "px");
   x.fillText(text, c.width / 2, c.height / 2);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = Q.hd ? 8 : 4;
   return new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, opacity: 0.85 });
 }
 

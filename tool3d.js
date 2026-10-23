@@ -8,7 +8,7 @@
 // and z points at the camera.
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-import { THREE, mat, PI, DRIVES, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
+import { THREE, Q, mat, PI, DRIVES, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
 
 import { ratchet, socket, openHead, boxHead, wrench, handle, screwdriver, nutdriver, pick, pliers, extension, breaker, adapter, hammer, prybar, punch, torque, hexkeys, socketRail, wrenchSet, JAWS } from "./core3d.js";
 
@@ -282,9 +282,11 @@ export function turn(el, img, key, size = "", w = 640, h = 400, drive = "", pn =
 export function viewer(el, key, size = "", drive = "", pn = "", look = "") {
   if (!MODELS[key]) return null;
   const canvas = document.createElement("canvas"); canvas.className = "m3d-live"; el.appendChild(canvas);
-  const r = makeRenderer(canvas); r.setPixelRatio(Math.min(2, devicePixelRatio || 1));
+  // the one tool you're looking at gets the full detail: twice as finely cut, sharp on a phone's screen, crisp shadows
+  const r = makeRenderer(canvas); r.setPixelRatio(Math.min(3, devicePixelRatio || 1));
   const st = studio(r), cam = new THREE.PerspectiveCamera(28, 1.6);
-  const model = build(key, size, drive, pn, look); const bx = stage(st, model), radius = bx.getBoundingSphere(new THREE.Sphere()).radius;
+  st.key.shadow.mapSize.set(2048, 2048);
+  let model; Q.hd = true; try { model = build(key, size, drive, pn, look); } finally { Q.hd = false; } const bx = stage(st, model), radius = bx.getBoundingSphere(new THREE.Sphere()).radius;
   const ctl = new OrbitControls(cam, canvas);
   Object.assign(ctl, { enableDamping: true, enablePan: false, autoRotate: !matchMedia("(prefers-reduced-motion: reduce)").matches, autoRotateSpeed: 1.6, minPolarAngle: 0.15, maxPolarAngle: PI / 2 - 0.06 });
   let raf = 0, alive = true;
