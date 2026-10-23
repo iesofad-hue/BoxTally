@@ -644,18 +644,32 @@ function solderingIron() {
 const imp = (o) => pistol({ nose: "impact", mode: true, ...o });
 // the item's own drive (a 3/8" 18V impact) replaces the model's usual anvil and stamp
 const sized = (base, o = {}) => { const b = o.pn ? { ...base, pn: o.pn } : base; return o.drive && DRIVES[o.drive] ? { ...b, drive: DRIVES[o.drive], tag: o.drive } : b; };
-// Air hammer bits lying side by side: .401 round shank with a turned retaining collar, then a flat chisel,
-// a tapered punch and a forked panel cutter.
-function airBits() {
-  const bit = (tip) => {
+// Air hammer bits lying side by side: .401 round shank with a turned retaining collar, then the working end.
+// A set from its part number (PHG1005BK = 5 pc, PHG1004RPBK = 4 roll pin punches) lies in its black case,
+// one bit per slot; with no count it's three loose bits (chisel, punch, panel cutter).
+function airBits(o = {}) {
+  const look = o.look || [], n = +((look.find((w) => /^n\d+$/.test(w)) || "").slice(1)) || 0, rp = look.includes("rp");
+  const bit = (tip, k = 0) => {
     const g = group(turned([[0.1, 0], [4.6, 0], [5.1, 0.6], [5.1, 46], [7.6, 47], [7.6, 55], [5.4, 57], [5.4, 70], [4.8, 72], [4.8, 150], [0.1, 150]], mat.satin, { segs: 32 }));
     if (tip === "chisel") g.add(at(box(40, 3, 16, mat.satin, 1), 168, 0, 0));
+    if (tip === "wide") g.add(at(box(36, 3, 26, mat.satin, 1), 166, 0, 0));
     if (tip === "punch") g.add(turned([[4.8, 150], [3.2, 175], [1.2, 190], [0.1, 191]], mat.satin, { segs: 32 }));
     if (tip === "fork") g.add(at(box(34, 3, 12, mat.satin, 1), 165, 0, 0), at(box(12, 3.4, 3.6, mat.hole, 0.5), 178, 0, 0));
+    if (tip === "cutter") g.add(at(box(30, 3, 14, mat.satin, 1), 163, 0, 0), at(box(10, 3.4, 3, mat.hole, 0.5), 172, 0, 4), at(box(10, 3.4, 3, mat.hole, 0.5), 172, 0, -4));
+    if (tip === "pin") { const r = 1.4 + k * 0.5; g.add(turned([[4.8, 150], [r + 0.8, 160], [r, 162], [r, 196], [0.1, 196.4]], mat.satin, { segs: 24 })); } // roll pin punch: a step down to a straight pilot
     return g;
   };
-  const g = group(["chisel", "punch", "fork"].map((t, i) => { const b = bit(t); b.position.set(0, 5.1, -30 + i * 30); b.rotation.y = 0.04 * (i - 1); return b; }));
-  g.position.x = -95; return group(g);
+  if (!n) { const g = group(["chisel", "punch", "fork"].map((t, i) => { const b = bit(t); b.position.set(0, 5.1, -30 + i * 30); b.rotation.y = 0.04 * (i - 1); return b; })); g.position.x = -95; return group(g); }
+  const tips = rp ? [...Array(n)].map(() => "pin") : [...Array(n)].map((_, i) => ["chisel", "fork", "punch", "cutter", "wide", "chisel"][i % 6]);
+  const gap = 24, W = n * gap + 16, cs = group();
+  cs.add(at(rbox(232, 16, W, mat.black, 6, 3), 98, 8, 0)); // the black case's tray
+  cs.add(at(rbox(226, 1, W - 6, mat.rubber, 4, 0.5), 98, 16.2, 0));
+  tips.forEach((t, i) => {
+    const z = (i - (n - 1) / 2) * gap, b = bit(t, i); b.position.set(0, 18 + 5.1, z); cs.add(b);
+    cs.add(at(rbox(206, 1.2, 13, mat.hole, 6, 0.4), 98, 16.6, z)); // the slot it sits in
+  });
+  cs.add(print(rp ? "ROLL PIN PUNCHES" : n + " PC AIR HAMMER BITS", 70, 7, 98, 8, W / 2 + 0.2, WHITE));
+  cs.position.x = -98; const g = group(cs); g.userData.yaw = -0.4; return g;
 }
 // long-neck and high-speed cordless ratchets, read from the look (see lookOf() in app.js)
 const neck3d = (o = {}) => { const l = o.look || []; return { neck: l.includes("xneck") ? 64 : l.includes("neck") ? 34 : 0, fast: l.includes("fast"), pn: o.pn }; };
@@ -682,9 +696,9 @@ export const MODELS = {
   "cl18-grinder": () => rightAngle({ pk: "18", tag: "18V" }),
   "cl18-cutoff": () => rightAngle({ pk: "18", cut: true, disc: 38, R: 22, len: 150, handle: false, tag: "18V", yb0: 46 }),
   "cl14-polisher": () => rightAngle({ pk: "14", pad: true, bail: true, R: 24, len: 150, tag: "14.4V" }),
-  "cl14-saw": (o = {}) => pistol({ pn: o.pn, pk: "14", nose: "saw", len: 220, R: 26, xr: -40, px: -4, tag: "14.4V", gripH: 84, gripT: 31, gripW: 42 }),
-  "air-bit": () => airBits(),
-  "cl18-saw": (o = {}) => { const s = pistol({ pn: o.pn, pk: "18", nose: "saw", len: 250, R: 30, xr: -46, px: -6, tag: "18V", gripH: 92, gripT: 35 }); return s; },
+  "cl14-saw": (o = {}) => { const s = pistol({ pn: o.pn, pk: "14", nose: "saw", len: 220, R: 26, xr: -40, px: -4, tag: "14.4V", gripH: 84, gripT: 31, gripW: 42 }); s.userData.sway = 0.75; return s; },
+  "air-bit": (o) => airBits(o),
+  "cl18-saw": (o = {}) => { const s = pistol({ pn: o.pn, pk: "18", nose: "saw", len: 250, R: 30, xr: -46, px: -6, tag: "18V", gripH: 92, gripT: 35 }); s.userData.sway = 0.75; return s; },
   "cl18-battery": () => batteryModel("18"),
   battery: () => batteryModel("gen"),
   charger: () => charger(),

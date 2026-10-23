@@ -676,6 +676,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (/^CTR881/.test(pn) || /high[- ]?speed/i.test(text)) t.push("fast");
       }
       if (/drill/.test(kind) && (/^CDR(88|90)50/.test(pn) || /hammer/i.test(text))) t.push("hammer");
+      // air hammer bit sets: PHG1005BK is 5 pc, PHG1066BK 6 pc, PHG1004RPBK 4 roll pin punches
+      if (kind === "air-bit") {
+        const m = pn.match(/^PHG10(\d)(\d)/), n = m ? (m[1] === "0" ? +m[2] : +m[2] || null) : +((text.match(/\b(\d{1,2})[- ]?(pc|piece)/i) || [])[1]) || null;
+        if (n > 1) t.push("n" + n);
+        if (/^PHG\d+RP/.test(pn) || /roll ?pin/i.test(text)) t.push("rp");
+      }
     }
     // colored grips: ADHW8AO, SRPCR107O and SAPB200O are orange, ...G green
     if (GRIP_KINDS.test(kind)) { const m = pn.match(/\d[A-Z]{0,3}?(O|G)$/), w = firstHit(PAINT_WORDS, text); if (w || m) t.push(w || (m[1] === "O" ? "c-o" : "c-g")); }
@@ -697,6 +703,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const PAINT_NAME = { "c-gm": "Gunmetal", "c-g": "Green", "c-o": "Orange", "c-hv": "Hi-viz", "c-mb": "Blue" };
   function lookLabel(kind, look, label, spec) {
     let out = label;
+    const n = (look.find((w) => /^n\d+$/.test(w)) || "").slice(1);
+    if (kind === "air-bit" && (n || look.includes("rp"))) out = (n ? n + " pc " : "") + (look.includes("rp") ? "roll pin punch bit set" : "air hammer bit set"), out = out.charAt(0).toUpperCase() + out.slice(1);
     if (kind === "set-wrench" && spec) { const ws = spec.split(";")[0].split("+"); out = SET_LABEL[["rev", "long", "short", "midget", "deep", "flex"].find((w) => ws.includes(w))] || SET_LABEL[ws[0]] || label; }
     for (const [re, w, flex, plain] of LOOK_LABEL) {
       if (!re.test(kind) || !look.includes(w)) continue;

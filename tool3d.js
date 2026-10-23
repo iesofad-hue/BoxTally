@@ -180,7 +180,8 @@ function turntable(key, size, drive, pn, look) {
   let reach = 0; const v = new THREE.Vector3(); pivot.updateMatrixWorld(true);
   pivot.traverse((m) => { const pos = m.isMesh && m.geometry.attributes.position; if (!pos) return; for (let i = 0; i < pos.count; i++) { v.fromBufferAttribute(pos, i).applyMatrix4(m.matrixWorld); reach = Math.max(reach, Math.hypot(v.x, v.z)); } });
   const drum = reach > 0 ? Array.from({ length: 48 }, (_, i) => new THREE.Vector3(reach * Math.cos((i * PI) / 12), i < 24 ? fit.min.y : fit.max.y, reach * Math.sin((i * PI) / 12))) : null;
-  return { pivot, fit, drum, r: Math.max(260, fit.getBoundingSphere(new THREE.Sphere()).radius * 1.3), cams: new Map() };
+  // a long thin tool (a saw) seen end-on is just a stick, so it rocks to and fro instead of turning all the way round
+  return { pivot, fit, drum, sway: model.userData.sway || 0, r: Math.max(260, fit.getBoundingSphere(new THREE.Sphere()).radius * 1.3), cams: new Map() };
 }
 // the key light's shadow covers the whole tool, from a socket to a roll cab
 function light(st, r) {
@@ -266,7 +267,7 @@ function tick(now) {
       const t = tableFor(c);
       // turn on from the angle it stopped at: after a pause for scrolling it carries on, it doesn't jump ahead
       c.a += (Math.min(now - (c.at || now), 50) / TURN) * PI * 2; c.at = now;
-      const src = draw(t, c.w, c.h, c.a);
+      const src = draw(t, c.w, c.h, t.sway ? Math.sin(c.a) * t.sway : c.a);
       if (!c.canvas) { c.canvas = document.createElement("canvas"); c.canvas.className = "m3d m3d-turn"; c.canvas.width = c.w; c.canvas.height = c.h; c.ctx = c.canvas.getContext("2d"); }
       c.ctx.clearRect(0, 0, c.w, c.h); c.ctx.drawImage(src, 0, 0);
       if (!c.canvas.isConnected) { c.img.after(c.canvas); c.el.classList.add("turning"); }

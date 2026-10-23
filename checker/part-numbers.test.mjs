@@ -175,6 +175,7 @@ const LOOKS = [
   ["TNF72", "ratchet-round", "flex", "Round swivel-head ratchet"], ["GSL832", "ratchet-long", "ind", "Industrial long-handle ratchet"], ["FX80", "ratchet-flex", "lock", "Locking flex-head ratchet"],
   ["FR936", "ratchet", "qr", "Quick-release ratchet"], ["FHBF80", "ratchet-flex-soft", "bent", "Bent-handle flex ratchet"], ["S80", "ratchet", "", "Ratchet"],
   ["CTR827", "cl14-ratchet", "neck", "14.4V long-neck ratchet"], ["CTR868GMDB", "cl14-ratchet", "c-gm+neck", "Gunmetal 14.4V long-neck ratchet"], ["CTR869", "cl14-ratchet", "xneck", "14.4V extra-long ratchet"],
+  ["PHG1004RPBK", "air-bit", "n4+rp", "4 pc roll pin punch bit set"], ["PHG1005BK", "air-bit", "n5", "5 pc air hammer bit set"], ["PHG1066BK", "air-bit", "n6", "6 pc air hammer bit set"],
   ["CTR881", "cl14-ratchet", "fast", "14.4V high-speed ratchet"], ["CDR9050", "cl18-drill", "hammer", "18V hammer drill"], ["CT861G", "cl14-impact", "c-g", "Green 14.4V cordless impact"],
   ["CTR861HV", "cl14-ratchet", "c-hv", "Hi-viz 14.4V cordless ratchet"], ["CT861AMG", "cl14-impact", "c-g", "Green 14.4V cordless impact"], ["CGRS861", "cl14-die", "", "14.4V die grinder"],
 ];
