@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=39">
+<link rel="stylesheet" href="/app.css?v=40">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -187,8 +187,8 @@
   </form>
 
   <section class="shop" aria-labelledby="shopTitle">
-    <div class="shop-head"><h2 id="shopTitle">Find it on Snap-on's store</h2><span class="meta-line" id="shopNote">Search opens Snap-on's store in a new tab. Found one you want? Put its part number on your wishlist.</span></div>
-    <div class="shop-find">
+    <div class="shop-head"><h2 id="shopTitle"><button class="shop-toggle" type="button" id="shopToggle" aria-expanded="true" aria-controls="shopFind shopCats">Find it on Snap-on's store</button></h2><span class="meta-line" id="shopNote">Search opens Snap-on's store in a new tab. Found one you want? Put its part number on your wishlist.</span></div>
+    <div class="shop-find" id="shopFind">
       <input id="shopQ" type="search" placeholder="Search the store, e.g. 3/8 ratchet" aria-label="Search Snap-on's store" autocomplete="off">
       <a class="btn primary" id="shopGo" href="https://shop.snapon.com" target="_blank" rel="noopener">Search the store <span aria-hidden="true">↗</span></a>
       <button class="btn" type="button" id="shopWish">Add to wishlist</button>
@@ -203,7 +203,8 @@
 
   <div class="toolbar" id="toolbar" hidden>
     <span class="filters" id="filters">
-      <input class="search" id="q" type="search" placeholder="Search name, part number, notes" aria-label="Search">
+      <input class="search" id="q" type="search" placeholder="Search your tools" aria-label="Search name, part number or notes">
+      <button class="btn fmore" type="button" id="fMore" aria-expanded="false" aria-controls="fCat fSort"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span>Filter</span></button>
       <select id="fCat" aria-label="Category"></select>
       <select id="fSort" aria-label="Sort"></select>
       <span class="seg" role="group" aria-label="View">
@@ -414,8 +415,8 @@
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script defer src="/drawings.js?v=39"></script>
-<script defer src="/app.js?v=39"></script>
+<script defer src="/drawings.js?v=40"></script>
+<script defer src="/app.js?v=40"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>

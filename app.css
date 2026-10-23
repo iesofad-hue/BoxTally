@@ -88,7 +88,7 @@ h1 em { font-style: normal; color: var(--band-accent); }
 @media (prefers-reduced-motion: reduce) { .pbar.indet > span { width: 100%; opacity: .45; } }
 @keyframes indet { from { transform: translateX(-110%); } to { transform: translateX(340%); } }
 
-.dash { display: grid; grid-template-columns: 1.05fr 1fr 1fr 1fr 1.3fr; gap: 12px; }
+.dash { display: grid; grid-template-columns: 1fr 1fr 1.3fr 1.3fr 1fr; gap: 12px; }
 .readonly .dash { grid-template-columns: 1.15fr 1fr 1.5fr; }
 @media (max-width: 1100px) { .dash, .readonly .dash { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .dash .watch { grid-column: 1 / -1; } }
 @media (max-width: 560px) {
@@ -191,16 +191,6 @@ textarea { resize: vertical; min-height: 64px; }
 .btn svg { width: 16px; height: 16px; flex: none; }
 
 .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; }
-.stats > summary { display: none; }
-@media (max-width: 620px) {
-  .stats > summary { display: flex; align-items: center; gap: 10px; list-style: none; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; box-shadow: var(--shadow); }
-  .stats > summary::-webkit-details-marker { display: none; }
-  .stats > summary strong { font-family: var(--f-display); font-size: 1.1rem; text-transform: uppercase; letter-spacing: .02em; }
-  .stats > summary .peek { flex: 1; min-width: 0; color: var(--muted); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .stats > summary::after { content: ""; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg) translate(-2px, -2px); flex: none; }
-  .stats[open] > summary { margin-bottom: 12px; }
-  .stats[open] > summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
-}
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; box-shadow: var(--shadow); min-width: 0; }
 .panel h2 { font-size: 1.15rem; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
 .panel h2 .live { width: 7px; height: 7px; border-radius: 50%; background: var(--good); position: relative; }
@@ -730,11 +720,14 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .shot .plate { position: relative; }
 .has3d .art { visibility: hidden; }
 @media (prefers-reduced-motion: no-preference) {
+  /* the drawing fades out as the 3D picture fades in, so a tile is never blank */
+  .has3d .art { visibility: visible; animation: artOut .35s ease-in .2s forwards; }
   .m3d { animation: m3dIn .5s ease-out; transition: transform .45s cubic-bezier(.3, 1.4, .5, 1); }
   .card:hover .photo .m3d { transform: translateY(-4px) scale(1.04); }
   .shot:hover .m3d { transform: translateY(-3px) scale(1.05); }
 }
 @keyframes m3dIn { from { opacity: 0; transform: scale(.96); } }
+@keyframes artOut { to { opacity: 0; visibility: hidden; } }
 /* a turning tool: its live canvas takes the place of the still picture, without replaying the fade-in */
 .turning img.m3d { visibility: hidden; }
 .m3d-turn { animation: none !important; }
@@ -820,13 +813,12 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
   body:not(.readonly) .scanbtn:not(:disabled) .scan-t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   body:not(.readonly) .scanbtn { padding-inline: 11px; }
   /* Snap-on's store search is for finding the next tool, so it lives on the wishlist */
-  body:not(.readonly).tab-owned .shop { display: none; }
   .ri-main { grid-template-columns: 56px minmax(0, 1fr) auto; }
   .ri .thumb { width: 56px; height: 56px; }
   body:not(.readonly) .ri .actions { display: none; }
 
   /* Money: worth, wishlist, truck account, insurance, prices and stats; no list */
-  .screen-money:not(.readonly) .quick, .screen-money:not(.readonly) .shop, .screen-money:not(.readonly) .toolbar,
+  .screen-money:not(.readonly) .quick, .screen-money:not(.readonly) .shop, .screen-money:not(.readonly) .filters,
   .screen-money:not(.readonly) #list, .screen-money:not(.readonly) .tabs { display: none !important; }
   .screen-money:not(.readonly) .stats > summary { display: none; }
 }
@@ -853,3 +845,40 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .hero-note { color: var(--band-muted); font-size: .85rem; margin: 0; }
 .fresh-start .dash, .fresh-start #localBanner, .fresh-start .top p { display: none !important; }
 @media (max-width: 560px) { .hero-acts > * { flex: 1 1 auto; justify-content: center; } }
+
+/* ---------- the list comes first: folded stats and store search, a Filter button on phones ---------- */
+body:not(.readonly).tab-owned .shop { display: none; }
+.stats > summary { display: flex; align-items: center; gap: 10px; list-style: none; cursor: pointer; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; box-shadow: var(--shadow); }
+.stats > summary::-webkit-details-marker { display: none; }
+.stats > summary strong { font-family: var(--f-display); font-size: 1.1rem; text-transform: uppercase; letter-spacing: .02em; }
+.stats > summary .peek { flex: 1; min-width: 0; color: var(--muted); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stats > summary::after { content: ""; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg) translate(-2px, -2px); flex: none; }
+.stats[open] > summary { margin-bottom: 12px; }
+.stats[open] > summary::after { transform: rotate(-135deg) translate(-2px, -2px); }
+/* the store box's title is the button that folds it */
+.shop-toggle { font: inherit; color: inherit; text-transform: inherit; background: none; border: 0; padding: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-align: left; }
+.shop-toggle::after { content: ""; width: 8px; height: 8px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-135deg) translate(-2px, -2px); flex: none; }
+.shop.folded .shop-toggle::after { transform: rotate(45deg) translate(-2px, -2px); }
+.shop.folded #shopFind, .shop.folded #shopCats, .shop.folded #shopNote { display: none; }
+@media (pointer: coarse) { .shop-toggle { min-height: 40px; } }
+.truck-act .btn-watch { white-space: nowrap; }
+.fmore { display: none; }
+@media (max-width: 620px) {
+  /* Box and Wishlist: slimmer totals with one line under each number; the full story is on Money */
+  body.has-items:not(.readonly) .eyebrow { display: none; }
+  body:not(.readonly):not(.screen-money) .tile { padding: 10px 12px; gap: 2px; }
+  body:not(.readonly):not(.screen-money) .dash .tile .big { font-size: 1.65rem; }
+  body:not(.readonly):not(.screen-money) .tile .sub2 { display: none; }
+  body:not(.readonly):not(.screen-money) #exportBox { display: none; }
+  /* one row: search, Filter, view; category and sort open under it */
+  body:not(.readonly) .fmore { display: inline-flex; order: 1; min-height: 44px; padding-inline: 12px; position: relative; }
+  body:not(.readonly) .fmore.on::after { content: ""; position: absolute; top: 7px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  body:not(.readonly) .filters .seg { order: 2; }
+  body:not(.readonly) .filters select { order: 3; }
+  body:not(.readonly) .toolbar:not(.filters-open) .filters select { display: none; }
+  body:not(.readonly) .filters .search { flex: 1 1 120px; }
+  body:not(.readonly) .fmore { padding-inline: 11px; }
+  body:not(.readonly) .fmore span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+/* the first visit's welcome already says how to start, so the empty list doesn't repeat it */
+.fresh-start #list .empty { display: none; }

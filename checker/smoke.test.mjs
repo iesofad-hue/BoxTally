@@ -70,6 +70,11 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
     await page.click("#bnav [data-go=owned]");
     await page.waitForTimeout(300);
     if (!(await page.locator("#list").isVisible())) fail(`${name}: Box didn't bring the list back`);
+    // category and sort stay folded under the Filter button until it's tapped
+    if (await page.locator("#fCat").isVisible()) fail(`${name}: category shows before tapping Filter`);
+    await page.click("#fMore");
+    if (!(await page.locator("#fCat").isVisible())) fail(`${name}: Filter didn't show category and sort`);
+    await page.click("#fMore");
     // tapping a row opens the tool, with its Edit and Delete buttons
     await page.locator("#list .ri h3").first().click();
     await page.waitForTimeout(400);

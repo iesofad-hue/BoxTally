@@ -1395,7 +1395,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else { ["d-worth", "d-left"].forEach((k) => $(k).classList.remove("loading-num")); }
     if (state.loaded) countTo($("d-worth"), Math.round(worth));
     if (state.loaded) $("d-worth-sub").innerHTML = t.length
-      ? `${nTools} tool${nTools === 1 ? "" : "s"}${hidePaid() || !paid ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}<br>${onList + onEbay ? `${pricedFrom}${onList + onEbay < nTools ? ", the rest at what you paid" : ""}` : "Valued at what you paid until prices come in"}`
+      ? `${nTools} tool${nTools === 1 ? "" : "s"}${hidePaid() || !paid ? "" : ` · ${state.readonly ? "paid" : "you paid"} ${money(Math.round(paid))}${worth - paid ? ` · <span class="delta ${worth > paid ? "up" : "down"}">${signed(Math.round(worth - paid))}</span>` : ""}`}<span class="sub2"><br>${onList + onEbay ? `${pricedFrom}${onList + onEbay < nTools ? ", the rest at what you paid" : ""}` : "Valued at what you paid for now"}</span>`
       : "Add tools to see their value.";
     const cost = w.reduce((s, r) => s + wishCost(r), 0), saved = w.reduce((s, r) => s + Math.min(Number(r.saved) || 0, wishCost(r)), 0);
     if (state.loaded) countTo($("d-left"), Math.round(Math.max(cost - (state.readonly ? 0 : saved), 0)));
@@ -1419,7 +1419,8 @@ document.addEventListener("DOMContentLoaded", () => {
     renderIns(worth);
     document.body.classList.toggle("readonly", !!state.readonly);
     document.body.classList.toggle("demo", !!state.demo);
-    $("q-add").textContent = state.tab === "owned" ? "Add to box" : "Add to wishlist";
+    // on a phone the wishlist's button is just "Add", so the part number box keeps room for its hint
+    $("q-add").textContent = state.tab === "owned" ? "Add to box" : matchMedia("(max-width: 620px)").matches ? "Add" : "Add to wishlist";
     $("shopWish").hidden = state.tab === "wishlist";
     $("shopNote").textContent = state.tab === "wishlist"
       ? "Search opens Snap-on's store in a new tab. Found one you want? Type its part number in the box above."
@@ -1430,6 +1431,8 @@ document.addEventListener("DOMContentLoaded", () => {
     $("exportBox").hidden = !anyItems || state.readonly;
     $("toolbar").hidden = !tabHas && (!anyItems || state.readonly);
     document.querySelector(".shop").classList.toggle("compact", anyItems);
+    syncShop(anyItems);
+    $("fMore").classList.toggle("on", !!$("fCat").value);
     $("fabText").textContent = state.tab === "owned" ? "Add tool" : "Add to wishlist";
     // drawers only make sense for tools you own, and a shared box doesn't show where things are kept
     const drawersOk = state.tab === "owned" && !state.readonly;
@@ -1527,7 +1530,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("railCount").textContent = `${owned.length} tool${owned.length === 1 ? "" : "s"}${withPh ? ` · ${withPh} with your photos` : ""}`;
     if (!state.railIntro) { state.railIntro = true; $("rail").classList.add("intro"); setTimeout(() => $("rail").classList.remove("intro"), 2200); }
     $("rail").innerHTML = rows.map((r, i) => { const p = photoOf(r), pr = worthOf(r);
-      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}"${p ? "" : ` data-m3d="${esc(m3dOf(artOf(r)))}"`}>${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
+      return `<button class="shot" type="button" data-id="${esc(r.id)}" style="--i:${i}"><span class="plate${p ? "" : " art-bg"}">${p ? imgTag(p, displayName(r)) : artTag(artOf(r))}</span><span class="cap">${esc(displayName(r))}</span><span class="pr">${pr ? money(pr, pr % 1) : esc(r.part_number || "")}</span></button>`; }).join("");
   }
 
   function activity() {
@@ -1633,11 +1636,31 @@ document.addEventListener("DOMContentLoaded", () => {
     const ev = activity().length;
     $("statsPeek").textContent = [ev ? "Recent activity" : "", ...bits].filter(Boolean).join(" · ");
   }
-  // Stats are one tap-to-open row on phones and always open on bigger screens.
-  const phoneMq = matchMedia("(max-width: 620px)");
-  const syncStats = () => { $("stats").open = !phoneMq.matches; };
-  syncStats();
-  phoneMq.addEventListener ? phoneMq.addEventListener("change", syncStats) : phoneMq.addListener(syncStats);
+  // Stats are one tap-to-open row, so the list comes first. They stay open once you open them,
+  // and the Money screen always shows them open.
+  const STATS_KEY = "bx-stats-open";
+  const statsPref = () => { try { return localStorage.getItem(STATS_KEY) === "1"; } catch { return false; } };
+  $("stats").open = statsPref();
+  $("stats").addEventListener("toggle", () => { if (state.money) return; try { localStorage.setItem(STATS_KEY, $("stats").open ? "1" : "0"); } catch {} });
+
+  // Snap-on's store search folds to one row once you have tools, until you open it.
+  function syncShop(anyItems) {
+    const open = state.shopOpen ?? !anyItems;
+    document.querySelector(".shop").classList.toggle("folded", !open);
+    $("shopToggle").setAttribute("aria-expanded", open);
+  }
+  $("shopToggle").onclick = () => {
+    state.shopOpen = $("shopToggle").getAttribute("aria-expanded") !== "true";
+    syncShop();
+    if (state.shopOpen) $("shopQ").focus();
+  };
+
+  // Phones: category and sort fold under one Filter button next to search.
+  $("fMore").onclick = () => {
+    const open = $("toolbar").classList.toggle("filters-open");
+    $("fMore").setAttribute("aria-expanded", open);
+    if (open) $("fCat").focus();
+  };
 
   function renderWatch() {
     const changes = state.items.map((r) => ({ r, ch: lastChange(r) })).filter((x) => x.ch).sort((a, b) => String(b.ch.d).localeCompare(String(a.ch.d)) || (a.ch.to - a.ch.from) - (b.ch.to - b.ch.from));
@@ -1787,8 +1810,10 @@ document.addEventListener("DOMContentLoaded", () => {
           if (!url || !el.isConnected) return;
           const art = el.querySelector(".art"); if (!art) return;
           const img = new Image(); img.className = "m3d"; img.alt = ""; img.src = url;
-          // once the picture shows, the card's tool slowly turns while it's on screen (see turn() in tool3d.js)
-          img.onload = () => { art.parentElement.appendChild(img); el.classList.add("has3d"); t.turn?.(el, img, key, size, square ? 360 : 720, square ? 360 : 450, drive, pn, look); };
+          // the drawing stays until the picture is ready to paint, then fades across (no blank tile in between);
+          // once it shows, the card's tool slowly turns while it's on screen (see turn() in tool3d.js)
+          const show = () => { if (!el.isConnected) return; art.parentElement.appendChild(img); el.classList.add("has3d"); if (!square) t.turn?.(el, img, key, size, 720, 450, drive, pn, look); };
+          (img.decode ? img.decode() : new Promise((ok) => { img.onload = ok; })).then(show, () => {});
         });
       }
     });
@@ -1954,7 +1979,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("truck").innerHTML = `<span class="big">${money(bal, bal % 1)}</span>
       <span class="sub">${t.legacy ? "Add your pay interval and interest to get a payment plan" : `${money(t.pay, true)} ${ev.label}${t.interest > 0 ? ` · ${t.apr}% interest` : ""} · ${esc(po.text)}`}${t.dealer ? ` · ${esc(t.dealer)}` : ""}${lastPay ? `<br>Last payment ${rel(lastPay.d)}` : ""}</span>
       <div class="bar ${bal <= 0 ? "done" : ""}"><span style="width:${pct}%"></span></div>
-      <div class="truck-act">${bal > 0 && !t.legacy ? `<button class="btn-watch" type="button" data-truck="pay">Made a payment (${money(next, true)})</button>` : ""}<button class="btn-watch" type="button" data-truck="edit">${t.legacy ? "Set up plan →" : "Edit"}</button></div>`;
+      <div class="truck-act">${bal > 0 && !t.legacy ? `<button class="btn-watch" type="button" data-truck="pay">I paid ${money(next, true)}</button>` : ""}<button class="btn-watch" type="button" data-truck="edit">${t.legacy ? "Set up plan →" : "Edit"}</button></div>`;
   }
   $("truck").addEventListener("click", async (e) => {
     const b = e.target.closest("[data-truck]"); if (!b) return;
@@ -2325,7 +2350,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setTab(tab) {
     if (tab !== state.tab) state.introDone = false;
     state.tab = tab; state.confirm = null;
-    if (state.money) { state.money = false; document.body.classList.remove("screen-money"); }
+    if (state.money) { state.money = false; document.body.classList.remove("screen-money"); $("stats").open = statsPref(); }
     $("tab-tools").setAttribute("aria-selected", tab === "owned");
     $("tab-wish").setAttribute("aria-selected", tab === "wishlist");
     $("list").setAttribute("aria-labelledby", tab === "owned" ? "tab-tools" : "tab-wish");
@@ -2347,7 +2372,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (on === !!state.money) return;
     state.money = on; state.confirm = null;
     document.body.classList.toggle("screen-money", on);
-    if (on) $("stats").open = true;
+    $("stats").open = on || statsPref();
     syncBnav();
     if (!routeSync) go(tabPath());
     scrollTo({ top: 0 });
