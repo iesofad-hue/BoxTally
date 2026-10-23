@@ -801,6 +801,8 @@ dialog { border-radius: 20px; box-shadow: 0 40px 80px -30px rgb(0 0 0 / .55); }
 .lp-done div:first-child { border-top: 0; }
 .lp-done .pn { font-family: var(--f-mono); font-size: 13px; }
 .lp-done .miss { color: var(--muted); }
+.lp-looks { margin-bottom: 4px; }
+.lp-looks .btn { margin-top: 8px; }
 .lp-batch .lp-pns { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .lp-batch .lp-pns span { font-family: var(--f-mono); font-size: 13px; padding: 2px 6px; border-radius: 6px; background: var(--chip); }
 #l-text { width: 100%; min-height: 9em; font: inherit; font-size: 16px; }
@@ -3737,17 +3739,43 @@ document.addEventListener("DOMContentLoaded", () => {
   const ask = (pns) => `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}`;
   // second try for ones Gemini couldn't find: allow the same tool in another color, and the last known price
   const askAgain = (pns) => `These Snap-on part numbers are harder to find. For each one, search shop.snapon.com and Google for the Snap-on list price (new, US dollars). Letters at the end are often just the color or kit (for example DB, GM, R, O, G, HD, C2), so if the exact number isn't listed, use the price of the same tool in another color, or the last list price shown before it was discontinued. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if there is still no price at all, write PARTNUMBER ?\n\n${pns.join("\n")}`;
+  // The same tool in another color or kit: CTR868DB and CTR868GMDB share CTR868 once the letters after
+  // the last digit are dropped. New ones get the priced one's price offered, for the owner to OK.
+  const lpBase = (pn) => { const m = String(pn).match(/^(.*\d)[A-Z]{1,4}$/); return m && m[1].length >= 3 ? m[1] : String(pn); };
+  function lpLookalikes() {
+    const priced = new Map();
+    state.adminParts.filter((p) => p.price != null).forEach((p) => { const k = lpBase(p.part_number); if (!priced.has(k)) priced.set(k, p); });
+    return lpTodo().map((p) => ({ pn: p.part_number, from: priced.get(lpBase(p.part_number)) })).filter((x) => x.from);
+  }
+  let curLooks = [];
   function renderListDlg() {
-    const todo = lpTodo(), done = lpDone(), missing = done.filter((p) => p.price == null);
-    $("l-n-todo").textContent = todo.length; $("l-n-done").textContent = done.length;
+    const looks = lpTab === "todo" ? lpLookalikes() : [], lookSet = new Set(looks.map((x) => x.pn));
+    const todo = lpTodo().filter((p) => !lookSet.has(p.part_number)), done = lpDone(), missing = done.filter((p) => p.price == null);
+    curLooks = looks;
+    $("l-n-todo").textContent = lpTodo().length; $("l-n-done").textContent = done.length;
     document.querySelectorAll("[data-lp-tab]").forEach((b) => b.setAttribute("aria-selected", b.dataset.lpTab === lpTab));
     // the batch shown is the one that gets copied: newest tools first, or the not-found ones to try again
     const pns = (lpTab === "todo" ? todo : missing).slice(0, LIST_BATCH).map((p) => p.part_number);
     curBatch = pns;
     const b = $("l-batch"); b.textContent = "";
     const head = document.createElement("div");
-    if (lpTab === "todo") head.textContent = todo.length ? `${todo.length} tool${todo.length === 1 ? "" : "s"} still to check. This batch is these ${pns.length}:` : "Every tool has been checked. New tools people add show up here.";
+    if (lpTab === "todo") head.textContent = todo.length ? `${todo.length} tool${todo.length === 1 ? "" : "s"} still to check. This batch is these ${pns.length}:` : looks.length ? "" : "Every tool has been checked. New tools people add show up here.";
     else head.textContent = done.length ? `${done.length - missing.length} with a price, ${missing.length} where Gemini found none.${pns.length ? ` Try these ${pns.length} again:` : ""}` : "Nothing checked yet.";
+    if (looks.length) {
+      const lk = document.createElement("div"); lk.className = "lp-looks";
+      const t = document.createElement("div");
+      t.textContent = `${looks.length} look${looks.length === 1 ? "s" : ""} like another color or kit of a tool you've already priced:`;
+      const box = document.createElement("div"); box.className = "lp-done";
+      looks.forEach(({ pn, from }) => {
+        const row = document.createElement("div"), a = document.createElement("span"), v = document.createElement("span");
+        a.className = "pn"; a.textContent = pn; v.textContent = `${money(from.price, true)} like ${from.part_number}`;
+        row.append(a, v); box.append(row);
+      });
+      const go = document.createElement("button"); go.type = "button"; go.className = "btn small primary"; go.id = "l-looks";
+      go.textContent = `Use ${looks.length === 1 ? "this price" : "these prices"}`;
+      lk.append(t, box, go); b.append(lk);
+      if (todo.length) { const more = document.createElement("div"); more.textContent = "The rest go to Gemini:"; more.style.marginTop = "10px"; b.append(more); }
+    }
     b.append(head);
     if (pns.length) {
       const list = document.createElement("div"); list.className = "lp-pns";
@@ -3800,11 +3828,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return out;
   }
-  $("listFrm").addEventListener("submit", async (e) => {
+  const lpErr = (m) => { $("l-err").textContent = m; $("l-err").hidden = false; };
+  $("listFrm").addEventListener("submit", (e) => {
     e.preventDefault();
     const found = parseListPrices($("l-text").value);
-    const err = (m) => { $("l-err").textContent = m; $("l-err").hidden = false; };
-    if (!found.size) return err("No part numbers found. Paste Gemini's answer with lines like F80 $159.00.");
+    if (!found.size) return lpErr("No part numbers found. Paste Gemini's answer with lines like F80 $159.00.");
+    saveListPrices(found);
+  });
+  $("l-batch").addEventListener("click", (e) => {
+    if (e.target.id === "l-looks" && curLooks.length) saveListPrices(new Map(curLooks.map(({ pn, from }) => [pn, Number(from.price)])));
+  });
+  async function saveListPrices(found) {
+    const err = lpErr;
     $("l-save").disabled = true; $("l-save").textContent = "Saving…";
     try {
       const rows = [...found].map(([pn, price]) => ({ pn, price }));
@@ -3823,7 +3858,7 @@ document.addEventListener("DOMContentLoaded", () => {
       toast(`Saved ${priced} price${priced === 1 ? "" : "s"}${found.size > priced ? `, ${found.size - priced} with none found` : ""}. The next batch is ready.`);
     } catch (ex) { err(dbMsg(ex) || "Couldn't save those. Check your connection and try again."); }
     $("l-save").disabled = false; $("l-save").textContent = "Save prices";
-  });
+  }
 
   $("list").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-act]"); if (!btn) return;

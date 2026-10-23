@@ -1,0 +1,33 @@
+name: Tools without a list price
+
+# Once a day: if tools nobody has checked for a Snap-on list price show up, keeps one GitHub issue
+# up to date and @mentions the owner (GitHub emails them). Closes the issue when all are checked.
+on:
+  schedule:
+    - cron: "17 15 * * *" # every day, 15:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: unpriced
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  unpriced:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: https://ctteljhhjsfvyyiwzxiy.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      OWNER_LOGIN: ${{ github.repository_owner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check for tools without a list price
+        run: node checker/unpriced.mjs
