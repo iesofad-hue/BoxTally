@@ -1347,7 +1347,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (owned) {
       const now = nowPrice(r), paid = Number(r.price) || 0, v = now ?? paid, diff = now != null && paid ? now - paid : null;
       price = v ? money(v, v % 1) : "—";
-      sub = now != null ? (diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> eBay` : "eBay price") : paid ? "you paid" : "";
+      // say where the price came from, the same way the cards do: Snap-on list price first, else eBay
+      const src = listPrice(r) != null ? "list" : "eBay";
+      sub = now != null ? (diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> ${src}` : src === "list" ? "List price" : "eBay price") : paid ? "you paid" : "";
     } else {
       const cost = wishCost(r), left = Math.max(cost - (Number(r.saved) || 0), 0);
       price = cost ? money(cost, cost % 1) : "—";
