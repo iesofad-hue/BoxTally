@@ -2791,8 +2791,9 @@ document.addEventListener("DOMContentLoaded", () => {
     state.admin = true; state.adminParts = r.data || [];
   }
   // not checked = never looked up; checked = has a price, or was looked up and none was found
-  const lpTodo = () => state.adminParts.filter((p) => !p.checked_at);
-  const lpDone = () => state.adminParts.filter((p) => p.checked_at).sort((a, b) => (a.price != null) - (b.price != null) || a.part_number.localeCompare(b.part_number));
+  // (the automatic lookup's "not found" still waits for the owner; only the owner's own "?" counts as checked)
+  const lpTodo = () => state.adminParts.filter((p) => !p.checked_at || (p.price == null && p.source !== "owner"));
+  const lpDone = () => state.adminParts.filter((p) => p.checked_at && (p.price != null || p.source === "owner")).sort((a, b) => (a.price != null) - (b.price != null) || a.part_number.localeCompare(b.part_number));
   const ask = (pns) => `What is the current Snap-on list price (new, US dollars) for each of these Snap-on part numbers? Search for each one. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if you really can't find a price, write PARTNUMBER ?\n\n${pns.join("\n")}`;
   // second try for ones Gemini couldn't find: allow the same tool in another color, and the last known price
   const askAgain = (pns) => `These Snap-on part numbers are harder to find. For each one, search shop.snapon.com and Google for the Snap-on list price (new, US dollars). Letters at the end are often just the color or kit (for example DB, GM, R, O, G, HD, C2), so if the exact number isn't listed, use the price of the same tool in another color, or the last list price shown before it was discontinued. Answer with one line per part number, like this: PARTNUMBER $PRICE\nOnly if there is still no price at all, write PARTNUMBER ?\n\n${pns.join("\n")}`;

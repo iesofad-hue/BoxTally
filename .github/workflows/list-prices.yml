@@ -1,11 +1,12 @@
 name: Snap-on list prices
 
-# Once a week, looks up the Snap-on list price for tracked part numbers (Gemini with Google Search,
-# kept only when a snapon.com page backs it). New tools are picked up on the next run; prices are
-# rechecked twice a year. Does nothing until GEMINI_API_KEY is added (see README, "Snap-on list prices").
+# Every 15 minutes, looks up the Snap-on list price for new tools (Gemini with Google Search, kept only
+# when a snapon.com page backs it), so a new tool gets its price within about 15 minutes. Prices are
+# rechecked twice a year; the owner's own prices are never overwritten. Most runs find nothing to do.
+# Does nothing until GEMINI_API_KEY is added (see README, "Snap-on list prices").
 on:
   schedule:
-    - cron: "41 11 * * 1" # Mondays, 11:41 UTC
+    - cron: "4,19,34,49 * * * *" # every 15 minutes (GitHub may start it a little late)
   workflow_dispatch:
     inputs:
       parts:
@@ -25,11 +26,12 @@ permissions:
 jobs:
   list:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     env:
       SUPABASE_URL: https://ctteljhhjsfvyyiwzxiy.supabase.co
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      MAX_LOOKUPS: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

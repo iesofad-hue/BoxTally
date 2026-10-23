@@ -36,9 +36,10 @@ async function gh(path, { method = "GET", body } = {}) {
 
 const [tracked, checked] = await Promise.all([
   rest("rpc/parts_for_ebay", { method: "POST", body: "{}" }),
-  rest("list_prices?select=part_number"),
+  rest("list_prices?select=part_number,price,source"),
 ]);
-const done = new Set(checked.map((r) => r.part_number));
+// checked = has a price, or the owner marked it "no price found" (the automatic lookup's misses still count)
+const done = new Set(checked.filter((r) => r.price != null || r.source === "owner").map((r) => r.part_number));
 const todo = tracked.map((t) => t.part_number).filter((pn) => !done.has(pn)).sort();
 console.log(`${tracked.length} tracked part numbers, ${todo.length} not checked yet${todo.length ? `: ${todo.join(" ")}` : ""}`);
 if (DRY) process.exit(0);

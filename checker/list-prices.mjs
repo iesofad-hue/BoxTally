@@ -5,7 +5,8 @@
 // this asks Gemini with Google Search for each part number's price on Snap-on's own store. An answer is
 // kept only when the part number matches and at least one source Google returned is a snapon.com page;
 // otherwise price is saved as null ("not found") so the card falls back to eBay.
-// Runs weekly from .github/workflows/list-prices.yml. List prices change a few times a year at most.
+// Runs every 15 minutes from .github/workflows/list-prices.yml. Most runs find nothing due and stop in a
+// second; new tools are looked up first. Prices the owner saved by hand are never overwritten.
 //
 // Environment:
 //   SUPABASE_URL          https://<project>.supabase.co
@@ -15,8 +16,8 @@
 //   GEMINI_MODEL          optional, default gemini-3.8-flash
 //   RECHECK_DAYS          optional, how old a price can get before it's looked up again (default 182;
 //                         Snap-on changes list prices about once or twice a year)
-//   MAX_LOOKUPS           optional, most part numbers looked up in one run (default 600, so four weekly
-//                         runs stay inside the 5,000 free searches a month even with thousands of tools)
+//   MAX_LOOKUPS           optional, most part numbers looked up in one run (default 600; the workflow
+//                         runs every 15 minutes with 40, so a new tool gets its price within about 15 minutes)
 //
 // Cost: only part numbers someone tracks are looked up, each once for everyone, then twice a year.
 //
@@ -84,19 +85,19 @@ async function lookup(pn) {
   };
 }
 
-let parts;
+let parts, old = {};
 if (ONLY.length) parts = ONLY.map((p) => p.toUpperCase());
 else {
   const [tracked, rows] = await Promise.all([
     rest("rpc/parts_for_ebay", { method: "POST", body: {} }),
     rest("list_prices?select=part_number,price,checked_at,source"),
   ]);
-  const old = Object.fromEntries(rows.map((r) => [r.part_number, r]));
+  old = Object.fromEntries(rows.map((r) => [r.part_number, r]));
   const cutoff = Date.now() - RECHECK_DAYS * 864e5;
   // Not-found answers are retried after 30 days; found prices after RECHECK_DAYS
   const due = tracked.map((t) => t.part_number).filter((pn) => {
     const o = old[pn];
-    if (o && o.source === "owner") return false; // the owner's own prices are never overwritten
+    if (o && o.source === "owner" && o.price != null) return false; // the owner's own prices are never overwritten
     return !o || Date.parse(o.checked_at) < (o.price == null ? Date.now() - 30 * 864e5 : cutoff);
   });
   due.sort((a, b) => (old[a] ? Date.parse(old[a].checked_at) : 0) - (old[b] ? Date.parse(old[b].checked_at) : 0));
@@ -110,7 +111,10 @@ for (const pn of parts) {
   try {
     const { row, why } = await lookup(pn);
     console.log(`${pn}: ${row.price != null ? `$${row.price} (${row.source})${row.name ? ` ${row.name}` : ""}` : `not found: ${why}`}`);
-    if (!DRY) await rest("list_prices?on_conflict=part_number", { method: "POST", body: row, prefer: "resolution=merge-duplicates,return=minimal" });
+    // the owner already marked it "no price found": keep their row, just note when it was tried again
+    const keepOwner = row.price == null && old[pn] && old[pn].source === "owner";
+    if (!DRY && keepOwner) await rest(`list_prices?part_number=eq.${encodeURIComponent(pn)}`, { method: "PATCH", body: { checked_at: row.checked_at }, prefer: "return=minimal" });
+    else if (!DRY) await rest("list_prices?on_conflict=part_number", { method: "POST", body: row, prefer: "resolution=merge-duplicates,return=minimal" });
     row.price != null ? found++ : missing++;
   } catch (e) {
     console.error(`${pn}: ${e.message}`);
