@@ -31,6 +31,7 @@ const RECHECK_DAYS = Number(process.env.RECHECK_DAYS || 182);
 const MAX_LOOKUPS = Number(process.env.MAX_LOOKUPS || 600);
 const ONLY = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const DRY = process.argv.includes("--dry-run");
+const EXPLAIN = process.argv.includes("--explain"); // print what Gemini answered and which pages it used
 
 if (!GEMINI) {
   console.log("::notice::List prices aren't set up yet (GEMINI_API_KEY secret). Skipping.");
@@ -72,6 +73,7 @@ async function lookup(pn) {
   const cand = (j.candidates || [])[0] || {};
   const text = (cand.content?.parts || []).map((p) => p.text || "").join("");
   const sources = (cand.groundingMetadata?.groundingChunks || []).map((c) => c.web?.title || "").filter(Boolean);
+  if (EXPLAIN) console.log(pn, JSON.stringify({ finish: cand.finishReason, text: text.slice(0, 600), grounding: cand.groundingMetadata, usage: j.usageMetadata }).slice(0, 4000));
   const m = text.match(/\{[\s\S]*\}/);
   let a = null;
   try { a = m && JSON.parse(m[0]); } catch {}
