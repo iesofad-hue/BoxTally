@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
   const cleanPn = (s) => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
 
+  const priceAsked = new Set(), finding = new Set(); // part numbers asked about on the spot this visit, and still being looked up
   const state = { admin: false, adminParts: [], tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, list: {}, loaded: false, editing: null, confirm: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
   const signedIn = () => !!state.user;
   const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
@@ -1201,6 +1202,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.loaded = true;
     saveCache();
     render();
+    priceMissing();
   }
   // Someone's shared box (a ?box= link): read-only, no photos, notes or locations.
   async function loadShared() {
@@ -1216,8 +1218,29 @@ document.addEventListener("DOMContentLoaded", () => {
   // form open longer than that on a weak signal: the prices fill in by themselves when they arrive.
   function pricesSoon() {
     let late = false;
-    const load = loadCatalog().then(() => { if (late) render(); }, () => {});
+    const load = loadCatalog().then(() => { if (late) render(); priceMissing(); }, () => {});
     return Promise.race([load, new Promise((r) => setTimeout(() => { late = true; r(); }, 2500))]);
+  }
+  // Tools with no eBay or Snap-on list price yet are looked up on the spot (supabase/functions/price-now),
+  // so a new tool's prices show in seconds instead of at the next scheduled run. Signed-in boxes only;
+  // each part number is asked about once per visit, and the function only looks up tools you track.
+  async function priceMissing() {
+    if (!sb || !signedIn() || state.demo || state.readonly || state.offline) return;
+    const pns = [...new Set(state.items.map((r) => r.part_number).filter((p) => p && PN_RE.test(p)))]
+      .filter((p) => !priceAsked.has(p) && (!state.ebay[p] || !state.list[p])).slice(0, 10);
+    if (!pns.length) return;
+    pns.forEach((p) => { priceAsked.add(p); finding.add(p); });
+    render();
+    try {
+      const { data, error } = await sb.functions.invoke("price-now", { body: { pns } });
+      if (!error && data) {
+        Object.assign(state.ebay, data.ebay || {});
+        Object.assign(state.list, data.list || {});
+      }
+    } catch { /* the scheduled runs pick it up */ }
+    pns.forEach((p) => finding.delete(p));
+    render();
+    priceMissing(); // the next 10, if a big paste added more
   }
   async function loadCatalog() {
     if (!sb) return;
@@ -1448,7 +1471,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <div><span class="label">${state.readonly ? "Paid" : "You paid"}</span>${hidePaid() ? `<span class="no-price">Kept private</span>` : paid || !mine ? `<span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span>` : `<span class="no-price">Not entered.<br><button class="btn small" data-act="edit" type="button">Add what you paid</button></span>`}</div>
         <div><span class="label">${listPrice(r) != null ? "Snap-on list" : "eBay price now"}</span>${now != null
           ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : listPrice(r) != null ? `<span class="src-tag">Snap-on</span> list price` : `<span class="src-tag">eBay</span> typical new price`}</span>`
-          : `<span class="no-price">${r.part_number ? "No price found yet." : "Add a part number to get its price."}</span>`}</div>
+          : `<span class="no-price">${r.part_number ? (finding.has(r.part_number) ? "Finding prices…" : "No price found yet.") : "Add a part number to get its price."}</span>`}</div>
       </div>
       ${qtyOf(r) > 1 ? `<span class="meta-line qty-line">${qtyOf(r)} in ${mine || state.demo ? "your" : "this"} box · ${money(worthAll(r), worthAll(r) % 1)} together</span>` : ""}
       ${listLine(r)}${ebayLine(r)}${ownersLine(r)}
@@ -1489,7 +1512,7 @@ document.addEventListener("DOMContentLoaded", () => {
       price = v ? money(v, v % 1) : "—";
       // say where the price came from, the same way the cards do: Snap-on list price first, else eBay
       const src = listPrice(r) != null ? "list" : "eBay";
-      sub = now != null ? (diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> ${src}` : src === "list" ? "List price" : "eBay price") : paid ? "you paid" : "";
+      sub = now != null ? (diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> ${src}` : src === "list" ? "List price" : "eBay price") : r.part_number && finding.has(r.part_number) ? "finding prices…" : paid ? "you paid" : "";
     } else {
       const cost = wishCost(r), left = Math.max(cost - (Number(r.saved) || 0), 0);
       price = cost ? money(cost, cost % 1) : "—";

@@ -79,6 +79,8 @@ BoxTally names Snap-on only to say which tools it tracks. It doesn't use Snap-on
 
 A tool's value is: your own list price, else the shared list price, else eBay, else what you paid.
 
+**Instant lookups (when a tool is added):** the page calls the Supabase Edge Function `supabase/functions/price-now` for any of a signed-in person's tools that have no eBay or list price yet, right after they add it (and on load). It looks up eBay and the Snap-on list price on the spot, so the card goes from "finding prices…" to a price in seconds. It only does a half when its keys are set in Supabase under **Edge Functions → Secrets**: `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` for eBay, `GEMINI_API_KEY` for list prices (the same values as the GitHub secrets). Limits keep the bill small: 10 part numbers a call, only tools the caller tracks, 60 eBay and 30 list-price lookups per person per hour, 400 list-price lookups a day overall (`price_lookups` table). `ebay-match.mjs` there is a copy of `checker/ebay-match.mjs`; the eBay test fails if they differ. Deploy with the Supabase CLI or the dashboard after changing it. The Checks workflow pings it on every push.
+
 **Automatic way (optional, costs about a cent per new tool):**
 
 Snap-on has no public price API, and its store (shop.snapon.com) builds each page in the browser and turns away automated visitors, so BoxTally can't read list prices from it directly (and scraping it would go against Snap-on's terms). Google's search index does have those pages, which is how Gemini can answer "what does F80 cost".

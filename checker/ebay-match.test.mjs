@@ -42,5 +42,13 @@ eq(sibling("Snap-on F87 ratchet", "F80", true), null, "no wide family for short 
 eq(altQueries("CTR868GM"), ["CTR868"], "alt query base");
 eq(altQueries("0FCA1KT"), ["OFCA1KT", "0FCA1"], "alt query 0/O");
 
+// the instant price lookup (supabase/functions/price-now) carries its own copy; it must match this one
+{
+  const { readFileSync } = await import("node:fs");
+  const here = readFileSync(new URL("./ebay-match.mjs", import.meta.url), "utf8");
+  const copy = readFileSync(new URL("../supabase/functions/price-now/ebay-match.mjs", import.meta.url), "utf8");
+  if (here !== copy) { bad++; console.log("FAIL supabase/functions/price-now/ebay-match.mjs differs from checker/ebay-match.mjs: copy it over"); }
+}
+
 console.log(bad ? `${bad} failed` : "All eBay matching checks passed.");
 process.exit(bad ? 1 : 0);

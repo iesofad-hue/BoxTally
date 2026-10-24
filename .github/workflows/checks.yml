@@ -26,6 +26,16 @@ jobs:
         run: node checker/versions.test.mjs
       - name: eBay matching
         run: node checker/ebay-match.test.mjs
+      - name: Instant price lookup is up
+        # supabase/functions/price-now answers a caller who isn't signed in with 401 "Sign in first."
+        # Anything else (a crash on start, a missing function) fails this check.
+        run: |
+          out=$(curl -s -o /tmp/pn.json -w "%{http_code}" -X POST https://ctteljhhjsfvyyiwzxiy.supabase.co/functions/v1/price-now \
+            -H "apikey: sb_publishable_y4-sxz8INJZu3fU6xIwWLw_9krKIQJb" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0dGVsamhoanNmdnl5aXd6eGl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2ODM1MjYsImV4cCI6MjEwNzI1OTUyNn0.VI-abS_YtTGYnJ7eo18B4JsOG35z3cRjScM8PB1NiHA" \
+            -H "Content-Type: application/json" -d '{"pns":["F80"]}')
+          echo "HTTP $out: $(cat /tmp/pn.json)"
+          [ "$out" = "401" ] && grep -q "Sign in first" /tmp/pn.json
       - name: Install a hidden browser
         run: |
           npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1

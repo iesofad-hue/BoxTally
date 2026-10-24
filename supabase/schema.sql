@@ -762,3 +762,18 @@ language sql stable security definer set search_path = '' as $$
 $$;
 revoke execute on function public.shared_box(text) from public;
 grant execute on function public.shared_box(text) to anon, authenticated;
+
+-- ---------- Instant price lookups (2026-10-24) ----------
+-- supabase/functions/price-now looks up eBay and Snap-on list prices the moment a signed-in person adds
+-- a tool. This log is only for its spending limits (per person per hour, list prices per day overall).
+-- RLS on with no policies: only the function (secret key) reads or writes it.
+create table if not exists public.price_lookups (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  part_number text not null,
+  kind text not null check (kind in ('ebay', 'list')),
+  at timestamptz not null default now()
+);
+create index if not exists price_lookups_user_at on public.price_lookups (user_id, at);
+create index if not exists price_lookups_kind_at on public.price_lookups (kind, at);
+alter table public.price_lookups enable row level security;
