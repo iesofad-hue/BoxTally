@@ -108,8 +108,17 @@ async function lookup(pn, again = false) {
 }
 
 let parts, old = {};
-if (ONLY.length) parts = ONLY.map((p) => p.toUpperCase());
-else {
+if (ONLY.length) {
+  parts = ONLY.map((p) => p.toUpperCase());
+  // even when asked by hand, never overwrite a price the owner saved
+  if (KEY) {
+    const rows = await rest(`list_prices?select=part_number,price,checked_at,source&part_number=in.(${parts.map(encodeURIComponent).join(",")})`);
+    old = Object.fromEntries(rows.map((r) => [r.part_number, r]));
+    const skip = parts.filter((pn) => old[pn] && old[pn].source === "owner" && old[pn].price != null);
+    if (skip.length) console.log(`Skipping ${skip.join(", ")}: the owner already saved ${skip.length === 1 ? "its price" : "their prices"}.${DRY ? " (looked up anyway, dry run)" : ""}`);
+    if (!DRY) parts = parts.filter((pn) => !skip.includes(pn));
+  }
+} else {
   const [tracked, rows] = await Promise.all([
     rest("rpc/parts_for_ebay", { method: "POST", body: {} }),
     rest("list_prices?select=part_number,price,checked_at,source"),
