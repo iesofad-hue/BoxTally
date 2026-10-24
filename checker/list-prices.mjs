@@ -56,16 +56,18 @@ async function rest(path, { method = "GET", body, prefer } = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-const ask = (pn) => `What is the current US list price of Snap-on part number ${pn} on Snap-on's own online store (shop.snapon.com)?
-Search for it. Only use a price shown on a snapon.com page for exactly this part number, not a similar number, a kit, a dealer, eBay or another reseller.
+// Gemini 3 decides for itself whether to search, and often answers from memory instead. An answer without a
+// search can't be checked against snapon.com, so the prompt insists on one and lookup() retries once if skipped.
+const ask = (pn, again) => `${again ? "You did not search last time. You MUST run a Google Search before answering. " : ""}Use Google Search now to find the shop.snapon.com product page for Snap-on part number ${pn} (search for: snap-on ${pn} site:shop.snapon.com). Do not answer from memory.
+Only use a US price shown on a snapon.com page for exactly this part number, not a similar number, a kit, a dealer, eBay or another reseller.
 Reply with only this JSON and nothing else:
 {"part_number": "${pn}", "price": <number in US dollars, or null if you did not find it on snapon.com>, "name": "<the product name Snap-on uses, or empty>"}`;
 
-async function lookup(pn) {
+async function lookup(pn, again = false) {
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
     method: "POST",
     headers: { "x-goog-api-key": GEMINI, "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: ask(pn) }] }], tools: [{ google_search: {} }] }),
+    body: JSON.stringify({ contents: [{ parts: [{ text: ask(pn, again) }] }], tools: [{ google_search: {} }] }),
   });
   const j = await res.json().catch(() => ({}));
   if (res.status === 429) throw new Error("Gemini rate limit reached");
@@ -73,7 +75,8 @@ async function lookup(pn) {
   const cand = (j.candidates || [])[0] || {};
   const text = (cand.content?.parts || []).map((p) => p.text || "").join("");
   const sources = (cand.groundingMetadata?.groundingChunks || []).map((c) => c.web?.title || "").filter(Boolean);
-  if (EXPLAIN) console.log(pn, JSON.stringify({ finish: cand.finishReason, text: text.slice(0, 600), grounding: cand.groundingMetadata, usage: j.usageMetadata }).slice(0, 4000));
+  if (EXPLAIN) console.log(pn, JSON.stringify({ again, finish: cand.finishReason, text: text.slice(0, 600), grounding: cand.groundingMetadata, usage: j.usageMetadata }).slice(0, 4000));
+  if (!cand.groundingMetadata?.webSearchQueries?.length && !sources.length && !again) return lookup(pn, true);
   const m = text.match(/\{[\s\S]*\}/);
   let a = null;
   try { a = m && JSON.parse(m[0]); } catch {}
