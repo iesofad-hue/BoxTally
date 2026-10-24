@@ -1013,3 +1013,7 @@ dialog::backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; backgro
 .explain { margin: 0; font-size: .84rem; line-height: 1.5; color: var(--muted); background: var(--sunk); border-radius: 10px; padding: 10px 12px; }
 .explain strong { color: var(--fg); }
 @media (prefers-reduced-motion: no-preference) { .explain:not([hidden]) { animation: rise .22s var(--ease); } }
+/* Gemini's guess at a Snap-on list price, until the owner confirms it */
+abbr.est { text-decoration: none; font-size: .72em; font-weight: 700; letter-spacing: .02em; padding: 0 5px; border-radius: 999px; border: 1px dashed currentColor; opacity: .8; cursor: help; vertical-align: 1px; }
+.lp-done a.pn { color: var(--accent, #3b8cf0); }
+.lp-tip { font-size: 13px; color: var(--muted); margin-top: 6px; }

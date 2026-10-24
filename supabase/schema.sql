@@ -777,3 +777,21 @@ create table if not exists public.price_lookups (
 create index if not exists price_lookups_user_at on public.price_lookups (user_id, at);
 create index if not exists price_lookups_kind_at on public.price_lookups (kind, at);
 alter table public.price_lookups enable row level security;
+
+-- ===== Gemini's list-price guesses (2026-10-24) =====
+-- Google's search results rarely say which page a price came from, so an automatic lookup that can't be
+-- traced to snapon.com is kept as Gemini's guess (ai_price). The site shows it marked "est." until the
+-- owner confirms it (admin_save_list_prices writes the real price; price wins over ai_price).
+alter table public.list_prices add column if not exists ai_price numeric, add column if not exists ai_name text, add column if not exists ai_at timestamptz;
+create or replace function public.admin_ai_guesses()
+returns table (part_number text, ai_price numeric, ai_name text, ai_at timestamptz)
+language plpgsql stable security definer set search_path to '' as $$
+begin
+  if not exists (select 1 from public.admins a where a.user_id = auth.uid()) then
+    raise exception 'Only the BoxTally owner can see this.';
+  end if;
+  return query select l.part_number, l.ai_price, l.ai_name, l.ai_at from public.list_prices l where l.ai_price is not null;
+end $$;
+revoke execute on function public.admin_ai_guesses() from public, anon;
+-- checker/list-prices.mjs logs its lookups here too (no user), for the shared 400-a-month cap
+alter table public.price_lookups alter column user_id drop not null;

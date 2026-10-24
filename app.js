@@ -61,13 +61,24 @@ document.addEventListener("DOMContentLoaded", () => {
     return v == null ? null : Number(v);
   };
   // Snap-on's list price: the one you entered on the tool (private to you), else the shared one the
-  // owner saved (list_prices; null when none was found)
+  // owner saved (list_prices; null when none was found), else Gemini's guess (ai_price), shown as "est."
+  // until the owner confirms it
+  const listRow = (r) => {
+    const own = r.part_number && state.list && state.list[r.part_number];
+    return own && own.price != null ? own : state.list && state.list[colorBase(r.part_number)];
+  };
+  const listEst = (r) => {
+    if (Number(r.list_price) > 0) return false;
+    const l = listRow(r), own = r.part_number && state.list && state.list[r.part_number];
+    return !(l && l.price != null) && !!own && Number(own.ai_price) > 0;
+  };
   const listPrice = (r) => {
     if (Number(r.list_price) > 0) return Number(r.list_price);
-    const own = r.part_number && state.list && state.list[r.part_number];
-    const l = own && own.price != null ? own : state.list && state.list[colorBase(r.part_number)];
-    return l && l.price != null ? Number(l.price) : null;
+    const l = listRow(r);
+    if (l && l.price != null) return Number(l.price);
+    return listEst(r) ? Number(state.list[r.part_number].ai_price) : null;
   };
+  const EST = `<abbr class="est" title="Gemini's estimate. The BoxTally owner hasn't checked it yet.">est.</abbr>`;
   // The same tool in another color: Snap-on adds a color letter to the red one's number
   // (PTM18AM is the red pickup; PTM18AMO orange, PTM18AMG green...). Those share the red one's list price.
   const COLOR_BASE = [/^(PTM\d{1,2}AM)[A-Z]{1,2}$/];
@@ -1256,7 +1267,7 @@ document.addEventListener("DOMContentLoaded", () => {
       sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at,seen_at,source,note").in("part_number", b),
       // how many people own or want each tool: only answered for signed-in people
       signedIn() ? sb.rpc("owner_counts", { pns: b }) : { data: [], error: null },
-      sb.from("list_prices").select("part_number,price,name,source,checked_at").in("part_number", [...new Set([...b, ...b.map(colorBase).filter(Boolean)])]),
+      sb.from("list_prices").select("part_number,price,name,source,checked_at,ai_price").in("part_number", [...new Set([...b, ...b.map(colorBase).filter(Boolean)])]),
     ])));
     if (res.every(([, , , , l]) => !l.error)) state.list = Object.fromEntries(res.flatMap(([, , , , l]) => l.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, , , o]) => !o.error)) state.owners = Object.fromEntries(res.flatMap(([, , , o]) => o.data || []).map((r) => [r.part_number, r]));
@@ -1429,7 +1440,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const listLine = (r) => {
     const v = listPrice(r);
     if (v == null) return "";
-    return `<span class="meta-line ebay-line">Snap-on list: ${money(v, v % 1)} · <a href="https://shop.snapon.com/product/${encodeURIComponent(r.part_number)}" target="_blank" rel="noopener">see on snapon.com</a></span>`;
+    return `<span class="meta-line ebay-line">Snap-on list: ${money(v, v % 1)}${listEst(r) ? ` ${EST} (Gemini's guess, not checked yet)` : ""} · <a href="https://shop.snapon.com/product/${encodeURIComponent(r.part_number)}" target="_blank" rel="noopener">see on snapon.com</a></span>`;
   };
   const ebayLine = (r) => {
     const e = r.part_number && state.ebay && state.ebay[r.part_number];
@@ -1469,8 +1480,8 @@ document.addEventListener("DOMContentLoaded", () => {
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
         <div><span class="label">${state.readonly ? "Paid" : "You paid"}</span>${hidePaid() ? `<span class="no-price">Kept private</span>` : paid || !mine ? `<span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span>` : `<span class="no-price">Not entered.<br><button class="btn small" data-act="edit" type="button">Add what you paid</button></span>`}</div>
-        <div><span class="label">${listPrice(r) != null ? "Snap-on list" : "eBay price now"}</span>${now != null
-          ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : listPrice(r) != null ? `<span class="src-tag">Snap-on</span> list price` : `<span class="src-tag">eBay</span> typical new price`}</span>`
+        <div><span class="label">${listPrice(r) != null ? `Snap-on list${listEst(r) ? " " + EST : ""}` : "eBay price now"}</span>${now != null
+          ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : listEst(r) ? `<span class="src-tag">Snap-on</span> list price, estimated` : listPrice(r) != null ? `<span class="src-tag">Snap-on</span> list price` : `<span class="src-tag">eBay</span> typical new price`}</span>`
           : `<span class="no-price">${r.part_number ? (finding.has(r.part_number) ? "Finding prices…" : "No price found yet.") : "Add a part number to get its price."}</span>`}</div>
       </div>
       ${qtyOf(r) > 1 ? `<span class="meta-line qty-line">${qtyOf(r)} in ${mine || state.demo ? "your" : "this"} box · ${money(worthAll(r), worthAll(r) % 1)} together</span>` : ""}
@@ -1490,7 +1501,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return `<article class="card ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
-        <div><span class="label">${Number(r.price) ? "Your price" : listPrice(r) != null ? "Snap-on list" : ebayPrice(r) != null ? "eBay price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span><span class="meta-line">&nbsp;</span></div>
+        <div><span class="label">${Number(r.price) ? "Your price" : listPrice(r) != null ? `Snap-on list${listEst(r) ? " " + EST : ""}` : ebayPrice(r) != null ? "eBay price" : "Your price"}</span><span class="price-big">${cost ? money(cost, cost % 1) : "—"}</span><span class="meta-line">&nbsp;</span></div>
         <div><span class="label">Left to save</span><span class="price-big">${cost ? money(left, left % 1) : "—"}</span><span class="meta-line">${cost ? (left ? `${money(saved)} saved` : "Ready to buy") : "&nbsp;"}</span></div>
       </div>
       ${cost ? `<div class="bar ${left ? "" : "done"}" role="progressbar" aria-label="Saved toward this tool" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>` : ""}
@@ -1511,8 +1522,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const now = nowPrice(r), paid = Number(r.price) || 0, v = now ?? paid, diff = now != null && paid ? now - paid : null;
       price = v ? money(v, v % 1) : "—";
       // say where the price came from, the same way the cards do: Snap-on list price first, else eBay
-      const src = listPrice(r) != null ? "list" : "eBay";
-      sub = now != null ? (diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> ${src}` : src === "list" ? "List price" : "eBay price") : r.part_number && finding.has(r.part_number) ? "finding prices…" : paid ? "you paid" : "";
+      const src = listPrice(r) != null ? (listEst(r) ? `list ${EST}` : "list") : "eBay";
+      sub = now != null ? (diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> ${src}` : src !== "eBay" ? `List price${listEst(r) ? " " + EST : ""}` : "eBay price") : r.part_number && finding.has(r.part_number) ? "finding prices…" : paid ? "you paid" : "";
     } else {
       const cost = wishCost(r), left = Math.max(cost - (Number(r.saved) || 0), 0);
       price = cost ? money(cost, cost % 1) : "—";
@@ -1987,7 +1998,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Based on eBay prices.</span>`
       : `<div class="watch-empty"><span class="note">${trackedN ? `Prices for your ${trackedN} tool${trackedN === 1 ? "" : "s"} with a part number update on their own a few times a day.` : "Add tools by part number and their eBay prices fill in on their own."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
     if (trackedN && !state.readonly) {
-      const pns = state.items.filter((r) => r.part_number), withList = pns.filter((r) => listPrice(r) != null).length;
+      const pns = state.items.filter((r) => r.part_number), withList = pns.filter((r) => listPrice(r) != null && !listEst(r)).length;
       $("watch").insertAdjacentHTML("beforeend", `<div class="watch-empty"><span class="note">${withList === pns.length ? (pns.length === 1 ? "It has Snap-on's own price." : `All ${pns.length} have Snap-on's own price.`) : `${withList} of ${pns.length} have Snap-on's own price so far. The rest use eBay for now.`}</span>${state.admin ? `<button class="btn-watch" type="button" data-list-prices>Manage list prices →</button>` : ""}</div>`);
     }
     $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
@@ -2965,13 +2976,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnKey = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   let lpTab = "todo", curBatch = null;
   async function loadAdmin() {
-    state.admin = false; state.adminParts = [];
+    state.admin = false; state.adminParts = []; state.aiGuess = {};
     if (!sb || !signedIn() || state.demo || state.readonly) return;
     const a = await sb.rpc("is_admin");
     if (a.error || !a.data) return;
-    const r = await sb.rpc("admin_parts");
+    const [r, g] = await Promise.all([sb.rpc("admin_parts"), sb.rpc("admin_ai_guesses")]);
     if (r.error) return;
     state.admin = true; state.adminParts = r.data || [];
+    state.aiGuess = Object.fromEntries((g.error ? [] : g.data || []).map((x) => [x.part_number, x]));
   }
   // not checked = never looked up; checked = has a price, or was looked up and none was found
   // (the automatic lookup's "not found" still waits for the owner; only the owner's own "?" counts as checked)
@@ -2988,11 +3000,15 @@ document.addEventListener("DOMContentLoaded", () => {
     state.adminParts.filter((p) => p.price != null).forEach((p) => { const k = lpBase(p.part_number); if (!priced.has(k)) priced.set(k, p); });
     return lpTodo().map((p) => ({ pn: p.part_number, from: priced.get(lpBase(p.part_number)) })).filter((x) => x.from);
   }
-  let curLooks = [];
+  // Gemini's guesses from the automatic lookup (everyone sees them marked "est." until you confirm)
+  const lpGuesses = (skip) => lpTodo().filter((p) => !skip.has(p.part_number) && state.aiGuess && state.aiGuess[p.part_number]).map((p) => ({ pn: p.part_number, g: state.aiGuess[p.part_number] }));
+  let curLooks = [], curGuesses = [];
   function renderListDlg() {
     const looks = lpTab === "todo" ? lpLookalikes() : [], lookSet = new Set(looks.map((x) => x.pn));
+    const guesses = lpTab === "todo" ? lpGuesses(lookSet) : [];
+    guesses.forEach((x) => lookSet.add(x.pn));
     const todo = lpTodo().filter((p) => !lookSet.has(p.part_number)), done = lpDone(), missing = done.filter((p) => p.price == null);
-    curLooks = looks;
+    curLooks = looks; curGuesses = guesses;
     $("l-n-todo").textContent = lpTodo().length; $("l-n-done").textContent = done.length;
     document.querySelectorAll("[data-lp-tab]").forEach((b) => b.setAttribute("aria-selected", b.dataset.lpTab === lpTab));
     // the batch shown is the one that gets copied: newest tools first, or the not-found ones to try again
@@ -3000,7 +3016,7 @@ document.addEventListener("DOMContentLoaded", () => {
     curBatch = pns;
     const b = $("l-batch"); b.textContent = "";
     const head = document.createElement("div");
-    if (lpTab === "todo") head.textContent = todo.length ? `${todo.length} tool${todo.length === 1 ? "" : "s"} still to check. This batch is these ${pns.length}:` : looks.length ? "" : "Every tool has been checked. New tools people add show up here.";
+    if (lpTab === "todo") head.textContent = todo.length ? `${todo.length} tool${todo.length === 1 ? "" : "s"} still to check. This batch is these ${pns.length}:` : looks.length || guesses.length ? "" : "Every tool has been checked. New tools people add show up here.";
     else head.textContent = done.length ? `${done.length - missing.length} with a price, ${missing.length} where Gemini found none.${pns.length ? ` Try these ${pns.length} again:` : ""}` : "Nothing checked yet.";
     if (looks.length) {
       const lk = document.createElement("div"); lk.className = "lp-looks";
@@ -3015,8 +3031,26 @@ document.addEventListener("DOMContentLoaded", () => {
       const go = document.createElement("button"); go.type = "button"; go.className = "btn small primary"; go.id = "l-looks";
       go.textContent = `Use ${looks.length === 1 ? "this price" : "these prices"}`;
       lk.append(t, box, go); b.append(lk);
-      if (todo.length) { const more = document.createElement("div"); more.textContent = "The rest go to Gemini:"; more.style.marginTop = "10px"; b.append(more); }
     }
+    if (guesses.length) {
+      const lk = document.createElement("div"); lk.className = "lp-looks";
+      const t = document.createElement("div");
+      t.textContent = `Gemini guessed ${guesses.length === 1 ? "this price" : `these ${guesses.length}`} on its own. Everyone sees ${guesses.length === 1 ? "it" : "them"} marked "est." until you confirm. Tap a part number to check it:`;
+      const box = document.createElement("div"); box.className = "lp-done";
+      guesses.forEach(({ pn, g }) => {
+        const row = document.createElement("div"), a = document.createElement("a"), v = document.createElement("span");
+        a.className = "pn"; a.textContent = pn; a.target = "_blank"; a.rel = "noopener";
+        a.href = `https://www.google.com/search?q=${encodeURIComponent(`snap-on ${pn} list price`)}`;
+        v.textContent = money(g.ai_price, true) + (g.ai_name ? ` ${g.ai_name}` : "");
+        row.append(a, v); box.append(row);
+      });
+      const go = document.createElement("button"); go.type = "button"; go.className = "btn small primary"; go.id = "l-guesses";
+      go.textContent = guesses.length === 1 ? "Confirm this price" : `Confirm all ${guesses.length}`;
+      const tip = document.createElement("div"); tip.className = "lp-tip";
+      tip.textContent = "If one is wrong, paste a fix below instead, like BLPBSS40 $174.50.";
+      lk.append(t, box, go, tip); b.append(lk);
+    }
+    if ((looks.length || guesses.length) && todo.length) { const more = document.createElement("div"); more.textContent = "The rest go to Gemini:"; more.style.marginTop = "10px"; b.append(more); }
     b.append(head);
     if (pns.length) {
       const list = document.createElement("div"); list.className = "lp-pns";
@@ -3078,6 +3112,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   $("l-batch").addEventListener("click", (e) => {
     if (e.target.id === "l-looks" && curLooks.length) saveListPrices(new Map(curLooks.map(({ pn, from }) => [pn, Number(from.price)])));
+    if (e.target.id === "l-guesses" && curGuesses.length) saveListPrices(new Map(curGuesses.map(({ pn, g }) => [pn, Number(g.ai_price)])));
   });
   async function saveListPrices(found) {
     const err = lpErr;

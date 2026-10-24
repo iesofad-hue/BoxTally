@@ -60,12 +60,13 @@ async function rest(path, { method = "GET", body, prefer } = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-// Gemini 3 decides for itself whether to search, and often answers from memory instead. An answer without a
-// search can't be checked against snapon.com, so the prompt insists on one and lookup() retries once if skipped.
-const ask = (pn, again) => `${again ? "You did not search last time. You MUST run a Google Search before answering. " : ""}Use Google Search now to find the shop.snapon.com product page for Snap-on part number ${pn} (search for: snap-on ${pn} site:shop.snapon.com). Do not answer from memory.
-Only use a US price shown on a snapon.com page for exactly this part number, not a similar number, a kit, a dealer, eBay or another reseller.
+// Gemini 3 decides for itself whether to search; lookup() retries once if it answered from memory.
+// It can search a lot (up to ~25 searches for one tool), and each search past Google's free 5,000 a month
+// costs money, so the prompt asks it to keep to a few.
+const ask = (pn, again) => `${again ? "You did not search last time. You must search before answering. " : ""}Use Google Search (no more than 3 searches) to find the current US list price of Snap-on part number ${pn}, as Snap-on sells it new on shop.snapon.com. Do not answer from memory.
+Only give a price for exactly this part number, not a similar number, a kit, a used one, eBay or another reseller's own price.
 Reply with only this JSON and nothing else:
-{"part_number": "${pn}", "price": <number in US dollars, or null if you did not find it on snapon.com>, "name": "<the product name Snap-on uses, or empty>"}`;
+{"part_number": "${pn}", "price": <number in US dollars, or null if you did not find it>, "name": "<the product name Snap-on uses, or empty>"}`;
 
 // Gemini 3 models only search through the Interactions API; the older generateContent endpoint quietly
 // ignores the search tool for them and the model answers from memory.
@@ -95,8 +96,13 @@ async function lookup(pn, again = false) {
   const price = a && Number(a.price);
   // Trust it only if it's this exact part number, a sane price, and Google showed a snapon.com page
   const ok = a && norm(a.part_number) === norm(pn) && price > 0 && price < 100000 && snap;
+  // Google's search results don't say which pages they came from, so most answers can't be checked against
+  // snapon.com. Those are kept as Gemini's guess (ai_price) for the owner to confirm, never as the list price.
+  const sane = a && norm(a.part_number) === norm(pn) && price > 0 && price < 100000;
+  const guess = sane && !ok ? { ai_price: Math.round(price * 100) / 100, ai_name: String(a.name || "").slice(0, 160), ai_at: new Date().toISOString() } : ok ? { ai_price: null, ai_name: null, ai_at: null } : {};
   return {
-    row: { part_number: pn, price: ok ? Math.round(price * 100) / 100 : null, name: ok ? String(a.name || "").slice(0, 160) : "", source: ok ? snap : "", checked_at: new Date().toISOString() },
+    guess,
+    row: { part_number: pn, price: ok ? Math.round(price * 100) / 100 : null, name: ok ? String(a.name || "").slice(0, 160) : "", source: ok ? snap : "", checked_at: new Date().toISOString(), ...guess },
     why: ok ? "" : !a ? "no answer" : !snap ? `no snapon.com source (${sources.slice(0, 3).map((pair) => pair[0] || pair[1]).join(", ") || "none"})` : `answer ${JSON.stringify(a).slice(0, 120)}`,
   };
 }
@@ -120,18 +126,30 @@ else {
   parts = due.slice(0, MAX_LOOKUPS);
   console.log(`${tracked.length} tracked part numbers, ${due.length} due`);
 }
+// Shared with the instant lookup (supabase/functions/price-now): at most 400 list-price lookups in any
+// 30 days, which keeps Gemini's Google searches under the 5,000 a month Google gives free.
+const LIST_PER_MONTH = 400;
+if (!DRY && parts.length) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/price_lookups?select=id&kind=eq.list&at=gte.${new Date(Date.now() - 30 * 864e5).toISOString()}`, {
+    method: "HEAD", headers: { apikey: KEY, Prefer: "count=exact" },
+  });
+  const used = Number((res.headers.get("content-range") || "").split("/")[1]) || 0;
+  if (used + parts.length > LIST_PER_MONTH) console.log(`::warning::${used} list lookups in the last 30 days; the cap is ${LIST_PER_MONTH}.`);
+  parts = parts.slice(0, Math.max(0, LIST_PER_MONTH - used));
+}
 if (!parts.length) { console.log("Nothing to look up right now."); process.exit(0); }
 
-let found = 0, missing = 0, failed = 0;
+let found = 0, guessed = 0, missing = 0, failed = 0;
 for (const pn of parts) {
   try {
-    const { row, why } = await lookup(pn);
-    console.log(`${pn}: ${row.price != null ? `$${row.price} (${row.source})${row.name ? ` ${row.name}` : ""}` : `not found: ${why}`}`);
+    if (!DRY) await rest("price_lookups", { method: "POST", body: { user_id: null, part_number: pn, kind: "list" }, prefer: "return=minimal" });
+    const { row, why, guess } = await lookup(pn);
+    console.log(`${pn}: ${row.price != null ? `$${row.price} (${row.source})${row.name ? ` ${row.name}` : ""}` : guess.ai_price ? `Gemini guessed $${guess.ai_price}${guess.ai_name ? ` ${guess.ai_name}` : ""} (owner to confirm)` : `not found: ${why}`}`);
     // the owner already marked it "no price found": keep their row, just note when it was tried again
     const keepOwner = row.price == null && old[pn] && old[pn].source === "owner";
-    if (!DRY && keepOwner) await rest(`list_prices?part_number=eq.${encodeURIComponent(pn)}`, { method: "PATCH", body: { checked_at: row.checked_at }, prefer: "return=minimal" });
+    if (!DRY && keepOwner) await rest(`list_prices?part_number=eq.${encodeURIComponent(pn)}`, { method: "PATCH", body: { checked_at: row.checked_at, ...guess }, prefer: "return=minimal" });
     else if (!DRY) await rest("list_prices?on_conflict=part_number", { method: "POST", body: row, prefer: "resolution=merge-duplicates,return=minimal" });
-    row.price != null ? found++ : missing++;
+    row.price != null ? found++ : guess.ai_price ? guessed++ : missing++;
   } catch (e) {
     console.error(`${pn}: ${e.message}`);
     failed++;
@@ -139,5 +157,5 @@ for (const pn of parts) {
   }
   await sleep(1500);
 }
-console.log(`Done: ${found} found, ${missing} not found, ${failed} failed.`);
-if (failed && !found && !missing) process.exit(1);
+console.log(`Done: ${found} found, ${guessed} guessed, ${missing} not found, ${failed} failed.`);
+if (failed && !found && !guessed && !missing) process.exit(1);
