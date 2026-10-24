@@ -26,7 +26,7 @@
 const SUPABASE_URL = (process.env.SUPABASE_URL || "https://ctteljhhjsfvyyiwzxiy.supabase.co").replace(/\/+$/, "");
 const KEY = process.env.SUPABASE_SECRET_KEY || "";
 const GEMINI = process.env.GEMINI_API_KEY || "";
-const MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const MODEL = (process.argv.find((a) => a.startsWith("--model=")) || "").slice(8) || process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const RECHECK_DAYS = Number(process.env.RECHECK_DAYS || 182);
 const MAX_LOOKUPS = Number(process.env.MAX_LOOKUPS || 600);
 const ONLY = process.argv.slice(2).filter((a) => !a.startsWith("--"));
@@ -36,6 +36,10 @@ const EXPLAIN = process.argv.includes("--explain"); // print what Gemini answere
 if (!GEMINI) {
   console.log("::notice::List prices aren't set up yet (GEMINI_API_KEY secret). Skipping.");
   process.exit(0);
+}
+if (process.argv.includes("--models")) { // which models this key can use
+  const j = await (await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": GEMINI } })).json();
+  console.log((j.models || []).filter((m) => (m.supportedGenerationMethods || []).includes("generateContent")).map((m) => m.name.replace("models/", "")).join(" ") || JSON.stringify(j).slice(0, 500));
 }
 if (!KEY && !DRY) {
   console.error("Missing SUPABASE_SECRET_KEY.");
