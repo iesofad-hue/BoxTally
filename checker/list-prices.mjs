@@ -67,30 +67,37 @@ Only use a US price shown on a snapon.com page for exactly this part number, not
 Reply with only this JSON and nothing else:
 {"part_number": "${pn}", "price": <number in US dollars, or null if you did not find it on snapon.com>, "name": "<the product name Snap-on uses, or empty>"}`;
 
+// Gemini 3 models only search through the Interactions API; the older generateContent endpoint quietly
+// ignores the search tool for them and the model answers from memory.
 async function lookup(pn, again = false) {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
     method: "POST",
     headers: { "x-goog-api-key": GEMINI, "Content-Type": "application/json" },
-    body: JSON.stringify({ contents: [{ parts: [{ text: ask(pn, again) }] }], tools: [{ google_search: {} }] }),
+    body: JSON.stringify({ model: MODEL, input: ask(pn, again), tools: [{ type: "google_search" }] }),
   });
   const j = await res.json().catch(() => ({}));
   if (res.status === 429) throw new Error("Gemini rate limit reached");
   if (!res.ok) throw new Error(`Gemini failed (${res.status}): ${JSON.stringify(j).slice(0, 300)}`);
-  const cand = (j.candidates || [])[0] || {};
-  const text = (cand.content?.parts || []).map((p) => p.text || "").join("");
-  const sources = (cand.groundingMetadata?.groundingChunks || []).map((c) => c.web?.title || "").filter(Boolean);
-  if (EXPLAIN) console.log(pn, JSON.stringify({ again, finish: cand.finishReason, text: text.slice(0, 600), grounding: cand.groundingMetadata, usage: j.usageMetadata }).slice(0, 4000));
-  if (!cand.groundingMetadata?.webSearchQueries?.length && !sources.length && !again) return lookup(pn, true);
+  const steps = j.steps || j.outputs || [];
+  const blocks = steps.filter((st) => st.type === "model_output").flatMap((st) => st.content || []);
+  const text = blocks.map((c) => c.text || "").join("");
+  // Each page Gemini cites: its title is usually the site's domain, its url may be a Google redirect
+  const cites = blocks.flatMap((c) => c.annotations || []).filter((x) => x.url || x.title);
+  const sources = cites.map((x) => { let h = ""; try { h = new URL(x.url).hostname; } catch {} return [x.title || "", h]; });
+  const searched = steps.some((st) => st.type === "google_search_call");
+  if (EXPLAIN) console.log(pn, JSON.stringify({ again, searched, keys: Object.keys(j), stepTypes: steps.map((st) => st.type), queries: steps.filter((st) => st.type === "google_search_call").map((st) => st.arguments?.queries), text: text.slice(0, 600), cites: cites.map((x) => [x.title, x.url]).slice(0, 8), usage: j.usage || j.usageMetadata }).slice(0, 4000));
+  if (!searched && !again) return lookup(pn, true);
   const m = text.match(/\{[\s\S]*\}/);
   let a = null;
   try { a = m && JSON.parse(m[0]); } catch {}
-  const snap = sources.find((t) => /(^|\.)snapon\.com$/i.test(t.trim()));
+  const snapHit = sources.find((pair) => pair.some((t) => /(^|\.)snapon\.com$/i.test(t.trim())));
+  const snap = snapHit && (snapHit.find((t) => /(^|\.)snapon\.com$/i.test(t.trim())));
   const price = a && Number(a.price);
   // Trust it only if it's this exact part number, a sane price, and Google showed a snapon.com page
   const ok = a && norm(a.part_number) === norm(pn) && price > 0 && price < 100000 && snap;
   return {
     row: { part_number: pn, price: ok ? Math.round(price * 100) / 100 : null, name: ok ? String(a.name || "").slice(0, 160) : "", source: ok ? snap : "", checked_at: new Date().toISOString() },
-    why: ok ? "" : !a ? "no answer" : !snap ? `no snapon.com source (${sources.slice(0, 3).join(", ") || "none"})` : `answer ${JSON.stringify(a).slice(0, 120)}`,
+    why: ok ? "" : !a ? "no answer" : !snap ? `no snapon.com source (${sources.slice(0, 3).map((pair) => pair[0] || pair[1]).join(", ") || "none"})` : `answer ${JSON.stringify(a).slice(0, 120)}`,
   };
 }
 
