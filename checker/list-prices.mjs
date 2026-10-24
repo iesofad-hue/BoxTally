@@ -85,7 +85,7 @@ async function lookup(pn, again = false) {
   const cites = blocks.flatMap((c) => c.annotations || []).filter((x) => x.url || x.title);
   const sources = cites.map((x) => { let h = ""; try { h = new URL(x.url).hostname; } catch {} return [x.title || "", h]; });
   const searched = steps.some((st) => st.type === "google_search_call");
-  if (EXPLAIN) console.log(pn, JSON.stringify({ again, searched, keys: Object.keys(j), stepTypes: steps.map((st) => st.type), queries: steps.filter((st) => st.type === "google_search_call").map((st) => st.arguments?.queries), text: text.slice(0, 600), cites: cites.map((x) => [x.title, x.url]).slice(0, 8), usage: j.usage || j.usageMetadata }).slice(0, 4000));
+  if (EXPLAIN) console.log(pn, JSON.stringify({ again, searched, keys: Object.keys(j), stepTypes: steps.map((st) => st.type), queries: steps.filter((st) => st.type === "google_search_call").map((st) => st.arguments?.queries), text: text.slice(0, 600), cites: cites.map((x) => [x.title, x.url]).slice(0, 8), results: EXPLAIN === 2 ? undefined : steps.filter((st) => st.type === "google_search_result").map((st) => JSON.stringify(st).slice(0, 700)), out: steps.filter((st) => st.type === "model_output").map((st) => JSON.stringify(st).slice(0, 900)), usage: j.usage || j.usageMetadata }).slice(0, 9000));
   if (!searched && !again) return lookup(pn, true);
   const m = text.match(/\{[\s\S]*\}/);
   let a = null;
