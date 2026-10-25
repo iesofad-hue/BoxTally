@@ -20,11 +20,12 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
   await page.waitForFunction(() => /\$[1-9]/.test(document.getElementById("d-worth").textContent), null, { timeout: 15000 })
     .catch(() => fail(`${name}: "Box worth today" stayed at $0 after loading the sample box`));
 
-  // phones start on the compact list (.ri rows), bigger screens on cards
-  const TOOLS = "#list .card, #list .ri";
+  // the box opens on its drawers: every tool in a foam pocket
+  const TOOLS = "#list .card, #list .ri, #list .pocket";
   const cards = await page.locator(TOOLS).count();
   if (cards < 5) fail(`${name}: only ${cards} tools showing in the sample box`);
-  if (width < 500 && !(await page.locator("#list .ri").count())) fail(`${name}: phone didn't start on the compact list`);
+  if (!(await page.locator("#list.drawers .pocket").count())) fail(`${name}: the box didn't open on its drawers`);
+  if (!(await page.locator("#list .pocket.out .lent-tag").count())) fail(`${name}: a lent tool's pocket has no Lent tag`);
 
   // no sideways scrolling on a phone
   const extra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
@@ -97,7 +98,14 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
     await page.click("#fMore");
     if (!(await page.locator("#fCat").isVisible())) fail(`${name}: Filter didn't show category and sort`);
     await page.click("#fMore");
+    // tapping a pocket opens the tool
+    await page.locator("#list .pocket .open").first().click();
+    await page.waitForTimeout(400);
+    if ((await openDialog())?.id !== "viewer") fail(`${name}: tapping a tool in a drawer didn't open it`);
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(300);
     // tapping a row opens the tool, with its Edit and Delete buttons
+    await page.click(".seg [data-view=list]");
     await page.locator("#list .ri h3").first().click();
     await page.waitForTimeout(400);
     const d = await openDialog();

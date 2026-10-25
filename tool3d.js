@@ -139,12 +139,13 @@ function stage(st, model) {
   Object.assign(st.key.shadow.camera, { left: -r, right: r, top: r, bottom: -r, near: 1, far: Math.max(900, r * 4) }); st.key.shadow.camera.updateProjectionMatrix();
   return fit;
 }
+const FRONT = new THREE.Vector3(0.12, 0.7, 1), ABOVE = new THREE.Vector3(0.06, 2.6, 1); // ABOVE: looking down into a drawer
 // Point the camera down at the tool from the front and move in until the tool fills the frame.
 // pts: the points that must stay in view (the box's corners unless given).
-function frame(camera, box, aspect, fill = 0.86, pts = null) {
+function frame(camera, box, aspect, fill = 0.86, pts = null, from = FRONT) {
   camera.aspect = aspect; camera.updateProjectionMatrix();
   pts = pts || [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z));
-  const dir = new THREE.Vector3(0.12, 0.7, 1).normalize(), target = box.getCenter(new THREE.Vector3()), v = new THREE.Vector3();
+  const dir = from.clone().normalize(), target = box.getCenter(new THREE.Vector3()), v = new THREE.Vector3();
   let d = box.getBoundingSphere(new THREE.Sphere()).radius * 3;
   for (let i = 0; i < 5; i++) {
     camera.position.copy(target).addScaledVector(dir, d); camera.lookAt(target); camera.updateMatrixWorld();
@@ -215,6 +216,28 @@ export function picture(key, size = "", w = 640, h = 400, drive = "", pn = "", l
       const tid = [key, size, drive, pn, look].join("|"), t = tables.get(tid) || turntable(key, size, drive, pn, look);
       draw(t, w, h, 0).toBlob((b) => { if (quiet()) { if (!tables.has(tid)) disposeTree(t.pivot); } else keep(tid, t); ok(b ? URL.createObjectURL(b) : null); }, "image/png");
     } catch (e) { console.error("3D picture failed", key, e); ok(null); }
+  })))));
+  return cache.get(id);
+}
+
+// A tool lying in its drawer foam: seen from above, with no floor shadow, so the page can cut a pocket
+// around its outline. Still pictures only; pockets don't turn.
+export function pocket(key, size = "", w = 480, h = 300, drive = "", pn = "", look = "") {
+  const id = ["pocket", key, size, w, h, drive, pn, look].join("|");
+  if (!MODELS[key]) return Promise.resolve(null);
+  if (!cache.has(id)) cache.set(id, (queue = queue.then(() => new Promise((ok) => requestAnimationFrame(() => {
+    let t = null; const s = studioOnce();
+    try {
+      t = turntable(key, size, drive, pn, look);
+      if (s.w !== w || s.h !== h) { s.r.setPixelRatio(1); s.r.setSize(w, h, false); s.w = w; s.h = h; }
+      // long tools lie along the drawer; the turntable angle is for showing them off
+      t.pivot.rotation.y = 0.32; t.pivot.updateMatrixWorld(true);
+      const cam = new THREE.PerspectiveCamera(28, w / h); frame(cam, new THREE.Box3().setFromObject(t.pivot), w / h, 0.92, null, ABOVE);
+      light(s.st, t.r); s.st.floor.visible = false; s.st.scene.add(t.pivot);
+      s.r.render(s.st.scene, cam);
+      s.st.scene.remove(t.pivot); s.st.floor.visible = true;
+      s.r.domElement.toBlob((b) => { disposeTree(t.pivot); ok(b ? URL.createObjectURL(b) : null); }, "image/png");
+    } catch (e) { console.error("3D pocket failed", key, e); s.st.floor.visible = true; if (t) s.st.scene.remove(t.pivot); ok(null); }
   })))));
   return cache.get(id);
 }

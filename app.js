@@ -1631,6 +1631,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- cards ---------- */
   const condClass = { "New": "good", "Good": "", "Worn": "warn", "Needs warranty": "bad" };
+  // how the condition shows on the tool itself: a new one catches the light, a worn one looks used, a broken one gets a warranty tag
+  const condLook = (r) => (r.list !== "owned" ? "" : { "New": " c-new", "Worn": " c-worn", "Needs warranty": " c-warranty" }[r.condition] || "");
   const fresh = (r) => (state.flash && state.flash.has(r.id) ? " fresh" : "");
   const idRow = (r) => `<div class="idrow">${r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)} <span aria-hidden="true">↗</span></a>` : ""}<span>${esc(catOf(r) || "Other")}</span></div>`;
   // Lending: who has it, since when, and the buttons to lend it or mark it back
@@ -1704,7 +1706,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const mine = !state.readonly && !state.demo;
     const chips = (r.condition ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r);
     const badge = qtyChip(r);
-    return `<article class="card${fresh(r)}${r.lent_to ? " lent" : ""}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
+    return `<article class="card${fresh(r)}${r.lent_to ? " lent" : ""}${condLook(r)}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, chips, badge)}<div class="card-body">
       <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
       <div class="prices">
         <div><span class="label">${state.readonly ? "Paid" : "You paid"}</span>${hidePaid() ? `<span class="no-price">Kept private</span>` : paid || !mine ? `<span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span>` : `<span class="no-price">Not entered.<br><button class="btn small" data-act="edit" type="button">Add what you paid</button></span>`}</div>
@@ -1778,7 +1780,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const chips = test ? `<span class="chip">Test</span>` : (owned ? qtyChip(r) + (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
       + (dropped ? `<span class="chip tag">Price dropped</span>` : "");
-    return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
+    return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}${condLook(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
       <div><h3>${esc(displayName(r))}</h3><div class="idrow">${unnamed ? `<span class="kind">${esc(a.label)}</span>` : r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(catOf(r) || "Other")}</span>${chips}</div></div>
       <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span>${owned && notOnSnap(r) && nowPrice(r) != null ? `<span class="meta-line not-snap">Not on Snap-on's site</span>` : ""}</div>
       <div class="actions">${test ? "" : owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
@@ -1786,6 +1788,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------- by drawer: tools grouped by "Where it's kept" ---------- */
+  // Each drawer opens onto cut foam, like a shadow-foam drawer: every tool lies in a pocket shaped like it.
+  // A tool that's lent out leaves its pocket empty, with a tag saying who has it. Tap a pocket to see the tool.
+  // Pockets always show the drawing or 3D model (a photo has no outline to cut around).
+  function pocketHtml(r, i) {
+    const a = artOf(r), name = displayName(r), out = !!r.lent_to;
+    const label = out ? `, lent to ${r.lent_to}` : r.condition === "Needs warranty" ? ", needs warranty" : "";
+    return `<article class="pocket${out ? " out" : ""}${condLook(r)}" data-id="${esc(r.id)}" style="--i:${Math.min(i, 12)}">`
+      + `<button class="open" type="button" data-act="view" aria-label="See ${esc(name + label)}"><span class="pk" data-m3d="${esc(m3dOf(a))}">${artTag(a)}<span class="pk-fx"></span></span></button>`
+      + (out ? `<span class="lent-tag">Lent · ${esc(r.lent_to)}</span>` : r.condition === "Needs warranty" ? `<span class="w-tag">Warranty</span>` : "")
+      + (qtyOf(r) > 1 ? `<span class="pk-qty">${qtyOf(r)}x</span>` : "")
+      + `<span class="pk-name">${esc(r.part_number && name !== r.part_number ? r.part_number : name)}</span></article>`;
+  }
   function drawersHtml(rows) {
     const groups = new Map();
     rows.forEach((r) => { const k = String(r.location || "").trim(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
@@ -1794,7 +1808,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const g = groups.get(k), worth = g.reduce((sum, r) => sum + worthAll(r), 0), n = pieces(g);
       const open = !state.closedDrawers.has(k);
       return `<details class="drawer" data-drawer="${esc(k)}" style="--i:${Math.min(gi, 12)}"${open ? " open" : ""}><summary><span class="dname">${k ? esc(k) : "No drawer set"}</span><span class="dmeta">${n} tool${n === 1 ? "" : "s"} · ${money(Math.round(worth))}</span></summary>`
-        + `<div class="rows">${g.map((r, i) => rowItem(r, i)).join("")}</div>`
+        + `<div class="foam">${g.map((r, i) => pocketHtml(r, i)).join("")}</div>`
         + (k ? "" : `<p class="dhint">Tap Edit and fill in "Where it's kept" to file these into drawers.</p>`) + `</details>`;
     }).join("");
   }
@@ -1870,7 +1884,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // drawers only make sense for tools you own, and a shared box doesn't show where things are kept
     const drawersOk = state.tab === "owned" && !state.readonly;
     document.querySelector('.seg [data-view="drawers"]').hidden = !drawersOk;
-    const view = state.view === "drawers" && !drawersOk ? "cards" : state.view;
+    // the wishlist and shared boxes have no drawers: they fall back to the list on a phone, cards on bigger screens
+    const view = state.view === "drawers" && !drawersOk ? (matchMedia("(max-width: 620px)").matches ? "list" : "cards") : state.view;
     document.querySelectorAll(".seg [data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
     $("list").className = state.loaded && rowsOf(state.tab).length ? (view === "list" ? "rows" : view === "drawers" ? "drawers" : "grid") : "grid";
     $("localBanner").hidden = !sb || signedIn() || !state.loaded || state.demo || state.readonly;
@@ -2391,14 +2406,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const [key, size, drive, pn, look] = el.dataset.m3d.split("|");
         if (!t.has(key)) continue;
         // list rows get a small square picture; photo-rail plates stay still, cards are wide
-        const square = el.classList.contains("plate"), row = el.classList.contains("thumb"), [w, h] = row ? [168, 168] : square ? [360, 360] : [720, 450];
-        t.picture(key, size, w, h, drive, pn, look).then((url) => {
+        const square = el.classList.contains("plate"), row = el.classList.contains("thumb"), pk = el.classList.contains("pk") && t.pocket;
+        const [w, h] = row ? [168, 168] : square ? [360, 360] : pk ? [480, 300] : [720, 450];
+        (pk ? t.pocket : t.picture)(key, size, w, h, drive, pn, look).then((url) => {
           if (!url || !el.isConnected) return;
           const art = el.querySelector(".art"); if (!art) return;
           const img = new Image(); img.className = "m3d"; img.alt = ""; img.src = url;
           // the drawing stays until the picture is ready to paint, then fades across (no blank tile in between);
           // once it shows, the card's tool slowly turns while it's on screen (see turn() in tool3d.js)
-          const show = () => { if (!el.isConnected) return; art.parentElement.appendChild(img); el.classList.add("has3d"); if (!square) t.turn?.(el, img, key, size, w, h, drive, pn, look); };
+          // a pocket keeps still; its picture also shapes the gleam and wear marks laid over the tool
+          const show = () => { if (!el.isConnected) return; art.parentElement.appendChild(img); el.classList.add("has3d"); if (pk) el.style.setProperty("--m", `url("${url}")`); else if (!square) t.turn?.(el, img, key, size, w, h, drive, pn, look); };
           (img.decode ? img.decode() : new Promise((ok) => { img.onload = ok; })).then(show, () => {});
         });
       }
@@ -2817,13 +2834,13 @@ document.addEventListener("DOMContentLoaded", () => {
       o(16, "", "FSM13", '3/8" Drive Tools', 18, 520, "Top chest, drawer 2"), o(17, "", "FSM15", '3/8" Drive Tools', 19, 520, "Top chest, drawer 2"),
       o(5, "Flank drive combination wrench set, 10–19 mm", "OEXM710B", "Wrenches", 640, 380, "Roll cab, drawer 1"),
       o(6, "10 × 12 mm flare nut wrench", "", "Wrenches", 58, 120, "Roll cab, drawer 1"),
-      o(7, '1/2" drive click-type torque wrench', "", "Torque", 495, 90, "Roll cab, drawer 3"),
+      o(7, '1/2" drive click-type torque wrench', "", "Torque", 495, 90, "Roll cab, drawer 3", { condition: "New" }),
       o(8, "Needle nose pliers", "", "Pliers", 46, 150, "Top chest, drawer 3", { condition: "Worn" }),
       o(9, "Locking pliers", "", "Pliers", 41, 60, "Top chest, drawer 3"),
       o(10, "#2 Phillips screwdriver", "", "Screwdrivers", 24, 170, "Top chest, drawer 4"),
       o(11, "Hook pick", "", "Awls, Hooks and Picks", 18, 40, "Top chest, drawer 4", { lent_to: "Jess", lent_at: day(2) }),
       o(12, "Long pry bar", "", "Prybars", 78, 230, "Side locker", { condition: "Needs warranty" }),
-      o(13, '14.4 V 3/8" drive cordless impact', "", "Power Tools", 389, 20, "Roll cab, bottom drawer"),
+      o(13, '14.4 V 3/8" drive cordless impact', "", "Power Tools", 389, 20, "Roll cab, bottom drawer", { condition: "New" }),
       w(1, '1/2" drive electronic torque wrench', "TECH3FR250", "Torque", 799, "Need", 320, 30),
       w(2, "Water pump pliers", "", "Pliers", 62, "Want", 62, 25),
       w(3, "Diagnostic scan tool", "", "Diagnostics", 2900, "Want", 400, 14),
@@ -3746,11 +3763,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const m = document.createElement("meta"); m.name = "robots"; m.content = "noindex"; document.head.appendChild(m);
     document.title = "A shared toolbox · BoxTally";
   }
-  // Phones start on the compact list (a tool per row) unless you picked a view; bigger screens on cards.
-  let savedView = null;
-  try { savedView = localStorage.getItem(LS + "-view"); } catch {}
-  if (["cards", "list", "drawers"].includes(savedView)) state.view = savedView;
-  else if (matchMedia("(max-width: 620px)").matches) state.view = "list";
+  // Your box opens on its drawers (the foam view) unless you picked another view since the foam came in.
+  // Everyone is shown the foam drawers once; after that, whatever view you tap is remembered.
+  let savedView = null, foamSeen = false;
+  try { savedView = localStorage.getItem(LS + "-view"); foamSeen = !!localStorage.getItem(LS + "-foam"); localStorage.setItem(LS + "-foam", "1"); } catch {}
+  state.view = foamSeen && ["cards", "list", "drawers"].includes(savedView) ? savedView : "drawers";
   baseTitle = document.title;
   if (readRoute().tab === "wishlist") { routeSync = true; setTab("wishlist"); routeSync = false; }
   if (readRoute().money) { routeSync = true; setMoney(true); routeSync = false; }
