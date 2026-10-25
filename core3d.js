@@ -429,7 +429,8 @@ export function pliers({ jaw = "slip", pump = false, pn = "" } = {}) {
     const tip = turned([[0.1, 0], [7.25, 0], [7.5, 2], [7.5, 18], [7, 24], [5.2, 27.5], [2.4, 29], [0.1, 29.3]], mat.black, { segs: 40 });
     tip.position.x = L - 24;
     const gr = group(red, tip); red.scale.y = tip.scale.y = 0.78;
-    if (pn && s < 0) { const t = wrapX(pn, 7.5, Math.min(54, pn.length * 4.6), 4.4, 24, { a: 0.6, color: "#f4f5f6" }); t.scale.y = 0.78; gr.add(t); } // printed on the grip gr.rotation.y = -Math.atan2(dz, dx); gr.position.set(C0[0], 0, C0[1]);
+    if (pn && s < 0) { const t = wrapX(pn, 7.5, Math.min(54, pn.length * 4.6), 4.4, 24, { a: 0.6, color: "#f4f5f6" }); t.scale.y = 0.78; gr.add(t); } // printed on the grip
+    gr.rotation.y = -Math.atan2(dz, dx); gr.position.set(C0[0], 0, C0[1]);
     const hs = group(steel, gr); hs.rotation.y = s * open; return hs;
   };
   const top = half(1), parts = [top, half(-1)];
