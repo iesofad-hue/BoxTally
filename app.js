@@ -1830,6 +1830,19 @@ document.addEventListener("DOMContentLoaded", () => {
       + (qtyOf(r) > 1 ? `<span class="pk-qty">${qtyOf(r)}x</span>` : "")
       + `<span class="pk-name">${esc(r.part_number && name !== r.part_number ? r.part_number : name)}</span></article>`;
   }
+  // Big things don't lie in foam: a cordless gun, a meter or a box seen from straight above is just a lump.
+  // They stand on a lit shelf under the drawer's foam instead, the way the truck shows them in its display case.
+  const SPOT_KEYS = /^(power|cl1[48]-|air-(impact|hammer|ratchet)|battery|charger|grinder|cutoff|blowgun|polisher|rivet|heatgun|jump|grease-gun|solder|storage|tool-bag|bit-case|bit-socket-case|set-sd-case|set-kit|terminal-tool|disconnect-set|tapdie|creeper|stool|magtray|magmat|drain-pan|other$|diag|battery-tester|borescope|multimeter|tire-gauge|tire-inflator|pressure-gauge|dial-indicator|torque-angle|thermometer|shop$|puck-light|floor-jack|jack-stand|funnel|air-hose|vise|headlamp)/;
+  const inSpot = (r) => SPOT_KEYS.test(artOf(r).key);
+  function spotHtml(r, i) {
+    const a = artOf(r), name = displayName(r), out = !!r.lent_to;
+    const label = out ? `, lent to ${r.lent_to}` : r.condition === "Needs warranty" ? ", needs warranty" : "";
+    return `<article class="spot${out ? " out" : ""}${condLook(r)}" data-id="${esc(r.id)}" style="--i:${Math.min(i, 12)}">`
+      + `<button class="open" type="button" data-act="view" aria-label="See ${esc(name + label)}"><span class="sp art-bg" data-m3d="${esc(m3dOf(a))}">${artTag(a, "", { refl: true })}</span></button>`
+      + (out ? `<span class="lent-tag">Lent · ${esc(r.lent_to)}</span>` : "")
+      + (qtyOf(r) > 1 ? `<span class="pk-qty">${qtyOf(r)}x</span>` : "")
+      + `<span class="pk-name">${esc(r.part_number && name !== r.part_number ? r.part_number : name)}</span></article>`;
+  }
   function drawersHtml(rows) {
     const groups = new Map();
     rows.forEach((r) => { const k = String(r.location || "").trim(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
@@ -1841,7 +1854,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const g = groups.get(k), worth = g.reduce((sum, r) => sum + worthAll(r), 0), n = pieces(g);
       const open = !state.closedDrawers.has(k);
       return `<details class="drawer" data-drawer="${esc(k)}" style="--i:${Math.min(gi, 12)}"${open ? " open" : ""}><summary><span class="dname">${k ? esc(k) : "No drawer set"}</span><span class="dmeta">${n} tool${n === 1 ? "" : "s"}${n ? " · " + money(Math.round(worth)) : ""}</span></summary>`
-        + `<div class="foam">${g.length ? g.map((r, i) => pocketHtml(r, i)).join("") : `<p class="foam-empty">Nothing in here yet.</p>`}</div>`
+        + (() => { const big = g.filter(inSpot), hand = g.filter((r) => !inSpot(r));
+          return (hand.length || !big.length ? `<div class="foam">${hand.length ? hand.map((r, i) => pocketHtml(r, i)).join("") : `<p class="foam-empty">Nothing in here yet.</p>`}</div>` : "")
+            + (big.length ? `<div class="shelf">${big.map((r, i) => spotHtml(r, i + hand.length)).join("")}</div>` : ""); })()
         + `<div class="dfoot">${k ? `<button class="btn small" type="button" data-dw-edit="${esc(k)}">${g.length ? "Add or remove tools" : "Add tools"}</button>` : `<span class="dhint">Put these away:</span><button class="btn small" type="button" data-dw-new="">Pick a drawer for them</button>`}</div></details>`;
     }).join("");
   }
@@ -2546,7 +2561,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!t.has(key)) continue;
         // list rows get a small square picture; photo-rail plates stay still, cards are wide
         const square = el.classList.contains("plate"), row = el.classList.contains("thumb"), pk = el.classList.contains("pk") && t.pocket;
-        const [w, h] = row ? [168, 168] : square ? [360, 360] : pk ? [480, 300] : [720, 450];
+        const [w, h] = row ? [168, 168] : square ? [360, 360] : pk ? [640, 400] : [720, 450];
         (pk ? t.pocket : t.picture)(key, size, w, h, drive, pn, look).then((url) => {
           if (!url || !el.isConnected) return;
           const art = el.querySelector(".art"); if (!art) return;
@@ -2554,10 +2569,21 @@ document.addEventListener("DOMContentLoaded", () => {
           // the drawing stays until the picture is ready to paint, then fades across (no blank tile in between);
           // once it shows, the card's tool slowly turns while it's on screen (see turn() in tool3d.js)
           // a pocket keeps still; its picture also shapes the gleam and wear marks laid over the tool
-          const show = () => { if (!el.isConnected) return; art.parentElement.appendChild(img); el.classList.add("has3d"); if (pk) el.style.setProperty("--m", `url("${url}")`); else if (!square) t.turn?.(el, img, key, size, w, h, drive, pn, look); };
+          const show = () => { if (!el.isConnected) return; art.parentElement.appendChild(img); el.classList.add("has3d"); if (pk) el.style.setProperty("--m", `url("${url}")`); else if (!square) t.turn?.(el, img, key, size, w, h, drive, pn, look); if (!pk && !row && !square) zoomIn(t, el, key, size, drive, pn, look); };
           (img.decode ? img.decode() : new Promise((ok) => { img.onload = ok; })).then(show, () => {});
         });
       }
+    });
+  }
+  // Cards and the display shelf also get a round close-up of the part that tells the tool apart from its
+  // look-alikes (the tip of a screwdriver, the jaws of a pliers, the nose of a cordless tool). It stays still
+  // while the tool turns, like the magnified detail in a catalog.
+  function zoomIn(t, el, key, size, drive, pn, look) {
+    if (!t.closeup || el.querySelector(".lens")) return;
+    t.closeup(key, size, 220, 220, drive, pn, look).then((url) => {
+      if (!url || !el.isConnected || el.querySelector(".lens")) return;
+      const z = new Image(); z.className = "lens"; z.alt = ""; z.src = url;
+      (z.decode ? z.decode() : Promise.resolve()).then(() => { if (el.isConnected) el.appendChild(z); }, () => {});
     });
   }
   new MutationObserver(() => { clearTimeout(upgrade3d.t); upgrade3d.t = setTimeout(upgrade3d, 60); }).observe(document.body, { childList: true, subtree: true });

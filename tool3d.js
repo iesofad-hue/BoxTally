@@ -35,15 +35,15 @@ const MODELS = {
   socket: (o) => lying(socket(o)), "socket-12": (o) => lying(socket({ ...o, points: 12 })), "socket-deep": (o) => lying(socket({ ...o, deep: true })), "socket-impact": (o) => lying(socket({ ...o, impact: true, r: 12 })),
   "socket-spark": (o) => lying(socket({ ...o, deep: true, r: 11.5, spark: true })), "socket-o2": (o) => lying(socket({ ...o, deep: true, r: 13, slot: true }), 0.9, 0.2), "socket-swivel": (o) => lying(socket({ ...o, swivel: true })), "socket-bit": (o) => lying(socket({ ...o, h: 20, bit: true })),
   ...Object.fromEntries([["wrench", "combo"], ["wrench-open", "open"], ["wrench-box", "box"], ["wrench-ratchet", "ratchet"], ["wrench-flare", "flare"], ["wrench-speed", "speed"], ["wrench-rbox", "rbox"]].map(([k, style]) => [k, (o) => wrench({ ...o, style })])),
-  screwdriver: () => screwdriver(), "screwdriver-phillips": () => screwdriver({ tip: "phillips" }), "screwdriver-torx": () => screwdriver({ tip: "torx" }),
-  "screwdriver-stubby": () => screwdriver({ len: 120, hlen: 70, r: 14 }), "screwdriver-stubby-phillips": () => screwdriver({ tip: "phillips", len: 120, hlen: 70, r: 14 }),
-  insulated: () => screwdriver({ m: mat.yellow, insulated: true }), nutdriver: () => nutdriver(),
+  screwdriver: (o = {}) => screwdriver({ pn: o.pn }), "screwdriver-phillips": (o = {}) => screwdriver({ tip: "phillips", pn: o.pn }), "screwdriver-torx": (o = {}) => screwdriver({ tip: "torx", pn: o.pn }),
+  "screwdriver-stubby": (o = {}) => screwdriver({ len: 120, hlen: 70, r: 14, pn: o.pn }), "screwdriver-stubby-phillips": (o = {}) => screwdriver({ tip: "phillips", len: 120, hlen: 70, r: 14, pn: o.pn }),
+  insulated: (o = {}) => screwdriver({ m: mat.yellow, insulated: true, pn: o.pn }), nutdriver: (o = {}) => nutdriver({ size: o.size, pn: o.pn }),
   "insert-bit": (o = {}) => insertBit({ tip: (o.look.find((w) => /^t-/.test(w)) || "t-ph").slice(2), long: o.look.includes("long") }),
-  pick: () => pick(), "pick-straight": () => pick({ shape: "straight" }), "pick-45": () => pick({ shape: "45" }), "pick-complex": () => pick({ shape: "complex" }),
-  pliers: () => pliers(), "pliers-needle": () => pliers({ jaw: "needle" }), "pliers-diag": () => pliers({ jaw: "diag" }), "pliers-pump": () => pliers({ pump: true }), "pliers-strip": () => pliers({ jaw: "strip" }),
-  extension: (o = {}) => bright(extension({ drive: o.drive })), breaker: () => breaker(), adapter: () => turnTo(bright(adapter()), 1.05),
-  hammer: () => hammer(), "hammer-ballpeen": () => hammer(), "hammer-deadblow": () => hammer({ kind: "deadblow" }), "hammer-mallet": () => hammer({ kind: "mallet" }), "hammer-sledge": () => hammer({ kind: "sledge" }),
-  pry: () => prybar(), punch: () => punch({ chisel: true }), "punch-pin": () => punch(), torque: () => torque(), "torque-click": () => torque(), hexkeys: () => hexkeys(),
+  pick: (o = {}) => pick({ pn: o.pn }), "pick-straight": (o = {}) => pick({ shape: "straight", pn: o.pn }), "pick-45": (o = {}) => pick({ shape: "45", pn: o.pn }), "pick-complex": (o = {}) => pick({ shape: "complex", pn: o.pn }),
+  pliers: (o = {}) => pliers({ pn: o.pn }), "pliers-needle": (o = {}) => pliers({ jaw: "needle", pn: o.pn }), "pliers-diag": (o = {}) => pliers({ jaw: "diag", pn: o.pn }), "pliers-pump": (o = {}) => pliers({ pump: true, pn: o.pn }), "pliers-strip": (o = {}) => pliers({ jaw: "strip", pn: o.pn }),
+  extension: (o = {}) => bright(extension({ drive: o.drive, size: o.size, pn: o.pn })), breaker: (o = {}) => breaker({ pn: o.pn }), adapter: () => turnTo(bright(adapter()), 1.05),
+  hammer: (o = {}) => hammer({ pn: o.pn }), "hammer-ballpeen": (o = {}) => hammer({ pn: o.pn }), "hammer-deadblow": (o = {}) => hammer({ kind: "deadblow", pn: o.pn }), "hammer-mallet": (o = {}) => hammer({ kind: "mallet", pn: o.pn }), "hammer-sledge": (o = {}) => hammer({ kind: "sledge", pn: o.pn }),
+  pry: (o = {}) => prybar({ pn: o.pn }), punch: () => punch({ chisel: true }), "punch-pin": () => punch(), torque: (o = {}) => torque({ electronic: true, pn: o.pn }), "torque-click": (o = {}) => torque({ pn: o.pn }), hexkeys: () => hexkeys(),
   set: (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || ""), list: o.sizes?.length ? o.sizes : null, kind: SET_SOCKET[o.member] || {} }), "socket-rail": (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "set-wrench": (o = {}) => wrenchSet(o.sizes?.length ? { sizes: o.sizes, member: o.member } : {}),
 };
 Object.assign(MODELS, ...EXTRA);
@@ -170,8 +170,11 @@ const disposeTree = (o) => o.traverse((m) => { if (m.geometry) m.geometry.dispos
 /* ---------- still pictures for cards, made one at a time with a single hidden renderer ---------- */
 // A card's tool sits on a turntable: a pivot under the middle of the tool, so turning it spins the tool
 // in place. The camera is framed to fit the tool at every angle, so the still and the turning card match.
-function turntable(key, size, drive, pn, look) {
-  const model = build(key, size, drive, pn, look), pivot = new THREE.Group(); pivot.add(model);
+function turntable(key, size, drive, pn, look, hd = false) {
+  // cards and the display shelf build at full detail (twice as finely cut, sharper stamps), like the spin-around
+  // view; small list-row pictures and foam pockets stay at the lighter level, since a big box has many of them
+  let model; Q.hd = hd; try { model = build(key, size, drive, pn, look); } finally { Q.hd = false; }
+  const pivot = new THREE.Group(); pivot.add(model);
   model.rotation.y = model.userData.yaw ?? -0.32;
   const b = new THREE.Box3().setFromObject(model), c = b.getCenter(new THREE.Vector3());
   model.position.x -= c.x; model.position.z -= c.z; model.position.y -= b.min.y;
@@ -213,7 +216,7 @@ export function picture(key, size = "", w = 640, h = 400, drive = "", pn = "", l
   if (!cache.has(id)) cache.set(id, (queue = queue.then(() => new Promise((ok) => requestAnimationFrame(() => {
     try {
       // the model built for the picture is kept for the card to turn, unless nothing is going to turn
-      const tid = [key, size, drive, pn, look].join("|"), t = tables.get(tid) || turntable(key, size, drive, pn, look);
+      const hd = w >= 360, tid = [key, size, drive, pn, look, hd].join("|"), t = tables.get(tid) || turntable(key, size, drive, pn, look, hd);
       draw(t, w, h, 0).toBlob((b) => { if (quiet()) { if (!tables.has(tid)) disposeTree(t.pivot); } else keep(tid, t); ok(b ? URL.createObjectURL(b) : null); }, "image/png");
     } catch (e) { console.error("3D picture failed", key, e); ok(null); }
   })))));
@@ -238,6 +241,53 @@ export function pocket(key, size = "", w = 480, h = 300, drive = "", pn = "", lo
       s.st.scene.remove(t.pivot); s.st.floor.visible = true;
       s.r.domElement.toBlob((b) => { disposeTree(t.pivot); ok(b ? URL.createObjectURL(b) : null); }, "image/png");
     } catch (e) { console.error("3D pocket failed", key, e); s.st.floor.visible = true; if (t) s.st.scene.remove(t.pivot); ok(null); }
+  })))));
+  return cache.get(id);
+}
+
+/* ---------- close-up: the part that tells a tool apart ----------
+   Most tools in a family look alike from across the room: a 3/8" ratchet and a flex-head one, a flat and a Phillips
+   screwdriver, an impact and a drill. Cards and the display shelf get a round close-up of the end that's different,
+   like the magnified detail in a catalog. ZOOM says where that is: the slice of the tool along its length (x, from
+   0 at one end to 1 at the other) or its height (y), as the model is built before it's turned for the camera. */
+const ZOOM = {
+  ratchet: ["x", 0, 0.3], screwdriver: ["x", 0.84, 1], insulated: ["x", 0.86, 1], nutdriver: ["x", 0.82, 1], pick: ["x", 0.8, 1], "insert-bit": ["x", 0.55, 1],
+  wrench: ["x", 0.74, 1], "wrench-open": ["x", 0.76, 1], pliers: ["x", 0, 0.36], extension: ["x", 0.84, 1], breaker: ["x", 0, 0.2], torque: ["x", 0.5, 0.76], "torque-click": ["x", 0.42, 0.78],
+  hammer: ["x", 0, 0.3], pry: ["x", 0, 0.18], punch: ["x", 0.8, 1], "punch-pin": ["x", 0, 0.2], "wrench-adjust": ["x", 0, 0.34], "pipe-wrench": ["x", 0, 0.34],
+  // a pistol-grip tool: the nose, above the grip (the chuck, anvil or bit holder is what tells them apart)
+  power: ["x", 0.62, 1, "y", 0.6, 1], cl14: ["x", 0.62, 1, "y", 0.6, 1], cl18: ["x", 0.62, 1, "y", 0.6, 1], "air-impact": ["x", 0.62, 1, "y", 0.6, 1],
+  "power-ratchet": ["x", 0, 0.3], "cl14-ratchet": ["x", 0, 0.3], "cl18-ratchet": ["x", 0, 0.3], "cl14-die": ["x", 0, 0.3],
+};
+const zoomOf = (key) => ZOOM[key] || (/-battery$|^cl18-inflator$|^cl1[48]-saw$|-angle$/.test(key) ? null : ZOOM[key.replace(/-soft$/, "")] || ZOOM[key.split("-")[0]] || null);
+function focusPoints(model, spec) {
+  model.updateMatrixWorld(true);
+  const inv = model.matrixWorld.clone().invert(), m4 = new THREE.Matrix4(), v = new THREE.Vector3(), all = [];
+  model.traverse((o) => { const pos = o.isMesh && o.geometry.attributes.position; if (!pos) return; m4.multiplyMatrices(inv, o.matrixWorld);
+    const step = Math.max(1, Math.floor(pos.count / 3000)); for (let i = 0; i < pos.count; i += step) { v.fromBufferAttribute(pos, i); all.push([v.clone().applyMatrix4(m4), v.clone().applyMatrix4(o.matrixWorld)]); } });
+  let keep = all;
+  for (let i = 0; i < spec.length; i += 3) { // each [axis, from, to] narrows it down: along the tool, then up its height
+    const [axis, a, b] = spec.slice(i, i + 3);
+    let lo = Infinity, hi = -Infinity; for (const [l] of all) { lo = Math.min(lo, l[axis]); hi = Math.max(hi, l[axis]); }
+    const x0 = lo + (hi - lo) * a, x1 = lo + (hi - lo) * b; keep = keep.filter(([l]) => l[axis] >= x0 && l[axis] <= x1);
+  }
+  return keep.map(([, w]) => w);
+}
+export const hasCloseup = (key) => !!(MODELS[key] && zoomOf(key));
+export function closeup(key, size = "", w = 240, h = 240, drive = "", pn = "", look = "") {
+  const id = ["zoom", key, size, w, h, drive, pn, look].join("|"), z = MODELS[key] && zoomOf(key);
+  if (!z) return Promise.resolve(null);
+  if (!cache.has(id)) cache.set(id, (queue = queue.then(() => new Promise((ok) => requestAnimationFrame(() => {
+    const tid = [key, size, drive, pn, look, true].join("|"), s = studioOnce(); let t = null;
+    try {
+      t = tables.get(tid) || turntable(key, size, drive, pn, look, true);
+      t.pivot.rotation.y = 0; t.pivot.updateMatrixWorld(true);
+      const pts = focusPoints(t.pivot.children[0], z);
+      if (pts.length < 4) { ok(null); return; }
+      if (s.w !== w || s.h !== h) { s.r.setPixelRatio(1); s.r.setSize(w, h, false); s.w = w; s.h = h; }
+      const cam = new THREE.PerspectiveCamera(28, w / h); frame(cam, new THREE.Box3().setFromPoints(pts), w / h, 0.78, pts, FRONT);
+      light(s.st, t.r); s.st.scene.add(t.pivot); s.r.render(s.st.scene, cam); s.st.scene.remove(t.pivot);
+      s.r.domElement.toBlob((bl) => { if (!tables.has(tid)) disposeTree(t.pivot); ok(bl ? URL.createObjectURL(bl) : null); }, "image/png");
+    } catch (e) { console.error("3D close-up failed", key, e); if (t) s.st.scene.remove(t.pivot); ok(null); }
   })))));
   return cache.get(id);
 }
@@ -268,7 +318,7 @@ function keep(id, t) {
   for (const [old, o] of tables) { if (tables.size <= 24) break; if (old === id) continue; tables.delete(old); disposeTree(o.pivot); }
   return t;
 }
-const tableFor = (c) => keep(c.id, tables.get(c.id) || turntable(c.key, c.size, c.drive, c.pn, c.look));
+const tableFor = (c) => keep(c.id, tables.get(c.id) || turntable(c.key, c.size, c.drive, c.pn, c.look, c.w >= 360));
 let scrolled = 0;
 addEventListener("scroll", () => { scrolled = performance.now(); }, { passive: true, capture: true });
 addEventListener("touchmove", () => { scrolled = performance.now(); }, { passive: true });
@@ -306,7 +356,7 @@ calm.addEventListener?.("change", () => { if (quiet()) cards.forEach(rest); else
 // Called once a card's still picture is showing: from then on the card turns while it's on screen.
 export function turn(el, img, key, size = "", w = 640, h = 400, drive = "", pn = "", look = "") {
   if (!seen || !MODELS[key] || cards.has(el)) return;
-  cards.set(el, { el, img, key, size, drive, pn, look, w, h, id: [key, size, drive, pn, look].join("|"), on: false, a: 0, at: 0, canvas: null });
+  cards.set(el, { el, img, key, size, drive, pn, look, w, h, id: [key, size, drive, pn, look, w >= 360].join("|"), on: false, a: 0, at: 0, canvas: null });
   seen.observe(el);
 }
 

@@ -97,3 +97,11 @@ export function label(text, w, h, { color = "#20252c", font = "700 80px ui-monos
   return new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, opacity: 0.85 });
 }
 
+// printed text wrapped onto a round part lying along x (a handle, a bar, a shaft), reading along the part.
+// x0..x0+w is where it sits along the axis; it's centred `a` radians round from the top toward the camera.
+export function wrapX(text, r, w, h, x0, { a = 0.7, ...o } = {}) {
+  const g = new THREE.PlaneGeometry(w, h, 8, 8), p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) { const px = p.getX(i), ang = a - p.getY(i) / r; p.setXYZ(i, x0 + w / 2 + px, r * Math.cos(ang), r * Math.sin(ang)); }
+  g.computeVertexNormals();
+  return mesh(g, label(text, w, h, o), false);
+}

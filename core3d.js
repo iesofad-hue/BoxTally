@@ -1,5 +1,5 @@
 // BoxTally 3D: the core hand tools (ratchets, sockets, wrenches, screwdrivers, pliers, hammers...).
-import { THREE, mat, PI, DRIVES, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label } from "./kit3d.js";
+import { THREE, mat, PI, DRIVES, mesh, slab, circle, poly, starPath, turned, cyl, box, tube, sphere, capsule, at, group, label, wrapX } from "./kit3d.js";
 
 /* ---------- small helpers shared by the tools ---------- */
 // a knurled grip band for a turned profile: fine rings from a to b at radius r
@@ -338,18 +338,20 @@ export function wrench({ gap = 13, gap2 = null, size = "", size2 = "", style = "
 /* ---------- screwdrivers and picks ---------- */
 // Handle: sculpted red acetate with three soft lobes and fine grip ridges, a black butt band.
 // x runs from the butt (0) to the nose (len).
-export function handle(len = 100, r = 12.5, m = mat.red, bandM = mat.black) {
+export function handle(len = 100, r = 12.5, m = mat.red, bandM = mat.black, pn = "") {
   const ribZone = (y) => smooth(12, 20, y) * (1 - smooth(len * 0.5, len * 0.62, y));
   const body = lobed([[0.1, 0], [r * 0.62, 0.3], [r * 0.86, 1.6], [r * 0.97, 4.5], [r, 9], [r, len * 0.56], [r * 0.95, len * 0.68], [r * 0.84, len * 0.78], [r * 0.68, len * 0.87], [r * 0.6, len * 0.9], [r * 0.64, len * 0.92], [r * 0.54, len * 0.96], [r * 0.47, len], [0.1, len]],
     m, { ribs: 15, rib: 0.05, ribAmt: ribZone, segs: 120 });
   const cap = lobed([[0.1, -0.4], [r * 0.66, -0.1], [r * 0.9, 1.4], [r * 1.0, 4.6], [r * 1.01, 11], [r * 0.99, 12], [0.1, 12]], bandM, { segs: 72 });
-  return group(body, cap);
+  // the part number printed along the handle, light on the red, dark on a yellow insulated one
+  const print = pn && wrapX(pn, r * 1.09, Math.min(len * 0.36, pn.length * r * 0.42), r * 0.42, len * 0.16, { a: 0.75, color: m === mat.yellow ? "#20252c" : "#f4f5f6" });
+  return group(body, cap, print);
 }
 // chrome ferrule at the nose and the hex bolster the shaft comes out of
 const bolster = (x, r, shaftR) => { const b = shaftR + 2.6; return group(at(turned([[0.1, 0], [r * 0.47, 0], [r * 0.47, 1.6], [r * 0.38, 3.4], [0.1, 3.4]], mat.chrome), x - 0.6, 0, 0), at(turned([[0.1, 0], [b * 0.8, 0], [b, 1.2], [b, 7.8], [b * 0.75, 9.4], [shaftR, 10.4], [0.1, 10.4]], mat.chrome, { segs: 6 }), x + 2.4, 0, 0)); };
-export function screwdriver({ tip = "flat", len = 230, hlen = 100, r = 12.5, shaftR = 3, m = mat.red, insulated = false } = {}) {
+export function screwdriver({ tip = "flat", len = 230, hlen = 100, r = 12.5, shaftR = 3, m = mat.red, insulated = false, pn = "" } = {}) {
   const sx = hlen, ex = len - 12;
-  const parts = [handle(hlen, r, m, insulated ? mat.red : mat.black), bolster(sx, r, shaftR), at(cyl(shaftR, ex - sx - 10, insulated ? mat.red : mat.chrome, { along: "x" }), (sx + 10 + ex) / 2, 0, 0)];
+  const parts = [handle(hlen, r, m, insulated ? mat.red : mat.black, pn), bolster(sx, r, shaftR), at(cyl(shaftR, ex - sx - 10, insulated ? mat.red : mat.chrome, { along: "x" }), (sx + 10 + ex) / 2, 0, 0)];
   if (insulated) parts.push(at(cyl(shaftR * 0.8, 12, mat.chrome, { along: "x" }), ex - 4, 0, 0), at(turned([[shaftR, 0], [shaftR * 1.5, 1.5], [shaftR * 1.5, 5], [shaftR, 7]], mat.red), sx + 10, 0, 0));
   if (tip === "flat") { // ground blade: flares wider and thins to the edge
     const g = new THREE.BoxGeometry(18, shaftR * 1.5, shaftR * 2, 12, 1, 1), p = g.attributes.position;
@@ -374,17 +376,17 @@ export function insertBit({ tip = "ph", long = false } = {}) {
   } else parts.push(at(lobed([[r, 0], [r, 1.6], [2.2, 4.4], [1.1, 7.6], [0.3, 9], [0.1, 9.2]], mat.chrome, { lobes: tip === "tw" ? 3 : 4, lobe: 0.34, amt: (y) => smooth(1.6, 5, y), segs: 64, spin: PI / 4 }), x, 0, 0));
   return group(parts);
 }
-export function nutdriver() {
-  return group(handle(100), bolster(100, 12.5, 4.5), at(cyl(4.5, 96, mat.chrome, { along: "x" }), 158, 0, 0),
+export function nutdriver({ size = "", pn = "" } = {}) {
+  return group(handle(100, 12.5, mat.red, mat.black, pn), bolster(100, 12.5, 4.5), at(cyl(4.5, 96, mat.chrome, { along: "x" }), 158, 0, 0),
     at(turned([[0.1, 0], [4.5, 0], [4.5, 2], [6.8, 6], [7.2, 8], [7.2, 22], [6.6, 24], [0.1, 24]], mat.chrome), 205, 0, 0),
-    at(cyl(4.4, 2, mat.hole, { segs: 6, along: "x" }), 228.2, 0, 0), decal("10mm", 12, 4, 219, 7.3, 0, { font: "800 80px ui-sans-serif, Helvetica, Arial, sans-serif" }));
+    at(cyl(4.4, 2, mat.hole, { segs: 6, along: "x" }), 228.2, 0, 0), decal(size || "10mm", 12, 4, 219, 7.3, 0, { font: "800 80px ui-sans-serif, Helvetica, Arial, sans-serif" }));
 }
-export function pick({ shape = "hook" } = {}) {
+export function pick({ shape = "hook", pn = "" } = {}) {
   const k = shape === "straight" ? [[200, 0, 0], [230, 0, 0]] : shape === "45" ? [[196, 0, 0], [212, 0, 0], [222, 0, -8]] : shape === "complex" ? [[196, 0, 0], [214, 0, 0], [222, 0, -6], [216, 0, -12]] : [[196, 0, 0], [214, 0, 0], [222, 0, -4], [221, 0, -14]];
   const tipA = k.at(-1), tipB = k.at(-2), d = [tipA[0] - tipB[0], tipA[2] - tipB[2]], dl = Math.hypot(...d);
   const point = at(cyl(1.8, 5, mat.chrome, { r2: 0.25, segs: 12, along: "x" }), tipA[0] + (d[0] / dl) * 2.4, 0, tipA[2] + (d[1] / dl) * 2.4); // sharpened point
   point.rotation.y = -Math.atan2(d[1], d[0]);
-  return group(handle(90, 10.5), bolster(90, 10.5, 1.8), tube([[100, 0, 0], [150, 0, 0], ...k], 1.8, mat.chrome, 12), point);
+  return group(handle(90, 10.5, mat.red, mat.black, pn), bolster(90, 10.5, 1.8), tube([[100, 0, 0], [150, 0, 0], ...k], 1.8, mat.chrome, 12), point);
 }
 
 /* ---------- pliers ---------- */
@@ -407,7 +409,7 @@ function jawOutline(jaw) {
   if (jaw === "strip") { out.length = 0; out.push(...JAWS.diag); for (const [c, rr] of [[-20, 0.9], [-14, 1.2], [-7.5, 1.6]]) { for (let a = PI; a >= 0; a -= PI / 6) out.push([c - rr * Math.cos(a), rr * Math.sin(a)]); } }
   return out;
 }
-export function pliers({ jaw = "slip", pump = false } = {}) {
+export function pliers({ jaw = "slip", pump = false, pn = "" } = {}) {
   const open = jaw === "diag" ? 0.015 : jaw === "strip" ? 0.03 : 0.062;
   const half = (s) => {
     const j = slab(poly(jawOutline(jaw).map(([x, y]) => [x, -s * y])), 5.2, 1, mat.satin); // jaw on the +s side, handle on the -s side
@@ -420,7 +422,8 @@ export function pliers({ jaw = "slip", pump = false } = {}) {
     const red = turned([[0.1, -3], [6.4, -3], [9.4, 0.5], [10, 3], [9.2, 6], [7.6, 10], [7, 16], [7.2, 40], [7.5, 64], [7.2, L - 26], [7.1, L - 22], [0.1, L - 22]], mat.red, { segs: 40 });
     const tip = turned([[0.1, 0], [7.25, 0], [7.5, 2], [7.5, 18], [7, 24], [5.2, 27.5], [2.4, 29], [0.1, 29.3]], mat.black, { segs: 40 });
     tip.position.x = L - 24;
-    const gr = group(red, tip); red.scale.y = tip.scale.y = 0.78; gr.rotation.y = -Math.atan2(dz, dx); gr.position.set(C0[0], 0, C0[1]);
+    const gr = group(red, tip); red.scale.y = tip.scale.y = 0.78;
+    if (pn && s < 0) { const t = wrapX(pn, 7.5, Math.min(54, pn.length * 4.6), 4.4, 24, { a: 0.6, color: "#f4f5f6" }); t.scale.y = 0.78; gr.add(t); } // printed on the grip gr.rotation.y = -Math.atan2(dz, dx); gr.position.set(C0[0], 0, C0[1]);
     const hs = group(steel, gr); hs.rotation.y = s * open; return hs;
   };
   const top = half(1), parts = [top, half(-1)];
@@ -437,23 +440,26 @@ export function pliers({ jaw = "slip", pump = false } = {}) {
 }
 
 /* ---------- drive accessories ---------- */
-export function extension({ len = 150, drive = "3/8" } = {}) {
+export function extension({ len = 150, drive = "3/8", size = "", pn = "" } = {}) {
   const k = { "1/4": 0.7, "1/2": 1.32, "3/4": 1.9 }[drive] || 1;
+  const inch = String(size).match(/^(\d+(?:\.\d+)?)"$/); if (inch) len = Math.min(620, Math.max(50, inch[1] * 25.4)); // a 3" extension is short, a 10" one long
+  const text = [inch ? inch[0] : "", pn].filter(Boolean).join("  ");
   const e = group(turned([[0.1, 0], [9.5, 0], [10, 1], [10, 4], ...knurl(10, 4, 18), [10, 20], [9.3, 21], [9.3, 22.2], [10, 23], [8, 25], [5.6, 28.5], [5.4, len - 12], [6.2, len - 10.5], [6.6, len - 8.5], [6.6, len - 1], [6, len], [0.1, len]], mat.chrome),
     at(box(9.6, 9.6, 9.6, mat.chrome, 0.8), len + 4.6, 0, 0), at(sphere(1.5, mat.chrome), len + 5.4, 0, 4.9), at(box(0.8, 8.6, 8.6, mat.hole, 0.3), 0.2, 0, 0),
     at(cyl(10.2, 1.2, mat.satin, { along: "x" }), 21.6, 0, 0));
+  if (text && len > 70) e.add(wrapX(text, 5.5, Math.min(len - 44, text.length * 4.2), 4.2, 32, { a: 0.6 }));
   e.scale.set(1, k, k); // thicker for a bigger drive, same length
   return e;
 }
 // Breaker bar: flex head on a pinned yoke, long chrome bar, satin knurled grip.
-export function breaker() {
+export function breaker({ pn = "" } = {}) {
   const tang = group(at(box(30, 11, 9.2, mat.chrome, 3), -11, 0, 0), at(box(12.7, 12, 12.7, mat.chrome, 1), -19, -10, 0), at(sphere(1.6, mat.chrome), -19, -11, 6.5), at(cyl(8, 1.2, mat.satin), -19, -4.9, 0));
   tang.rotation.z = 0.5;
   return group(turned([[0.1, -2], [6, -2], [7.5, 0], [7.5, 252], [0.1, 252]], mat.chrome), at(box(12, 13, 18, mat.chrome, 3), 2, 0, 0),
     at(box(18, 11, 3.4, mat.chrome, 1.4), -7, 0, 6.6), at(box(18, 11, 3.4, mat.chrome, 1.4), -7, 0, -6.6), at(cyl(3.6, 19, mat.satin, { along: "z" }), -10, 0, 0), at(cyl(1.5, 19.4, mat.hole, { along: "z", segs: 12 }), -10, 0, 0),
     at(tang, -10, 0, 0),
     turned([[0.1, 248], [7.5, 248], [9.4, 253], ...knurl(9.7, 255, 352, 2.2, 0.9), [9.4, 355], [8.6, 360], [6, 363], [0.1, 364]], mat.steel, { segs: 40 }),
-    at(cyl(2.6, 19.4, mat.hole, { segs: 16 }), 357.5, 0, 0));
+    at(cyl(2.6, 19.4, mat.hole, { segs: 16 }), 357.5, 0, 0), pn && wrapX(pn, 7.6, Math.min(60, pn.length * 5.4), 5.4, 120, { a: 0.6 }));
 }
 export function adapter() {
   return group(turned([[0.1, 0], [10.5, 0], [11, 1], [11, 3], ...knurl(11, 3, 15, 1.2, 0.45), [11, 17], [11, 20], [8, 24], [6, 28], [5.6, 30], [5.6, 34], [0.1, 35]], mat.chrome),
@@ -472,7 +478,7 @@ function hammerHandle(hl = 280, { shaftM = mat.red, gripM = mat.rubber } = {}) {
 }
 // the end of the handle showing through the top of the eye, split by a steel wedge
 const wedge = (x, rz, ry) => { const e = at(cyl(1, 0.8, mat.black, { along: "x", segs: 24 }), x, 0, 0); e.scale.set(1, ry, rz); return group(e, at(box(1.2, 1.4, rz * 1.6, mat.steel, 0.2), x - 0.4, 0, 0), at(cyl(1.4, 1.6, mat.steel, { along: "x", segs: 12 }), x - 0.5, 0, rz * 0.45)); };
-export function hammer({ kind = "ballpeen" } = {}) {
+export function hammer({ kind = "ballpeen", pn = "" } = {}) {
   let head, hl = 262;
   if (kind === "deadblow") {
     head = group(turnedZ([[0.1, -34], [17, -34], [19.5, -33], [20.5, -31], [20.5, -26], [19.8, -25], [20.5, -24], [20.5, 24], [19.8, 25], [20.5, 26], [20.5, 31], [19.5, 33], [17, 34], [0.1, 34]], mat.red));
@@ -487,20 +493,24 @@ export function hammer({ kind = "ballpeen" } = {}) {
     head = group(turnedZ([[0.1, -44], [17, -44], [19, -42], [19, 42], [17, 44], [0.1, 44]], mat.steel, { segs: 8, spin: PI / 8 }));
     for (const s of [-1, 1]) { const f = turnedZ([[0.1, 0], [16.6, 0], [18.4, 1.6], [19, 4], [0.1, 4]], mat.satin, { segs: 8, spin: PI / 8 }); f.scale.z = -s; f.position.z = s * 47.6; head.add(f); }
     head.add(wedge(-17.7, 10, 7), at(box(22, 0.4, 30, brushed, 0.15), 0, 17.65, 0));
+    if (pn) head.add(decal(pn, 26, 5.4, 0, 17.9, 0, { rz: PI / 2 }));
   } else { // ball peen: rounded face with a chamfer, neck, forged cheeks round the eye, neck, ball peen
     head = group(turnedZ([[0.1, -62], [5, -61.4], [9.5, -59], [12.2, -55], [13, -50], [12.4, -45], [9.6, -40.5], [8.2, -36], [8, -30], [9, -24], [11, -16], [11, 16], [10.8, 20], [11, 26], [13.4, 31], [15.6, 36], [16.2, 42], [15.6, 45.5], [13.8, 47.4], [9, 48.4], [0.1, 48.6]], mat.chrome, { segs: 56 }));
     head.add(at(box(24, 26, 30, mat.satin, 6.5), 0, 0, 0), at(box(17, 0.4, 23, brushed, 0.15), 0, 13.05, 0), wedge(-12.1, 8.6, 6.2));
+    if (pn) head.add(decal(pn, 20, 4.4, 0, 13.3, 0, { rz: PI / 2 })); // stamped on the cheek
     head.scale.setScalar(1.12);
   }
   if (kind === "deadblow" || kind === "mallet") head.add(at(cyl(11, 6, mat.red, { along: "x", r2: 9.4 }), 21, 0, 0));
-  return group(hammerHandle(hl, { gripM: kind === "deadblow" ? mat.black : mat.rubber }), head);
+  const print = pn && (kind === "deadblow" || kind === "mallet") && wrapX(pn, 9.6, Math.min(50, pn.length * 4.8), 5, 70, { a: 0.6, color: "#f4f5f6" });
+  return group(hammerHandle(hl, { gripM: kind === "deadblow" ? mat.black : mat.rubber }), head, print);
 }
-export function prybar() {
+export function prybar({ pn = "" } = {}) {
   const g = group(turned([[0.1, 0], [6, 0], [6.4, 2], [6.4, 250], [0.1, 250]], mat.chrome, { segs: 6 }), tube([[2, 0, 0], [-10, 0, 1.5], [-20, 0, 6]], 6, mat.chrome, 6));
   const blade = slab(poly([[0, -6.6], [16, -5.6], [21, -4.6], [22, 0], [21, 4.6], [16, 5.6], [0, 6.6]]), 3.4, 0.6, mat.satin); // flattened, ground prying tip
   const bp = group(blade); bp.rotation.y = -(PI - 0.42); bp.position.set(-17, 0, 4.6);
   const grip = turned([[0.1, 0], [8.6, 0], [10.4, 3], [10.6, 8], [9.6, 12], ...knurl(10.2, 14, 80, 3.6, 0.8), [10.6, 84], [11, 92], [0.1, 92]], mat.red, { segs: 40 });
   const cap = turned([[0.1, 0], [11, 0], [11.2, 12], [10.4, 20], [0.1, 20]], mat.black, { segs: 40 });
+  if (pn) g.add(wrapX(pn, 6.5, Math.min(60, pn.length * 5), 4.6, 150, { a: 0.52 }));
   return group(g, bp, at(grip, 236, 0, 0), at(cap, 327, 0, 0), at(turned([[0.1, 0], [9.6, 0], [9.6, 4], [8.6, 7], [0.1, 7.4]], mat.chrome, { segs: 40 }), 346, 0, 0));
 }
 // Punches: chamfered striking end, knurled body, taper to the tip. The cold chisel has an octagonal body.
@@ -516,10 +526,25 @@ export function punch({ chisel = false } = {}) {
   return group(body, turned([[7.62, 84], [7.7, 85], [7.7, 91], [7.62, 92]], mat.satin, { segs: 40 }));
 }
 // Click torque wrench: ratchet head, chrome tube with a printed scale window, satin thimble with ticks, knurled red grip, lock knob.
-export function torque() {
+// Electronic (ATECH, TechAngle): the same head and tube, but a black display module with a lit readout and four buttons
+// sits ahead of a black rubber grip, so the two read differently at a glance. The part number is printed on the tube.
+export function torque({ electronic = false, pn = "" } = {}) {
   const head = ratchetHead();
   const g = group(head, slab(poly([[26, -8], [50, -7], [50, 7], [26, 8]]), 9, 1.6), turned([[0.1, 0], [7, 0], [9.6, 10], [9.6, 216], [0.1, 216]], mat.chrome), turned([[0.1, 0], [9.6, 0], [10.2, 1], [10.2, 14], [10.6, 15], [0.1, 15]], mat.satin));
   g.children[2].position.x = 44; g.children[3].position.x = 258;
+  if (pn) g.add(wrapX(pn, 9.75, Math.min(46, pn.length * 5.4), 6, 70, { a: 0.55 }));
+  if (electronic) {
+    // the display module: a black case on the tube, a glass screen showing the reading, four buttons, red bumpers at each end
+    const dx = 204, mod = group(at(box(64, 20, 30, mat.gloss, 6), 0, 2, 0), at(box(66, 6, 32, mat.rubber, 2.6), 0, -6, 0));
+    for (const s of [-1, 1]) mod.add(at(box(7, 21, 31.5, mat.redp, 3), s * 31, 2, 0));
+    mod.add(at(box(30, 0.6, 18, mat.screen, 0.3), -8, 12.3, 0), decal("45.0", 24, 9, -8, 12.75, 0, { color: "#bfe8ff", font: "700 80px ui-monospace, Menlo, monospace" }));
+    mod.add(decal("FT·LB", 14, 3.4, -8, 12.75, 6.6, { color: "#7fb6d6" }));
+    [[14, -5], [14, 5], [22, -5], [22, 5]].forEach(([x, z], i) => mod.add(at(cyl(2.6, 1.6, i ? mat.grey : mat.redp, { segs: 20 }), x, 12.4, z)));
+    mod.position.set(dx, 10, 0); g.add(mod);
+    g.add(at(turned([[0.1, 0], [10.2, 0], [11.2, 2], ...knurl(11.6, 4, 80, 3, 0.7), [11.2, 82], [10.2, 84], [0.1, 84]], mat.rubber, { segs: 40 }), 272, 0, 0));
+    g.add(at(turned([[0.1, 0], [11.4, 0], [11.6, 4], [10.8, 10], [6, 13.4], [0.1, 13.8]], mat.redp, { segs: 40 }), 356, 0, 0));
+    return g;
+  }
   g.add(at(slab(poly([[150, -3.6], [234, -3.6], [234, 3.6], [150, 3.6]]), 0.2, 0.25, mat.white), 0, 9.75, 0), decal("20  40  60  80  100", 80, 5, 192, 10.25, 0), at(box(1, 0.4, 7, mat.red, 0.1), 181, 10.3, 0));
   const ticks = mesh(new THREE.CylinderGeometry(10.25, 10.25, 12, 48, 1, true, -1, 2), label("| 0 | 2 | 4 | 6 |", 40, 10), false); ticks.rotation.z = -PI / 2; ticks.position.x = 265.5; g.add(ticks);
   g.add(at(turned([[0.1, 0], [10.2, 0], [11, 2], ...knurl(11.4, 4, 76, 2.2, 0.55), [11, 78], [10.2, 80], [0.1, 80]], mat.red, { segs: 40 }), 274, 0, 0));

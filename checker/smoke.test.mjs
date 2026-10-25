@@ -26,6 +26,8 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
   if (cards < 5) fail(`${name}: only ${cards} tools showing in the sample box`);
   if (!(await page.locator("#list.drawers .pocket").count())) fail(`${name}: the box didn't open on its drawers`);
   if (!(await page.locator("#list .pocket.out .lent-tag").count())) fail(`${name}: a lent tool's pocket has no Lent tag`);
+  // big tools (the sample's cordless impact) stand on the lit shelf, not in the foam
+  if (!(await page.locator("#list.drawers .shelf .spot").count())) fail(`${name}: the cordless impact isn't on the display shelf`);
 
   // no sideways scrolling on a phone
   const extra = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
