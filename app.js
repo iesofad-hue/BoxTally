@@ -3089,7 +3089,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const blank = (list) => list === "test"
     ? { list, name: "", part_number: "", category: "Other", price: 0, date_bought: null, condition: null, location: "", notes: "", priority: null, saved: 0 }
     : list === "owned"
-    ? { list, name: "", part_number: "", category: "Other", price: 0, date_bought: today(), condition: "Good", location: "", notes: "", priority: null, saved: 0 }
+    ? { list, name: "", part_number: "", category: "Other", price: 0, date_bought: today(), condition: "New", location: "", notes: "", priority: null, saved: 0 }
     : { list, name: "", part_number: "", category: "Other", price: 0, date_bought: null, condition: null, location: "", notes: "", priority: "Want", saved: 0 };
   const addedMsg = (pn, where) => {
     const e = state.ebay[pn];
@@ -3579,7 +3579,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (signedIn() && !state.dbQty) $("f-qty").hidden = true;
     $("i-list").value = item?.list_price ? Number(item.list_price) : "";
     $("i-date").value = item?.date_bought || (list === "owned" ? today() : "");
-    $("i-cond").value = item?.condition || "Good";
+    // New tools start as "New"; tools you already have keep theirs (or "Good" if never set)
+    $("i-cond").value = item ? item.condition || "Good" : "New";
     $("i-loc").value = item?.location || "";
     $("i-pri").value = item?.priority || "Want";
     $("i-saved").value = item?.saved ? Number(item.saved) : "";
