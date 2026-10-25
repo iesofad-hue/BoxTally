@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=64">
+<link rel="stylesheet" href="/app.css?v=65">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -226,7 +226,7 @@
   <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Prices are typical eBay asking prices and may differ from Snap-on's. Check before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a><span id="delWrap" hidden> · <a href="#" id="delAcct" style="color:inherit">Delete my account</a></span></footer>
+<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Prices are typical eBay asking prices and may differ from Snap-on's. Check before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/feedback" id="fbLink" style="color:inherit">Feedback</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a><span id="delWrap" hidden> · <a href="#" id="delAcct" style="color:inherit">Delete my account</a></span></footer>
 
 <div id="printSheet"></div>
 
@@ -459,10 +459,39 @@
 
 <button class="fab" id="fab" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span id="fabText">Add tool</span></button>
 
+<!-- Feedback: anyone can send the owner a short note. The owner also gets a Messages tab here (public.admins only). -->
+<dialog id="fbDlg">
+  <form id="fbFrm" novalidate>
+    <h2>Feedback</h2>
+    <div class="lp-tabs" role="tablist" id="fb-tabs" hidden>
+      <button class="lp-tab" type="button" role="tab" data-fb-tab="write" aria-selected="true">Write</button>
+      <button class="lp-tab" type="button" role="tab" data-fb-tab="messages" aria-selected="false">Messages <span class="count" id="fb-n">0</span></button>
+    </div>
+    <div id="fb-write" class="fb-pane">
+      <p class="meta-line">Got an idea, a tool that looks wrong, or something that's broken? Tell me here. It goes straight to the person who runs BoxTally.</p>
+      <label class="field"><span class="label">Your message</span><textarea id="fb-msg" rows="5" maxlength="500" placeholder="The 3D model for my F80 looks off…"></textarea><small id="fb-left">500 characters left</small></label>
+      <label class="field"><span class="label">Email, if you'd like a reply</span><input id="fb-contact" type="email" inputmode="email" maxlength="120" autocomplete="email" placeholder="Optional"><small>Only the owner sees this. Leave it empty to stay anonymous.</small></label>
+      <label class="fb-hp" aria-hidden="true">Leave this empty <input id="fb-hp" tabindex="-1" autocomplete="off"></label>
+    </div>
+    <div id="fb-messages" class="fb-pane" hidden>
+      <p class="meta-line">Only you see these, as the owner. People's accounts are never shown, just what they typed.</p>
+      <div id="fb-list" class="fb-list"></div>
+    </div>
+    <p class="err" id="fb-err" hidden></p>
+    <div class="formfoot">
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" type="button" id="fb-close">Close</button>
+      <button class="btn primary" type="submit" id="fb-send">Send</button>
+    </div>
+  </form>
+</dialog>
+
+<button class="fb-btn" id="fbBtn" type="button" aria-label="Feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/><path d="M8 9h8M8 12h5" stroke-linecap="round"/></svg><span class="fb-t">Feedback</span><b class="fb-dot" id="fbDot" hidden></b></button>
+
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script defer src="/drawings.js?v=64"></script>
-<script defer src="/app.js?v=64"></script>
+<script defer src="/drawings.js?v=65"></script>
+<script defer src="/app.js?v=65"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>

@@ -3051,6 +3051,106 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   $("s-close").onclick = () => shareDlg.close();
 
+  /* ---------- feedback: anyone can send the owner a short note (send_feedback), only the owner reads them ----------
+     The feedback table has no policies at all; the admin_feedback* functions check public.admins. */
+  const fbDlg = $("fbDlg");
+  let fbTab = "write", fbRows = [], fbSeen = new Set();
+  const fbUnread = () => fbRows.filter((m) => !m.is_read).length;
+  function syncFbDot() {
+    const n = state.admin ? fbUnread() : 0;
+    $("fbDot").hidden = !n; $("fbDot").textContent = n > 9 ? "9+" : String(n);
+    $("fbBtn").setAttribute("aria-label", n ? `Feedback, ${n} new message${n === 1 ? "" : "s"}` : "Feedback");
+    $("fb-n").textContent = String(fbRows.length);
+  }
+  async function loadFeedback() {
+    fbRows = [];
+    if (state.admin && sb) {
+      const r = await sb.rpc("admin_feedback");
+      if (!r.error) fbRows = r.data || [];
+    }
+    syncFbDot();
+  }
+  function renderFb() {
+    const owner = state.admin;
+    if (!owner) fbTab = "write";
+    $("fb-tabs").hidden = !owner;
+    document.querySelectorAll("[data-fb-tab]").forEach((b) => b.setAttribute("aria-selected", b.dataset.fbTab === fbTab));
+    $("fb-write").hidden = fbTab !== "write"; $("fb-messages").hidden = fbTab !== "messages";
+    $("fb-send").hidden = fbTab !== "write";
+    if (fbTab !== "messages") return;
+    const isMail = (x) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x || "");
+    $("fb-list").innerHTML = fbRows.length ? fbRows.map((m) => {
+      const isNew = !m.is_read || fbSeen.has(m.id);
+      const who = m.reply_to ? (isMail(m.reply_to) ? `<a href="mailto:${esc(m.reply_to)}?subject=${encodeURIComponent("Your BoxTally feedback")}">${esc(m.reply_to)}</a>` : esc(m.reply_to)) : "No email";
+      const when = new Date(m.created_at);
+      return `<div class="fb-item${isNew ? " new" : ""}">
+        <div class="fb-meta">${isNew ? `<span class="fb-new">New</span>` : ""}<span>${esc(fmtDate(when))}, ${esc(when.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }))}</span><span>${who}</span><span>${m.signed_in ? "Signed in" : "Guest"}${m.page ? ` · ${esc(m.page)}` : ""}</span></div>
+        <p>${esc(m.message)}</p>
+        <div class="fb-acts"><button class="btn small ghost danger" type="button" data-fb-del="${m.id}">Delete</button></div>
+      </div>`;
+    }).join("") : `<p class="fb-empty">No messages yet. When someone sends feedback it shows up here.</p>`;
+  }
+  async function showFbMessages() {
+    fbTab = "messages"; renderFb();
+    await loadFeedback();
+    // opening the tab counts as reading them; they stay marked New until the box closes
+    const ids = fbRows.filter((m) => !m.is_read).map((m) => m.id);
+    ids.forEach((id) => fbSeen.add(id));
+    renderFb();
+    if (ids.length && !(await sb.rpc("admin_feedback_mark", { ids, read: true })).error) {
+      fbRows = fbRows.map((m) => (ids.includes(m.id) ? { ...m, is_read: true } : m));
+      syncFbDot();
+    }
+  }
+  function fbLeft() { const n = 500 - $("fb-msg").value.length; $("fb-left").textContent = `${n} character${n === 1 ? "" : "s"} left`; }
+  function openFeedback() {
+    $("fb-err").hidden = true; fbSeen = new Set();
+    fbTab = state.admin && fbUnread() ? "messages" : "write";
+    fbLeft(); renderFb();
+    fbDlg.showModal();
+    routeOpen(fbDlg, "/feedback", "Feedback");
+    if (fbTab === "messages") showFbMessages();
+    else setTimeout(() => deskFocus($("fb-msg")), 0);
+  }
+  $("fbBtn").onclick = openFeedback;
+  $("fbLink").onclick = (e) => { e.preventDefault(); openFeedback(); };
+  $("fb-close").onclick = () => fbDlg.close();
+  $("fb-msg").addEventListener("input", fbLeft);
+  document.querySelectorAll("[data-fb-tab]").forEach((b) => (b.onclick = () => {
+    $("fb-err").hidden = true;
+    if (b.dataset.fbTab === "messages") showFbMessages(); else { fbTab = "write"; renderFb(); }
+  }));
+  $("fb-list").addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-fb-del]");
+    if (!b) return;
+    const id = Number(b.dataset.fbDel);
+    b.disabled = true;
+    const r = await sb.rpc("admin_feedback_delete", { fid: id });
+    if (r.error) { b.disabled = false; return toast("Couldn't delete that. Try again."); }
+    fbRows = fbRows.filter((m) => m.id !== id);
+    renderFb(); syncFbDot();
+    toast("Message deleted");
+  });
+  $("fbFrm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (fbTab !== "write") return;
+    const err = (t) => { $("fb-err").textContent = t; $("fb-err").hidden = false; };
+    const msg = $("fb-msg").value.trim(), contact = $("fb-contact").value.trim();
+    if (msg.length < 2) return err("Write a little more first.");
+    if ($("fb-hp").value) { fbDlg.close(); return toast("Thanks! Your feedback was sent."); } // a bot filled the hidden box
+    if (!sb) return err("Couldn't send right now. You can email contact@boxtally.app instead.");
+    // which part of the site they were on, never the tool or box itself
+    const where = state.readonly ? "shared box" : state.money ? "money" : state.tab === "owned" ? "box" : state.tab;
+    $("fb-send").disabled = true; $("fb-err").hidden = true;
+    const r = await sb.rpc("send_feedback", { msg, contact: contact || null, from_page: where });
+    $("fb-send").disabled = false;
+    if (r.error) return err(/fetch|network/i.test(r.error.message) ? "No signal right now. Try again in a moment." : r.error.message.length < 90 ? r.error.message : "Couldn't send right now. You can email contact@boxtally.app instead.");
+    $("fb-msg").value = ""; $("fb-contact").value = ""; fbLeft();
+    fbDlg.close();
+    toast("Thanks! Your feedback was sent.");
+    if (state.admin) loadFeedback();
+  });
+
   /* ---------- delete my account: photos first (the database can't remove files), then everything else ---------- */
   const delDlg = $("delDlg");
   function openDel() {
@@ -3419,7 +3519,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnKey = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   let lpTab = "todo", curBatch = null;
   async function loadAdmin() {
-    state.admin = false; state.adminParts = []; state.aiGuess = {};
+    state.admin = false; state.adminParts = []; state.aiGuess = {}; fbRows = []; syncFbDot();
     if (!sb || !signedIn() || state.demo || state.readonly) return;
     const a = await sb.rpc("is_admin");
     if (a.error || !a.data) return;
@@ -3427,6 +3527,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (r.error) return;
     state.admin = true; state.adminParts = r.data || [];
     state.aiGuess = Object.fromEntries((g.error ? [] : g.data || []).map((x) => [x.part_number, x]));
+    loadFeedback();
   }
   // not checked = never looked up; checked = has a price, or was looked up and none was found
   // (the automatic lookup's "not found" still waits for the owner; only the owner's own "?" counts as checked)
@@ -3854,7 +3955,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (a === "wishlist" && b === "add" && !c) return { tab: "wishlist", open: "add" };
     if (a === "add" && !b) return { tab: "owned", open: "add" };
     if (a === "tool" && b) return { open: c === "edit" ? "edit" : "tool", id: b };
-    if (["truck", "insurance", "share", "delete-account", "box-check"].includes(a) && !b) return { open: a };
+    if (["truck", "insurance", "share", "delete-account", "box-check", "feedback"].includes(a) && !b) return { open: a };
     return { tab: "owned", unknown: true };
   }
   // make the page match the address: on arrival, and on Back and Forward
@@ -3863,8 +3964,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const r = readRoute();
     const ro = state.readonly, me = signedIn() && !state.demo;
     const item = r.id ? state.items.find((x) => String(x.id) === r.id) : null;
-    const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : r.open === "box-check" ? checkDlg : null;
-    const ok = !r.unknown && !(r.tab === "test" && !testOk() && !rowsOf("test").length) && (!r.open || (r.open === "tool" ? !!item : r.open === "edit" ? !!item && !ro : r.open === "share" || r.open === "delete-account" ? me && !ro : !ro));
+    const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : r.open === "box-check" ? checkDlg : r.open === "feedback" ? fbDlg : null;
+    const ok = !r.unknown && !(r.tab === "test" && !testOk() && !rowsOf("test").length) && (!r.open || (r.open === "tool" ? !!item : r.open === "edit" ? !!item && !ro : r.open === "share" || r.open === "delete-account" ? me && !ro : r.open === "feedback" || !ro));
     routeSync = true;
     try {
       document.querySelectorAll("dialog[open]").forEach((d) => { if (d._route !== here() || !ok) d.close(); });
@@ -3886,6 +3987,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (r.open === "share") openShare();
         else if (r.open === "delete-account") openDel();
         else if (r.open === "box-check") openCheck();
+        else if (r.open === "feedback") openFeedback();
       }
       if (!want) document.title = baseTitle;
     } finally { routeSync = false; }

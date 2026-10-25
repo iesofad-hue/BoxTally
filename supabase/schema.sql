@@ -810,3 +810,76 @@ end
 $function$;
 create trigger items_test_owner_only before insert or update of list, user_id on public.items
   for each row execute function public.items_test_owner_only();
+-- BoxTally Feedback box (2026-10-25). Run once in Supabase > SQL Editor.
+-- 1. A private table. RLS is on and there are NO policies, so nobody can read or write it
+--    directly through the website's key. Everything goes through the 4 functions below.
+create table if not exists public.feedback (
+  id bigint generated always as identity primary key,
+  created_at timestamptz not null default now(),
+  user_id uuid references auth.users (id) on delete set null,   -- only used for the spam limit, never shown
+  message text not null check (char_length(btrim(message)) between 2 and 500),
+  reply_to text check (reply_to is null or char_length(reply_to) <= 120), -- optional email/name the sender typed
+  page text check (page is null or char_length(page) <= 80),
+  is_read boolean not null default false
+);
+alter table public.feedback enable row level security;
+revoke all on public.feedback from anon, authenticated;
+create index if not exists feedback_created_idx on public.feedback (created_at desc);
+
+-- 2. Anyone (signed in or not) can send. Limits: 5 an hour per signed-in person,
+--    30 an hour from all guests together, and 2,000 kept messages at most.
+create or replace function public.send_feedback(msg text, contact text default null, from_page text default null)
+returns boolean language plpgsql security definer set search_path to '' as $$
+declare m text := btrim(coalesce(msg, '')); c text := nullif(btrim(coalesce(contact, '')), '');
+begin
+  if char_length(m) < 2 then raise exception 'Write a little more first.'; end if;
+  if char_length(m) > 500 then raise exception 'Keep it under 500 characters.'; end if;
+  if c is not null and char_length(c) > 120 then raise exception 'That email or name is too long.'; end if;
+  if auth.uid() is not null then
+    if (select count(*) from public.feedback f where f.user_id = auth.uid() and f.created_at > now() - interval '1 hour') >= 5 then
+      raise exception 'Thanks! You''ve sent a few already. Try again in an hour.';
+    end if;
+  elsif (select count(*) from public.feedback f where f.user_id is null and f.created_at > now() - interval '1 hour') >= 30 then
+    raise exception 'Lots of messages right now. Try again in a bit, or sign in.';
+  end if;
+  if (select count(*) from public.feedback) >= 2000 then raise exception 'The feedback box is full right now.'; end if;
+  insert into public.feedback (user_id, message, reply_to, page)
+  values (auth.uid(), m, c, left(nullif(btrim(coalesce(from_page, '')), ''), 80));
+  return true;
+end $$;
+revoke all on function public.send_feedback(text, text, text) from public, anon, authenticated;
+grant execute on function public.send_feedback(text, text, text) to anon, authenticated;
+
+-- 3. Owner only (public.admins): read messages. No user id or account email comes back,
+--    just what the sender typed, and whether they were signed in.
+create or replace function public.admin_feedback()
+returns table (id bigint, created_at timestamptz, message text, reply_to text, page text, is_read boolean, signed_in boolean)
+language plpgsql stable security definer set search_path to '' as $$
+begin
+  if not exists (select 1 from public.admins a where a.user_id = auth.uid()) then
+    raise exception 'Only the BoxTally owner can see messages.';
+  end if;
+  return query select f.id, f.created_at, f.message, f.reply_to, f.page, f.is_read, f.user_id is not null
+    from public.feedback f order by f.created_at desc limit 300;
+end $$;
+revoke all on function public.admin_feedback() from public, anon, authenticated;
+grant execute on function public.admin_feedback() to authenticated;
+
+-- 4. Owner only: mark read/unread, or delete.
+create or replace function public.admin_feedback_mark(ids bigint[], read boolean)
+returns integer language plpgsql security definer set search_path to '' as $$
+declare n int;
+begin
+  if not exists (select 1 from public.admins a where a.user_id = auth.uid()) then raise exception 'Only the BoxTally owner can do that.'; end if;
+  update public.feedback set is_read = read where id = any(ids);
+  get diagnostics n = row_count; return n;
+end $$;
+create or replace function public.admin_feedback_delete(fid bigint)
+returns boolean language plpgsql security definer set search_path to '' as $$
+begin
+  if not exists (select 1 from public.admins a where a.user_id = auth.uid()) then raise exception 'Only the BoxTally owner can do that.'; end if;
+  delete from public.feedback where id = fid;
+  return found;
+end $$;
+revoke all on function public.admin_feedback_mark(bigint[], boolean), public.admin_feedback_delete(bigint) from public, anon, authenticated;
+grant execute on function public.admin_feedback_mark(bigint[], boolean), public.admin_feedback_delete(bigint) to authenticated;
