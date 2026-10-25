@@ -1144,7 +1144,33 @@ abbr.est { text-decoration: none; font-size: .72em; font-weight: 700; letter-spa
 .card .photo.art-bg .art .refl { opacity: .45; }
 
 /* making and filling drawers */
-.drawers .drawer-bar { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+.drawers .drawer-bar { grid-column: 1 / -1; display: flex; align-items: center; justify-content: flex-end; gap: 10px 14px; flex-wrap: wrap; }
+.drawers .dw-tip { margin: 0 auto 0 0; display: flex; align-items: center; gap: 8px; font-size: .84rem; color: #c9d1da; }
+.drawers .dw-tip svg { flex: none; width: 20px; height: 20px; color: #f5c518; }
+@media (max-width: 620px) { .drawers .drawer-bar { justify-content: stretch; } .drawers .dw-tip { flex: 1 1 100%; } .drawers .drawer-bar .btn { margin-left: auto; } }
+
+/* dragging a tool to another drawer (see "drag a tool into another drawer" in app.js) */
+.drawers .pocket, .drawers .spot { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+.drawers .pocket img, .drawers .spot img { -webkit-user-drag: none; }
+.drawers .lifted { opacity: .3; }
+.drawers.dragging .drawer { transition: box-shadow .15s, outline-color .15s; outline: 2px dashed transparent; outline-offset: -2px; }
+.drawers.dragging .drawer.drop-to { outline-color: #f5c518; box-shadow: 0 0 0 3px rgb(245 197 24 / .35), 0 10px 18px -12px #000; }
+.drawers.dragging .drawer.drop-to > summary { background: linear-gradient(180deg, #4d4630, #3a3424 40%, #26221a); }
+.drawers.dragging .foam-empty { border-color: rgb(255 255 255 / .55); }
+.drag-ghost { position: fixed; left: 0; top: 0; z-index: 1000; pointer-events: none; display: grid; justify-items: center; gap: 6px; will-change: transform;
+  filter: drop-shadow(0 14px 16px rgb(0 0 0 / .55)); }
+.drag-ghost .pk, .drag-ghost .sp { display: block; width: 100%; position: relative; aspect-ratio: 16 / 10; }
+.drag-ghost .pk { border-radius: 10px; background: radial-gradient(closest-side, rgb(200 16 46 / .55), transparent); }
+.drag-ghost .pk .art { position: absolute; inset: 8% 6% 4%; } .drag-ghost .pk .art svg { width: 100%; height: 100%; }
+.drag-ghost .pk .art .floor, .drag-ghost .pk .art .refl { display: none; }
+.drag-ghost .pk img.m3d { position: absolute; inset: 4%; width: 92%; height: 92%; }
+.drag-ghost .sp { border-radius: 10px; overflow: hidden; border: 1px solid #05070a; background: radial-gradient(34% 64% at 50% -10%, rgb(255 255 255 / .26), transparent 72%), linear-gradient(180deg, #2b323c 0%, #171c23 62%, #0f1217 78%, #161a20 100%) !important; }
+.drag-ghost .sp .art { position: absolute; inset: 8%; } .drag-ghost .sp .art svg { width: 100%; height: 100%; }
+.drag-ghost .sp .m3d, .drag-ghost .sp .m3d-turn { position: absolute; inset: 3%; width: 94%; height: 94%; object-fit: contain; }
+.drag-ghost .lens { display: none; }
+.drag-ghost .dg-to { font: 700 .8rem/1.3 var(--f-display); letter-spacing: .02em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px;
+  background: #1a1f26; color: #eef1f5; border: 1px solid #48515d; white-space: nowrap; max-width: 80vw; overflow: hidden; text-overflow: ellipsis; }
+.drag-ghost .dg-to.ok { background: #f5c518; color: #1a1a1a; border-color: #f5c518; }
 .drawers .drawer-bar .btn { background: rgb(255 255 255 / .08); color: #eef1f5; border-color: rgb(255 255 255 / .18); }
 .drawers .drawer-bar .btn:hover { background: rgb(255 255 255 / .14); }
 .drawers .dfoot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 8px 12px; background: var(--gun-lo); border-top: 1px solid #000; }

@@ -115,6 +115,30 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
     await page.waitForTimeout(500);
     const filled = await page.locator('#list details.drawer[data-drawer="Smoke drawer"] .pocket').count();
     if (filled !== 2) fail(`${name}: the new drawer got ${filled} tools, not the 2 pliers picked`);
+    // drag a tool from another drawer into it: a mouse just drags, a finger holds first and then slides
+    {
+      // a tool from the drawer just above it, so both fit on the screen (and the "Smoke drawer" toast at the bottom isn't in the way)
+      await page.evaluate(() => document.querySelector('#list details.drawer[data-drawer="Smoke drawer"]').scrollIntoView({ block: "center" }));
+      await page.waitForTimeout(300);
+      const from = page.locator('#list details.drawer:has(+ details.drawer[data-drawer="Smoke drawer"]) .pocket').last();
+      const a = await from.boundingBox(), b = await page.locator('#list details.drawer[data-drawer="Smoke drawer"] > summary').boundingBox();
+      const [x0, y0, x1, y1] = [a.x + a.width / 2, a.y + a.height / 3, b.x + b.width / 2, b.y + b.height / 2];
+      if (width < 500) {
+        const cdp = await page.context().newCDPSession(page);
+        const touch = (type, x, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+        await touch("touchStart", x0, y0); await page.waitForTimeout(500);
+        for (let i = 1; i <= 8; i++) { await touch("touchMove", x0 + (x1 - x0) * i / 8, y0 + (y1 - y0) * i / 8); await page.waitForTimeout(30); }
+        await touch("touchEnd");
+      } else {
+        await page.mouse.move(x0, y0); await page.mouse.down();
+        await page.mouse.move(x1, y1, { steps: 8 }); await page.mouse.up();
+      }
+      await page.waitForTimeout(500);
+      const now = await page.locator('#list details.drawer[data-drawer="Smoke drawer"] .pocket').count();
+      if (now !== 3) fail(`${name}: dragging a tool into the drawer left it with ${now} tools, not 3`);
+      if (await openDialog()) fail(`${name}: dragging a tool opened it as well`);
+      if (!(await page.locator("#list .dw-tip").isVisible())) fail(`${name}: no drag and drop hint over the drawers`);
+    }
     // tapping a row opens the tool, with its Edit and Delete buttons
     await page.click(".seg [data-view=list]");
     await page.locator("#list .ri h3").first().click();

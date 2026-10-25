@@ -1849,13 +1849,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // drawers you've made but not filled yet (only while nothing's filtered out, or they'd just be clutter)
     if (rows.length === rowsOf("owned").length) emptyDrawers().forEach((k) => { if (!groups.has(k)) groups.set(k, []); });
     const keys = [...groups.keys()].sort((a, b) => (a ? 0 : 1) - (b ? 0 : 1) || a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
-    const bar = `<div class="drawer-bar"><button class="btn small" type="button" data-dw-new="">+ Add drawer or compartment</button></div>`;
+    // tell people they can drag tools between drawers (a phone needs a hold first, so the page still scrolls)
+    const tip = matchMedia("(pointer: coarse)").matches ? "Hold a tool, then drag it into any drawer or compartment" : "Drag and drop tools into any drawer or compartment";
+    const bar = `<div class="drawer-bar"><p class="dw-tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6.5 6.5 0 0 1-6.5 6.5h-.6a5 5 0 0 1-3.9-1.9L4.6 15a1.6 1.6 0 0 1 2.4-2l2 2"/></svg>${tip}</p><button class="btn small" type="button" data-dw-new="">+ Add drawer or compartment</button></div>`;
     return bar + keys.map((k, gi) => {
       const g = groups.get(k), worth = g.reduce((sum, r) => sum + worthAll(r), 0), n = pieces(g);
       const open = !state.closedDrawers.has(k);
       return `<details class="drawer" data-drawer="${esc(k)}" style="--i:${Math.min(gi, 12)}"${open ? " open" : ""}><summary><span class="dname">${k ? esc(k) : "No drawer set"}</span><span class="dmeta">${n} tool${n === 1 ? "" : "s"}${n ? " · " + money(Math.round(worth)) : ""}</span></summary>`
         + (() => { const big = g.filter(inSpot), hand = g.filter((r) => !inSpot(r));
-          return (hand.length || !big.length ? `<div class="foam">${hand.length ? hand.map((r, i) => pocketHtml(r, i)).join("") : `<p class="foam-empty">Nothing in here yet.</p>`}</div>` : "")
+          return (hand.length || !big.length ? `<div class="foam">${hand.length ? hand.map((r, i) => pocketHtml(r, i)).join("") : `<p class="foam-empty">Nothing in here yet.<br>Drag and drop tools into this compartment.</p>`}</div>` : "")
             + (big.length ? `<div class="shelf">${big.map((r, i) => spotHtml(r, i + hand.length)).join("")}</div>` : ""); })()
         + `<div class="dfoot">${k ? `<button class="btn small" type="button" data-dw-edit="${esc(k)}">${g.length ? "Add or remove tools" : "Add tools"}</button>` : `<span class="dhint">Put these away:</span><button class="btn small" type="button" data-dw-new="">Pick a drawer for them</button>`}</div></details>`;
     }).join("");
@@ -2360,6 +2362,94 @@ document.addEventListener("DOMContentLoaded", () => {
     const b = e.target.closest("[data-dw-new], [data-dw-edit]"); if (!b || state.readonly) return;
     openDrawer(b.dataset.dwEdit || null);
   });
+
+  /* ---------- drag a tool into another drawer ----------
+     Mouse: press on a tool and move it. Phone: hold a tool for a moment until it lifts, then slide it.
+     A quick tap still opens the tool, and a quick swipe still scrolls the page.
+     Dropping it just sets that tool's "Where it's kept", the same as ticking it in Add tools. */
+  let drag = null; // { id, from, el, x, y, touch, live, timer, ghost, to }
+  let dragEnded = 0;
+  const dropAt = (x, y) => document.elementFromPoint(x, y)?.closest("#list.drawers details.drawer") || null;
+  $("list").addEventListener("pointerdown", (e) => {
+    if (state.readonly || state.tab !== "owned" || !$("list").classList.contains("drawers") || e.button > 0 || drag) return;
+    const el = e.target.closest(".pocket[data-id], .spot[data-id]"); if (!el) return;
+    drag = { id: el.dataset.id, from: el.closest("details.drawer")?.dataset.drawer ?? "", el, x: e.clientX, y: e.clientY, touch: e.pointerType !== "mouse", live: false };
+    if (drag.touch) drag.timer = setTimeout(() => drag && !drag.live && liftTool(), 300);
+  });
+  function liftTool() {
+    const { el } = drag, pic = el.querySelector(".pk, .sp"), box = pic.getBoundingClientRect();
+    const ghost = document.createElement("div");
+    ghost.className = "drag-ghost" + (el.classList.contains("spot") ? " is-spot" : "");
+    const copy = pic.cloneNode(true);
+    // a canvas copies blank, so paint each one over
+    pic.querySelectorAll("canvas").forEach((c, i) => { try { copy.querySelectorAll("canvas")[i].getContext("2d").drawImage(c, 0, 0); } catch {} });
+    ghost.append(copy);
+    const to = document.createElement("span"); to.className = "dg-to"; ghost.append(to);
+    ghost.style.width = box.width + "px";
+    drag.dx = drag.x - box.left; drag.dy = drag.y - box.top;
+    document.body.append(ghost);
+    drag.ghost = ghost; drag.live = true;
+    el.classList.add("lifted"); $("list").classList.add("dragging");
+    if (navigator.vibrate) try { navigator.vibrate(12); } catch {}
+    moveGhost();
+    scrollLoop();
+  }
+  function moveGhost() {
+    const { ghost, x, y } = drag, list = $("list");
+    // the box can redraw mid-drag (a price comes in): find the tool again and keep it looking lifted
+    list.classList.add("dragging");
+    if (!drag.el.isConnected) { drag.el = list.querySelector(`[data-id="${CSS.escape(drag.id)}"]`) || drag.el; drag.el.classList.add("lifted"); }
+    ghost.style.transform = `translate(${x - drag.dx}px, ${y - drag.dy}px) rotate(-3deg) scale(1.06)`;
+    const d = dropAt(x, y);
+    if (d !== drag.to) { drag.to?.classList.remove("drop-to"); drag.to = d; if (d && d.dataset.drawer !== drag.from) d.classList.add("drop-to"); }
+    const label = ghost.querySelector(".dg-to");
+    label.textContent = !d ? "Drop it in a drawer" : d.dataset.drawer === drag.from ? "Already in here" : `Move to ${d.dataset.drawer || "No drawer set"}`;
+    label.classList.toggle("ok", !!d && d.dataset.drawer !== drag.from);
+  }
+  // near the top or bottom of the screen, keep scrolling so you can reach a drawer that's out of view
+  function scrollLoop() {
+    if (!drag || !drag.live) return;
+    const edge = 80, h = innerHeight, y = drag.y;
+    const v = y < edge ? -Math.ceil((edge - y) / 5) : y > h - edge ? Math.ceil((y - (h - edge)) / 5) : 0;
+    if (v) { scrollBy(0, v); moveGhost(); }
+    requestAnimationFrame(scrollLoop);
+  }
+  addEventListener("pointermove", (e) => {
+    if (!drag) return;
+    const far = Math.hypot(e.clientX - drag.x, e.clientY - drag.y);
+    if (!drag.live) {
+      if (drag.touch) { if (far > 10) endDrag(); return; } // moved before the hold: that's a scroll
+      if (far < 6) return;
+      drag.x = e.clientX; drag.y = e.clientY; liftTool(); return;
+    }
+    drag.x = e.clientX; drag.y = e.clientY; moveGhost();
+  });
+  // once a tool is lifted, a finger moving shouldn't scroll the page too
+  document.addEventListener("touchmove", (e) => { if (drag && drag.live) e.preventDefault(); }, { passive: false });
+  addEventListener("pointerup", () => { if (drag) endDrag(drag.live); });
+  addEventListener("pointercancel", () => { if (drag) endDrag(); });
+  addEventListener("keydown", (e) => { if (e.key === "Escape" && drag && drag.live) endDrag(); });
+  // after a drag, the button under it gets a click: that shouldn't open the tool
+  $("list").addEventListener("click", (e) => { if (Date.now() - dragEnded < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
+  // stop the browser's own picture-drag and the phone's long-press menu from getting in the way
+  $("list").addEventListener("dragstart", (e) => { if (e.target.closest?.(".pocket, .spot")) e.preventDefault(); });
+  $("list").addEventListener("contextmenu", (e) => { if ($("list").classList.contains("drawers") && e.target.closest?.(".pocket, .spot") && (drag || matchMedia("(pointer: coarse)").matches)) e.preventDefault(); });
+  function endDrag(drop) {
+    const d = drag; drag = null;
+    clearTimeout(d.timer);
+    if (!d.live) return;
+    dragEnded = Date.now();
+    d.ghost.remove(); d.el.classList.remove("lifted"); $("list").classList.remove("dragging"); d.to?.classList.remove("drop-to");
+    if (drop && d.to && d.to.dataset.drawer !== d.from) moveTool(d.id, d.from, d.to.dataset.drawer);
+  }
+  async function moveTool(id, from, to) {
+    const r = state.items.find((x) => String(x.id) === String(id)); if (!r) return;
+    // a drawer you empty by dragging its last tool out stays, so you can put things back in it
+    const keepEmpty = (gone, filled) => setEmptyDrawers(emptyDrawers().filter((k) => k !== filled).concat(gone && !rowsOf("owned").some((x) => locOf(x) === gone) ? [gone] : []));
+    if (!(await guard(() => setLocations(new Map([[String(r.id), to]]))))) return;
+    keepEmpty(from, to); state.closedDrawers.delete(to); render();
+    toast(`Moved ${displayName(r)} to ${to || "No drawer set"}`, { label: "Undo", run: () => guard(async () => { await setLocations(new Map([[String(r.id), from]])); keepEmpty(to, from); render(); }) });
+  }
 
   /* ---------- warranty list: send to the dealer or print ---------- */
   function warrantyText() {
