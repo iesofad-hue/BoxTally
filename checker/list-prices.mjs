@@ -23,6 +23,8 @@
 //
 // Run by hand: node checker/list-prices.mjs [PART ...] [--dry-run]
 
+import { colorFamily } from "./color-family.mjs";
+
 const SUPABASE_URL = (process.env.SUPABASE_URL || "https://ctteljhhjsfvyyiwzxiy.supabase.co").replace(/\/+$/, "");
 const KEY = process.env.SUPABASE_SECRET_KEY || "";
 const GEMINI = process.env.GEMINI_API_KEY || "";
@@ -125,10 +127,13 @@ if (ONLY.length) {
   ]);
   old = Object.fromEntries(rows.map((r) => [r.part_number, r]));
   const cutoff = Date.now() - RECHECK_DAYS * 864e5;
+  // another color of the same tool already has a price: the site shares it, so no lookup needed
+  const pricedFams = new Set(rows.filter((r) => r.price != null).map((r) => colorFamily(r.part_number)).filter(Boolean));
   // Not-found answers are retried after 30 days; found prices after RECHECK_DAYS
   const due = tracked.map((t) => t.part_number).filter((pn) => {
     const o = old[pn];
     if (o && o.source === "owner" && o.price != null) return false; // the owner's own prices are never overwritten
+    if ((!o || o.price == null) && pricedFams.has(colorFamily(pn))) return false;
     return !o || Date.parse(o.checked_at) < (o.price == null ? Date.now() - 30 * 864e5 : cutoff);
   });
   due.sort((a, b) => (old[a] ? Date.parse(old[a].checked_at) : 0) - (old[b] ? Date.parse(old[b].checked_at) : 0));

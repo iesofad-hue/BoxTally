@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // until the owner confirms it
   const listRow = (r) => {
     const own = r.part_number && state.list && state.list[r.part_number];
-    return own && own.price != null ? own : state.list && state.list[colorBase(r.part_number)];
+    return own && own.price != null ? own : state.listFam && state.listFam[colorFamily(r.part_number)];
   };
   const listEst = (r) => {
     if (Number(r.list_price) > 0) return false;
@@ -79,10 +79,21 @@ document.addEventListener("DOMContentLoaded", () => {
     return listEst(r) ? Number(state.list[r.part_number].ai_price) : null;
   };
   const EST = `<abbr class="est" title="Gemini's estimate. The BoxTally owner hasn't checked it yet.">est.</abbr>`;
-  // The same tool in another color: Snap-on adds a color letter to the red one's number
-  // (PTM18AM is the red pickup; PTM18AMO orange, PTM18AMG green...). Those share the red one's list price.
-  const COLOR_BASE = [/^(PTM\d{1,2}AM)[A-Z]{1,2}$/];
-  const colorBase = (pn) => { for (const re of COLOR_BASE) { const m = re.exec(pn || ""); if (m) return m[1]; } return null; };
+  // The same tool in another color shares its list price: CDR9050, CDR9050DB, CDR9050HVDB and CDR9050GDB
+  // are one family, as are PTM18AM and PTM18AMO. Same rule as checker/color-family.mjs (its test checks this line).
+  const COLOR_END = /^(.*\d)(?:AM)?(?:R|O|G|GM|HV)?(?:DB)?$/;
+  const colorFamily = (pn) => { const m = COLOR_END.exec(String(pn || "")); return m && m[1].length >= 3 ? m[1] : null; };
+  // family -> the confirmed price row to share: the plain number first, then any owner-saved one
+  function familyPrices(rows) {
+    const out = {};
+    for (const r of rows) {
+      const f = colorFamily(r.part_number);
+      if (!f || r.price == null) continue;
+      const cur = out[f], score = (x) => (x.part_number === f ? 2 : 0) + (x.source === "owner" ? 1 : 0);
+      if (!cur || score(r) > score(cur)) out[f] = r;
+    }
+    return out;
+  }
   // A tool's value today: Snap-on's list price (what it costs to replace new), else eBay
   const nowPrice = (r) => listPrice(r) ?? ebayPrice(r);
   // what an owned tool counts for in "Box worth": list price or eBay today, else what you paid
@@ -1238,7 +1249,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function priceMissing() {
     if (!sb || !signedIn() || state.demo || state.readonly || state.offline) return;
     const pns = [...new Set(state.items.map((r) => r.part_number).filter((p) => p && PN_RE.test(p)))]
-      .filter((p) => !priceAsked.has(p) && (!state.ebay[p] || !state.list[p])).slice(0, 10);
+      .filter((p) => !priceAsked.has(p) && (!state.ebay[p] || (!state.list[p] && !(state.listFam && state.listFam[colorFamily(p)])))).slice(0, 10);
     if (!pns.length) return;
     pns.forEach((p) => { priceAsked.add(p); finding.add(p); });
     render();
@@ -1267,9 +1278,12 @@ document.addEventListener("DOMContentLoaded", () => {
       sb.from("ebay_prices").select("part_number,listings,low,median,new_median,used_median,checked_at,seen_at,source,note").in("part_number", b),
       // how many people own or want each tool: only answered for signed-in people
       signedIn() ? sb.rpc("owner_counts", { pns: b }) : { data: [], error: null },
-      sb.from("list_prices").select("part_number,price,name,source,checked_at,ai_price").in("part_number", [...new Set([...b, ...b.map(colorBase).filter(Boolean)])]),
+      sb.from("list_prices").select("part_number,price,name,source,checked_at,ai_price").in("part_number", b),
+      // other colors of the same tools, for their shared price
+      (() => { const fams = [...new Set(b.map(colorFamily).filter(Boolean))]; return fams.length ? sb.from("list_prices").select("part_number,price,source").not("price", "is", null).or(fams.map((f) => `part_number.like.${f}*`).join(",")) : { data: [], error: null }; })(),
     ])));
     if (res.every(([, , , , l]) => !l.error)) state.list = Object.fromEntries(res.flatMap(([, , , , l]) => l.data || []).map((r) => [r.part_number, r]));
+    if (res.every(([, , , , , f]) => !f.error)) state.listFam = familyPrices([...res.flatMap(([, , , , , f]) => f.data || []), ...Object.values(state.list)]);
     if (res.every(([, , , o]) => !o.error)) state.owners = Object.fromEntries(res.flatMap(([, , , o]) => o.data || []).map((r) => [r.part_number, r]));
     if (res.every(([, , e]) => !e.error)) state.ebay = Object.fromEntries(res.flatMap(([, , e]) => e.data || []).map((r) => [r.part_number, r]));
     if (res.every(([c]) => !c.error)) state.catalog = Object.fromEntries(res.flatMap(([c]) => c.data || []).map((r) => [r.part_number, r]));

@@ -18,6 +18,7 @@
 // 400 keeps them under Google's 5,000 free searches a month.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { pick, altQueries } from "./ebay-match.mjs";
+import { colorFamily } from "./color-family.mjs";
 
 const URL_ = Deno.env.get("SUPABASE_URL")!;
 const SECRET = (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default; } catch { return ""; } })() || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -177,6 +178,13 @@ Deno.serve(async (req) => {
     if (o.source === "owner" && o.price != null) return false;
     return now - Date.parse(o.checked_at) > (o.price == null ? LIST_RETRY_MS : LIST_RECHECK_MS);
   }) : [];
+  // another color of the same tool already has a price: the page uses that, so don't ask Gemini
+  const fams = [...new Set(listDue.map(colorFamily).filter(Boolean))] as string[];
+  if (fams.length) {
+    const { data: famRows } = await db.from("list_prices").select("part_number").not("price", "is", null).or(fams.map((f) => `part_number.like.${f}*`).join(","));
+    const priced = new Set((famRows || []).map((r) => colorFamily(r.part_number)).filter(Boolean));
+    listDue = listDue.filter((pn) => !priced.has(colorFamily(pn)));
+  }
 
   // spending limits
   const [eUser, lUser, lMonth] = await Promise.all([

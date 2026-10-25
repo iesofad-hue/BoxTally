@@ -26,6 +26,8 @@ jobs:
         run: node checker/versions.test.mjs
       - name: eBay matching
         run: node checker/ebay-match.test.mjs
+      - name: Color versions share a price
+        run: node checker/color-family.test.mjs
       - name: Instant price lookup is up
         # supabase/functions/price-now answers a caller who isn't signed in with 401 "Sign in first."
         # Anything else (a crash on start, a missing function) fails this check.
