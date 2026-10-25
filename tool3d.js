@@ -117,6 +117,9 @@ function studioReflections() {
   box(10, 30, 2.4, 40, 10, -8);  // fainter one on the right
   box(34, 8, 2, 0, 12, 44);      // soft fill from the camera side
   box(7, 26, 5, -22, -2, 40); box(5, 26, 3, 26, -2, 36); // low strips in front, for bright streaks down round chrome
+  // a wide softbox high behind the tool: flat chrome faces seen from the front (a ratchet's head, a wrench's
+  // panel) mirror this one, so they show a soft bright sweep like a catalog shot instead of going dark
+  box(60, 5, 2.4, 0, 30, -38); box(60, 3, 1.2, 0, 15, -44);
   return s;
 }
 function studio(renderer) {

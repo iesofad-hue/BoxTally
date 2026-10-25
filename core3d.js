@@ -8,6 +8,17 @@ export const knurl = (r, a, b, pitch = 1.3, depth = 0.35) => { const p = []; for
 export const rivet = (r, m = mat.satin) => { const g = new THREE.SphereGeometry(r, 16, 8, 0, PI * 2, 0, PI / 2); return mesh(g, m); };
 
 const chromeDS = mat.chrome.clone(); chromeDS.side = THREE.DoubleSide; // for the slotted O2 socket
+const bore = new THREE.MeshPhysicalMaterial({ color: 0x2a2e34, metalness: 1, roughness: 0.38, side: THREE.DoubleSide }); // inside a socket's opening
+// polished chrome with fine diamond knurling pressed in (sockets' finger-spin band, extension collars)
+let knChrome = null;
+export function knurlChrome() {
+  if (knChrome) return knChrome;
+  const c = document.createElement("canvas"); c.width = 256; c.height = 64; const x = c.getContext("2d");
+  x.fillStyle = "#fff"; x.fillRect(0, 0, 256, 64); x.strokeStyle = "#555"; x.lineWidth = 1.6;
+  for (let i = -64; i < 320; i += 8) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 64, 64); x.moveTo(i + 64, 0); x.lineTo(i, 64); x.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(10, 1.4); t.anisotropy = 8;
+  return (knChrome = new THREE.MeshPhysicalMaterial({ color: 0xeef0f2, metalness: 1, roughness: 0.16, bumpMap: t, bumpScale: 0.9 }));
+}
 const softFace = new THREE.MeshPhysicalMaterial({ color: 0xaab0b7, roughness: 0.7 }); // grey non-marring rubber
 const brushed = new THREE.MeshPhysicalMaterial({ color: 0xdadee3, metalness: 0.6, roughness: 0.42 }); // bead-blasted panels that catch the key light
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -109,7 +120,7 @@ let knurlMat = null;
 function knurling() {
   if (knurlMat) return knurlMat;
   const c = document.createElement("canvas"); c.width = 512; c.height = 128; const x = c.getContext("2d");
-  x.strokeStyle = "rgba(24,28,34,.8)"; x.lineWidth = 2.6;
+  x.strokeStyle = "rgba(24,28,34,.5)"; x.lineWidth = 2;
   for (let i = -128; i < 640; i += 9) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + 128, 128); x.moveTo(i + 128, 0); x.lineTo(i, 128); x.stroke(); }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return (knurlMat = new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false, opacity: 0.75 }));
@@ -181,9 +192,17 @@ export function ratchet({ len = 200, grip = true, flex = false, round = false, t
 export function socket({ h = 26, r = 10.5, deep = false, impact = false, points = 6, bit = false, size = "", spark = false, slot = false, swivel = false, drive = "", pn = "" } = {}) {
   if (deep) h = 54;
   const dsq = DRIVES[drive]; // a bigger drive needs a fatter barrel round its square, and a taller one
-  if (dsq) { r = Math.max(r, dsq * 0.82 + 2.2); if (dsq > 10) h *= 1.18; if (dsq < 7) h *= 0.85; }
+  // Small sockets are stepped like the real ones: the barrel round the opening fits the nut, the drive end
+  // stays as fat as its square needs, with a short taper between them (a 10 mm on 3/8" drive).
+  let rb = r; if (dsq) { rb = Math.max(r, dsq * 0.82 + 2.2); if (dsq > 10) h *= 1.18; if (dsq < 7) h *= 0.85; }
+  const step = !impact && !spark && !slot && !swivel && !bit && rb - r > 0.5;
+  if (!step) r = rb;
   const m = impact ? mat.oxide : mat.chrome, rIn = r * 0.66, J = swivel ? 28 : 0, top = h, sa = 1.05; // sa: where the O2 slot faces (right-front)
-  const prof = [[0.1, 0], [r - 1.6, 0], [r - 0.8, 0.8], [r - 0.8, 10], [r, 12], ...(deep ? [[r, 16], [r - 0.6, 19], [r - 0.6, top - 8], [r, top - 5]] : []), [r, top - 1.2], [r - 0.9, top], [rIn + 1.2, top], [rIn, top - 1]];
+  const neck = deep ? 16 : Math.min(13.5, top * 0.5); // where a stepped barrel narrows
+  const prof = step
+    ? [[0.1, 0], [rb - 1.6, 0], [rb - 0.8, 0.8], [rb - 0.8, 10], [rb, 11.2], [rb, neck - 1.6], [r, neck + 0.8], ...(deep ? [[r - 0.4, neck + 4], [r - 0.4, top - 8], [r, top - 5]] : []), [r, top - 1.2], [r - 0.9, top], [rIn + 1.2, top], [rIn, top - 1]]
+    : [[0.1, 0], [r - 1.6, 0], [r - 0.8, 0.8], [r - 0.8, 10], [r, 12], ...(deep ? [[r, 16], [r - 0.6, 19], [r - 0.6, top - 8], [r, top - 5]] : []), [r, top - 1.2], [r - 0.9, top], [rIn + 1.2, top], [rIn, top - 1]];
+  const rd = step ? rb : r; // the drive end's radius
   const g = group();
   if (slot) { // a slot down the side for the sensor wire
     g.add(turned(prof.filter(([, y]) => y <= 12).concat([[rIn * 0.8, 12], [0.1, 12]]), m, { along: "y", segs: 64 }));
@@ -194,16 +213,17 @@ export function socket({ h = 26, r = 10.5, deep = false, impact = false, points 
   } else {
     g.add(turned(prof, m, { along: "y", segs: 64 }));
     const hole = points === 12 ? pathShape(starPath(12, rIn * 0.88, rIn)) : hexShape(rIn);
-    g.add(prism(hole, 9, mat.hole, top - 9.6));
+    g.add(prism(hole, 9, bore, top - 9.6)); // the walls inside catch a little light, like polished steel in shadow
   }
   if (!swivel) { // the square drive hole in the bottom, with a chamfered rim
-    const sq = dsq ? Math.min(dsq, r * 1.2) : Math.min(9.6, r * 0.95);
+    const sq = dsq ? Math.min(dsq, rd * 1.2) : Math.min(9.6, rd * 0.95);
     g.add(at(box(sq, 1.2, sq, mat.hole, 0.4), 0, 0.45, 0), at(mesh(new THREE.TorusGeometry(sq * 0.74, 0.5, 8, 40), mat.satin), 0, 0.1, 0));
     g.children.at(-1).rotation.x = PI / 2;
   }
-  const groove = mesh(new THREE.TorusGeometry(r - 0.2, 0.35, 8, 64), mat.satin); groove.rotation.x = PI / 2; groove.position.y = 11; g.add(groove); // speed ring line
-  if (!deep && !bit) g.add(turned([[r - 0.9, 1.8], ...knurl(r - 0.35, 2, 9.2, 1.2, 0.55), [r - 0.9, 9.4]], impact ? mat.black : mat.steel, { along: "y", segs: 64 })); // knurled grip band
-  if (deep && !slot) g.add(turned([[r - 1.1, 2], ...knurl(r - 0.5, 2.4, 8.8, 1.3, 0.5), [r - 1.1, 9]], mat.steel, { along: "y", segs: 64 }));
+  const groove = mesh(new THREE.TorusGeometry(rd - 0.2, 0.35, 8, 64), mat.satin); groove.rotation.x = PI / 2; groove.position.y = 11; g.add(groove); // speed ring line
+  // the finger-spin band near the drive end: fine diamond knurling cut into the polished chrome, so it
+  // reads as a bright textured ring, not a dark stripe (impact sockets keep their black band)
+  if (!bit && !slot) g.add(turned([[rd - 1.1, 1.8], [rd - 0.45, 2.2], [rd - 0.45, 9], [rd - 1.1, 9.4]], impact ? mat.black : knurlChrome(), { along: "y", segs: 64 }));
   if (impact) { // retaining ring groove and pin hole
     const o = mesh(new THREE.TorusGeometry(r + 0.05, 0.75, 8, 48), mat.rubber); o.rotation.x = PI / 2; o.position.y = 5.2; g.add(o);
     g.add(at(cyl(1.1, 1, mat.hole, { along: "z", segs: 12 }), 0, 5.2, r + 0.5));
@@ -420,9 +440,16 @@ export function pliers({ jaw = "slip", pump = false, pn = "" } = {}) {
   const half = (s) => {
     const j = slab(poly(jawOutline(jaw).map(([x, y]) => [x, -s * y])), 5.2, 1, mat.satin); // jaw on the +s side, handle on the -s side
     if (pump) { const jp = group(j); jp.rotation.y = -0.5; jp.scale.setScalar(1.12); }
-    const steel = group(pump ? j.parent : j, slab(circle(12), 5.2, 1, mat.satin), slab(poly([[4, s * 2.5], [36, s * 5.2], [36, s * 12.2], [4, s * 11]]), 4.4, 0.8, mat.satin));
+    // Each half is one forged piece, all in one plane like the real tool: the jaw swells into the round joint
+    // (the shoulder), and the reach tapers smoothly from the joint down into the grip. jaw-side points have y > 0.
+    const flat = (pts) => hull(pts.map(([x, y]) => [x, -s * y]));
+    const jo = jawOutline(jaw), back = jaw === "diag" || jaw === "strip" ? -20 : -26;
+    const shoulder = pump ? null : slab(flat([...jo.filter(([x, y]) => x > back && y > 1), [back, 0], ...ring(0, 0, 11.5, 32).filter(([, y]) => y >= 0)]), 5.2, 1, mat.satin);
+    const reach = slab(flat([...ring(0, 0, 11, 32).filter(([, y]) => y <= 1), ...ring(36, -8.6, 4.9, 20)]), 5.2, 1, mat.satin);
+    const steel = group(pump ? j.parent : j, slab(circle(12), 5.2, 1, mat.satin), reach, ...(shoulder ? [shoulder] : []));
     if (jaw === "diag" || jaw === "strip") steel.add(at(slab(poly([[-34, 0], [-28, -s * 2.6], [-12, -s * 3.4], [2, -s * 3.4], [2, 0]]), 0.2, 0.15, mat.chrome), 0, 3.75, 0)); // polished cutting bevel
-    steel.position.y = s * 1.6;
+    // the lap joint: the top half's round face shows a fine seam where the lower half passes underneath
+    if (s > 0) { const seam = mesh(new THREE.TorusGeometry(12.05, 0.14, 6, 40, PI * 0.8), mat.hole, false); seam.rotation.x = PI / 2; seam.rotation.z = PI * 0.55; seam.position.y = 3.62; steel.add(seam); }
     // the dipped grip: a turned sleeve along the handle line
     const C0 = [34, -s * 8.6], C1 = [140, -s * 25.4], dx = C1[0] - C0[0], dz = C1[1] - C0[1], L = Math.hypot(dx, dz);
     const red = turned([[0.1, -3], [6.4, -3], [9.4, 0.5], [10, 3], [9.2, 6], [7.6, 10], [7, 16], [7.2, 40], [7.5, 64], [7.2, L - 26], [7.1, L - 22], [0.1, L - 22]], mat.red, { segs: 40 });
@@ -437,12 +464,12 @@ export function pliers({ jaw = "slip", pump = false, pn = "" } = {}) {
   if (pump) { // tongue-and-groove channel on the upper half
     const ch = group(slab(hull([...ring(11, 1.8, 5.6, 20), ...ring(31, 5.2, 5.6, 20)]), 1.2, 0.6, mat.satin));
     for (let i = 0; i < 5; i++) { const b = at(box(1, 0.6, 8, mat.hole, 0.1), 13 + i * 4.2, 1.2, -(2.2 + i * 0.72)); b.rotation.y = -0.17; ch.add(b); }
-    top.children[0].add(at(ch, 0, 4.4, 0));
+    top.children[0].add(at(ch, 0, 2.8, 0));
   }
   // riveted pivot: washer, domed head, dark seat line
-  const dome = sphere(5.2, mat.chrome); dome.scale.y = 0.42; dome.position.y = 5.9;
-  const seat = mesh(new THREE.TorusGeometry(7.3, 0.4, 6, 32), mat.hole); seat.rotation.x = PI / 2; seat.position.y = 5.25;
-  parts.push(at(cyl(7.2, 0.8, mat.satin), 0, 5.6, 0), dome, seat, at(cyl(5.4, 9.4, mat.satin), 0, 0, 0));
+  const dome = sphere(5.2, mat.chrome); dome.scale.y = 0.42; dome.position.y = 4.3;
+  const seat = mesh(new THREE.TorusGeometry(7.3, 0.4, 6, 32), mat.hole); seat.rotation.x = PI / 2; seat.position.y = 3.65;
+  parts.push(at(cyl(7.2, 0.8, mat.satin), 0, 4, 0), dome, seat, at(cyl(5.4, 7.4, mat.satin), 0, 0, 0));
   return group(parts);
 }
 
