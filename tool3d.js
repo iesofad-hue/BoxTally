@@ -58,6 +58,7 @@ export const keys = () => Object.keys(MODELS);
 function opts(key, size, drive, pn, look = "") {
   const o = { look: String(look || "").split("+").filter(Boolean) }; const d = String(drive || "").replace(/"/g, ""); if (DRIVES[d]) o.drive = d;
   if (/^[A-Z0-9-]{2,14}$/.test(pn || "")) o.pn = pn;
+  if (/^box:/.test(size || "")) { o.box = size.slice(4); return o; } // tool storage: "box:cab;68;3/4,2;p"
   if (/^set:/.test(size || "")) { const [member, list] = size.slice(4).split(";"); o.member = member; o.sizes = (list || "").split(",").filter(Boolean); return o; }
   if (!size) return o;
   // two sizes on a box or ratcheting box wrench: "10 × 11 mm", "3/8 × 7/16"

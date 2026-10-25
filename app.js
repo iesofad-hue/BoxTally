@@ -601,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
     flaring: "Flaring tool", "wire-brush": "Wire brush", "drill-bits": "Drill bit set", "hammer-body": "Body hammer & dolly", "hammer-sledge": "Sledge hammer",
     "lug-wrench": "Lug wrench", "strap-wrench": "Strap wrench", "pipe-wrench": "Pipe wrench", "terminal-tool": "Terminal tool kit", solder: "Soldering iron", "socket-rail": "Socket rail", stool: "Shop stool",
     creeper: "Creeper", magtray: "Magnetic tray", magmat: "Magnetic mat", "tool-bag": "Kit bag", "bit-case": "Bit case", "air-bit": "Air hammer bits", "insert-bit": "Screwdriver bit", "repair-kit": "Repair kit", "set-extension": "Extension set", "disconnect-set": "Disconnect tool set", mirror: "Inspection mirror", headlamp: "Headlamp", polisher: "Polisher", cutoff: "Cut-off tool", rivet: "Rivet gun", heatgun: "Heat gun",
-    torque: "Digital torque wrench", insulated: "Insulated screwdriver", pry: "Pry bar", punch: "Chisel", hammer: "Hammer", general: "Hand tool", set: "Socket set", storage: "Roll cab & top chest", shop: "Shop light", diag: "Lab scope", other: "Drawing",
+    torque: "Digital torque wrench", insulated: "Insulated screwdriver", pry: "Pry bar", punch: "Chisel", hammer: "Hammer", general: "Hand tool", set: "Socket set", storage: "Roll cab", shop: "Shop light", diag: "Lab scope", other: "Drawing",
   };
   const DRIVE_KINDS = ["ratchet", "socket", "extension", "breaker", "ujoint", "adapter", "speeder"];
   const firstHit = (list, s) => (list.find(([re]) => re.test(s)) || [])[1];
@@ -816,6 +816,121 @@ document.addEventListener("DOMContentLoaded", () => {
     if (c && familyOf(kind) === "power") out = PAINT_NAME[c] + " " + out;
     return out;
   }
+  /* ---------- tool storage: what the box really is ----------
+     A roll cab, top chest, hutch or locker is each its own part number, so a box is drawn as only the piece its
+     number names: a roll cab never comes with a top chest drawn on it. EPIQ numbers spell it out:
+       KETP682A0ZDL = KE (EPIQ) T (roll cab) P (PowerDrawer; N none) 68 (inches wide) 2 (banks) A (revision)
+                      0 (top: 0 rubber mat, 1 or 4/5 stainless, 7 bed liner) ZDL (color).
+     KEX are the extra-wide ones (KEXP725 is 144", five banks), KEC top chests, KES drawer sections that sit on a
+     cab, KEH overhead cabinets, KEW workstation risers (the "hutch" that sits on the cab top), KEL side lockers
+     (KELP a Power Locker; the L or R after the revision is the side). Masters (KRL, KTL), Classic (KRA24, KCP)
+     and Heritage (KRA4/KRA5) numbers don't spell out their size, so the known models are listed. Their top is
+     the digit at the very end: KTL1023APC7 is a bed liner top, KTL1023APJJ1 stainless.
+     boxSpec() gives "type;width;layout;flags": "cab;68;3/4,2;p" is a 68" roll cab with three full-width
+     drawers (the top one the PowerDrawer) over two banks of 4 and 2. The drawing and 3D model are built from it. */
+  // [number, type, width in inches, banks, drawers (0 = not known), flags]
+  const BOX_MODELS = [
+    [/^KTL1022/, "cab", 54, 2, 10], [/^KTL1023/, "cab", 72, 3, 18], [/^KRL1022/, "cab", 54, 2, 13], [/^KRL(7022|722)/, "cab", 54, 2, 11],
+    [/^KRL1023/, "cab", 72, 3, 22], [/^KRL7023/, "cab", 72, 3, 19], [/^KRL1033E/, "cab", 72, 3, 15], [/^KRL1033/, "cab", 72, 3, 19], [/^KRL1032/, "cab", 72, 2, 16],
+    [/^KRL1024/, "cab", 108, 4, 26], [/^KRL1043/, "cab", 108, 3, 20], [/^KRL1065/, "cab", 146, 5, 35], [/^KRL1056/, "cab", 36, 1, 8], [/^KRL756/, "cab", 36, 1, 7], [/^KRL1163/, "cab", 72, 3, 0],
+    [/^KRL751/, "chest", 36, 1, 4], [/^KRL1251/, "chest", 36, 1, 5], [/^KRL791/, "chest", 54, 2, 8], [/^KRL120[12]/, "chest", 54, 2, 10], [/^KRL1203/, "chest", 73, 3, 15], [/^KRL1232/, "chest", 73, 2, 10], [/^KRL1221/, "chest", 20, 1, 5],
+    [/^KRL1011/, "end", 20, 1, 8], [/^KRL(7011|711)/, "end", 20, 1, 7], [/^KRL(10|70|7)15/, "end", 20, 1, 2], [/^KRL1099/, "end", 20, 1, 1, "p"],
+    [/^KRL(10|70|7)12/, "locker", 24, 1, 4], [/^KRL(10|70)18/, "locker", 24, 1, 0], [/^KPXL\d/, "locker", 25, 1, 0, "p"], [/^KRA2403/, "locker", 24, 1, 0],
+    [/^KRL(72|68|54)45/, "hutch", 0, 0, 0], [/^KRWL(54|36)35/, "hutch", 0, 0, 0], [/^KRL79(72|68|54)/, "riser", 0, 0, 0], [/^KRW75(54|72)/, "riser", 0, 0, 0],
+    [/^KRA2422/, "cab", 55, 2, 10], [/^KRA2411/, "cab", 55, 2, 11], [/^KRA2407/, "cab", 36, 1, 7], [/^KRA2418/, "cab", 73, 3, 18], [/^KRA24(32|96)/, "cab", 73, 2, 12],
+    [/^KCP2422/, "cab", 55, 2, 9, "p"], [/^KCP1422/, "cab", 55, 2, 10, "p"], [/^KCP(14|24)23/, "cab", 73, 3, 0, "p"],
+    [/^KRA2412/, "chest", 73, 3, 12], [/^KRA2408/, "chest", 54, 2, 8],
+  ];
+  // EPIQ drawer counts by line, width and banks (KETP682 is 9 drawers, KETN682 10)
+  const EPIQ_DRAWERS = { TN602: 10, TN682: 10, TP682: 9, TN843: 16, RN842: 13, RP842: 8, RN843: 19, RP843: 14, RP762: 8, RP763: 14, RN682: 13, RN602: 13, XN603: 20, XP725: 26,
+    CN602: 10, CN682: 10, CN842: 15, CN843: 15, SN602: 12, SN682: 12, SN842: 12, SN843: 18 };
+  const BOX_SERIES = [[/^KE/, "EPIQ"], [/^K(RL|TL|PXL|RWL|RW)/, "Masters"], [/^K(RA24|CP)/, "Classic"], [/^KRA[2-5]/, "Heritage"]];
+  const NUM_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16 };
+  const BANK_WORDS = { single: 1, one: 1, double: 2, two: 2, triple: 3, three: 3, quad: 4, four: 4, five: 5 };
+  function boxFromPn(pn) {
+    const p = pn.replace(/[^A-Z0-9]/g, "");
+    let m = p.match(/^KE([TRXCSHWL])([PN])(\d\d)(\d)([A-Z])?(\d)?([A-Z]*)/);
+    if (m) {
+      const [, t, pw, ww, bb, , top, rest] = m, b = +bb;
+      const type = { T: "cab", R: "cab", X: "cab", C: "chest", S: "section", H: "hutch", W: "riser", L: "locker" }[t];
+      const o = { type, w: t === "X" ? 2 * ww : +ww, banks: b, n: EPIQ_DRAWERS[t + pw + ww + bb] || 0, flags: [] };
+      if (type === "locker") { o.w = 24; o.banks = 1; const side = (p.match(/^KEL[PN]\d{3}[A-Z]([LR])/) || [])[1]; if (side) o.flags.push(side); }
+      if (pw === "P" && ["cab", "locker"].includes(type)) o.flags.push("p");
+      if (type === "cab") { if (top === "7") o.flags.push("l"); else if (/[145]/.test(top || "")) o.flags.push("ss"); }
+      if (!(o.banks >= 1 && o.banks <= 5) && ["cab", "chest", "section"].includes(type)) o.banks = o.w >= 72 ? 3 : 2;
+      return o;
+    }
+    for (const [re, type, w, banks, n, f] of BOX_MODELS) {
+      if (!re.test(p)) continue;
+      // hutches carry their width first (KRL7245 is 72"), risers last (KRL7968 is 68")
+      const o = { type, w: w || +((type === "riser" ? p.match(/^[A-Z]+\d\d(\d\d)/) : p.match(/^[A-Z]+(\d\d)/)) || [])[1] || 54, banks, n, flags: f ? [f] : [] };
+      if (type === "cab" || type === "chest") { const t = (p.match(/\d[A-Z]{1,4}([17])$/) || [])[1]; if (t) o.flags.push(t === "7" ? "l" : "ss"); }
+      return o;
+    }
+    // Heritage: KRA4107 is 40" with 7 drawers, KRA4813 40" with 13, KRA5311 53" with 11, KRA2005 26" with 5
+    m = p.match(/^KRA([245])(\d)(\d\d)/);
+    if (m && +m[3] >= 3 && +m[3] <= 16) { const n = +m[3]; return { type: "cab", w: { 2: 26, 4: 40, 5: 53 }[m[1]], banks: n >= 10 ? 2 : 1, n, flags: [] }; }
+    // the small portable metal boxes that some sets come in (KRA229, KRA250B, KRA21G)
+    if (/^KRA\d{2,3}[A-Z]?$/.test(p)) return { type: "hand", w: 20, banks: 1, n: 1, flags: [] };
+    return null;
+  }
+  // what a name says about a box: "68" Nine-Drawer Double-Bank ... Roll Cab with PowerDrawer", "bed liner top"
+  function boxFromText(text) {
+    const t = text.replace(/[“”″]/g, '"'), o = { flags: [] };
+    const type = firstHit([[/power ?locker|locker/i, "locker"], [/workstation riser|riser/i, "riser"], [/hutch|overhead/i, "hutch"], [/end ?cab|side ?cab/i, "end"],
+      [/drawer section/i, "section"], [/top chest|tool chest|\bchest\b/i, "chest"], [/roll ?cab|rolling cab|cabinet/i, "cab"]], t);
+    if (type) o.type = type;
+    let m = t.match(/\b(\d{2,3})(?:\.\d+)?\s*(?:"|''|-?in\b|-?inch)/i); if (m && +m[1] >= 18 && +m[1] <= 160) o.w = +m[1];
+    m = t.match(/\b(\d{1,2}|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen)[- ]drawers?\b/i);
+    if (m) o.n = NUM_WORDS[m[1].toLowerCase()] || +m[1];
+    m = t.match(/\b(single|one|double|two|triple|three|quad|four|five)[- ]bank/i); if (m) o.banks = BANK_WORDS[m[1].toLowerCase()];
+    if (/power ?drawer|power ?locker/i.test(t)) o.flags.push("p");
+    if (/bed ?liner/i.test(t)) o.flags.push("l"); else if (/stainless/i.test(t)) o.flags.push("ss");
+    if (/\bleft[- ]side\b/i.test(t)) o.flags.push("L"); else if (/\bright[- ]side\b/i.test(t)) o.flags.push("R");
+    return o;
+  }
+  // how the drawers sit: full-width drawers across the top, then each bank's column. Banks on the left get
+  // more, shallower drawers and the right bank fewer deep ones, like Snap-on lays them out.
+  function boxLayout(type, banks, n, power) {
+    if (type === "cab" && banks > 1) {
+      let f = banks === 2 ? (power ? 3 : 2) : n >= 18 ? 2 : 1;
+      f = Math.max(0, Math.min(f, n - 2 * banks));
+      const rest = n - f, wts = Array.from({ length: banks }, (_, i) => 1 + 0.35 * (banks - 1 - 2 * i) / (banks - 1)), sum = wts.reduce((a, b) => a + b, 0);
+      // shared out by weight, the leftover drawers going to the banks that were closest to one more
+      const share = wts.map((x) => (rest * x) / sum), cols = share.map((x) => Math.max(2, Math.floor(x)));
+      const order = share.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]).map(([, i]) => i);
+      for (let j = 0, left = rest - cols.reduce((a, b) => a + b, 0); left !== 0 && j < 50; j++) { const i = order[j % banks]; if (left > 0) { cols[i]++; left--; } else if (cols[i] > 2) { cols[i]--; left++; } }
+      return f + "/" + cols.join(",");
+    }
+    if ((type === "chest" || type === "section") && banks > 1) {
+      const f = Math.max(0, Math.min(2, n - 2 * banks)), rest = n - f, cols = Array.from({ length: banks }, (_, i) => Math.floor(rest / banks) + (i < rest % banks ? 1 : 0));
+      return f + "/" + cols.join(",");
+    }
+    return "0/" + n;
+  }
+  const BOX_GUESS = { cab: [54, 2, 11], chest: [54, 2, 10], section: [68, 2, 12], end: [20, 1, 7], locker: [24, 1, 4], hutch: [68, 0, 0], riser: [68, 0, 0], hand: [20, 1, 1] };
+  function boxSpec(kind, pn, text) {
+    const fromPn = boxFromPn(pn) || {}, said = boxFromText(text);
+    const type = kind === "storage-chest" && !["chest", "section"].includes(said.type || fromPn.type) ? "chest" : said.type || fromPn.type || "cab";
+    const same = !fromPn.type || fromPn.type === type, g = BOX_GUESS[type];
+    const w = said.w || (same && fromPn.w) || g[0], banks = said.banks || (same && fromPn.banks) || (["cab", "chest", "section"].includes(type) ? (w <= 40 ? 1 : w >= 72 ? 3 : 2) : 1);
+    const known = said.n || (same && fromPn.n) || 0, n = known || (type === "cab" ? (banks === 1 ? 7 : banks * 5 + 1) : type === "chest" ? (banks === 1 ? 5 : banks * 4 + 2) : g[2]);
+    const flags = [...new Set([...(same ? fromPn.flags || [] : []), ...said.flags])];
+    if (flags.includes("l") && flags.includes("ss")) flags.splice(flags.indexOf(said.flags.includes("l") ? "ss" : "l"), 1);
+    const series = (BOX_SERIES.find(([re]) => re.test(pn)) || [])[1] || "";
+    return { type, w, banks, n: known, series, flags, spec: [type, w, boxLayout(type, banks, n, flags.includes("p")), flags.join("+")].join(";") };
+  }
+  const BANK_NAME = ["", "single-bank", "double-bank", "triple-bank", "four-bank", "five-bank"];
+  function boxLabel(b) {
+    const w = b.w + '" ', n = b.n ? b.n + "-drawer " : "", s = b.series ? b.series + " " : "", p = b.flags.includes("p");
+    const top = b.flags.includes("l") ? ", bed liner top" : b.flags.includes("ss") ? ", stainless top" : "";
+    const side = b.flags.includes("L") ? "left side " : b.flags.includes("R") ? "right side " : "";
+    return {
+      cab: `${s}${w}${n}${BANK_NAME[b.banks] || ""} roll cab${p ? " with PowerDrawer" : ""}${top}`, chest: `${s}${w}${n}top chest`, section: `${s}${w}${n}drawer section`,
+      hutch: `${s}${w}overhead cabinet (hutch)`, riser: `${s}${w}workstation riser (hutch)`, end: `${s}${n}end cab${p ? " with power" : ""}`,
+      locker: `${s}${side}${p ? "Power Locker" : "locker"}`, hand: "Metal tool box",
+    }[b.type].replace(/\s+/g, " ").replace(/^./, (c) => c.toUpperCase());
+  }
   // cordless ratchets and impacts carry their drive in the number (CTR827 is 1/4", CT861 3/8")
   const CORDLESS_DRIVE = /^(cl1[48]-(ratchet|impact)|power(-ratchet|-12|-stubby)?)$/;
   function artOf(r) {
@@ -833,6 +948,9 @@ document.addEventListener("DOMContentLoaded", () => {
     { const v = voltOf(text, pn); if (v && CORDLESS[v][kind]) kind = CORDLESS[v][kind]; }
     if (/^ratchet/.test(kind) && softGrip(text, pn) && ART[kind + "-soft"]) kind += "-soft";
     if (chosen) kind = chosen;
+    // a roll cab, top chest, hutch or locker: what its number and name say it is (see boxSpec)
+    const box = (kind === "storage" || kind === "storage-chest") ? boxSpec(chosen || kind, pn, text) : null;
+    if (box && !chosen) kind = ["chest", "section"].includes(box.type) ? "storage-chest" : "storage";
     // Drive size: what the name says, then the part number's drive letter, then the category. The part number
     // beats the category because the add form starts on 3/8" Drive Tools, so an S80A saved without changing
     // it would otherwise read as 3/8".
@@ -841,6 +959,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // a set with no range in its name shows what its part number says: "12 pc · 8mm–19mm"
     const z = spec && spec.split(";")[1].split(","), size = sizeOf(kind, text, pn, drive) || (z && z.length > 1 ? `${z.length} pc · ${z[0]}–${z[z.length - 1]}` : null);
     const look = lookOf(kind, pn, text, chosen), named = !chosen && !key && g && kind === g.key && firstHit(PN_LABEL, pn);
+    if (box) return { key: kind, drive: null, size: null, spec: null, box: box.spec, look: [], nums: null, unit: null, label: named || boxLabel(box), pn };
     return { key: kind, drive, size, spec, look, nums: kind === "set" ? setNums(setRange(text)) || specNums(spec) : null, unit: kind === "set" ? (setRange(text) || {}).unit || (spec ? (/mm/.test(spec) ? "MM" : "SAE") : null) : null, label: named || lookLabel(kind, look, ART_LABEL[kind] || "Drawing", spec), pn };
   }
   /* ---------- the size printed on a drawing: 11mm, 9/16", T40, 1/2 × 9/16 ...
@@ -927,6 +1046,88 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) { /* not measurable yet: use the old fixed floor */ }
     return (artBox[key] = box);
   }
+  /* ---------- tool storage drawn from what the box is (boxSpec) ----------
+     Seen from the front and a little from the right, so its top shows: a black rubber mat, bright stainless or
+     the speckled black of a bed liner. Drawn to scale, so a 36" cab is narrower than a 68" one, with its real
+     banks and drawer count; deeper drawers sit lower, the PowerDrawer has its black USB panel. */
+  // drawer heights down one column: shallow at the top, deeper toward the floor
+  const stack = (n, h) => { const w = Array.from({ length: n }, (_, i) => 1 + 0.45 * i), s = w.reduce((a, b) => a + b, 0); return w.map((x) => (x * h) / s); };
+  const BOX_H = { cab: [37, 6], end: [37, 6], chest: [22, 0], section: [20, 0], locker: [56, 6], hutch: [18, 0], riser: [32, 0], hand: [9, 0] }; // body, casters (inches)
+  function boxArt(spec) {
+    const [type, wIn, lay, fl = ""] = spec.split(";"), flags = fl.split("+"), has = (x) => flags.includes(x);
+    const [fs, cs] = (lay || "0/1").split("/"), f = +fs || 0, cols = (cs || "1").split(",").map(Number);
+    const [bodyIn, casterIn] = BOX_H[type] || BOX_H.cab, W0 = +wIn || 54, Hin = bodyIn + casterIn;
+    const dx = type === "hutch" || type === "riser" ? 6 : 8, dy = dx * 0.66;
+    const k = Math.min(2.2, (146 - dx) / W0, (84 - dy) / Hin), W = W0 * k, H = bodyIn * k, ch = casterIn * k;
+    const x0 = f1((160 - W - dx) / 2), x1 = f1(x0 + W), yB = f1(93 - ch), yT = f1(yB - H);
+    const r = (x, y, w, h, cls, rx = 0.8, extra = "") => `<rect class="${cls}" x="${f1(x)}" y="${f1(y)}" width="${f1(Math.max(0.4, w))}" height="${f1(Math.max(0.4, h))}" rx="${rx}"${extra}/>`;
+    let out = "";
+    // casters first, so the body sits on them
+    if (ch) for (const x of [x0 + 5, x1 - 5, x1 + dx - 4]) {
+      const back = x > x1, R = Math.min(4.6, ch * 0.42);
+      out += r(x - 1.6, yB - (back ? dy : 0), 3.2, ch - R, "s", 0.4) + `<circle class="k" cx="${f1(x)}" cy="${f1(93 - R - (back ? dy : 0))}" r="${f1(R)}"${back ? ' opacity=".7"' : ""}/>` + (back ? "" : `<circle class="h" cx="${f1(x)}" cy="${f1(93 - R)}" r="${f1(R * 0.32)}"/>`);
+    }
+    // right side and top, drawn back to front
+    out += `<path class="g" d="M${x1} ${yT} L${f1(x1 + dx)} ${f1(yT - dy)} V${f1(yB - dy)} L${x1} ${yB} Z"/><path class="k" opacity=".32" d="M${x1} ${yT} L${f1(x1 + dx)} ${f1(yT - dy)} V${f1(yB - dy)} L${x1} ${yB} Z"/>`;
+    const topCls = has("ss") ? "s" : has("l") ? "k" : type === "hutch" || type === "hand" ? "g" : "d";
+    out += `<path class="${topCls}" d="M${x0} ${yT} L${f1(x0 + dx)} ${f1(yT - dy)} H${f1(x1 + dx)} L${x1} ${yT} Z"/>`;
+    if (has("l")) { let d = ""; for (let i = 0; i < Math.round(W / 2.2); i++) { const t = ((i * 37) % 97) / 97, u = ((i * 61) % 89) / 89; d += `M${f1(x0 + dx * u + (W - 1) * t)} ${f1(yT - dy * u + 0.3)} h.7 `; } out += `<path class="kn" stroke-width=".7" d="${d}"/>`; }
+    if (has("ss")) out += `<path class="sh" opacity=".5" d="M${f1(x0 + W * 0.18)} ${f1(yT - 0.8)} L${f1(x0 + W * 0.18 + dx * 0.7)} ${f1(yT - dy * 0.75)} H${f1(x0 + W * 0.42 + dx * 0.7)} L${f1(x0 + W * 0.42)} ${f1(yT - 0.8)} Z"/>`;
+    out += r(x0, yT, W, H, "g", 1.4);
+    const pull = (x, y, w, h) => r(x + w * 0.14, y + Math.min(2.4, h * 0.3), w * 0.72, Math.max(0.9, Math.min(1.8, h * 0.2)), "s", 0.7);
+    // one column of drawers from y down to y + h: a dark gap line above each and its long pull
+    const column = (x, w, y, hs) => hs.map((h) => { const s = `<path class="kn" d="M${f1(x)} ${f1(y)} H${f1(x + w)}"/>` + pull(x, y, w, h); y += h; return s; }).join("");
+    const inset = Math.max(1.4, W * 0.018);
+    if (type === "cab" || type === "end" || type === "chest" || type === "section") {
+      let y = yT + (type === "chest" ? 3.4 * k : 0.9 * k), bot = yB - (ch ? 1.6 * k : 0.6 * k);
+      if (type === "chest") out += `<path class="kn" d="M${x0} ${f1(y)} H${x1}"/>` + r(x0 + W * 0.2, yT + 1.1 * k, W * 0.6, Math.min(1.8, 1.2 * k), "s", 0.7) + `<circle class="s" cx="${f1(x1 - 3.4)}" cy="${f1(yT + 1.8 * k)}" r="1.1"/>`;
+      else out += r(x0 - 0.6, yT - 0.4, W + 1.2, 1.9, "d", 0.6);
+      if (ch) out += r(x0 - 0.6, bot, W + 1.2, yB - bot + 0.4, "k", 0.6);
+      const xi = x0 + inset, wi = W - 2 * inset, hAll = bot - y;
+      const fullH = f && cols.length > 1 ? Math.min(hAll * 0.12, hAll / (f + 3)) : 0;
+      for (let i = 0; i < f; i++) {
+        out += column(xi, wi, y, [fullH]);
+        if (i === 0 && has("p")) out += r(x1 - inset - wi * 0.13, y + 0.6, wi * 0.11, fullH - 1.2, "k", 0.6) + `<circle class="led" cx="${f1(x1 - inset - wi * 0.11)}" cy="${f1(y + fullH / 2)}" r=".6"/>`;
+        y += fullH;
+      }
+      const gap = 0.9, cw = (wi - gap * (cols.length - 1)) / cols.length;
+      cols.forEach((n, i) => {
+        const cx = xi + i * (cw + gap);
+        out += column(cx, cw, y, stack(Math.max(1, n), bot - y));
+        if (i) out += `<path class="kn" d="M${f1(cx - gap / 2)} ${f1(y)} V${f1(bot)}"/>`;
+        if (f === 0 && i === 0 && has("p")) out += r(cx + cw * 0.84, y + 0.6, cw * 0.12, stack(n, bot - y)[0] - 1.2, "k", 0.6);
+      });
+      if (type !== "chest") out += `<circle class="s" cx="${f1(x1 - inset - 1.6)}" cy="${f1(yT + 0.6 + 0.45 * k)}" r=".9"/>`;
+    } else if (type === "locker") {
+      const n = cols[0] || 0, dh = n ? Math.min(4.6 * k, (H * 0.4) / n) : 0, bot = yB - 1.6 * k, door = bot - n * dh;
+      out += r(x0 - 0.6, yT - 0.4, W + 1.2, 1.9, "d", 0.6) + r(x0 - 0.6, bot, W + 1.2, yB - bot + 0.4, "k", 0.6);
+      out += r(x0 + inset, yT + 1.6, W - 2 * inset, door - yT - 2.6, "kn", 1, ' fill="none"');
+      const hx = has("R") ? x0 + inset + 2.4 : x1 - inset - 3.6;
+      out += r(hx, yT + (door - yT) * 0.35, 1.3, (door - yT) * 0.28, "s", 0.6);
+      if (has("p")) out += r(x0 + W * 0.3, yT + 4, W * 0.4, 5.4, "k", 0.8) + `<circle class="led" cx="${f1(x0 + W * 0.38)}" cy="${f1(yT + 6.7)}" r=".7"/><circle class="led" cx="${f1(x0 + W * 0.5)}" cy="${f1(yT + 6.7)}" r=".7"/><circle class="led" cx="${f1(x0 + W * 0.62)}" cy="${f1(yT + 6.7)}" r=".7"/>`;
+      if (n) out += column(x0 + inset, W - 2 * inset, door, Array(n).fill(dh));
+    } else if (type === "hutch" || type === "riser") {
+      const cab = type === "hutch" ? H : Math.min(H * 0.36, 11 * k), doors = W0 >= 60 ? 3 : 2, dw = (W - 2 * inset) / doors;
+      if (type === "riser") { // two uprights, a pegboard back and a stainless work surface under the cabinet
+        out = out.replace(r(x0, yT, W, H, "g", 1.4), "");
+        out += r(x0, yT, W, H, "d", 1.2) + r(x0, yT, 2.4 * k, H, "g", 0.8) + r(x1 - 2.4 * k, yT, 2.4 * k, H, "g", 0.8);
+        let peg = ""; for (let py = yT + cab + 4; py < yB - 4; py += 3.2) for (let px = x0 + 2.4 * k + 3; px < x1 - 2.4 * k - 2; px += 3.2) peg += `M${f1(px)} ${f1(py)} h.6 `;
+        out += `<path class="kn" stroke-width=".8" d="${peg}"/>` + r(x0 - 1, yB - 1.8, W + 2, 2.2, "s", 0.6);
+        out += r(x0, yT, W, cab, "g", 1.2);
+      }
+      for (let i = 0; i < doors; i++) { const x = x0 + inset + i * dw; out += r(x + 0.4, yT + 1.4, dw - 0.8, cab - 3.6, "kn", 0.8, ' fill="none"') + r(x + dw * 0.25, yT + cab - 4.4, dw * 0.5, 1.3, "s", 0.6); }
+      out += r(x0 + 2, yT + cab - 1.4, W - 4, 1, "led", 0.4);
+    } else { // a portable metal box: lid, carry handle, latches
+      out += `<path class="kn" d="M${x0} ${f1(yT + H * 0.38)} H${x1}"/>` + r(x0 + W * 0.2, yT + H * 0.3, 3, 3.4, "s", 0.6) + r(x1 - W * 0.2 - 3, yT + H * 0.3, 3, 3.4, "s", 0.6);
+      out += `<path class="to" stroke-width="3" d="M${f1(x0 + W * 0.32 + dx / 2)} ${f1(yT - dy / 2)} V${f1(yT - dy / 2 - 6)} H${f1(x1 - W * 0.32 + dx / 2)} V${f1(yT - dy / 2)}"/><path class="tsg" stroke-width="1.4" d="M${f1(x0 + W * 0.32 + dx / 2)} ${f1(yT - dy / 2)} V${f1(yT - dy / 2 - 6)} H${f1(x1 - W * 0.32 + dx / 2)} V${f1(yT - dy / 2)}"/>`;
+    }
+    // chrome handle on the right side of things that roll or get carried by their ends
+    if (["cab", "chest", "end", "section"].includes(type)) {
+      const hy = yT + Math.min(H * 0.2, 6 * k), a = x1 + 1, b = x1 + dx * 0.85, s = `M${f1(a)} ${f1(hy + 2)} L${f1(a + 2.6)} ${f1(hy - 0.4)} L${f1(b)} ${f1(hy - dy * 0.75)} L${f1(b - 0.6)} ${f1(hy - dy * 0.75 + 3)}`;
+      out += `<path class="to" stroke-width="2.6" fill="none" d="${s}"/><path class="tsg" stroke-width="1.2" fill="none" d="${s}"/>`;
+    }
+    return out;
+  }
   /* ---------- set drawings built from what's in the set ----------
      Wrenches lie side by side in their rack, biggest at the back, box ends lined up like a Snap-on set photo;
      extensions lie in their clip rail shortest in front. */
@@ -986,6 +1187,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   ART["wrench-speed"] = wrenchArt("speed", [], "13 mm");
   ART["wrench-rbox"] = wrenchArt("rbox", [], "13 × 15 mm");
+  ART.storage = boxArt("cab;54;2/6,3;"); // the plain roll cab, for the drawing picker
   // 14.4V tools take a stick pack that slides up into the grip, so they stand on a small black foot with red
   // release tabs instead of the 18V line's wide slide-on slab. cl14Foot() swaps the slab for that foot.
   const cl14Foot = (svg, from, to, foot) => { const a = svg.indexOf(from), b = svg.indexOf(to, a); return a < 0 || b < 0 ? svg : svg.slice(0, a) + foot + svg.slice(b + to.length); };
@@ -1056,12 +1258,13 @@ document.addEventListener("DOMContentLoaded", () => {
     clutch: '<path class="s" d="M101 45.4 H126 Q132 45.4 134 48 V52 Q132 54.6 126 54.6 H101 Z"/><path class="nl" opacity=".5" d="M120 50 H134"/>',
   };
   // what a 3D model needs: kind|size|drive|part number. A set sends what's in it ("set:combo;10mm,11mm...") as its size.
-  const m3dOf = (a) => [a.key, a.spec ? "set:" + a.spec : a.size || "", a.drive || "", a.pn || "", (a.look || []).join("+")].join("|");
+  const m3dOf = (a) => [a.key, a.box ? "box:" + a.box : a.spec ? "set:" + a.spec : a.size || "", a.drive || "", a.pn || "", (a.look || []).join("+")].join("|");
   const artTag = (a, cls = "", { refl = false } = {}) => {
     const key = typeof a === "string" ? a : a.key, look = (typeof a === "object" && a.look) || [];
     // a wrench whose family looks different from the plain drawing is put together from its pieces
     const built = WRENCH_BASE[key] && (look.some((w) => w !== "ind") || !ART[key]) ? wrenchArt(WRENCH_BASE[key], look, a.size ?? SIZE_SLOT[key] ?? "") : null;
-    let svg = built || (typeof a === "object" && a.spec && SET_ART[key] && SET_ART[key](a.spec)) || ART[key] || ART.other;
+    const boxed = typeof a === "object" && a.box ? boxArt(a.box) : null;
+    let svg = built || boxed || (typeof a === "object" && a.spec && SET_ART[key] && SET_ART[key](a.spec)) || ART[key] || ART.other;
     const slot = SIZE_SLOT[key];
     if (!built && typeof a === "object" && a.size != null && slot) svg = svg.replace(`>${slot}</text>`, `>${esc(a.size)}</text>`);
     if (key === "insert-bit") { const tip = BIT_TIP_ART[(look.find((w) => /^t-/.test(w)) || "").slice(2)]; if (tip || look.includes("tr")) svg = svg.replace(/<g data-tip="1">.*?<\/g>/, (g) => `<g data-tip="1">${tip || g.slice(16, -4)}${look.includes("tr") ? '<circle class="pit" cx="134" cy="50" r="1.2"/>' : ""}</g>`); }
@@ -1071,7 +1274,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const nums = a.nums || ["", "", "", "", ""];
       let i = 0; svg = svg.replace(/>(8|10|12|14|17)<\/text>/g, () => `>${esc(nums[i++])}</text>`);
     }
-    const bb = built ? artBounds(key + "|" + look.join("+"), built) : artBounds(ART[key] ? key : "other");
+    const bb = built ? artBounds(key + "|" + look.join("+"), built) : boxed ? artBounds("box|" + a.box, boxed) : artBounds(ART[key] ? key : "other");
     // the finish and paint: black industrial chrome, gunmetal or green housings, orange grips
     const tint = look.filter((w) => w === "ind" || /^c-/.test(w)).join(" ");
     const floor = `<ellipse class="floor" cx="${(bb.x + bb.w / 2).toFixed(1)}" cy="${Math.min(bb.y + 2.5, 95).toFixed(1)}" rx="${Math.max(18, Math.min(68, bb.w * 0.47)).toFixed(1)}" ry="5.5"/>`;

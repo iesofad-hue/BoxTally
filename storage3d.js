@@ -155,6 +155,118 @@ function chestOpen() {
   [[120, 8.4], [170, 9.8], [222, 11]].forEach(([x, rr2], i) => g.add(at(socket({ r: rr2, h: 26 + i * 2 }), x, Hb + 8, 60)));
   g.userData.yaw = -0.42; return g;
 }
+/* ---------- a box built from what it really is ----------
+   spec is "type;width;layout;flags" from boxSpec() in app.js: "cab;68;3/4,2;p" is a 68" roll cab, three
+   full-width drawers (the top one a PowerDrawer) over banks of 4 and 2. Flags: p power, l bed liner top,
+   ss stainless top, L/R the side a locker goes on. Sizes are the real ones, in mm. */
+const IN = 25.4;
+// bed liner: a rough black coat with a fine pebbled bump
+const bedLiner = (() => {
+  let m = null;
+  return () => {
+    if (m) return m;
+    const c = document.createElement("canvas"); c.width = c.height = 256; const x = c.getContext("2d");
+    x.fillStyle = "#808080"; x.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 5000; i++) { const v = 90 + ((i * 97) % 120); x.fillStyle = `rgb(${v},${v},${v})`; x.beginPath(); x.arc((i * 73.13) % 256, (i * 151.7) % 256, 0.6 + ((i * 7) % 5) * 0.35, 0, 2 * PI); x.fill(); }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 3);
+    return (m = new THREE.MeshPhysicalMaterial({ color: 0x141518, roughness: 1, bumpMap: t, bumpScale: 3 }));
+  };
+})();
+// shallow drawers on top, deeper toward the floor (the drawing does the same)
+const stackH = (n, h) => { const w = Array.from({ length: n }, (_, i) => 1 + 0.45 * i), s = w.reduce((a, b) => a + b, 0); return w.map((x) => (x * h) / s); };
+// the drawer fronts of a cab or chest between yTop and yBot: full-width ones, then each bank's column
+function drawerFace(g, W, yTop, yBot, z, f, cols, power) {
+  const x0 = -W / 2 + 22, x1 = W / 2 - 22, gap = 8, all = yTop - yBot;
+  const full = f && cols.length > 1 ? Math.min(all * 0.12, all / (f + 3)) : 0;
+  let y = yTop;
+  for (let i = 0; i < f; i++) {
+    drawers(g, x0, x1, y, [full - gap], z, gap);
+    if (i === 0 && power) { // PowerDrawer: a black panel with USB ports and a power light at the right end
+      const pw = Math.min(260, (x1 - x0) * 0.14), px = x1 - pw / 2 - 30, py = y - full / 2 + 6;
+      g.add(at(box(pw, full - gap - 26, 6, mat.rubber, 2), px, py, z + 17));
+      [-0.3, 0, 0.3].forEach((t, j) => g.add(at(box(14, 7, 2, j === 2 ? M.ledg : M.lens, 1), px + t * pw, py, z + 21)));
+    }
+    y -= full;
+  }
+  const cw = (x1 - x0 - gap * (cols.length - 1)) / cols.length;
+  cols.forEach((n, i) => { const a = x0 + i * (cw + gap); drawers(g, a, a + cw, y, stackH(Math.max(1, n), y - yBot).map((h) => h - gap), z, gap); });
+}
+function casters(g, W, D, R = 55) {
+  const xs = W > 2300 ? [-1, 0, 1] : [-1, 1];
+  for (const sz of [1, -1]) for (const sx of xs) g.add(at(caster(R, 34, { brake: sz > 0 && sx !== 0 }), sx * (W / 2 - 80), 0, sz * (D / 2 - 75)));
+  return caster(R, 34).userData.h;
+}
+const sideHandle = (W, D, hy, sx) => pipe([[sx * (W / 2 + 4), hy, -D / 2 + 70], [sx * (W / 2 + 52), hy, -D / 2 + 95], [sx * (W / 2 + 60), hy, 0], [sx * (W / 2 + 52), hy, D / 2 - 95], [sx * (W / 2 + 4), hy, D / 2 - 70]], 13, mat.chrome, { segs: 64 });
+function topMat(g, W, D, y, flags) {
+  if (flags.includes("ss")) g.add(at(box(W + 6, 14, D + 6, mat.satin, 4), 0, y + 5, 0));
+  else if (flags.includes("l")) g.add(at(box(W + 12, 22, D + 12, bedLiner(), 7), 0, y + 8, 0));
+  else g.add(at(box(W + 10, 18, D + 10, mat.rubber, 6), 0, y + 6, 0));
+}
+function boxUnit(spec) {
+  const [type, wIn, lay = "0/1", fl = ""] = spec.split(";"), flags = fl.split("+"), has = (x) => flags.includes(x);
+  const [fs, cs] = lay.split("/"), f = +fs || 0, cols = (cs || "1").split(",").map(Number).filter((n) => n >= 0);
+  const W = (+wIn || 54) * IN, g = group();
+  if (type === "cab" || type === "end" || type === "locker") {
+    const D = 25 * IN, Hc = (type === "locker" ? 56 : 37) * IN, y0 = casters(g, W, D, type === "cab" ? 55 : 48), top = y0 + Hc, zf = D / 2;
+    g.add(blob(W + 260, D + 200));
+    g.add(at(box(W, Hc, D, mat.redp, 8), 0, y0 + Hc / 2, 0));
+    topMat(g, W, D, top, type === "cab" ? flags : []);
+    g.add(at(box(W + 8, 34, D + 8, mat.rubber, 6), 0, y0 + 14, 0)); // kick bumper
+    if (type === "locker") {
+      const n = cols[0] || 0, dh = n ? Math.min(118, (Hc * 0.4) / n) : 0, dBot = y0 + 40 + n * dh;
+      if (n) drawerFace(g, W, dBot, y0 + 40, zf + 3, 0, [n], false);
+      g.add(at(box(W - 36, top - dBot - 40, 14, mat.redp, 4), 0, (top + dBot) / 2 - 10, zf + 7)); // the door
+      g.add(at(box(W - 60, 4, 3, M.liner, 1), 0, dBot + 2, zf + 13));
+      const hx = (has("R") ? -1 : 1) * (W / 2 - 70);
+      g.add(at(sc(capsule(9, 260, M.alu), 1, 1, 1.3), hx, top - (top - dBot) * 0.45, zf + 22)); g.children[g.children.length - 1].rotation.z = PI / 2;
+      if (has("p")) { g.add(at(box(W * 0.5, 120, 6, mat.rubber, 3), 0, top - 140, zf + 16)); [-0.3, -0.1, 0.1, 0.3].forEach((t) => g.add(at(box(22, 30, 3, M.lens, 1), t * W * 0.5, top - 140, zf + 20))); g.add(at(box(10, 10, 3, M.ledg, 1), W * 0.2, top - 105, zf + 20)); }
+    } else {
+      g.add(at(box(W - 36, Hc - 56, 4, M.liner, 1), 0, y0 + Hc / 2 + 4, zf + 1));
+      drawerFace(g, W, top - 26, y0 + 40, zf + 3, f, cols, has("p"));
+      g.add(lock(W / 2 - 60, top - 13, zf));
+    }
+    const hy = top - 90;
+    if (type !== "locker") for (const sx of type === "end" ? [1] : [-1, 1]) { g.add(sideHandle(W, D, hy, sx)); g.add(at(box(14, 40, 40, mat.rubber, 5), sx * (W / 2 + 5), hy, -D / 2 + 70), at(box(14, 40, 40, mat.rubber, 5), sx * (W / 2 + 5), hy, D / 2 - 70)); }
+    g.userData.yaw = type === "cab" ? -0.45 : -0.55;
+    return g;
+  }
+  if (type === "chest" || type === "section") {
+    const D = 18 * IN, Hb = (type === "chest" ? 18.6 : 20) * IN, zf = D / 2;
+    g.add(blob(W + 200, D + 160, 0.4));
+    g.add(at(box(W, Hb, D, mat.redp, 8), 0, Hb / 2, 0));
+    g.add(at(box(W - 36, Hb - 40, 4, M.liner, 1), 0, Hb / 2, zf + 1));
+    drawerFace(g, W, Hb - 18, 22, zf + 3, f, cols, false);
+    if (type === "chest") { // the till and its closed lid, with the long pull and lock
+      g.add(at(tray(W, D, 62, { wall: 14, r: 8, floor: 6, liner: M.liner }), 0, Hb, 0));
+      g.add(at(box(W, 46, D + 6, mat.redp, 10), 0, Hb + 62 + 23, 3), at(sc(capsule(6.5, W - 140, M.alu), 1, 1, 1.3), 0, Hb + 62 + 8, D / 2 + 9), lock(W / 2 - 70, Hb + 42, zf + 4));
+    } else topMat(g, W, D, Hb, []);
+    for (const sx of [-1, 1]) g.add(pipe([[sx * (W / 2 + 2), Hb - 70, -110], [sx * (W / 2 + 34), Hb - 64, -90], [sx * (W / 2 + 40), Hb - 62, 0], [sx * (W / 2 + 34), Hb - 64, 90], [sx * (W / 2 + 2), Hb - 70, 110]], 9, mat.chrome, { segs: 48 }));
+    g.userData.yaw = -0.42; return g;
+  }
+  if (type === "hutch" || type === "riser") {
+    const D = 14 * IN, H = (type === "hutch" ? 18 : 32) * IN, cab = type === "hutch" ? H : 11 * IN, doors = W >= 60 * IN ? 3 : 2, side = 2.5 * IN;
+    g.add(blob(W + 200, D + 160, 0.35));
+    const yc = H - cab; // bottom of the cabinet
+    g.add(at(box(W, cab, D, mat.redp, 8), 0, yc + cab / 2, 0));
+    const dw = (W - 40) / doors;
+    for (let i = 0; i < doors; i++) { const x = -W / 2 + 20 + dw * (i + 0.5); g.add(at(box(dw - 10, cab - 40, 10, mat.redp, 3), x, yc + cab / 2, D / 2 + 5), at(sc(capsule(5, dw * 0.45, M.alu), 1, 1, 1.3), x, yc + 40, D / 2 + 14)); }
+    g.add(at(box(W - 60, 8, 30, M.led, 2), 0, yc - 4, D / 2 - 40)); // LED strip under the cabinet
+    if (type === "riser") {
+      const D2 = 25 * IN;
+      g.add(at(box(W + 10, 22, D2, mat.satin, 4), 0, 11, D2 / 2 - D / 2)); // stainless work surface
+      for (const sx of [-1, 1]) g.add(at(box(side, yc - 22, D, mat.redp, 6), sx * (W / 2 - side / 2), 22 + (yc - 22) / 2, 0));
+      g.add(at(box(W - 2 * side, yc - 22, 8, M.dark, 2), 0, 22 + (yc - 22) / 2, -D / 2 + 6)); // back panel
+      for (let x = -W / 2 + side + 40; x < W / 2 - side - 30; x += 50) for (let y = 70; y < yc - 30; y += 50) g.add(at(cyl(4, 2, M.liner, { along: "z", segs: 8 }), x, y, -D / 2 + 11));
+    }
+    g.userData.yaw = -0.4; return g;
+  }
+  // a portable metal box: lid seam, two latches, a carry handle
+  const Wb = 20 * IN, Hb = 9 * IN, Db = 8.5 * IN;
+  g.add(blob(Wb + 120, Db + 120, 0.35), at(box(Wb, Hb, Db, mat.redp, 8), 0, Hb / 2, 0), at(box(Wb + 2, 4, Db + 2, M.liner, 1), 0, Hb * 0.62, 0));
+  for (const sx of [-1, 1]) g.add(at(box(40, 60, 10, mat.chrome, 3), sx * Wb * 0.3, Hb * 0.62, Db / 2 + 4));
+  g.add(pipe([[-110, Hb, 0], [-100, Hb + 70, 0], [100, Hb + 70, 0], [110, Hb, 0]], 9, mat.chrome, { segs: 48 }));
+  g.userData.yaw = -0.4; return g;
+}
 function serviceCart() {
   const W = 800, D = 460, cR = 50, cs = [caster(cR, 30, { brake: true }), caster(cR, 30, { brake: true }), caster(cR, 30), caster(cR, 30)];
   const y0 = cs[0].userData.h, g = group(blob(940, 600, 0.4)), px = W / 2 - 28, pz = D / 2 - 28;
@@ -676,9 +788,9 @@ function extensionSet({ sizes = ['3"', '6"', '10"'], drive = "3/8" } = {}) {
   g.position.x = -ins[0] * 12.7; g.rotation.x = 0.45; const out = group(g); out.userData.yaw = -0.1; return out;
 }
 export const MODELS = {
-  storage: () => rollCabChest(),
+  storage: (o = {}) => (o.box ? boxUnit(o.box) : rollCabChest()),
   "storage-cart": () => serviceCart(),
-  "storage-chest": () => chestOpen(),
+  "storage-chest": (o = {}) => (o.box ? boxUnit(o.box) : chestOpen()),
   "set-screwdriver": () => screwdriverSet(),
   "set-pliers": () => pliersSet(),
   "set-pick": () => pickSet(),

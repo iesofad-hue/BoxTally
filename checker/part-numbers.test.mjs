@@ -213,7 +213,25 @@ const CATS = [["MAGMATR", "Shop & Tech"], ["CTINF9010", "Shop & Tech"], ["EESC33
 for (const [pn, cat] of CATS) { const got = catOf({ part_number: pn, name: "", category: "Other" }); if (got !== cat) { bad++; console.log(`${pn.padEnd(12)} category ${got}, want ${cat}`); } }
 // a category someone picked stays
 if (catOf({ part_number: "MAGMATR", name: "", category: "Tool Storage" }) !== "Tool Storage") { bad++; console.log("picked category should stay"); }
-console.log(bad ? `${bad} of ${CASES.length + LOOKS.length + 10} wrong` : `all ${CASES.length + LOOKS.length + 10} part numbers right`);
+// tool storage: only the piece the number names, at its real width, banks and drawers ("type;width;full/banks;flags")
+const BOXES = [
+  ["KETP682A0ZDL", "", "storage", "cab;68;3/4,2;p", 'EPIQ 68" 9-drawer double-bank roll cab with PowerDrawer'],
+  ["KETN682C7PZR", "", "storage", "cab;68;2/5,3;l", 'EPIQ 68" 10-drawer double-bank roll cab, bed liner top'],
+  ["KETN602C1PJJ", "", "storage", "cab;60;2/5,3;ss", 'EPIQ 60" 10-drawer double-bank roll cab, stainless top'],
+  ["KETN843C1PJK", "", "storage", "cab;84;1/7,5,3;ss"], ["KEXP725D0PBO", "", "storage", "cab;144;2/6,6,5,4,3;p"],
+  ["KTL1023APC7", "", "storage", "cab;72;2/7,5,4;l", 'Masters 72" 18-drawer triple-bank roll cab, bed liner top'],
+  ["KTL1022ABFI", "", "storage", "cab;54;2/5,3;", 'Masters 54" 10-drawer double-bank roll cab'], ["KRL1056DPCM", "", "storage", "cab;36;0/8;"],
+  ["KCP2422POT", "", "storage", "cab;55;3/4,2;p"], ["KRA4107FPBO", "", "storage", "cab;40;0/7;", 'Heritage 40" 7-drawer single-bank roll cab'], ["KRA4813FPJK", "", "storage", "cab;40;2/7,4;"],
+  ["KRL791APBO", "", "storage-chest", "chest;54;2/3,3;", 'Masters 54" 8-drawer top chest'], ["KECN682A", "", "storage-chest", "chest;68;2/4,4;"],
+  ["KEHN680A", "", "storage", "hutch;68;0/0;", 'EPIQ 68" overhead cabinet (hutch)'], ["KEWN680C0BPS", "", "storage", "riser;68;0/0;"], ["KRL7968A", "", "storage", "riser;68;0/0;"],
+  ["KELP301CLZIJ", "", "storage", "locker;24;0/4;L+p", "EPIQ left side Power Locker"], ["KRL1011APBO", "", "storage", "end;20;0/8;"], ["KRA229", "", "storage", "hand;20;0/1;", "Metal tool box"],
+  ["", "11-drawer roll cab", "storage", "cab;54;2/6,3;"], ["", "Tool chest", "storage-chest", "chest;54;2/4,4;"],
+];
+for (const [pn, name, key, box, label] of BOXES) {
+  const a = artOf({ part_number: pn, name, category: "Other" });
+  if (a.key !== key || a.box !== box || (label && a.label !== label)) { bad++; console.log(`${(pn || name).padEnd(12)} box ${a.key} ${a.box} "${a.label}", want ${key} ${box} "${label || ""}"`); }
+}
+console.log(bad ? `${bad} of ${CASES.length + LOOKS.length + BOXES.length + 10} wrong` : `all ${CASES.length + LOOKS.length + BOXES.length + 10} part numbers right`);
 // how much of Snap-on's catalog we can read at all (catalog-part-numbers.tsv: number, catalog description)
 const rows = readFileSync(new URL("./catalog-part-numbers.tsv", import.meta.url), "utf8").trim().split("\n").slice(1);
 const known = rows.filter((l) => artOf({ part_number: l.split("\t")[0], name: "", category: "Other" }).key !== "other").length;
