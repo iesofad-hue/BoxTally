@@ -1214,3 +1214,12 @@ abbr.est { text-decoration: none; font-size: .72em; font-weight: 700; letter-spa
 .fb-meta .fb-new { font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
 .fb-acts { display: flex; gap: 8px; justify-content: flex-end; }
 .fb-empty { color: var(--muted); text-align: center; padding: 18px 0; }
+.gr-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 420px) { .gr-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.gr-tile { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: var(--surface); display: grid; gap: 2px; }
+.gr-tile b { font: 700 1.5rem/1.1 var(--f-display); }
+.gr-tile span { font-size: .78rem; color: var(--muted); }
+.gr-h { font-size: .9rem; margin: 6px 0 0; }
+.gr-refs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: min(40vh, 360px); overflow: auto; }
+.gr-refs li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: 10px; background: var(--sunk); }
+.gr-refs small { color: var(--muted); }

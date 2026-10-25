@@ -883,3 +883,50 @@ begin
 end $$;
 revoke all on function public.admin_feedback_mark(bigint[], boolean), public.admin_feedback_delete(bigint) from public, anon, authenticated;
 grant execute on function public.admin_feedback_mark(bigint[], boolean), public.admin_feedback_delete(bigint) to authenticated;
+
+-- ---------- Where visitors come from (added 2026-10-25) ----------
+-- One counter per day per source: a ?ref= tag on a link (boxtally.app/?ref=reddit) or the site that linked here.
+-- No IPs, no people, no pages. The table has no policies; only these functions touch it.
+create table if not exists public.visit_refs (
+  day date not null default current_date,
+  ref text not null check (ref ~ '^[a-z0-9._-]{1,40}$'),
+  n integer not null default 0,
+  primary key (day, ref)
+);
+alter table public.visit_refs enable row level security;
+revoke all on public.visit_refs from anon, authenticated;
+
+create or replace function public.count_visit(r text)
+returns boolean language plpgsql security definer set search_path to '' as $$
+declare k text := left(lower(btrim(coalesce(r, ''))), 40);
+begin
+  if k !~ '^[a-z0-9._-]{1,40}$' then return false; end if;
+  -- a cap so nobody can fill the table with made-up sources
+  if not exists (select 1 from public.visit_refs v where v.day = current_date and v.ref = k)
+     and (select count(*) from public.visit_refs v where v.day = current_date) >= 200 then return false; end if;
+  insert into public.visit_refs as v (day, ref, n) values (current_date, k, 1)
+  on conflict (day, ref) do update set n = v.n + 1;
+  return true;
+end $$;
+revoke all on function public.count_visit(text) from public;
+grant execute on function public.count_visit(text) to anon, authenticated;
+
+-- The owner's Visitors tab (in Feedback): counts only, never who.
+create or replace function public.admin_growth()
+returns json language plpgsql stable security definer set search_path to '' as $$
+begin
+  if not exists (select 1 from public.admins a where a.user_id = auth.uid()) then raise exception 'Owner only'; end if;
+  return json_build_object(
+    'signups_7', (select count(*) from auth.users u where u.created_at > now() - interval '7 days'),
+    'signups_30', (select count(*) from auth.users u where u.created_at > now() - interval '30 days'),
+    'signups_all', (select count(*) from auth.users),
+    'boxes_with_tools', (select count(distinct i.user_id) from public.items i where i.list = 'owned'),
+    'shares', (select count(*) from public.box_shares),
+    'feedback_7', (select count(*) from public.feedback f where f.created_at > now() - interval '7 days'),
+    'refs', coalesce((select json_agg(x order by x.n desc) from (
+      select v.ref, sum(v.n)::int n, sum(v.n) filter (where v.day > current_date - 7)::int n7
+      from public.visit_refs v where v.day > current_date - 30 group by v.ref order by 2 desc limit 30) x), '[]'::json)
+  );
+end $$;
+revoke all on function public.admin_growth() from public, anon;
+grant execute on function public.admin_growth() to authenticated;

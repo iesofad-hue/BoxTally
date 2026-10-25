@@ -1,0 +1,118 @@
+/* made by checker/tool-pages.mjs: the part-number pages. The drawing styles below the line come from app.css. */
+:root { --bg: #eceff3; --surface: #fff; --sunk: #e2e7ed; --line: #d2d9e2; --fg: #121821; --muted: #586473; --accent: #c8171f; --band: #10151c; --band-fg: #eef2f7; --good: #176b42;
+  --f-display: "Saira Condensed", "Arial Narrow", sans-serif; --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d1116; --surface: #161c24; --sunk: #1c242e; --line: #2b3542; --fg: #e7ecf2; --muted: #98a4b4; --accent: #ff5a61; --good: #4fd18a; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--f-body); }
+a { color: inherit; }
+.in { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+.bar { background: var(--band); color: var(--band-fg); }
+.bar .in { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; }
+.brand { font: 800 1.7rem/1 var(--f-display); letter-spacing: .02em; text-decoration: none; color: #fff; }
+.brand b { color: #ff4b53; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: 600 .95rem var(--f-body); text-decoration: none; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.ghost { background: transparent; color: var(--band-fg); border-color: rgb(255 255 255 / .25); min-height: 40px; padding: 0 14px; }
+.crumbs { font-size: .85rem; color: var(--muted); margin: 18px 0 12px; overflow-wrap: anywhere; }
+.crumbs a { color: var(--muted); }
+.tool { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px; }
+@media (max-width: 760px) { .tool { grid-template-columns: 1fr; gap: 16px; padding: 14px; } }
+.stage { position: relative; aspect-ratio: 16 / 10; border-radius: 14px; overflow: hidden; }
+.stage .art { position: absolute; inset: 8% 7% 12%; width: auto; height: auto; }
+.stage .art .tool { filter: url(#bx-3d); }
+.stage .art svg { filter: drop-shadow(0 8px 8px rgb(16 21 28 / .18)); }
+.pn { font: 600 .95rem var(--f-mono); color: var(--accent); margin: 0; letter-spacing: .04em; }
+h1 { font: 800 clamp(1.8rem, 5vw, 2.7rem)/1.02 var(--f-display); text-transform: uppercase; margin: 4px 0 6px; overflow-wrap: anywhere; }
+h1.big { margin-top: 28px; }
+h2 { font: 700 1.35rem/1.15 var(--f-display); text-transform: uppercase; margin: 0 0 10px; }
+.kind { color: var(--muted); margin: 0 0 16px; }
+.prices { display: grid; gap: 8px; margin: 0 0 16px; }
+.price { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 14px; border-radius: 12px; background: var(--sunk); }
+.price b { font: 700 1.5rem/1 var(--f-display); }
+.price small { color: var(--muted); }
+.ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+.ctas .btn { flex: 1 1 180px; }
+.muted { color: var(--muted); } .small { font-size: .85rem; margin: 10px 0 0; }
+.pitch, .more, .kindsec { margin: 28px 0; }
+.pitch ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.grid a { display: grid; gap: 2px; padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); text-decoration: none; min-height: 44px; }
+.grid b { font: 600 .9rem var(--f-mono); color: var(--accent); }
+.grid span { font-size: .88rem; color: var(--muted); }
+.lead { color: var(--muted); margin: 0 0 16px; }
+.kinds { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 8px; }
+.kinds a { padding: 8px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); text-decoration: none; font-size: .9rem; }
+.kinds small { color: var(--muted); }
+.list { list-style: none; margin: 0; padding: 0; columns: 2 320px; column-gap: 24px; }
+.list li { break-inside: avoid; padding: 3px 0; font-size: .92rem; }
+.list a { text-decoration: none; display: block; padding: 6px 0; }
+.list b { font: 600 .88rem var(--f-mono); color: var(--accent); margin-right: 6px; }
+.foot { margin-top: 40px; padding: 20px 0 32px; border-top: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+.foot a { color: var(--muted); }
+/* ---------- from app.css ---------- */
+/* ---------- tool drawings: shown until you add your own photo ---------- */
+/* a photo-studio sweep: a soft key light up top fading to a cool floor, the same in both themes so the drawings read the same */
+.art-bg { background:
+    radial-gradient(70% 55% at 50% 30%, rgb(255 255 255 / .95), transparent 70%),
+    linear-gradient(180deg, #f7f9fb 0%, #eef1f5 58%, #dfe4ea 78%, #e9edf1 100%) !important; }
+.art { display: block; width: 100%; height: 100%; }
+.art svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.photo .art { position: absolute; inset: 8% 7% 13%; width: auto; height: auto; }
+.thumb .art { padding: 2px; --stroke: 2.2; }
+.nextup .thumb .art, .ri .thumb .art { padding: 4px; }
+.shot .plate .art { padding: 14px; }
+.pf-prev .art { padding: 12px; }
+/* chrome, rubber and paint come from the shared gradients in #artDefs */
+.art { --ink: #1e232a; --grip: #c8171f; --stroke: 1.7; }
+.art .dv { fill: url(#bx-dark-v); } .art .gp { fill: #f7f9fb; stroke: none; }
+.art .cb { fill: #fff; stroke: var(--ink); stroke-width: 1.6; filter: drop-shadow(0 2px 2px rgb(0 0 0 / .18)); }
+.art .tkd { fill: none; stroke: #3a4048; stroke-linecap: round; stroke-linejoin: round; }
+.art .clr { fill: rgb(255 214 120 / .45); stroke: var(--ink); stroke-width: 2; }
+.art .ledr { fill: #ff5a4f; stroke: var(--ink); stroke-width: 1.2; } .art .ledg { fill: #4fd18a; stroke: var(--ink); stroke-width: 1.2; }
+.art .spring { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
+.art :is(.s, .sv, .dv, .h, .g, .y, .k, .d, .w, .pit, .rc, .ball, .scr, .ring) { stroke: var(--ink); stroke-width: var(--stroke); stroke-linejoin: round; stroke-linecap: round; }
+.art .s { fill: url(#bx-steel); } .art .sv { fill: url(#bx-steel-v); } .art .h { fill: #f1f4f8; } .art .g { fill: url(#bx-grip); } .art .y { fill: url(#bx-yel); }
+.art .k { fill: var(--ink); } .art .bl { fill: #2f6fd6; stroke: var(--ink); stroke-width: 2.2; } .art .floor { fill: url(#bx-floor); stroke: none; } .art .d { fill: url(#bx-dark); } .art .w { fill: #f6f9ff; } .art .pit { fill: #39424e; }
+.art .rc { fill: #aeb8c5; stroke-width: 1.2; } .art .ball { fill: url(#bx-ball); } .art .scr { fill: url(#bx-screen); stroke-width: 1.4; } .art .ring { fill: #8e99a6; stroke-width: 1.2; }
+.art .sh { fill: #fff; opacity: .6; stroke: none; }
+/* finishes and paint read from the part number: black industrial chrome (GSL832), cordless colors (CTR868GMDB gunmetal), orange grips (ADHW8AO) */
+.art .ind :is(.s, .sv) { fill: url(#bx-steel-ind); } .art .ind .tsg { stroke: #4a5059; } .art .ind .sh { opacity: .25; } .art .ind .tx { fill: #e8ecf1; } .art .ind .rc { fill: #2a2f36; }
+.art .c-gm { --grip: #4b5057; } .art .c-gm .g { fill: url(#bx-grip-gm); } .art .c-g { --grip: #2f9e44; } .art .c-g .g { fill: url(#bx-grip-g); }
+.art .c-o { --grip: #e8590c; } .art .c-o .g { fill: url(#bx-grip-o); } .art .c-hv { --grip: #c9d81b; } .art .c-hv .g { fill: url(#bx-grip-hv); }
+.art .c-mb { --grip: #1f63c6; } .art .c-mb .g { fill: url(#bx-grip-mb); } .art .c-bk { --grip: #1d1f23; } .art .c-bk .g { fill: url(#bx-grip-bk); }
+.art .cg { fill: #8a8d92; } .art .cgi { fill: #a7aaaf; }
+.art .shl { fill: none; stroke: #fff; stroke-width: 1.4; stroke-opacity: .75; stroke-linecap: round; }
+.art .shd { fill: #000; opacity: .1; stroke: none; }
+.art .kn { fill: none; stroke: #fff; stroke-opacity: .42; stroke-width: 1.4; stroke-linecap: round; }
+.art .gr { fill: none; stroke: #0f1d3d; stroke-opacity: .35; stroke-width: 1.4; stroke-linecap: round; }
+.art .nl { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
+.art .eng { fill: none; stroke: var(--ink); stroke-opacity: .35; stroke-width: 1.1; stroke-linecap: round; }
+.art .to { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
+.art .tg { fill: none; stroke: var(--grip); stroke-linecap: round; stroke-linejoin: round; }
+.art .tsg { fill: none; stroke: #c9d2dc; stroke-linecap: round; stroke-linejoin: round; }
+.art .ptr { fill: none; stroke: #e0452b; stroke-width: 1.6; }
+.art .tx { fill: var(--ink); font-family: var(--f-mono); font-weight: 600; }
+.art .txw { fill: #fff; font-family: var(--f-mono); font-weight: 700; }
+.art .tri { fill: var(--ink); fill-rule: evenodd; } .art .tri2 { fill: #fff; }
+.art .txe { fill: #14171b; font-family: var(--f-mono); font-weight: 800; paint-order: stroke; stroke: rgb(255 255 255 / .55); stroke-width: .7px; }
+.art .txl { fill: #1f2a12; font-family: var(--f-mono); font-weight: 700; }
+.art .lcd { fill: #b9cf9a; stroke: #14171b; stroke-width: 1.6; }
+.art .tk { fill: none; stroke: #191c21; stroke-linecap: round; stroke-linejoin: round; }
+.art .grid { fill: none; stroke: #4fd18a; stroke-opacity: .16; stroke-width: .8; }
+.art .wave { fill: none; stroke: #4fd18a; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.art .lamp { fill: #fff6cc; stroke: var(--ink); stroke-width: 2; } .art .led { fill: #ffd84d; stroke: none; } .art .ledoff { fill: #59636f; stroke: none; }
+.art .ray { fill: none; stroke: #f4bd2a; stroke-width: 3; stroke-linecap: round; }
+.photo .art .tool, .shot .art .tool, .viewer .art .tool, .pf-prev .art .tool { filter: url(#bx-3d); }
+/* drop shadow under the drawing so it sits on the paper */
+.photo .art svg, .shot .art svg { filter: drop-shadow(0 6px 6px rgb(16 21 28 / .16)); }
+@media (prefers-reduced-motion: no-preference) {
+  .photo .art svg, .shot .art svg, .pf-prev .art svg { transition: transform .5s cubic-bezier(.3, 1.5, .5, 1); }
+  .photo .art .tool, .photo .art .floor, .shot .art .tool, .shot .art .floor { transition: transform .45s cubic-bezier(.3, 1.4, .5, 1), opacity .45s; transform-box: fill-box; transform-origin: center; }
+  .card:hover .photo .art .tool { transform: translate(calc(var(--px, 0) * 7px), calc(-5px + var(--py, 0) * 5px)) scale(1.05); }
+  .card:hover .photo .art .floor { transform: translateX(calc(var(--px, 0) * -6px)) scale(.86); opacity: .7; }
+  .shot:hover .art .tool { transform: translateY(-4px) scale(1.05); }
+  .shot:hover .art .floor { transform: scale(.86); opacity: .7; }
+  .pf-prev .art.swap svg { animation: artSwap .45s cubic-bezier(.3, 1.6, .5, 1); }
+}
+@keyframes artSwap { from { transform: scale(.6) rotate(-14deg); opacity: 0; } }
+

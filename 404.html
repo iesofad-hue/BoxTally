@@ -8,7 +8,9 @@
 <script>
 // GitHub Pages only has one real page (index.html), so an address like boxtally.app/tool/... or /wishlist
 // lands here. Send it to the page with the address attached; index.html puts it back and opens that view.
-location.replace("/?to=" + encodeURIComponent(location.pathname + location.search + location.hash));
+// A part-number page typed in lower case (/t/f80) goes to the real one (/t/F80/).
+if (/^\/t\/[^/]+\/?$/.test(location.pathname) && location.pathname !== location.pathname.toUpperCase().replace(/^\/T\//, "/t/")) location.replace(location.pathname.toUpperCase().replace(/^\/T\//, "/t/").replace(/\/?$/, "/"));
+else location.replace("/?to=" + encodeURIComponent(location.pathname + location.search + location.hash));
 </script>
 </head>
 <body style="background:#10151c;color:#e9edf2;font:16px system-ui,sans-serif;padding:24px">

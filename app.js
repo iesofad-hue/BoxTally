@@ -1523,6 +1523,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.loaded = true;
     saveCache();
     render();
+    linkStart();
     priceMissing();
   }
   // Someone's shared box (a ?box= link): read-only, no photos, notes or locations.
@@ -3221,8 +3222,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!owner) fbTab = "write";
     $("fb-tabs").hidden = !owner;
     document.querySelectorAll("[data-fb-tab]").forEach((b) => b.setAttribute("aria-selected", b.dataset.fbTab === fbTab));
-    $("fb-write").hidden = fbTab !== "write"; $("fb-messages").hidden = fbTab !== "messages";
+    $("fb-write").hidden = fbTab !== "write"; $("fb-messages").hidden = fbTab !== "messages"; $("fb-growth").hidden = fbTab !== "growth";
     $("fb-send").hidden = fbTab !== "write";
+    if (fbTab === "growth") return renderGrowth();
     if (fbTab !== "messages") return;
     const isMail = (x) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x || "");
     $("fb-list").innerHTML = fbRows.length ? fbRows.map((m) => {
@@ -3248,6 +3250,25 @@ document.addEventListener("DOMContentLoaded", () => {
       syncFbDot();
     }
   }
+  // the owner's Visitors tab: sign-ups, shared boxes and where visitors came from (admin_growth, counts only)
+  let growth = null;
+  function renderGrowth() {
+    const g = growth, n = (x) => Number(x || 0).toLocaleString("en-US");
+    if (!g) { $("fb-glist").innerHTML = `<p class="fb-empty">Loading…</p>`; return; }
+    if (g.error) { $("fb-glist").innerHTML = `<p class="fb-empty">Couldn't load the numbers. Try again in a moment.</p>`; return; }
+    const tile = (v, t) => `<div class="gr-tile"><b>${n(v)}</b><span>${esc(t)}</span></div>`;
+    const refs = g.refs || [];
+    $("fb-glist").innerHTML = `<div class="gr-tiles">${tile(g.signups_7, "new sign-ups this week")}${tile(g.signups_30, "in 30 days")}${tile(g.signups_all, "accounts in all")}${tile(g.boxes_with_tools, "boxes with tools")}${tile(g.shares, "share links")}${tile(g.feedback_7, "feedback this week")}</div>`
+      + `<h3 class="gr-h">Where visitors came from (30 days)</h3>`
+      + (refs.length ? `<ul class="gr-refs">${refs.map((r) => `<li><span class="mono">${esc(r.ref)}</span><span>${n(r.n)}${r.n7 ? ` <small>· ${n(r.n7)} this week</small>` : ""}</span></li>`).join("")}</ul>`
+        : `<p class="fb-empty">Nothing yet. Visits from a ?ref= link or from another site (Reddit, Facebook, Google) show up here.</p>`);
+  }
+  async function showGrowth() {
+    fbTab = "growth"; growth = null; renderFb();
+    const r = await sb.rpc("admin_growth");
+    growth = r.error ? { error: true } : r.data;
+    if (fbTab === "growth") renderFb();
+  }
   function fbLeft() { const n = 500 - $("fb-msg").value.length; $("fb-left").textContent = `${n} character${n === 1 ? "" : "s"} left`; }
   function openFeedback() {
     $("fb-err").hidden = true; fbSeen = new Set();
@@ -3264,7 +3285,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("fb-msg").addEventListener("input", fbLeft);
   document.querySelectorAll("[data-fb-tab]").forEach((b) => (b.onclick = () => {
     $("fb-err").hidden = true;
-    if (b.dataset.fbTab === "messages") showFbMessages(); else { fbTab = "write"; renderFb(); }
+    if (b.dataset.fbTab === "messages") showFbMessages(); else if (b.dataset.fbTab === "growth") showGrowth(); else { fbTab = "write"; renderFb(); }
   }));
   $("fb-list").addEventListener("click", async (e) => {
     const b = e.target.closest("[data-fb-del]");
@@ -4176,6 +4197,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const m = document.createElement("meta"); m.name = "robots"; m.content = "noindex"; document.head.appendChild(m);
     document.title = "A shared toolbox · BoxTally";
   }
+  // Links people post: ?sample opens the sample box, ?add=F80 puts F80 in the add box (&list=wishlist for the
+  // wishlist), ?ref=reddit says where the link was posted. They act once, after the box has loaded.
+  const startQ = new URLSearchParams(location.search);
+  let startLink = !boxToken && (startQ.has("sample") || startQ.has("add"));
+  function linkStart() {
+    if (!startLink) return;
+    startLink = false;
+    const clean = () => { const q = new URLSearchParams(location.search); ["sample", "add", "list"].forEach((k) => q.delete(k)); history.replaceState(history.state, "", location.pathname + (String(q) ? "?" + q : "") + location.hash); };
+    if (startQ.has("sample")) { clean(); return enterDemo(); }
+    const pn = cleanPn(startQ.get("add")).replace(/[^A-Z0-9.\-\/]/g, "").slice(0, 30);
+    clean();
+    if (!pn) return;
+    if (startQ.get("list") === "wishlist" && state.tab !== "wishlist") setTab("wishlist");
+    $("q-pn").value = pn;
+    setTimeout(() => { $("quick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); $("q-pn").focus({ preventScroll: true }); }, 60);
+    toast(`${pn} is ready. Tap ${$("q-add").textContent} to add it.`);
+  }
+  // Where visitors came from: a ?ref= tag, or else the site that linked here (reddit.com → reddit).
+  // Only that one word is counted, once per visit; nothing about the person.
+  (function countVisit() {
+    let ref = startQ.get("ref") || "";
+    if (!ref) { try { const h = new URL(document.referrer).hostname.replace(/^(www|m|l|lm|old|out)\./, ""); if (h && !/(^|\.)boxtally\.app$/.test(h)) ref = h.replace(/\.(com|net|org|co|app|io)$/, ""); } catch {} }
+    ref = ref.toLowerCase().replace(/[^a-z0-9._-]/g, "").slice(0, 40);
+    if (startQ.has("ref")) { const q = new URLSearchParams(location.search); q.delete("ref"); history.replaceState(history.state, "", location.pathname + (String(q) ? "?" + q : "") + location.hash); }
+    if (!ref || !sb) return;
+    try { if (sessionStorage.getItem(LS + "-ref")) return; sessionStorage.setItem(LS + "-ref", "1"); } catch {}
+    sb.rpc("count_visit", { r: ref }).then(() => {}, () => {});
+  })();
   // Your box opens on its drawers (the foam view) unless you picked another view since the foam came in.
   // Everyone is shown the foam drawers once; after that, whatever view you tap is remembered.
   let savedView = null, foamSeen = false;
@@ -4186,7 +4235,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (readRoute().money) { routeSync = true; setMoney(true); routeSync = false; }
   renderAccount();
   render();
-  if (!sb) { if (state.readonly) { loadShared(); return; } state.items = local.read(); state.loaded = true; render(); return; }
+  if (!sb) { if (state.readonly) { loadShared(); return; } state.items = local.read(); state.loaded = true; render(); linkStart(); return; }
   // fires once on load (INITIAL_SESSION), and again on sign-in and sign-out
   sb.auth.onAuthStateChange((_event, session) => { setTimeout(() => setUser(session ? session.user : null), 0); });
   // Installable app: works offline for the page itself; your box comes from the last-saved copy.

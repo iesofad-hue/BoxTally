@@ -59,6 +59,25 @@ The site never loads, copies or hotlinks Snap-on's product photos (Snap-on limit
 - **Share my box.** Signed-in people can make a read-only link (`boxtally.app/?box=…`) with an optional title, and choose whether it shows prices paid and the wishlist. It never shows photos, notes, locations, who has a tool, or the owner's name or email. Turning the link off kills it; turning it back on makes a new one. Stored in `box_shares`, read through the `shared_box` function.
 - **Install as an app.** `manifest.webmanifest`, `icons/` and `sw.js` let phones and computers install BoxTally. The page, fonts and icons work offline, and a signed-in box is kept in the browser so it still shows (read-only) with no connection. When you change the site, bump `VERSION` in `sw.js` and the matching `?v=` number on `app.css`, `drawings.js` and `app.js` in `index.html` (`checker/versions.test.mjs` fails if they don't match).
 
+### Getting found
+
+- **Links to post.** `boxtally.app/?sample` opens the sample box straight away. `boxtally.app/?add=F80` puts F80 in the add box (add `&list=wishlist` for the wishlist). Add `?ref=` and a word to any link you post, like `boxtally.app/?sample&ref=reddit`, to see which place brings people in.
+- **Visitors tab.** The owner's Feedback box has a **Visitors** tab: new sign-ups, boxes with tools, share links, feedback this week, and where visitors came from in the last 30 days. Sources are a `?ref=` word or the site that linked here (reddit, facebook, google...). Only counts are kept (`visit_refs`, one number per day per source, through `count_visit` and the owner-only `admin_growth`), never who.
+- **Part-number pages.** `boxtally.app/t/F80/` and about 4,000 more: the drawing, what the tool is, its Snap-on list and eBay price (loaded live), and Add to my box / wishlist buttons. `boxtally.app/t/` lists them all by kind, and `sitemap.xml` lists every page for Google. They're plain pages made by `node checker/tool-pages.mjs` from `checker/catalog-part-numbers.tsv` and the site's own drawing code; run it again after changing drawings or the catalog list. They only show shared catalog facts, never anyone's box.
+- **Link previews.** `og-image.png` is the picture shown when a BoxTally link is pasted into Facebook, iMessage, Reddit or Discord. Bump the `?v=` on it in `index.html` and `checker/tool-pages.mjs` when it changes, so those sites fetch the new one.
+
+### Share-link previews (Cloudflare Worker, optional)
+
+GitHub Pages sends the same page for every address, so a pasted share link previews as plain "BoxTally". `worker/share-preview.js` fixes that: when a link-preview bot asks for `boxtally.app/?box=...`, it fills in that box's title and tool count ("Mike's box · 63 tools"). People visiting are never slowed down, and it only uses what the share link already shows. To turn it on (free plan):
+
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Create Worker**. Name it `share-preview`, click **Deploy**.
+2. **Edit code**, replace everything with the contents of `worker/share-preview.js`, click **Deploy**.
+3. Back on the Worker → **Settings** → **Domains & Routes** → **Add** → **Route**. Zone `boxtally.app`, route `boxtally.app/*`, failure mode **Fail open**. Save.
+4. Check **DNS** → the `boxtally.app` records show an orange cloud (**Proxied**). Workers only run on proxied records.
+5. Test: paste a share link into [opengraph.xyz](https://www.opengraph.xyz/) or a Discord message.
+
+To turn it off, delete the route.
+
 ### Price-drop emails
 
 `checker/alerts.mjs` runs once a day from `.github/workflows/price-alerts.yml`. For everyone who ticked **Email me when something on my wishlist drops** (stored in `alert_prefs`; the address always comes from the person's own Google sign-in), it emails any eBay price drops on their wishlist since the last email. Drops come from `ebay_price_history`, which only gets a new point when a price moves 3% or more, so day-to-day wobble doesn't send email.

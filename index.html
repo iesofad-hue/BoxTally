@@ -12,11 +12,11 @@
 <meta property="og:url" content="https://boxtally.app/">
 <meta property="og:title" content="BoxTally · Snap-on tool tracker">
 <meta property="og:site_name" content="BoxTally">
-<meta property="og:description" content="Your tools, what they're worth today, and price drops on your wishlist.">
-<meta property="og:image" content="https://boxtally.app/og-image.png">
+<meta property="og:description" content="Free Snap-on tool tracker. Add tools by part number, see what your box is worth today, and save up for what's next.">
+<meta property="og:image" content="https://boxtally.app/og-image.png?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="BoxTally: box worth, wishlist savings and price drops">
+<meta property="og:image:alt" content="BoxTally: drawings of Snap-on tools and a box worth today total">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='11' fill='%2310151c'/%3E%3Ccircle cx='24' cy='24' r='14.5' fill='none' stroke='%23ff4b53' stroke-width='4.4'/%3E%3Cpath d='M31 24 27.5 30.1H20.5L17 24 20.5 17.9H27.5Z' fill='none' stroke='%23e9edf2' stroke-width='3.2' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script>
@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=67">
+<link rel="stylesheet" href="/app.css?v=68">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -226,7 +226,7 @@
   <div class="grid" id="list" role="tabpanel" aria-labelledby="tab-tools"></div>
 </main>
 
-<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Prices are typical eBay asking prices and may differ from Snap-on's. Check before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/feedback" id="fbLink" style="color:inherit">Feedback</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a><span id="delWrap" hidden> · <a href="#" id="delAcct" style="color:inherit">Delete my account</a></span></footer>
+<footer class="inner"><p id="iosHint" hidden>On iPhone: tap the Share button, then "Add to Home Screen" to use BoxTally like an app.</p>BoxTally is an independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated; other marks belong to their owners. Prices are typical eBay asking prices and may differ from Snap-on's. Check before you buy. Tool drawings are BoxTally's own; photos you add are only shown to you. · <a href="/t/" style="color:inherit">All Snap-on part numbers</a> · <a href="/privacy.html" style="color:inherit">Privacy</a> · <a href="/feedback" id="fbLink" style="color:inherit">Feedback</a> · <a href="mailto:contact@boxtally.app" style="color:inherit">Contact</a><span id="delWrap" hidden> · <a href="#" id="delAcct" style="color:inherit">Delete my account</a></span></footer>
 
 <div id="printSheet"></div>
 
@@ -466,6 +466,7 @@
     <div class="lp-tabs" role="tablist" id="fb-tabs" hidden>
       <button class="lp-tab" type="button" role="tab" data-fb-tab="write" aria-selected="true">Write</button>
       <button class="lp-tab" type="button" role="tab" data-fb-tab="messages" aria-selected="false">Messages <span class="count" id="fb-n">0</span></button>
+      <button class="lp-tab" type="button" role="tab" data-fb-tab="growth" aria-selected="false">Visitors</button>
     </div>
     <div id="fb-write" class="fb-pane">
       <p class="meta-line">Got an idea, a tool that looks wrong, or something that's broken? Tell me here. It goes straight to the person who runs BoxTally.</p>
@@ -476,6 +477,10 @@
     <div id="fb-messages" class="fb-pane" hidden>
       <p class="meta-line">Only you see these, as the owner. People's accounts are never shown, just what they typed.</p>
       <div id="fb-list" class="fb-list"></div>
+    </div>
+    <div id="fb-growth" class="fb-pane" hidden>
+      <p class="meta-line">How many people found BoxTally, and where from. Just counts, never who. Add <span class="mono">?ref=</span> and a word to links you post (like <span class="mono">boxtally.app/?ref=reddit</span>) to see which place works best.</p>
+      <div id="fb-glist"></div>
     </div>
     <p class="err" id="fb-err" hidden></p>
     <div class="formfoot">
@@ -490,8 +495,8 @@
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script defer src="/drawings.js?v=67"></script>
-<script defer src="/app.js?v=67"></script>
+<script defer src="/drawings.js?v=68"></script>
+<script defer src="/app.js?v=68"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>

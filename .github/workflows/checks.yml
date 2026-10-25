@@ -24,6 +24,9 @@ jobs:
         run: node checker/part-numbers.test.mjs
       - name: File versions
         run: node checker/versions.test.mjs
+      - name: Part-number pages are up to date
+        # t/ and sitemap.xml are made by checker/tool-pages.mjs; this fails if someone forgot to run it
+        run: node checker/tool-pages.mjs && git diff --exit-code --stat -- t sitemap.xml && test -z "$(git status --porcelain -- t sitemap.xml)"
       - name: eBay matching
         run: node checker/ebay-match.test.mjs
       - name: Color versions share a price
