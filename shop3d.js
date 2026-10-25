@@ -647,6 +647,26 @@ function flashlight() {
   const w = group(g); g.position.y = 19.5; g.rotation.z = 0.032; w.userData.yaw = -0.7; return w;
 }
 
+// A 545 lumen project light (ECPRB042): a black rounded-octagon puck with a colored rubber bumper down its left side,
+// one round lens with a big LED, standing on a hinged black stand. The bumper is red; lookOf() paints it orange or green.
+function puckLight() {
+  const R = 46, D = 28, oct = (r) => [...Array(8)].map((_, i) => { const a = PI / 8 + (i * PI) / 4; return [Math.cos(a) * r, Math.sin(a) * r]; });
+  const prism = (pts, d, m, b = 3) => { const g = new THREE.ExtrudeGeometry(poly(pts), { depth: d - 2 * b, bevelEnabled: true, bevelThickness: b, bevelSize: b, bevelOffset: -b, bevelSegments: 4 }); g.translate(0, 0, -(d - 2 * b) / 2); return mesh(g, m); };
+  const zt = (prof, m, segs) => { const t = turned(prof, m, { along: "y", segs }); t.geometry.rotateX(PI / 2); return t; }; // faces +z
+  const bump = mat.redp;
+  const head = group(prism(oct(R), D, mat.black));
+  const left = oct(R + 3.4).filter(([x]) => x < 1); head.add(prism([[0, left[0][1]], ...left, [0, left.at(-1)[1]]], D - 6, bump, 2.4));
+  head.add(at(zt([[0.1, 0], [27, 0], [27, 2.4], [24, 3], [0.1, 3]], mat.chrome, 64), 0, 2, D / 2 - 1));
+  head.add(at(zt([[0.1, 0], [22, 0], [22, 1.4], [0.1, 1.4]], L.lens, 64), 0, 2, D / 2 + 1.6));
+  head.add(at(zt([[0.1, 0], [10, 0], [9, 1.6], [0.1, 2]], L.led, 48), 0, 2, D / 2 + 2.6));
+  head.add(at(decal("Snap-on", 26, 6, { color: "#e8590c" }), 14, -28, D / 2 + 0.3));
+  head.add(at(cyl(4, 2, mat.rubber, { along: "y" }), 0, R * 0.92 + 1, 0)); // power button on top
+  head.position.y = 16 + R; head.rotation.x = -0.18;
+  const g = group(head, at(box(78, 8, 58, mat.black, 3.5), 0, 4, -4), at(cyl(5, 46, mat.black, { along: "x" }), 0, 13, 0));
+  for (const s of [1, -1]) g.add(at(box(8, 18, 12, mat.black, 2), s * 27, 14, 0));
+  g.userData.yaw = -0.45; return g;
+}
+
 // A master disconnect set: split plastic collars in several sizes and colours, in a black tray.
 function disconnectSet() {
   const g = group(at(box(260, 18, 130, mat.black, 6), 0, 9, 0), at(box(240, 2, 110, mat.hole, 3), 0, 18.2, 0));
@@ -659,7 +679,7 @@ function disconnectSet() {
   g.userData.yaw = -0.3; return g;
 }
 export const MODELS = {
-  shop: () => shopLight(), "disconnect-set": () => disconnectSet(), "floor-jack": () => floorJack(), "jack-stand": () => jackStands(), funnel: () => funnel(), "air-hose": () => airHose(),
+  shop: () => shopLight(), "puck-light": () => puckLight(), "disconnect-set": () => disconnectSet(), "floor-jack": () => floorJack(), "jack-stand": () => jackStands(), funnel: () => funnel(), "air-hose": () => airHose(),
   "tire-gauge": () => tireGauge(), "tire-inflator": () => tireInflator(), "tire-plug": () => tirePlug(), vise: () => vise(), clamp: () => cClamp(),
   caliper: () => caliper(), micrometer: () => micrometer(), feeler: () => feeler(), "dial-indicator": () => dialIndicator(), "pressure-gauge": () => pressureTester(),
   thermometer: () => irThermometer(), stethoscope: () => stethoscope(), puller: () => gearPuller(), "seal-puller": () => sealPuller(), "ball-joint": () => ballJoint(),

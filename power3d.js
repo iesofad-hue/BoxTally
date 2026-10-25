@@ -11,6 +11,7 @@ const M = {
   ledW: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff3dc, emissiveIntensity: 1.5, roughness: 0.2 }),
   foam: new THREE.MeshPhysicalMaterial({ color: 0xe0600f, roughness: 0.95 }),
   disc: new THREE.MeshPhysicalMaterial({ color: 0x4a4740, roughness: 0.9 }),
+  padFace: new THREE.MeshPhysicalMaterial({ color: 0x8a8d90, roughness: 1 }), // hook-and-loop face of a backing pad
   sponge: new THREE.MeshPhysicalMaterial({ color: 0xd2ad48, roughness: 1 }),
   comp: new THREE.MeshPhysicalMaterial({ color: 0x25282d, roughness: 0.38, clearcoat: 0.7, clearcoatRoughness: 0.25 }), // air tool composite
   guard: new THREE.MeshPhysicalMaterial({ color: 0xc9ced4, metalness: 1, roughness: 0.38, side: THREE.DoubleSide }),
@@ -48,7 +49,7 @@ function slit(r, w, a, side, x, m = mat.hole) {
   return at(mesh(g, m, false), x, 0, 0);
 }
 const plane = (w, h, text, o) => mesh(new THREE.PlaneGeometry(w, h), label(text, w, h, o), false);
-const print = (text, w, h, x, y, z, o = WHITE, face = "z") => { const p = at(plane(w, h, text, o), x, y, z); if (face === "-z") p.rotation.y = PI; if (face === "x") p.rotation.y = PI / 2; if (face === "y") p.rotation.x = -PI / 2; return p; };
+const print = (text, w, h, x, y, z, o = WHITE, face = "z") => { const p = at(plane(w, h, text, o), x, y, z); if (face === "-z") p.rotation.y = PI; if (face === "x") p.rotation.y = PI / 2; if (face === "-x") p.rotation.y = -PI / 2; if (face === "y") p.rotation.x = -PI / 2; return p; };
 // a slotted screw head set into a side face (s = +1 faces +z)
 const screw = (x, y, z, s = 1) => group(at(cyl(3.2, 1.2, mat.hole, { along: "z" }), x, y, z), at(cyl(2.2, 1.4, mat.satin, { along: "z", segs: 16 }), x, y, z + 0.4 * s), at(box(3.4, 0.6, 0.5, mat.hole, 0.1), x, y, z + 1.1 * s));
 // LED row: n lamps, first `lit` on, along z, facing +x
@@ -322,6 +323,31 @@ function pistol(o = {}) {
     N.add(xturn([[R * 0.7, -2], [R * 0.7, 6], [R * 0.45, 10], [R * 0.45, 16]], mat.chrome));
     N.add(at(cyl(3.2, 96, mat.chrome, { along: "x", segs: 16 }), 62, 0, 0));
     N.add(xturn([[0.1, 108], [5.4, 108], [6, 114], [6, 124], [4, 126], [1.6, 126]], mat.rubber));
+  }
+  if (nose === "pad") { // polish/prep: short gear nose, spindle and a small hook-and-loop backing pad facing forward
+    N.add(band(r0 + 0.8, -3, 0.6));
+    N.add(xturn([[r0, -4], [r0, 5], [r0 * 0.9, 12], [r0 * 0.55, 16], [0.1, 16]], gearM, { segs: 48 }));
+    N.add(at(cyl(5, 8, mat.chrome, { along: "x" }), 19, 0, 0));
+    N.add(xturn([[0.1, 22], [8, 22], [24, 25], [25.5, 27], [25.5, 31], [0.1, 31]], mat.black, { segs: 56 }));
+    N.add(xturn([[0.1, 31], [25.4, 31], [25.4, 33.4], [0.1, 33.4]], M.padFace, { segs: 56 }));
+    N.add(at(cyl(4, 0.6, mat.satin, { along: "x" }), 33.6, 0, 0));
+    // two-speed slider on top
+    g.add(at(rbox(22, 4, 12, mat.black, 2, 1.2), xf - 30, yb + R * sx - 0.5, 0), at(rbox(8, 4, 9, mat.redp, 1.5, 1), xf - 35, yb + R * sx + 1.6, 0));
+    g.add(print("1    2", 18, 5, xf - 30, yb + R * sx + 1.7, 6.8, WHITE, "y"));
+  }
+  if (nose === "inflator") { // round black front cap the hose comes out of, the hose looping down to a lock-on chuck
+    N.add(band(r0 + 0.8, -3, 0.6, mat.black));
+    N.add(xturn([[r0 * 1.02, -4], [r0 * 1.04, 4], [r0 * 0.96, 12], [r0 * 0.7, 16], [0.1, 17]], mat.black, { segs: 48 }));
+    for (let i = 0; i < 8; i++) { const a = (i * PI) / 4; N.add(at(cyl(1.4, 2, mat.hole, { along: "x", segs: 8 }), 14.6, Math.sin(a) * r0 * 0.55, Math.cos(a) * r0 * 0.55)); }
+    N.add(at(cyl(6, 8, mat.rubber, { along: "x" }), 19, 0, 0));
+    const hx = xf + 22, pts = [[hx, yb, 0], [hx + 22, yb - 6, 4], [hx + 40, yb - 40, 14], [hx + 36, 40, 26], [hx + 6, 8, 34], [hx - 50, 5, 38], [hx - 96, 5, 30]];
+    g.add(tube(pts, 4.2, mat.rubber, 12));
+    for (let i = 0; i < 9; i++) g.add(at(cyl(5.4, 2.4, mat.rubber, { along: "x" }), hx + 2 + i * 2.6, yb - i * 0.6, 0.4 * i)); // strain-relief coil
+    g.add(at(cyl(5.6, 22, mat.chrome, { along: "x" }), hx - 107, 5.6, 30), at(cyl(4, 6, mat.brass, { along: "x" }), hx - 121, 5.6, 30));
+    // pressure display and buttons on the back
+    g.add(at(rbox(4, R * 0.9, R * 1.1, mat.screen, 2, 1), xr - 1, yb + 2, 0));
+    g.add(print("35 PSI", 26, 9, xr - 3.2, yb + 4, 0, { color: "#7fd3ff" }, "-x"));
+    for (const z of [-8, 0, 8]) g.add(at(cyl(2.6, 2, mat.black, { along: "x" }), xr - 1, yb - R * 0.45, z));
   }
   g.userData.yaw = -0.5; g.userData.yb = yb; g.userData.xr = xr; g.userData.xf = xf;
   return g;
@@ -695,7 +721,10 @@ export const MODELS = {
   "cl18-ratchet": (o = {}) => cratchet("18", o.drive, neck3d(o)),
   "cl18-grinder": () => rightAngle({ pk: "18", tag: "18V" }),
   "cl18-cutoff": () => rightAngle({ pk: "18", cut: true, disc: 38, R: 22, len: 150, handle: false, tag: "18V", yb0: 46 }),
-  "cl14-polisher": () => rightAngle({ pk: "14", pad: true, bail: true, R: 24, len: 150, tag: "14.4V" }),
+  // CTPP861/761 polish/prep tool: the stubby 14.4V pistol body with a small backing pad on the front
+  "cl14-polisher": (o = {}) => pistol({ pn: o.pn, pk: "14", nose: "pad", len: 98, R: 26, tag: "14.4V", tag2: "3500 · 15000", gripH: 84, gripT: 31, gripW: 42, px: 6 }),
+  // CTINF9010 18V handheld inflator
+  "cl18-inflator": (o = {}) => pistol({ pn: o.pn, pk: "18", nose: "inflator", len: 96, R: 34, tag2: "18V INFLATOR", gripH: 88, gripT: 35 }),
   "cl14-saw": (o = {}) => { const s = pistol({ pn: o.pn, pk: "14", nose: "saw", len: 220, R: 26, xr: -40, px: -4, tag: "14.4V", gripH: 84, gripT: 31, gripW: 42 }); s.userData.sway = 0.75; return s; },
   "air-bit": (o) => airBits(o),
   "cl18-saw": (o = {}) => { const s = pistol({ pn: o.pn, pk: "18", nose: "saw", len: 250, R: 30, xr: -46, px: -6, tag: "18V", gripH: 92, gripT: 35 }); s.userData.sway = 0.75; return s; },

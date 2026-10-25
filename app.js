@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const EST = `<abbr class="est" title="Gemini's estimate. The BoxTally owner hasn't checked it yet.">est.</abbr>`;
   // The same tool in another color shares its list price: CDR9050, CDR9050DB, CDR9050HVDB and CDR9050GDB
   // are one family, as are PTM18AM and PTM18AMO. Same rule as checker/color-family.mjs (its test checks this line).
-  const COLOR_END = /^(.*\d)(?:AM)?(?:R|O|G|GM|HV)?(?:DB)?$/;
+  const COLOR_END = /^(.*\d)(?:AM)?(?:R|O|G|GM|HV|MB|BKDB)?(?:DB)?$/;
   const colorFamily = (pn) => { const m = COLOR_END.exec(String(pn || "")); return m && m[1].length >= 3 ? m[1] : null; };
   // family -> the confirmed price row to share: the plain number first, then any owner-saved one
   function familyPrices(rows) {
@@ -407,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^HS(G|M|BM)?\d/, "hacksaw"],
     // shop equipment
     [/^JCW/, "creeper"], [/^FJ\d/, "floor-jack"], [/^CGG\d/, "grease-gun"], [/^CGR[RS]\d/, "grinder-die"], [/^(CG|CJ)\d/, "puller"],
-    [/^ECHD/, "headlamp"], [/^ECPN/, "flashlight"], [/^EC(?!FM)[A-Z]/, "shop"],
+    [/^ECHD/, "headlamp"], [/^ECPN/, "flashlight"], [/^ECPRB0\d\d/, "puck-light"], [/^EC(?!FM)[A-Z]/, "shop"],
     [/^MAGM/, "magmat"], [/^(JCKS?\d|CKM\d)/, "magmat"], [/^C[0O](100|710|612A?)$/, "tool-bag"], [/^(PB\d{2,3}[A-Z]?|PAKPB\d{3})$/, "bit-case"], [/^TPGDL/, "tire-inflator"], [/^YA1005/, "extractor"],
     // diagnostics
     [/^EEDM/, "multimeter"], [/^EE(TH|SC)/, "diag-handheld"], [/^(ZEE|EE)/, "diag-tablet"],
@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // mini drills (CDRR2005) are 14.4V too.
   const CORDLESS = {
     14: { "power-ratchet": "cl14-ratchet", power: "cl14-impact", "power-stubby": "cl14-impact", "power-12": "cl14-impact", "power-driver": "cl14-driver", "power-drill": "cl14-drill", "grinder-die": "cl14-die", battery: "cl14-battery", "cl18-saw": "cl14-saw", polisher: "cl14-polisher" },
-    18: { "power-ratchet": "cl18-ratchet", power: "cl18-impact", "power-stubby": "cl18-impact", "power-12": "cl18-impact", "power-driver": "cl18-driver", "power-drill": "cl18-drill", battery: "cl18-battery", "grinder-angle": "cl18-grinder", cutoff: "cl18-cutoff" },
+    18: { "power-ratchet": "cl18-ratchet", power: "cl18-impact", "power-stubby": "cl18-impact", "power-12": "cl18-impact", "power-driver": "cl18-driver", "power-drill": "cl18-drill", battery: "cl18-battery", "grinder-angle": "cl18-grinder", cutoff: "cl18-cutoff", "tire-inflator": "cl18-inflator" },
   };
   function voltOf(text, pn) {
     if (/\b14\.4\s*-?\s*v(olt)?\b/i.test(text)) return 14;
@@ -592,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "pliers-strip": "Wire strippers", "pliers-crimp": "Crimpers", "pliers-hose": "Hose clamp pliers", tapdie: "Tap & die", file: "File", scraper: "Gasket scraper", tape: "Tape measure", knife: "Utility knife",
     "cl14-ratchet": "14.4V cordless ratchet", "cl14-impact": "14.4V cordless impact", "cl14-driver": "14.4V impact driver", "cl14-drill": "14.4V drill/driver", "cl14-die": "14.4V die grinder", "cl14-battery": "14.4V battery",
     "cl18-impact": "18V cordless impact", "cl18-driver": "18V impact driver", "cl18-drill": "18V drill/driver", "cl18-ratchet": "18V cordless ratchet",
-    "cl18-grinder": "18V angle grinder", "cl18-cutoff": "18V cut-off tool", "cl18-saw": "18V reciprocating saw", "cl14-saw": "14.4V reciprocating saw", "cl14-polisher": "14.4V polisher", "cl18-battery": "18V battery",
+    "cl18-grinder": "18V angle grinder", "cl18-cutoff": "18V cut-off tool", "cl18-saw": "18V reciprocating saw", "cl14-saw": "14.4V reciprocating saw", "cl14-polisher": "14.4V polish/prep tool", "cl18-inflator": "18V inflator", "puck-light": "Project light", "cl18-battery": "18V battery",
     "floor-jack": "Floor jack", "jack-stand": "Jack stands", "grease-gun": "Grease gun", "drain-pan": "Oil drain pan", funnel: "Funnel", blowgun: "Blow gun", "air-hose": "Air hose",
     "tire-gauge": "Tire pressure gauge", "tire-inflator": "Tire inflator", "tire-plug": "Tire plug kit", vise: "Bench vise", clamp: "C-clamp",
     caliper: "Digital caliper", micrometer: "Micrometer", feeler: "Feeler gauge", "dial-indicator": "Dial indicator", "pressure-gauge": "Pressure tester", thermometer: "Infrared thermometer", stethoscope: "Mechanic's stethoscope",
@@ -623,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnDrive = (pn) => (pnGuess(pn) || {}).drive || null;
   // The family a kind of tool belongs to: socket-deep is a socket, air-impact a power tool.
   const POWER_KINDS = ["air-impact", "air-ratchet", "air-hammer", "air-bit", "grinder-die", "grinder-angle", "battery", "charger", "rivet", "polisher", "cutoff", "heatgun"];
-  const familyOf = (k) => (POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp"].includes(k) ? "shop" : k.split("-")[0]);
+  const familyOf = (k) => (POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp", "puck-light"].includes(k) ? "shop" : k.split("-")[0]);
   // The drive category a tool belongs in. A hand-picked drive category that the name or part number
   // contradicts (S80A filed under 3/8" Drive Tools) shows, filters and sorts as the right one.
   // The category a drawing kind belongs in, for tools saved without one ("Other", the quick add's default).
@@ -727,7 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const WRENCH_BASE = { wrench: "combo", "wrench-ratchet": "ratchet", "wrench-speed": "speed", "wrench-rbox": "rbox", "wrench-box": "box", "wrench-open": "open", "wrench-flare": "flare" };
   const WRENCH_WORDS = [[/\blong\b/i, "long"], [/short|stubby/i, "short"], [/midget/i, "midget"], [/6[- ]?(pt|point)/i, "6pt"], [/flex/i, "flex"], [/reversible/i, "rev"], [/deep/i, "deep"], [/s-?shaped/i, "s"], [/slim/i, "slim"], [/angle head|four ?way/i, "angle"]];
   // Snap-on paint codes after the model number: CTR868GMDB gunmetal (DB = tool only), CT861G green, CTR861HV hi-viz
-  const PAINT = { GM: "c-gm", G: "c-g", O: "c-o", HV: "c-hv", MB: "c-mb" };
+  const PAINT = { GM: "c-gm", G: "c-g", O: "c-o", HV: "c-hv", MB: "c-mb", BK: "c-bk" };
   const PAINT_WORDS = [[/gun ?metal/i, "c-gm"], [/green/i, "c-g"], [/orange/i, "c-o"], [/hi[- ]?vi[sz]|yellow/i, "c-hv"], [/blue/i, "c-mb"]];
   function paintOf(pn, text) {
     const w = firstHit(PAINT_WORDS, text); if (w) return w;
@@ -783,6 +783,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // colored grips: ADHW8AO, SRPCR107O and SAPB200O are orange, ...G green
     if (GRIP_KINDS.test(kind)) { const m = pn.match(/\d[A-Z]{0,3}?(O|G)$/), w = firstHit(PAINT_WORDS, text); if (w || m) t.push(w || (m[1] === "O" ? "c-o" : "c-g")); }
+    // project lights: the bumper color ends the number (ECPRB042M red, OM orange, GM green)
+    if (kind === "puck-light") { const m = pn.match(/\d(O|G)M$/); if (m) t.push(m[1] === "O" ? "c-o" : "c-g"); }
     return t;
   }
   // a truer name for the card: "Long combination wrench", "Reversible ratcheting wrench set", "Gunmetal 14.4V long-neck ratchet"
@@ -798,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [/drill$/, "hammer", (v) => (v ? v + "V hammer drill" : "Hammer drill")],
   ];
   const SET_LABEL = { rev: "Reversible ratcheting wrench set", ratchet: "Ratcheting wrench set", long: "Long wrench set", short: "Short wrench set", midget: "Midget wrench set", speed: "Speed wrench set", rbox: "Ratcheting box wrench set", deep: "Deep offset wrench set", box: "Box-end wrench set", open: "Open-end wrench set", flare: "Flare-nut wrench set", flex: "Flex-head wrench set" };
-  const PAINT_NAME = { "c-gm": "Gunmetal", "c-g": "Green", "c-o": "Orange", "c-hv": "Hi-viz", "c-mb": "Blue" };
+  const PAINT_NAME = { "c-gm": "Gunmetal", "c-g": "Green", "c-o": "Orange", "c-hv": "Hi-viz", "c-mb": "Blue", "c-bk": "Black" };
   function lookLabel(kind, look, label, spec) {
     let out = label;
     const n = (look.find((w) => /^n\d+$/.test(w)) || "").slice(1);
@@ -1205,9 +1207,22 @@ document.addEventListener("DOMContentLoaded", () => {
     + '<rect class="d" x="50" y="60" width="58" height="26" rx="6"/><rect class="sh" x="55" y="63" width="30" height="1.6" rx=".8" opacity=".4"/><rect class="g" x="46.6" y="66" width="4.4" height="12" rx="1.6"/><rect class="g" x="107" y="66" width="4.4" height="12" rx="1.6"/>'
     + '<text class="txw" x="74" y="76" font-size="8" text-anchor="middle">14.4V</text><text class="txw" x="74" y="82.4" font-size="3.6" text-anchor="middle">LITHIUM 2.5 Ah</text>'
     + '<circle class="led" cx="94" cy="74" r="1.5"/><circle class="led" cx="98.6" cy="74" r="1.5"/><circle class="ledoff" cx="103.2" cy="74" r="1.5"/>';
-  // 14.4V polisher: the stick pack's black cap in the back end instead of a red slide-on pack
-  ART["cl14-polisher"] = ART.polisher.replace('<path class="g" d="M120 34 H146 Q152 34 152 40 V50 Q152 56 146 56 H120 Z"/>',
-    '<path class="k" d="M120 34 H146 Q152 34 152 40 V50 Q152 56 146 56 H120 Z"/><rect class="g" x="128" y="33" width="3" height="24" rx="1"/><text class="txw" x="141" y="47" font-size="4.6" text-anchor="middle">14.4V</text>');
+  // 14.4V polish/prep tool (CTPP861/761): the stubby 14.4V pistol body, a short gear nose and a small backing pad facing forward
+  { const b = ART["cl14-impact"]; ART["cl14-polisher"] = b.slice(0, b.indexOf('<path class="s" d="M51 24.0')).replace('>3/8</text>', '>1 · 2</text>')
+    + '<path class="s" d="M51 25 L45 27.4 V40.6 L51 43 Z"/><rect class="sh" x="45.6" y="28.6" width="5" height="1.4" rx=".7"/><rect class="s" x="40.4" y="31.4" width="5.2" height="5.2" rx="1"/>'
+    + '<rect class="k" x="32.4" y="16.6" width="8.6" height="34.8" rx="3"/><rect class="d" x="30" y="17.8" width="3.4" height="32.4" rx="1.4"/><rect class="sh" x="34.4" y="19" width="1.6" height="12" rx=".8" opacity=".35"/>'
+    + '<rect class="k" x="88" y="16.2" width="16" height="4.4" rx="2"/><rect class="g" x="90" y="15.2" width="5.6" height="3.6" rx="1.2"/>'; }
+  // 18V handheld inflator (CTINF9010): the 18V pistol body with a round black front cap and the hose looping down to a chuck
+  { const b = ART["cl18-impact"]; ART["cl18-inflator"] = b.slice(0, b.indexOf('<path class="s" d="M43 19.0')).replace('>1/2</text>', '>PSI</text>')
+    + '<path class="to" stroke-width="6" d="M34 29 Q16 30 13 52 Q11 82 34 88 Q46 91 55 88.6"/><path class="tk" stroke-width="2.8" d="M34 29 Q16 30 13 52 Q11 82 34 88 Q46 91 55 88.6"/>'
+    + '<path class="k" d="M44 13.4 Q34.6 15.4 33.6 29 Q34.6 42.6 44 44.6 Z"/><circle class="pit" cx="38.4" cy="22" r="1.1"/><circle class="pit" cx="37" cy="29" r="1.1"/><circle class="pit" cx="38.4" cy="36" r="1.1"/>'
+    + '<rect class="s" x="54" y="85" width="11" height="7.4" rx="2"/><rect class="sh" x="55.4" y="86.2" width="8" height="1.3" rx=".6"/>'; }
+  // 545 lumen project light (ECPRB042): a rounded octagon puck with a colored bumper down one side, a round lens and a tilting stand
+  ART["puck-light"] = '<path class="k" d="M58 92 H102 Q106 92 106 88 V84 H54 V88 Q54 92 58 92 Z"/><rect class="d" x="72" y="74" width="16" height="12" rx="2"/><circle class="s" cx="80" cy="76" r="3"/>'
+    + '<path class="g" d="M62 10 H72 V78 H62 L46 62 V26 Z"/>'
+    + '<path class="k" d="M66 12 H94 L112 30 V58 L94 76 H66 L50 58 V30 Z"/><rect class="sh" x="68" y="15" width="22" height="1.6" rx=".8" opacity=".3"/>'
+    + '<circle class="s" cx="81" cy="44" r="18"/><circle class="d" cx="81" cy="44" r="14.6"/><circle class="w" cx="81" cy="44" r="8.4"/><circle class="led" cx="81" cy="44" r="5.4"/><circle class="w" cx="78.6" cy="41.6" r="1.6"/>'
+    + '<text class="txw" x="81" y="70" font-size="4.4" text-anchor="middle">545 LM</text>';
   ART["cl14-die"] = ART["cl14-ratchet"].slice(0, ART["cl14-ratchet"].indexOf('<text class="txw" x="64"'))
     + '<path class="s" d="M38 44 L56 41 V59 L38 56 Z"/><rect class="sh" x="40" y="44.6" width="13" height="1.5" rx=".75"/><path class="s" d="M39.4 50 L35.7 56.4 L28.3 56.4 L24.6 50 L28.3 43.6 L35.7 43.6 Z"/>'
     + '<rect class="s" x="12" y="48.6" width="14" height="2.8" rx="1"/><ellipse class="s" cx="13" cy="50" rx="5.4" ry="4.4"/><path class="nl" d="M9.4 47.6 L16.4 52.4 M9.4 52.4 L16.4 47.6"/>';

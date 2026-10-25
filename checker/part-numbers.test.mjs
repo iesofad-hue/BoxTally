@@ -147,7 +147,7 @@ const CASES = [
   ["C0100", "tool-bag"], ["PB206B", "bit-case"], ["MAGMATR", "magmat"], ["MAGMINI", "magmat"], ["PHG1004RPBK", "air-bit"], ["PHG1005BK", "air-bit"], ["PH3050BR", "air-hammer"],
   ["LDT40", "disconnect-set"], ["GSL832", "ratchet-long", '1/2"'], ["TNF72", "ratchet-round", '1/4"'], ["GTM830", "ratchet", '1/4"'], ["IEDP105", "pliers-pump"],
   ["P92055A", "pliers-needle"], ["YA824C", "pliers"], ["YA1005C", "extractor"], ["PSN500", "trim-tool"], ["SAPB200O", "pry"], ["SPBSDC705FR", "pry"], ["SRXRM710", "set-wrench"],
-  ["TPGDL2000HD", "tire-inflator"], ["ECHDH042", "headlamp"], ["ECPN1032R", "flashlight"], ["ECPRB042", "shop"], ["CTRS761", "cl14-saw"], ["CT861AMG", "cl14-impact"], ["CT9055DB", "cl18-impact"],
+  ["TPGDL2000HD", "tire-inflator"], ["ECHDH042", "headlamp"], ["ECPN1032R", "flashlight"], ["ECPRB042", "puck-light"], ["ECPRB042OM", "puck-light"], ["CTINF9010", "cl18-inflator"], ["CTPP861BKDB", "cl14-polisher"], ["CTRS761", "cl14-saw"], ["CT861AMG", "cl14-impact"], ["CT9055DB", "cl18-impact"],
 ];
 
 let bad = 0;
@@ -207,7 +207,7 @@ for (const [name, key, look] of [["Torx T25 bit", "insert-bit", "t-tx"], ["#2 Ph
 const longNamed = artOf({ part_number: "OEXM130B", name: "Long combination wrench 13mm", category: "Other" });
 if (!longNamed.look?.includes("long")) { bad++; console.log("name should make a long wrench:", longNamed.look); }
 // tools saved without a category ("Other") show the one their part number says
-const CATS = [["MAGMATR", "Shop & Tech"], ["CTINF9010", "Shop & Tech"], ["EESC337W", "Diagnostics"], ["PH3050BR", "Power Tools"], ["CTR827", "Power Tools"],
+const CATS = [["MAGMATR", "Shop & Tech"], ["CTINF9010", "Power Tools"], ["EESC337W", "Diagnostics"], ["PH3050BR", "Power Tools"], ["CTR827", "Power Tools"],
   ["YA1005C", "General Hand Tools"], ["BOERM712", "Service Tools - Sets"], ["GSL832", '1/2" Drive Tools'], ["TL936", '1/4" Drive Tools'], ["SN36", '1/2" Drive Tools'],
   ["87BCF", "Pliers"], ["HBBD56", "Hammers"], ["SAPB200O", "Prybars"], ["SGDMRC11A", "Screwdrivers"], ["ADHW8AO", "Wrenches"], ["PB206B", "Tool Storage"], ["SDMT25D", "Screwdrivers"], ["RKRF80", "General Hand Tools"], ["ZZZ", "Other"]];
 for (const [pn, cat] of CATS) { const got = catOf({ part_number: pn, name: "", category: "Other" }); if (got !== cat) { bad++; console.log(`${pn.padEnd(12)} category ${got}, want ${cat}`); } }

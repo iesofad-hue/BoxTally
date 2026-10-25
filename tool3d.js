@@ -74,7 +74,7 @@ function opts(key, size, drive, pn, look = "") {
 // Build a model and give it its finish: black industrial chrome for the G tools, the cordless colors
 // (gunmetal, green, orange, hi-viz, blue) for housings, and colored grips. Paint swaps the red; the
 // industrial finish swaps every bright metal for black chrome.
-const PAINT = { "c-gm": 0x4b5057, "c-g": 0x2f9e44, "c-o": 0xe8590c, "c-hv": 0xc9d81b, "c-mb": 0x1f63c6 };
+const PAINT = { "c-gm": 0x4b5057, "c-g": 0x2f9e44, "c-o": 0xe8590c, "c-hv": 0xc9d81b, "c-mb": 0x1f63c6, "c-bk": 0x1d1f23 };
 const tints = new Map(), shared = new WeakSet(); // tinted materials are shared by every model, so never disposed
 function tinted(m, how) {
   const id = m.uuid + how;

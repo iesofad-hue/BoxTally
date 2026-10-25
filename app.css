@@ -597,7 +597,7 @@ footer #iosHint { margin: 0 0 8px; }
 .art .ind :is(.s, .sv) { fill: url(#bx-steel-ind); } .art .ind .tsg { stroke: #4a5059; } .art .ind .sh { opacity: .25; } .art .ind .tx { fill: #e8ecf1; } .art .ind .rc { fill: #2a2f36; }
 .art .c-gm { --grip: #4b5057; } .art .c-gm .g { fill: url(#bx-grip-gm); } .art .c-g { --grip: #2f9e44; } .art .c-g .g { fill: url(#bx-grip-g); }
 .art .c-o { --grip: #e8590c; } .art .c-o .g { fill: url(#bx-grip-o); } .art .c-hv { --grip: #c9d81b; } .art .c-hv .g { fill: url(#bx-grip-hv); }
-.art .c-mb { --grip: #1f63c6; } .art .c-mb .g { fill: url(#bx-grip-mb); }
+.art .c-mb { --grip: #1f63c6; } .art .c-mb .g { fill: url(#bx-grip-mb); } .art .c-bk { --grip: #1d1f23; } .art .c-bk .g { fill: url(#bx-grip-bk); }
 .art .shl { fill: none; stroke: #fff; stroke-width: 1.4; stroke-opacity: .75; stroke-linecap: round; }
 .art .shd { fill: #000; opacity: .1; stroke: none; }
 .art .kn { fill: none; stroke: #fff; stroke-opacity: .42; stroke-width: 1.4; stroke-linecap: round; }
