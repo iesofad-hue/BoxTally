@@ -560,6 +560,37 @@ function handheldScanner() {
   const plug = obdPlug(); plug.rotation.y = PI / 2; plug.position.set(175, 0, 33); g.add(plug);
   g.userData.yaw = -0.3; return g;
 }
+// SOLUS+ / SOLUS Edge / ETHOS (EESC, EETH): a wide black tablet with ribbed rubber grips at the ends, red accents
+// on the top and bottom edge, a light home screen and the keys in a column on the right; propped up like a tablet
+function solusScreen(x, W, H) {
+  x.fillStyle = "#eef1f4"; x.fillRect(0, 0, W, H);
+  x.fillStyle = "#dfe3e8"; x.fillRect(0, 0, W, H * 0.06); txt(x, "10:53 AM", W * 0.97, H * 0.03, H * 0.035, "#4b5563", "right");
+  ["Scanner", "OBD-II/EOBD", "Quick Lookups", "Previous Vehicles", "Training", "Tools"].forEach((s, i) => {
+    const cx = W * (0.25 + (i % 3) * 0.25), cy = H * (0.36 + Math.floor(i / 3) * 0.32), r = H * 0.06;
+    x.fillStyle = "#1f3a5a"; rr(x, cx - r * 1.2, cy - r, r * 2.4, r * 1.7, 4); x.fill();
+    txt(x, s, cx, cy + H * 0.11, H * 0.035, "#4b5563", "center", 500);
+  });
+}
+function solusScanner() {
+  const W = 300, L = 176, T = 30, u = group();
+  u.add(at(slab(rrect(W - 20, L, 16), T - 6, 2, mat.rubber), 0, 0, 0));
+  for (const s of [-1, 1]) { // the ribbed grips at each end
+    u.add(at(slab(rrect(30, L - 10, 12), T + 2, 3, mat.rubber), s * (W / 2 - 14), 0, 0));
+    for (let i = 0; i < 7; i++) u.add(at(box(6, T - 6, 12, mat.black, 2), s * (W / 2 + 1), 0, -54 + i * 18));
+  }
+  for (const s of [-1, 1]) u.add(at(box(150, T - 10, 6, mat.redp, 2.5), -10, 0, s * (L / 2 + 1))); // red accents top and bottom
+  u.add(at(slab(rrect(W - 60, L - 24, 8), 1.5, 0.5, mat.gloss), -4, T / 2 - 2, 0));
+  u.add(at(up(plane(170, 104, canvasMat(170, 104, solusScreen))), -18, T / 2 + 0.2, 4), at(up(plane(176, 110, M.glass)), -18, T / 2 + 0.4, 4));
+  u.add(at(up(plane(40, 8, label("SOLUS+", 40, 8, { color: "#f1f3f5", font: "800 80px Helvetica, Arial, sans-serif" }))), -18, T / 2 + 0.3, -60));
+  u.add(at(up(plane(48, 10, label("Snap-on", 48, 10, { color: "#e3262f", font: "italic 900 80px Helvetica, Arial, sans-serif" }))), -18, T / 2 + 0.3, 66));
+  const kx = W / 2 - 54; // keys: Y/N, the D-pad, the shortcut key and power
+  u.add(at(cyl(14, 3, mat.black, { segs: 32 }), kx, T / 2 - 0.5, -24), at(cyl(5, 4, mat.satin, { segs: 20 }), kx, T / 2, -24));
+  u.add(at(cyl(5, 3, mat.black, { segs: 20 }), kx - 7, T / 2 - 0.5, -56), at(cyl(5, 3, mat.black, { segs: 20 }), kx + 7, T / 2 - 0.5, -56));
+  u.add(at(cyl(8, 3, mat.black, { segs: 24 }), kx, T / 2 - 0.5, 16), at(cyl(8, 3, mat.black, { segs: 24 }), kx, T / 2 - 0.5, 52));
+  u.add(at(cyl(3, 3.6, mat.grey, { segs: 16 }), kx, T / 2, 16), at(cyl(3, 3.6, mat.grey, { segs: 16 }), kx, T / 2, 52));
+  const { g } = propped(u, 0.9, { W: W - 40, L, T });
+  g.userData.yaw = -0.3; return g;
+}
 function kelvinClamp(m) { // battery clamp lying flat, jaws toward +x, cable at x = 0
   const half = (s) => group(
     at(rot(sc(capsule(9, 62, m), 1, 0.7, 1), 0, s * 0.16), 40, 8, s * 9),
@@ -757,13 +788,66 @@ function drainPan() {
 }
 
 /* ---------- the keys ---------- */
-// A flexible red magnetic mat with a few nuts and a bolt stuck to it.
-function magMat(mini = false) {
-  const w = mini ? 150 : 280, d = mini ? 100 : 200;
-  const g = group(at(box(w, 3, d, M.redrub, 1.4), 0, 1.5, 0));
-  [[-w * 0.3, -d * 0.2, 7], [w * 0.1, d * 0.22, 9], [w * 0.32, -d * 0.1, 6]].forEach(([x, z, s], i) => { const n = nut(s, i % 2 ? mat.satin : mat.chrome); n.position.set(x, 3, z); n.rotation.y = i; g.add(n); });
-  const b = bolt(36, 4); b.position.set(-w * 0.05, 2.4, -d * 0.05); b.rotation.y = 0.5; g.add(b);
+/* Snap-on magnetic mats, trays and dishes. The color is the end of the part number (MAGMATR red, ...G green,
+   ...HV hi-viz, none black): models are red and lookOf() paints them. Faces carry a carbon-fibre weave and a black
+   "Snap-on" tag; the weave is a printed overlay so the paint shows through it. */
+const weave = (w, d) => canvasMat(w, d, (x, W, H) => {
+  x.clearRect(0, 0, W, H); const s = 10;
+  for (let i = 0; i * s < W; i++) for (let j = 0; j * s < H; j++) {
+    x.fillStyle = (i + j) % 2 ? "rgba(0,0,0,0.22)" : "rgba(255,255,255,0.07)";
+    x.beginPath(); (i + j) % 2 ? x.ellipse(i * s + s / 2, j * s + s / 2, s * 0.5, s * 0.22, PI / 4, 0, PI * 2) : x.ellipse(i * s + s / 2, j * s + s / 2, s * 0.5, s * 0.22, -PI / 4, 0, PI * 2); x.fill();
+  }
+}, { transparent: true, px: 1024 });
+const snapTag = (w) => group(at(box(w, 1.4, w * 0.3, mat.black, 0.5), 0, 0.7, 0), at(up(plane(w * 0.86, w * 0.22, label("Snap-on", w, w * 0.25, { color: "#f1f3f5", font: "italic 900 80px Helvetica, Arial, sans-serif" }))), 0, 1.5, 0));
+// a flat mat: black bound edge round a painted face; size "micro" (with a hang tab), "mini" (square), "xl" (long strip)
+function magMat(size = "") {
+  const [w, d, r] = { micro: [64, 64, 12], mini: [140, 140, 18], xl: [440, 92, 12] }[size] || [280, 204, 22];
+  const g = group(at(slab(rrect(w, d, r), 2, 1, mat.rubber), 0, 2, 0), at(slab(rrect(w - 10, d - 10, r - 4), 0.6, 0.6, M.redrub), 0, 3.4, 0));
+  g.add(at(up(plane(w - 10, d - 10, weave(w - 10, d - 10))), 0, 4.75, 0));
+  if (size === "micro") { // the hang tab with the Snap-on S
+    g.add(at(box(26, 2.4, 44, mat.rubber, 1), 0, 1.6, -d / 2 - 14), at(up(plane(14, 14, label("S", 14, 14, { color: "#f1f3f5", font: "italic 900 80px Helvetica, Arial, sans-serif" }))), 0, 2.9, -d / 2 - 22));
+  } else {
+    const t = snapTag(Math.min(52, w * 0.24)); t.position.set(size === "mini" ? 0 : w / 2 - 44, 4.2, d / 2 - 16); if (size !== "mini") t.rotation.y = 0.1; g.add(t);
+  }
+  if (!size || size === "xl") { // a few nuts and a bolt stuck to it
+    [[-w * 0.3, -d * 0.2, 7], [w * 0.05, d * 0.18, 9], [w * 0.22, -d * 0.16, 6]].forEach(([x, z, s], i) => { const n = nut(s, i % 2 ? mat.satin : mat.chrome); n.position.set(x, 4.8, z); n.rotation.y = i; g.add(n); });
+    const b = bolt(36, 4); b.position.set(-w * 0.08, 4.4, d * 0.05); b.rotation.y = 0.5; g.add(b);
+  } else if (size === "mini") { const n = nut(8, mat.chrome); n.position.set(-24, 4.8, -20); g.add(n); }
   g.userData.yaw = -0.35; return g;
+}
+// folding magnetic tray (MAGTRAY): a soft square tray, walls folded up and pinched at the corners with black snaps
+function foldTray() {
+  const S = 160, Hh = 34, g = group(at(slab(rrect(S, S, 8), 2, 1, M.redrub), 0, 2, 0), at(up(plane(S - 6, S - 6, weave(S - 6, S - 6))), 0, 4.1, 0));
+  for (let k = 0; k < 4; k++) {
+    const wall = group(at(box(S - 18, Hh, 3, M.redrub, 1.2), 0, Hh / 2, 0), at(box(S - 18, 3, 4.4, mat.rubber, 1.2), 0, Hh, 0));
+    wall.rotation.x = -0.32; wall.position.set(0, 2, S / 2 - 1); const arm = group(wall); arm.rotation.y = (k * PI) / 2; g.add(arm);
+    const c = group(at(rot(box(16, Hh + 6, 16, mat.rubber, 4), 0, PI / 4), 0, (Hh + 6) / 2, 0), at(cyl(5, 3, mat.satin, { along: "z", segs: 20 }), 0, Hh - 4, 8));
+    const a = (k * PI) / 2 + PI / 4; c.position.set(Math.sin(a) * (S / 2 + 4), 0, Math.cos(a) * (S / 2 + 4)); c.rotation.y = a; g.add(c);
+  }
+  const t = snapTag(36); t.position.set(0, 4.2, -S / 2 + 18); g.add(t);
+  [[-30, 20, 7], [24, -14, 8]].forEach(([x, z, s], i) => { const n = nut(s, i ? mat.satin : mat.chrome); n.position.set(x, 4.2, z); g.add(n); });
+  g.userData.yaw = -0.35; return g;
+}
+// collapsible magnetic dish (MAGDISH): a red square rubber cup with a black floor and a black lid hinged open behind
+function magDish() {
+  const S = 110, Hh = 66, g = group(at(slab(frameShape(S, S, 18, 6), Hh - 2, 1, M.redrub), 0, Hh / 2, 0), at(slab(rrect(S - 8, S - 8, 14), 2, 0.5, mat.rubber), 0, 3, 0));
+  for (let i = 1; i < 4; i++) g.add(at(slab(frameShape(S + 1.4, S + 1.4, 18.6, 1.4), 1, 0.3, M.redrub), 0, i * 16, 0)); // collapse folds
+  const lid = group(at(slab(rrect(S, S, 18), 4, 1, mat.rubber), 0, 0, -S / 2)); lid.position.set(0, Hh, -S / 2); lid.rotation.x = -1.2; g.add(lid);
+  const t = snapTag(40); t.rotation.x = PI / 2; t.position.set(0, Hh * 0.62, S / 2 + 0.6); g.add(t);
+  g.userData.yaw = -0.4; return g;
+}
+// magnetic tool pouch (MAGPOUCH): a flat black pouch standing up with its mouth open and "Snap-on" across the front
+function magPouch() {
+  const g = group(at(box(200, 110, 26, M.vinyl, 10), 0, 55, 0), at(box(186, 4, 14, mat.hole, 2), 0, 109, 0), at(box(204, 6, 30, mat.rubber, 3), 0, 3, 0));
+  g.add(at(plane(110, 22, label("Snap-on", 110, 22, { color: "#f1f3f5", font: "italic 900 80px Helvetica, Arial, sans-serif" })), 0, 62, 13.2));
+  g.userData.yaw = -0.4; return g;
+}
+// extra-large magnetic parts bowl (MAGBOWLXL): a long black open bowl with rounded ends and a few bolts in it
+function magBowl() {
+  const g = group(at(slab(frameShape(280, 92, 24, 5), 36, 1.5, M.hdpe), 0, 19, 0), at(slab(rrect(272, 84, 20), 2, 0.5, M.hdpe), 0, 2, 0));
+  [[-80, 10, 7], [-40, -16, 9], [60, 8, 8]].forEach(([x, z, s], i) => { const n = nut(s, i % 2 ? mat.satin : mat.chrome); n.position.set(x, 4, z); g.add(n); });
+  const b = bolt(40, 4.4); b.position.set(10, 3.6, 0); b.rotation.y = 0.3; g.add(b);
+  g.userData.yaw = -0.3; return g;
 }
 // A soft zip kit bag: black nylon body, red band, zip along the top and a pull.
 function kitBag() {
@@ -782,9 +866,11 @@ function bitCase() {
 }
 // An open blow-molded case: the base on the bench with its insert, the lid swung up behind on its hinge and
 // two latches on the front. fill(g, top) lays the contents on the insert.
-function openCase({ W = 240, D = 160, H = 30, shell = M.grey, insert = M.grey, fill = () => {} } = {}) {
+// lidFill(lid, W, D) puts things on the lid's inside face: x across, z up the lid from the hinge, facing -y.
+function openCase({ W = 240, D = 160, H = 30, shell = M.grey, insert = M.grey, fill = () => {}, lidFill = null, lidIn = M.liner } = {}) {
   const g = group(at(box(W, H, D, shell, 10), 0, H / 2, 0), at(box(W - 16, 4, D - 16, insert, 4), 0, H - 1, 0));
-  const lid = group(at(box(W, 22, D, shell, 10), 0, 11, D / 2), at(box(W - 18, 2, D - 18, M.liner, 4), 0, 0.6, D / 2));
+  const lid = group(at(box(W, 22, D, shell, 10), 0, 11, D / 2), at(box(W - 18, 2, D - 18, lidIn, 4), 0, 0.6, D / 2));
+  if (lidFill) lidFill(lid, W, D);
   lid.position.set(0, H, -D / 2); lid.rotation.x = -PI / 2 - 0.22; g.add(lid);
   for (const x of [-W * 0.3, W * 0.3]) g.add(at(box(26, 12, 5, M.dark, 2), x, H - 6, D / 2 + 1.5));
   g.add(at(box(W * 0.36, 12, 8, shell, 4), 0, H / 2, D / 2 + 3)); // carry handle molded into the front
@@ -801,6 +887,84 @@ function bitSocketCase() {
       g.add(at(box(r * 2.4, 1, 6, M.liner, 0.3), x, t + 0.3, z + 8));
     }
   } });
+}
+// a printed chart on the inside of a lid (x, z its centre on the lid)
+const lidChart = (lid, w, h, draw, x, z) => lid.add(at(rot(plane(w, h, canvasMat(w, h, draw, { px: 1024 })), PI / 2), x, -0.6, z));
+function lugChart(x, W, H) {
+  x.fillStyle = "#f4f4f1"; x.fillRect(0, 0, W, H);
+  txt(x, "YA1005C Deluxe Hubcap & Wheel Lock Removal Kit", W / 2, H * 0.07, H * 0.06, "#15181c", "center", 800);
+  txt(x, "WARNING: Eye Protection Must Be Worn When Using These Tools", W / 2, H * 0.14, H * 0.035, "#15181c", "center", 700);
+  x.fillStyle = "#2a2d31";
+  [[0.04, 0.24, 0.05, 0.5], [0.91, 0.24, 0.05, 0.5]].forEach(([a, b, w, h]) => { rr(x, W * a, H * b, W * w, H * h, 6); x.fill(); });
+  for (let r = 0; r < 3; r++) for (let i = 0; i < 6; i++) {
+    const X = W * (0.14 + i * 0.125), Y = H * (0.26 + r * 0.24), w = W * (0.035 + ((i + r) % 3) * 0.02);
+    x.fillStyle = "#2a2d31"; rr(x, X, Y, w, H * 0.1, 5); x.fill();
+    txt(x, ["Lock socket", "Extractor", "GM locks", "Spline", "Hubcap", "Ford locks"][(i + r) % 6], X + w / 2, Y + H * 0.15, H * 0.028, "#4a4f56", "center", 600);
+  }
+  x.fillStyle = "#2a2d31"; rr(x, W * 0.22, H * 0.2, W * 0.42, H * 0.04, 6); x.fill();
+}
+// Blue-Point deluxe hubcap & wheel lock removal kit (YA1005C): grey case, black oxide sockets and extractors in pockets, chart in the lid
+function lugKitCase() {
+  const W = 260, D = 176;
+  return openCase({ W, D, H: 32, lidIn: mat.white, lidFill: (lid) => lidChart(lid, W - 30, D - 30, lugChart, 0, D / 2), fill: (g, t) => {
+    const lay = (r, len, along, x, z, hex = false) => {
+      g.add(at(box(along === "x" ? len + 6 : r * 2 + 6, 2, along === "x" ? r * 2 + 6 : len + 6, M.liner, 1), x, t + 0.2, z)); // the pocket
+      g.add(at(cyl(r, len, mat.oxide, { along, segs: hex ? 6 : 28 }), x, t + r * 0.7, z));
+    };
+    lay(9, 92, "z", -110, -10); lay(11, 22, "z", -110, 46, true); lay(9, 92, "z", 110, -10); lay(11, 22, "z", 110, 46, true);
+    lay(10, 140, "x", -10, -58); lay(6.5, 30, "x", 74, -58);
+    lay(12, 80, "x", -40, -14); lay(14, 96, "x", -32, 40); lay(15, 74, "z", 40, 18, true); lay(9, 60, "z", 74, 22);
+  } });
+}
+// Blue-Point master disconnect set (LDT40): big grey case, scissor tools and the chart in the lid; pliers and a
+// line tool on top, two rows of coloured collars, chrome rings and coloured angled tools in the base
+function masterChart(x, W, H) {
+  x.fillStyle = "#f6f6f3"; x.fillRect(0, 0, W, H);
+  txt(x, "Master Disconnect Set", W / 2, H * 0.06, H * 0.055, "#15181c", "center", 800);
+  for (let c = 0; c < 4; c++) for (let r = 0; r < 9; r++) { x.fillStyle = "#9aa0a6"; x.fillRect(W * (0.04 + c * 0.24), H * (0.13 + r * 0.09), W * (0.12 + ((r + c) % 3) * 0.03), H * 0.012); }
+  x.fillStyle = "#2a2d31"; for (let i = 0; i < 6; i++) { x.beginPath(); x.arc(W * (0.12 + i * 0.15), H * 0.95, H * 0.025, 0, PI * 2); x.fill(); }
+}
+const COLLAR = [mat.yellow, mat.redp, mat.blue, M.green, mat.black, mat.black, mat.white, mat.grey];
+function collar(r, h, m) { // a split plastic disconnect collar standing up, with its slot and flange
+  return group(turned([[r * 0.5, 0], [r * 1.25, 0], [r * 1.25, h * 0.22], [r, h * 0.3], [r, h], [r * 0.5, h]], m, { along: "y", segs: 40 }), at(box(r * 2.6, h + 0.4, r * 0.25, mat.hole, 0.2), 0, h / 2, r * 0.6));
+}
+function scissorTool(len, m = mat.chrome) { // two flat arms crossed at a pivot, half-round jaws at the top (along +z)
+  const g = group();
+  for (const s of [-1, 1]) g.add(at(rot(box(7, 3, len, m, 1.4), 0, s * 0.08), s * 5, s * 1.6, len / 2));
+  g.add(at(cyl(7, 4, m, { segs: 24 }), 0, 0, len * 0.86), at(cyl(3.4, 5, mat.hole, { segs: 16 }), 0, 0, len * 0.86), at(cyl(2.4, 9, mat.steel, { segs: 12 }), 0, 0, len * 0.55));
+  return g;
+}
+function masterDisconnect() {
+  const W = 300, D = 250;
+  return openCase({ W, D, H: 36, lidFill: (lid) => {
+    lidChart(lid, 110, 120, masterChart, 0, 150);
+    for (const x of [-120, -94, 94, 120]) { const sc = scissorTool(110); sc.position.set(x, -2, 92); lid.add(sc); }
+    for (const x of [-70, 70]) { const sc = rot(scissorTool(80, mat.black), 0, x < 0 ? -PI / 2 + 0.2 : PI / 2 - 0.2, 0); sc.position.set(x, -2, 52); lid.add(sc); }
+    lid.add(at(box(44, 6, 18, mat.black, 2), 100, -3, 52), at(cyl(8, 26, mat.chrome, { along: "x", segs: 20 }), 30, -8, 52));
+  }, fill: (g, t) => {
+    g.add(at(box(110, 8, 16, mat.black, 2), -60, t + 4, -96), at(box(30, 22, 16, mat.black, 3), -110, t + 6, -86));
+    const pl = group(at(capsule(5, 56, mat.blue), 40, 0, -4), at(capsule(5, 56, mat.blue), 40, 0, 6), at(box(40, 5, 12, mat.chrome, 2), -10, 0, 1));
+    pl.position.set(40, t + 5, -92); g.add(pl);
+    for (let row = 0; row < 2; row++) for (let i = 0; i < 7; i++) {
+      const r = row ? 10 : 6.5, c = collar(r, row ? 22 : 18, row ? COLLAR[i] : [mat.blue, mat.brass, mat.chrome, mat.brass, M.green, mat.black, mat.black][i]);
+      c.position.set(-112 + i * 34, t, row ? -10 : -46); c.rotation.y = 0.4; g.add(c);
+    }
+    for (let i = 0; i < 6; i++) { const r = 12 - i * 1.3; g.add(at(turned([[r * 0.55, 0], [r, 0], [r, 8], [r * 0.55, 8]], mat.chrome, { along: "y", segs: 32 }), -116 + i * 26, t, 50)); }
+    [mat.yellow, mat.blue, mat.redp, M.green, mat.yellow, mat.white].forEach((m, i) => {
+      const a = group(at(box(8, 6, 46, m, 2.5), 0, 0, 0), at(rot(box(8, 6, 26, m, 2.5), 0.9), 0, 9, -26)); a.position.set(30 + i * 18, t + 4, 56); a.rotation.y = -0.25; g.add(a);
+    });
+  } });
+}
+// a smaller disconnect set: its collars standing in a black tray sized to the piece count (LDT8 = 8 collars)
+function disconnectSet({ pn = "" } = {}) {
+  const n = Math.max(4, Math.min(16, +(String(pn).match(/^LDT(\d+)/) || [])[1] || 8)), cols = Math.min(n, n > 8 ? Math.ceil(n / 2) : n), rows = Math.ceil(n / cols);
+  const W = cols * 38 + 24, D = rows * 44 + 24;
+  const g = group(at(box(W, 16, D, mat.black, 6), 0, 8, 0), at(box(W - 14, 2, D - 14, mat.hole, 3), 0, 16.2, 0));
+  for (let i = 0; i < n; i++) {
+    const c = collar(13 - (i % cols) * (5 / cols), 24, COLLAR[i % COLLAR.length]);
+    c.position.set(-W / 2 + 31 + (i % cols) * 38, 17, -D / 2 + 34 + Math.floor(i / cols) * 44); c.rotation.y = 0.5; g.add(c);
+  }
+  g.userData.yaw = -0.3; return g;
 }
 // 44 pc ratcheting screwdriver master foam set (SGDMRC44FR): black case, red handle, four extensions, rows of bits
 function sdFoamCase() {
@@ -829,12 +993,16 @@ export const MODELS = {
   "set-screwdriver": () => screwdriverSet(),
   "set-sd-case": () => sdFoamCase(),
   "bit-socket-case": () => bitSocketCase(),
+  "extractor-case": () => lugKitCase(),
+  "disconnect-master": () => masterDisconnect(),
+  "disconnect-set": (o = {}) => disconnectSet(o),
   "set-pliers": () => pliersSet(),
   "set-pick": () => pickSet(),
   "set-punch": () => punchSet(),
   "set-bit": () => bitSet(),
   "set-kit": () => socketKit(),
   diag: () => labScope(),
+  "diag-solus": () => solusScanner(),
   "diag-tablet": () => scanTablet(),
   "diag-handheld": () => handheldScanner(),
   "battery-tester": () => batteryTester(),
@@ -845,6 +1013,7 @@ export const MODELS = {
   other: () => closedCase(),
   creeper: () => creeper(),
   stool: () => stool(),
-  magtray: () => magTray(), magmat: () => magMat(), "tool-bag": () => kitBag(), "bit-case": () => bitCase(), "set-extension": (o = {}) => extensionSet(o.sizes?.length ? { sizes: o.sizes, drive: o.drive } : {}),
+  magtray: () => magTray(), magmat: () => magMat(), "magmat-mini": () => magMat("mini"), "magmat-micro": () => magMat("micro"), "magmat-xl": () => magMat("xl"),
+  "magtray-fold": () => foldTray(), magdish: () => magDish(), magpouch: () => magPouch(), magbowl: () => magBowl(), "tool-bag": () => kitBag(), "bit-case": () => bitCase(), "set-extension": (o = {}) => extensionSet(o.sizes?.length ? { sizes: o.sizes, drive: o.drive } : {}),
   "drain-pan": () => drainPan(),
 };

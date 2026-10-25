@@ -208,8 +208,9 @@ document.addEventListener("DOMContentLoaded", () => {
     [/seal (puller|remov|pick)|cotter (pin )?(puller|remov)/i, "seal-puller"], [/puller|harmonic balancer|gear pull|bearing (separ|split)/i, "puller"],
     [/ball ?joint|pickle ?fork|tie ?rod|pitman|separator/i, "ball-joint"], [/spring compressor|valve spring|strut (spring|compress)|coil spring/i, "spring-compressor"],
     [/\btrim\b|panel (pop|pry|remov|tool)|clip (pliers|remov|tool)|upholstery|fastener remov|push pin/i, "trim-tool"],
+    [/wheel ?lock remov|lock(ing)? lug|lug nut remov|hubcap/i, "extractor-case"],
     [/(?<!(fluid|oil|vacuum) )extractor|easy ?outs?|bolt[- ]?(out|grip|biter|remov)|screw remov|stud remov|nut (splitter|breaker)/i, "extractor"],
-    [/magnetic mat|mag ?mat/i, "magmat"], [/(air|pneumatic) hammer bits?|chisel bits?|hammer bit set/i, "air-bit"], [/disconnect (tool|set|kit)|line disconnect/i, "disconnect-set"],
+    [/micro magnetic mat/i, "magmat-micro"], [/mini magnetic mat/i, "magmat-mini"], [/folding magnetic tray/i, "magtray-fold"], [/magnetic dish/i, "magdish"], [/magnetic (tool )?pouch/i, "magpouch"], [/magnetic parts bowl/i, "magbowl"], [/magnetic mat|mag ?mat/i, "magmat"], [/(air|pneumatic) hammer bits?|chisel bits?|hammer bit set/i, "air-bit"], [/master disconnect/i, "disconnect-master"], [/disconnect (tool|set|kit)|line disconnect/i, "disconnect-set"],
     [/bit (case|holder case)|storage case|blow ?mold/i, "bit-case"], [/kit bag|tool ?bag|pouch/i, "tool-bag"], [/extension set|extensions? (set|kit)/i, "set-extension"],
     [/hand impact|manual impact|strike (impact|driver)|hammer driver/i, "hand-impact"], [/flash ?light|pen ?light|pocket light/i, "flashlight"],
     [/hack ?saw|jab saw/i, "hacksaw"], [/\bsnips?\b|aviation|tin cutter/i, "snips"], [/bolt cutters?|cable cutters?/i, "bolt-cutter"], [/tub(e|ing) cutter|pipe cutter/i, "tubing-cutter"],
@@ -349,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const PN_RULES = [
     // sets and kits
     [/^[TFSL][A-Z]*(72|80|720|830|936|880)[A-Z]*(SET|KIT)/, "set-kit", (m) => PN_DRIVE[m.input[0]]],
-    [/^[O0]FCA\d/, "filter-spider"], [/^BLPBTW/, "set-kit", at('1/4"')], [/^BLPBSS\d/, "bit-socket-case", at('1/4"')], [/^SGDMRC\d+F[A-Z]?$/, "set-sd-case"], [/^LDT\d/, "disconnect-set"], // OFCA1KT spider filter wrench, BLPBSS40 40 pc 1/4" stubby bit socket set, LDT40 master disconnect set
+    [/^[O0]FCA\d/, "filter-spider"], [/^BLPBTW/, "set-kit", at('1/4"')], [/^BLPBSS\d/, "bit-socket-case", at('1/4"')], [/^SGDMRC\d+F[A-Z]?$/, "set-sd-case"], [/^LDT([3-9]\d|\d{3})/, "disconnect-master"], [/^LDT\d/, "disconnect-set"], // OFCA1KT spider filter wrench, BLPBSS40 40 pc 1/4" stubby bit socket set, LDT40 master disconnect set
     [/(SET|KIT)\d*[A-Z]?$/, "set", (m) => PN_DRIVE[m.input[0]]],
     // pliers are numbers with letters after: 47ACF slip joint, 96CF needle nose, 87CF diagonal, PL400B a set
     [/^PL\d{3}/, "set-pliers"],
@@ -407,10 +408,10 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^HS(G|M|BM)?\d/, "hacksaw"],
     // shop equipment
     [/^JCW/, "creeper"], [/^FJ\d/, "floor-jack"], [/^CGG\d/, "grease-gun"], [/^CGR[RS]\d/, "grinder-die"], [/^(CG|CJ)\d/, "puller"],
-    [/^ECHD/, "headlamp"], [/^ECPN/, "flashlight"], [/^ECPRB0\d\d/, "puck-light"], [/^EC(?!FM)[A-Z]/, "shop"],
-    [/^MAGM/, "magmat"], [/^(JCKS?\d|CKM\d)/, "magmat"], [/^C[0O](100|710|612A?)$/, "tool-bag"], [/^(PB\d{2,3}[A-Z]?|PAKPB\d{3})$/, "bit-case"], [/^TPGDL/, "tire-inflator"], [/^YA1005/, "extractor"],
+    [/^ECHD/, "headlamp"], [/^ECPNI/, "pocket-light"], [/^ECPN/, "flashlight"], [/^ECPRB0\d\d/, "puck-light"], [/^EC(?!FM)[A-Z]/, "shop"],
+    [/^MAGMICRO/, "magmat-micro"], [/^MAGMINI/, "magmat-mini"], [/^MAGMATXL/, "magmat-xl"], [/^MAGM/, "magmat"], [/^MAGTRAY/, "magtray-fold"], [/^MAGDISH/, "magdish"], [/^MAGPOUCH/, "magpouch"], [/^MAGBOWL/, "magbowl"], [/^(JCKS?\d|CKM\d)/, "magmat"], [/^C[0O](100|710|612A?)$/, "tool-bag"], [/^(PB\d{2,3}[A-Z]?|PAKPB\d{3})$/, "bit-case"], [/^TPGDL/, "tire-inflator"], [/^YA1005/, "extractor-case"],
     // diagnostics
-    [/^EEDM/, "multimeter"], [/^EE(TH|SC)/, "diag-handheld"], [/^(ZEE|EE)/, "diag-tablet"],
+    [/^EEDM/, "multimeter"], [/^EE(TH|SC)/, "diag-solus"], [/^(ZEE|EE)/, "diag-tablet"],
     // storage (KER above is a knife)
     [/^KR(SC|BC)/, "storage-cart"], [/^K[A-Z]{1,4}\d/, "storage"],
     // cordless: CT impact, CTR ratchet, CDR drill, CTS screwdriver, CTGR grinder, CTB battery, CTC charger
@@ -529,7 +530,7 @@ document.addEventListener("DOMContentLoaded", () => {
       [/\bsaw\b|reciprocat|sawzall/i, "cl18-saw"], [/die grinder|straight grinder/i, "grinder-die"], [/grinder|cut-?off/i, "grinder-angle"], [/impact driver|hex driver|1\/4.{0,6}hex|screw ?driver/i, "power-driver"], [/drill/i, "power-drill"],
       [/air.{0,16}impact|impact.{0,16}air|pneumatic/i, "air-impact"], [/stubby|compact|mini|short/i, "power-stubby"], [/1\/2|3\/4|high.?torque/i, "power-12"], [/charger/i, "charger"], [/battery|\bbatt\b/i, "battery"]],
     storage: [[/cart/i, "storage-cart"], [/roll ?cab/i, "storage"], [/top chest|tool chest|chest/i, "storage-chest"]],
-    diag: [[/scope|oscillo|lab/i, "diag"], [/solus|triton|code reader|handheld|obd/i, "diag-handheld"]],
+    diag: [[/scope|oscillo|lab/i, "diag"], [/solus|ethos/i, "diag-solus"], [/triton|code reader|handheld|obd/i, "diag-handheld"]],
     hammer: [[/dead ?blow/i, "hammer-deadblow"], [/mallet|rubber|soft ?face/i, "hammer-mallet"], [/ball ?pe(e|i)n/i, "hammer-ballpeen"]],
     punch: [[/chisel/i, "punch"], [/punch|drift/i, "punch-pin"]],
     torque: [[/digital|electronic|techangle|tech ?wrench/i, "torque"], [/angle (gauge|meter)/i, "torque-angle"]],
@@ -586,13 +587,13 @@ document.addEventListener("DOMContentLoaded", () => {
     hexkeys: "Hex keys", nutdriver: "Nut driver", crowfoot: "Crowfoot wrench", testlight: "Test light", multimeter: "Multimeter", pickup: "Pickup tool",
     "storage-cart": "Service cart", "storage-chest": "Top chest",
     "set-wrench": "Wrench set", "set-screwdriver": "Screwdriver set", "set-pliers": "Pliers set", "set-pick": "Pick set", "set-punch": "Punch & chisel set", "set-bit": "Bit set", "set-kit": "Ratchet & socket kit",
-    "diag-tablet": "Scan tool", "diag-handheld": "Handheld scanner", "battery-tester": "Battery tester", borescope: "Inspection camera", jump: "Jump starter",
+    "diag-tablet": "Scan tool", "diag-handheld": "Handheld scanner", "diag-solus": "Scan tool", "extractor-case": "Lug nut removal kit", "battery-tester": "Battery tester", borescope: "Inspection camera", jump: "Jump starter",
     "hammer-ballpeen": "Ball peen hammer", "hammer-deadblow": "Dead blow hammer", "hammer-mallet": "Rubber mallet", "punch-pin": "Punch",
     "socket-spark": "Spark plug socket", "socket-o2": "O2 sensor socket", "filter-wrench": "Oil filter wrench", "filter-spider": "Spider filter wrench", "bit-socket-case": "Bit socket set", "set-sd-case": "Ratcheting screwdriver set", "torque-click": "Click torque wrench", "torque-angle": "Torque angle gauge",
     "pliers-strip": "Wire strippers", "pliers-crimp": "Crimpers", "pliers-hose": "Hose clamp pliers", tapdie: "Tap & die", file: "File", scraper: "Gasket scraper", tape: "Tape measure", knife: "Utility knife",
     "cl14-ratchet": "14.4V cordless ratchet", "cl14-impact": "14.4V cordless impact", "cl14-driver": "14.4V impact driver", "cl14-drill": "14.4V drill/driver", "cl14-die": "14.4V die grinder", "cl14-battery": "14.4V battery",
     "cl18-impact": "18V cordless impact", "cl18-driver": "18V impact driver", "cl18-drill": "18V drill/driver", "cl18-ratchet": "18V cordless ratchet",
-    "cl18-grinder": "18V angle grinder", "cl18-cutoff": "18V cut-off tool", "cl18-saw": "18V reciprocating saw", "cl14-saw": "14.4V reciprocating saw", "cl14-polisher": "14.4V polish/prep tool", "cl18-inflator": "18V inflator", "puck-light": "Project light", "cl18-battery": "18V battery",
+    "cl18-grinder": "18V angle grinder", "cl18-cutoff": "18V cut-off tool", "cl18-saw": "18V reciprocating saw", "cl14-saw": "14.4V reciprocating saw", "cl14-polisher": "14.4V polish/prep tool", "cl18-inflator": "18V inflator", "pocket-light": "Pocket light", "puck-light": "Project light", "cl18-battery": "18V battery",
     "floor-jack": "Floor jack", "jack-stand": "Jack stands", "grease-gun": "Grease gun", "drain-pan": "Oil drain pan", funnel: "Funnel", blowgun: "Blow gun", "air-hose": "Air hose",
     "tire-gauge": "Tire pressure gauge", "tire-inflator": "Tire inflator", "tire-plug": "Tire plug kit", vise: "Bench vise", clamp: "C-clamp",
     caliper: "Digital caliper", micrometer: "Micrometer", feeler: "Feeler gauge", "dial-indicator": "Dial indicator", "pressure-gauge": "Pressure tester", thermometer: "Infrared thermometer", stethoscope: "Mechanic's stethoscope",
@@ -600,7 +601,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extractor: "Bolt extractors", "hand-impact": "Hand impact driver", flashlight: "Flashlight", hacksaw: "Hacksaw", snips: "Aviation snips", "bolt-cutter": "Bolt cutters", "tubing-cutter": "Tubing cutter",
     flaring: "Flaring tool", "wire-brush": "Wire brush", "drill-bits": "Drill bit set", "hammer-body": "Body hammer & dolly", "hammer-sledge": "Sledge hammer",
     "lug-wrench": "Lug wrench", "strap-wrench": "Strap wrench", "pipe-wrench": "Pipe wrench", "terminal-tool": "Terminal tool kit", solder: "Soldering iron", "socket-rail": "Socket rail", stool: "Shop stool",
-    creeper: "Creeper", magtray: "Magnetic tray", magmat: "Magnetic mat", "tool-bag": "Kit bag", "bit-case": "Bit case", "air-bit": "Air hammer bits", "insert-bit": "Screwdriver bit", "repair-kit": "Repair kit", "set-extension": "Extension set", "disconnect-set": "Disconnect tool set", mirror: "Inspection mirror", headlamp: "Headlamp", polisher: "Polisher", cutoff: "Cut-off tool", rivet: "Rivet gun", heatgun: "Heat gun",
+    creeper: "Creeper", magtray: "Magnetic tray", magmat: "Magnetic mat", "magmat-mini": "Mini magnetic mat", "magmat-micro": "Micro magnetic mat", "magmat-xl": "XL magnetic mat", "magtray-fold": "Folding magnetic tray", magdish: "Magnetic dish", magpouch: "Magnetic tool pouch", magbowl: "Magnetic parts bowl", "tool-bag": "Kit bag", "bit-case": "Bit case", "air-bit": "Air hammer bits", "insert-bit": "Screwdriver bit", "repair-kit": "Repair kit", "set-extension": "Extension set", "disconnect-set": "Disconnect tool set", "disconnect-master": "Master disconnect set", mirror: "Inspection mirror", headlamp: "Headlamp", polisher: "Polisher", cutoff: "Cut-off tool", rivet: "Rivet gun", heatgun: "Heat gun",
     torque: "Digital torque wrench", insulated: "Insulated screwdriver", pry: "Pry bar", punch: "Chisel", hammer: "Hammer", general: "Hand tool", set: "Socket set", storage: "Roll cab", shop: "Shop light", diag: "Lab scope", other: "Drawing",
   };
   const DRIVE_KINDS = ["ratchet", "socket", "extension", "breaker", "ujoint", "adapter", "speeder"];
@@ -623,7 +624,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnDrive = (pn) => (pnGuess(pn) || {}).drive || null;
   // The family a kind of tool belongs to: socket-deep is a socket, air-impact a power tool.
   const POWER_KINDS = ["air-impact", "air-ratchet", "air-hammer", "air-bit", "grinder-die", "grinder-angle", "battery", "charger", "rivet", "polisher", "cutoff", "heatgun"];
-  const familyOf = (k) => (["bit-socket-case", "set-sd-case"].includes(k) ? "set" : POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp", "puck-light"].includes(k) ? "shop" : k.split("-")[0]);
+  const familyOf = (k) => (["bit-socket-case", "set-sd-case"].includes(k) ? "set" : POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp", "puck-light", "pocket-light"].includes(k) || /^mag/.test(k) ? "shop" : k.split("-")[0]);
   // The drive category a tool belongs in. A hand-picked drive category that the name or part number
   // contradicts (S80A filed under 3/8" Drive Tools) shows, filters and sorts as the right one.
   // The category a drawing kind belongs in, for tools saved without one ("Other", the quick add's default).
@@ -700,8 +701,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!m || !drive) return null;
       let g = null;
       for (let L = m[3]; L.length && !g; L = L.slice(0, -1)) { const t = pnGuess(L + "12"); if (t && /^socket/.test(t.key) && t.drive === drive) g = t; }
-      const member = g ? g.key : "socket", mm = metric ?? (g ? /mm$/.test(g.size) : /M/.test(m[3]));
+      // IP... sets are impact swivels (black), IPL... the deep ones: "socket-swivel+impact+deep"
+      const member = (g ? g.key : "socket") + (/^S?IP/.test(m[3]) ? "+impact" + (/^(IPL|SIP)/.test(m[3]) ? "+deep" : "") : ""), mm = metric ?? (g ? /mm$/.test(g.size) : /M/.test(m[3]));
       const n = Math.min(+m[2], 13);
+      // sets whose sizes skip the usual run, as Snap-on lists them
+      const own = { "207IPLFM": [10, 12, 13, 14, 15, 17, 18] }[pn];
+      if (own && !range) return member + ";" + own.map((x) => x + "mm").join(",");
       const sizes = mm ? run(RUN.sockMM[drive], n, { '1/4"': 5, '3/8"': 10, '1/2"': 10, '3/4"': 19 }[drive], range).map((x) => x + "mm") : run(RUN.sockSAE[drive], n, { '1/4"': "3/16", '3/8"': "5/16", '1/2"': "3/8", '3/4"': "3/4" }[drive], range).map((x) => x + '"');
       return member + ";" + sizes.join(",");
     }
@@ -784,6 +789,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // colored grips: ADHW8AO, SRPCR107O and SAPB200O are orange, ...G green
     if (GRIP_KINDS.test(kind)) { const m = pn.match(/\d[A-Z]{0,3}?(O|G)$/), w = firstHit(PAINT_WORDS, text); if (w || m) t.push(w || (m[1] === "O" ? "c-o" : "c-g")); }
     // project lights: the bumper color ends the number (ECPRB042M red, OM orange, GM green)
+    // magnetic mats, trays and dishes: MAGMATR red, ...G green, ...HV hi-viz, ...O orange, no letter black (MAGDISH is red)
+    if (/^mag(mat|tray-fold)/.test(kind)) { const m = pn.match(/^MAG[A-Z]*?(MICRO|MINI|MATXL|MAT|TRAY)(HV|R|G|O|B)?$/); const c = m && (m[2] ? { HV: "c-hv", G: "c-g", O: "c-o", B: "c-mb" }[m[2]] : "c-bk"); if (c) t.push(c); }
+    // slim pocket lights: ECPNI032R red, O orange, G green, B blue
+    if (kind === "pocket-light") { const m = pn.match(/\d(O|G|B)$/); if (m) t.push({ O: "c-o", G: "c-g", B: "c-mb" }[m[1]]); }
     if (kind === "puck-light") { const m = pn.match(/\d(O|G)M$/); if (m) t.push(m[1] === "O" ? "c-o" : "c-g"); }
     return t;
   }
@@ -1230,7 +1239,7 @@ document.addEventListener("DOMContentLoaded", () => {
     + '<path class="s" d="M74 40 H86 V90 Q86 93 83 93 H77 Q74 93 74 90 Z"/><path class="s" d="M28 30 Q80 14 132 30 Q134 36 128 38 Q80 26 32 38 Q26 36 28 30 Z"/><path class="shl" d="M40 29 Q80 19 120 29"/>'
     + '<ellipse class="s" cx="80" cy="27" rx="13" ry="5"/><rect class="pit" x="76" y="24.4" width="8" height="5" rx=".8"/><circle class="d" cx="56" cy="29" r="2"/><circle class="d" cx="104" cy="29" r="2"/>';
   // a blow-molded case standing open: lid up behind, base in front with what's in it
-  const openCaseArt = (shell, inner, body) => `<rect class="${shell}" x="18" y="6" width="124" height="40" rx="7"/><rect class="pit" x="24" y="11" width="112" height="30" rx="4"/>`
+  const openCaseArt = (shell, inner, body, lid = '<rect class="pit" x="24" y="11" width="112" height="30" rx="4"/>') => `<rect class="${shell}" x="18" y="6" width="124" height="40" rx="7"/>${lid}`
     + `<path class="${shell}" d="M14 50 H146 L150 86 Q150 92 144 92 H16 Q10 92 10 86 Z"/><path class="${inner}" d="M22 54 H138 L141 82 H19 Z"/><rect class="d" x="42" y="86" width="14" height="5" rx="1.6"/><rect class="d" x="104" y="86" width="14" height="5" rx="1.6"/>${body}`;
   { let b = ""; for (let r = 0; r < 4; r++) for (let i = 0; i < 10; i++) { const x = 27 + i * 11.6 + r * -0.3, y = 58 + r * 6.4; b += `<rect class="s" x="${f1(x)}" y="${f1(y)}" width="6" height="4.2" rx="1"/><rect class="sv" x="${f1(x + 1.8)}" y="${f1(y + 4)}" width="2.4" height="1.8" rx=".4"/>`; }
     ART["bit-socket-case"] = openCaseArt("cg", "cgi", b); }
@@ -1238,6 +1247,52 @@ document.addEventListener("DOMContentLoaded", () => {
       + '<rect class="s" x="26" y="67" width="40" height="2.4" rx="1.2"/><rect class="s" x="72" y="67" width="60" height="2.4" rx="1.2"/>';
     for (let r = 0; r < 2; r++) for (let i = 0; i < 14; i++) b += `<path class="s" d="M${f1(26 + i * 8)} ${74 + r * 5} h3.6 v3 h-3.6 Z"/>`;
     ART["set-sd-case"] = openCaseArt("k", "d", b); }
+  // Blue-Point lug nut / wheel lock removal kit (YA1005C): grey case, black sockets and extractors in the base, a printed chart in the lid
+  { const k = (x, y, w, h) => `<rect class="k" x="${x}" y="${y}" width="${w}" height="${h}" rx="1.6"/><rect class="sh" x="${x + 1}" y="${y + 0.8}" width="${w - 2}" height="1" rx=".5" opacity=".35"/>`;
+    const b = k(24, 55, 7, 21) + k(23, 75, 9, 6) + k(129, 55, 7, 21) + k(128, 75, 9, 6) + k(44, 56, 62, 5.4) + k(105, 56.9, 12, 3.6)
+      + k(46, 64, 30, 6.4) + k(46, 73, 36, 7) + k(90, 63, 13, 17) + k(108, 64, 8, 15);
+    let lid = '<rect class="w" x="24" y="11" width="112" height="30" rx="3"/><text class="tx" x="80" y="15.6" font-size="3.3" text-anchor="middle">YA1005C Deluxe Hubcap &amp; Wheel Lock Removal Kit</text>';
+    for (let r = 0; r < 3; r++) for (let i = 0; i < 9; i++) lid += `<rect class="pit" x="${f1(30 + i * 11.4)}" y="${19 + r * 7}" width="${3 + ((i * 7 + r * 3) % 5)}" height="3.4" rx=".8" opacity=".8"/>`;
+    ART["extractor-case"] = openCaseArt("cg", "cgi", b, lid); }
+  // Blue-Point master disconnect set (LDT40): big grey case, chrome scissor tools around a chart in the lid; in the base a black
+  // line tool and blue pliers, two rows of collars, chrome rings and coloured angled tools
+  { let lid = '<rect class="pit" x="24" y="11" width="112" height="30" rx="4"/><rect class="w" x="62" y="13" width="36" height="26" rx="1"/>';
+    for (let r = 0; r < 6; r++) lid += `<rect class="pit" x="65" y="${16 + r * 3.8}" width="${12 + (r % 3) * 6}" height="1" rx=".5" opacity=".6"/>`;
+    for (const x of [30, 38, 116, 124]) lid += `<rect class="s" x="${x}" y="14" width="5" height="22" rx="2.5"/><circle class="s" cx="${x + 2.5}" cy="16" r="3.2"/><circle class="pit" cx="${x + 2.5}" cy="16" r="1.4"/>`;
+    let b = '<rect class="k" x="26" y="55" width="50" height="4" rx="1.4"/><rect class="bl" x="86" y="55" width="40" height="3.6" rx="1.8" stroke-width="0"/><rect class="s" x="78" y="55.4" width="10" height="3" rx="1"/>';
+    const cols = ["y", "g", "bl", "k", "k", "k", "w"];
+    for (let i = 0; i < 7; i++) b += `<circle class="${["bl", "y", "s", "y", "k", "k", "k"][i]}" cx="${32 + i * 15.6}" cy="63" r="2.6" stroke-width="0"/><circle class="${cols[i]}" cx="${32 + i * 15.6}" cy="70" r="4" stroke-width="0"/><rect class="pit" x="${31.4 + i * 15.6}" y="66" width="1.2" height="5" />`;
+    for (let i = 0; i < 6; i++) b += `<circle class="s" cx="${30 + i * 8.6}" cy="78" r="${3.6 - i * 0.3}"/><circle class="pit" cx="${30 + i * 8.6}" cy="78" r="${1.8 - i * 0.15}"/>`;
+    ["y", "bl", "g", "g", "y", "w"].forEach((c, i) => { b += `<path class="${c}" stroke-width="0" d="M${86 + i * 7} 82 V76 L${90 + i * 7} 73 V75 L${88.6 + i * 7} 76.4 V82 Z"/>`; });
+    ART["disconnect-master"] = openCaseArt("cg", "cgi", b, lid); }
+  // slim pocket light (ECPNI032R): black rubber bar, red face, COB window at one end, "Snap-on" at the other
+  ART["pocket-light"] = '<rect class="k" x="10" y="40" width="140" height="26" rx="7"/><rect class="g" x="16" y="43.4" width="128" height="19" rx="3"/>'
+    + '<rect class="k" x="22" y="45.6" width="56" height="14.8" rx="2"/><rect class="w" x="25" y="47.6" width="50" height="10.8" rx="1.2"/><rect class="y" x="30" y="50.6" width="30" height="4.6" rx="1.2"/>'
+    + '<text x="111" y="57" font-size="11" text-anchor="middle" style="fill:#15181c;font-weight:900;font-style:italic">Snap-on</text><circle class="pit" cx="13.4" cy="53" r="1.6"/>'
+    + '<path class="kn" d="M86 40.8 v-2 M92 40.8 v-2 M98 40.8 v-2 M104 40.8 v-2 M110 40.8 v-2 M116 40.8 v-2 M122 40.8 v-2 M128 40.8 v-2" stroke="#000" stroke-opacity=".5"/>';
+  // Snap-on magnetic mats, trays and dishes: black bound edge, painted face (class g, so lookOf's color shows), carbon weave, black tag
+  { const tag = (x, y, w = 22) => `<rect class="k" x="${x - w / 2}" y="${y}" width="${w}" height="${w * 0.3}" rx="1"/><text class="txw" x="${x}" y="${y + w * 0.22}" font-size="${f1(w * 0.2)}" text-anchor="middle" font-style="italic">Snap-on</text>`;
+    const weave = (x0, y0, x1, y1, step = 6) => { let d = ""; for (let x = x0 + 3; x < x1; x += step) d += `M${f1(x)} ${y0} L${f1(Math.min(x1, x + (y1 - y0) * 0.5))} ${y1} `; return `<path d="${d}" stroke="#000" stroke-opacity=".14" stroke-width="1.6" fill="none"/>`; };
+    const mat = (x, y, w, h, r) => `<rect class="k" x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/><rect class="g" x="${x + 3}" y="${y + 3}" width="${w - 6}" height="${h - 6}" rx="${r - 2}"/>${weave(x + 3, y + 3, x + w - 3, y + h - 3)}`;
+    ART["magmat"] = `<g transform="translate(80 58) skewX(-14) translate(-80 -58)">${mat(16, 26, 128, 64, 9)}${tag(120, 80)}</g><circle class="s" cx="54" cy="48" r="3.2"/><circle class="pit" cx="54" cy="48" r="1.4"/><rect class="s" x="70" y="56" width="20" height="3.4" rx="1"/><rect class="s" x="66" y="54.6" width="5" height="6.2" rx="1"/>`;
+    ART["magmat-mini"] = mat(46, 22, 68, 68, 10) + tag(80, 80, 20);
+    ART["magmat-micro"] = '<rect class="k" x="72" y="12" width="16" height="34" rx="3"/><text class="txw" x="80" y="26" font-size="9" text-anchor="middle" font-style="italic">S</text>' + mat(58, 42, 44, 44, 9);
+    ART["magmat-xl"] = mat(6, 42, 148, 24, 6) + tag(134, 59, 18);
+    ART["magtray-fold"] = '<path class="g" d="M24 30 L136 30 L126 82 L34 82 Z"/><rect class="g" x="38" y="40" width="84" height="38" rx="2" opacity=".85"/>' + weave(38, 40, 122, 78) + '<path class="nl" d="M24 30 L38 40 M136 30 L122 40 M34 82 L38 78 M126 82 L122 78"/>'
+      + '<path class="k" d="M18 24 l10 0 l2 10 l-10 0 Z M132 24 l10 0 l-2 10 l-10 0 Z M28 78 l10 0 l-1 8 l-10 0 Z M122 78 l10 0 l1 8 l-10 0 Z"/><rect class="k" x="24" y="28" width="112" height="3" rx="1.4"/>' + tag(80, 70, 20);
+    ART["magdish"] = '<path class="k" d="M44 34 L116 34 L108 10 L52 10 Z"/><path class="g" d="M42 36 H118 L114 88 Q114 92 110 92 H50 Q46 92 46 88 Z"/><path class="nl" opacity=".4" d="M44 52 H116 M45 68 H115"/><rect class="pit" x="48" y="36" width="64" height="5" rx="2"/>' + tag(80, 76, 22);
+    ART["magpouch"] = '<rect class="k" x="22" y="28" width="116" height="58" rx="8"/><rect class="pit" x="28" y="26" width="104" height="6" rx="3"/><text class="txw" x="80" y="62" font-size="13" text-anchor="middle" font-style="italic">Snap-on</text>';
+    ART["magbowl"] = '<rect class="k" x="10" y="48" width="140" height="30" rx="12"/><rect class="pit" x="16" y="50" width="128" height="12" rx="6"/><circle class="s" cx="52" cy="56" r="3"/><circle class="s" cx="96" cy="55" r="3.4"/><rect class="s" x="66" y="54" width="18" height="3" rx="1"/>'; }
+  // SOLUS+ / SOLUS Edge / ETHOS scan tools (EESC, EETH): a wide black tablet with ribbed grips, red top and bottom accents,
+  // a light home screen and the keys in a column on the right
+  { let a = '<rect class="k" x="10" y="14" width="140" height="76" rx="10"/><rect class="g" x="50" y="12" width="60" height="4" rx="2"/><rect class="g" x="50" y="88" width="60" height="4" rx="2"/>'
+      + '<rect class="d" x="16" y="20" width="128" height="64" rx="6"/><rect class="w" x="27" y="27" width="86" height="51" rx="1.5"/>'
+      + '<text class="txw" x="70" y="25" font-size="3.6" text-anchor="middle">SOLUS+</text><text x="70" y="82.6" font-size="4" text-anchor="middle" style="fill:#e3262f;font-weight:800;font-style:italic">Snap-on</text>';
+    for (let i = 0; i < 6; i++) a += `<rect class="pit" x="${42 + (i % 3) * 25}" y="${38 + Math.floor(i / 3) * 18}" width="7" height="5" rx="1"/><rect class="pit" x="${40 + (i % 3) * 25}" y="${46 + Math.floor(i / 3) * 18}" width="11" height="1.2" rx=".6" opacity=".5"/>`;
+    for (let i = 0; i < 6; i++) a += `<rect class="d" x="6" y="${30 + i * 8}" width="6" height="5" rx="1.4"/><rect class="d" x="148" y="${30 + i * 8}" width="6" height="5" rx="1.4"/>`;
+    a += '<circle class="pit" cx="129" cy="38" r="8.4"/><path class="w" d="M129 32 l1.6 2 h-3.2 z M129 44 l1.6 -2 h-3.2 z M123 38 l2 -1.6 v3.2 z M135 38 l-2 -1.6 v3.2 z"/>'
+      + '<circle class="pit" cx="129" cy="57" r="4.6"/><circle class="w" cx="129" cy="57" r="1.8" opacity=".7"/><circle class="pit" cx="129" cy="73" r="4.6"/><path class="shl" d="M127 71.4 a2.6 2.6 0 1 0 4 0 M129 70 v3"/>';
+    ART["diag-solus"] = a; }
   ART["cl14-die"] = ART["cl14-ratchet"].slice(0, ART["cl14-ratchet"].indexOf('<text class="txw" x="64"'))
     + '<path class="s" d="M38 44 L56 41 V59 L38 56 Z"/><rect class="sh" x="40" y="44.6" width="13" height="1.5" rx=".75"/><path class="s" d="M39.4 50 L35.7 56.4 L28.3 56.4 L24.6 50 L28.3 43.6 L35.7 43.6 Z"/>'
     + '<rect class="s" x="12" y="48.6" width="14" height="2.8" rx="1"/><ellipse class="s" cx="13" cy="50" rx="5.4" ry="4.4"/><path class="nl" d="M9.4 47.6 L16.4 52.4 M9.4 52.4 L16.4 47.6"/>';
@@ -1303,6 +1358,7 @@ document.addEventListener("DOMContentLoaded", () => {
       svg = svg.replace(/>3\/8 DR \u00b7 MM<\/text>/, `>${esc([(a.drive || "").replace('"', "") ? a.drive.replace('"', "") + " DR" : "", a.unit || ""].filter(Boolean).join(" \u00b7 ") || "SOCKETS")}</text>`);
       const nums = a.nums || ["", "", "", "", ""];
       let i = 0; svg = svg.replace(/>(8|10|12|14|17)<\/text>/g, () => `>${esc(nums[i++])}</text>`);
+      if (/\+impact/.test(a.spec || "")) svg = svg.replace(/class="s"/g, 'class="d"'); // impact sockets are black oxide
     }
     const bb = built ? artBounds(key + "|" + look.join("+"), built) : boxed ? artBounds("box|" + a.box, boxed) : artBounds(ART[key] ? key : "other");
     // the finish and paint: black industrial chrome, gunmetal or green housings, orange grips
@@ -1832,7 +1888,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   // Big things don't lie in foam: a cordless gun, a meter or a box seen from straight above is just a lump.
   // They stand on a lit shelf under the drawer's foam instead, the way the truck shows them in its display case.
-  const SPOT_KEYS = /^(power|cl1[48]-|air-(impact|hammer|ratchet)|battery|charger|grinder|cutoff|blowgun|polisher|rivet|heatgun|jump|grease-gun|solder|storage|tool-bag|bit-case|bit-socket-case|set-sd-case|set-kit|terminal-tool|disconnect-set|tapdie|creeper|stool|magtray|magmat|drain-pan|other$|diag|battery-tester|borescope|multimeter|tire-gauge|tire-inflator|pressure-gauge|dial-indicator|torque-angle|thermometer|shop$|puck-light|floor-jack|jack-stand|funnel|air-hose|vise|headlamp)/;
+  const SPOT_KEYS = /^(power|cl1[48]-|air-(impact|hammer|ratchet)|battery|charger|grinder|cutoff|blowgun|polisher|rivet|heatgun|jump|grease-gun|solder|storage|tool-bag|bit-case|bit-socket-case|set-sd-case|extractor-case|set-kit|terminal-tool|disconnect-|tapdie|creeper|stool|magtray|magmat|magdish|magpouch|magbowl|drain-pan|other$|diag|battery-tester|borescope|multimeter|tire-gauge|tire-inflator|pressure-gauge|dial-indicator|torque-angle|thermometer|shop$|puck-light|floor-jack|jack-stand|funnel|air-hose|vise|headlamp)/;
   const inSpot = (r) => SPOT_KEYS.test(artOf(r).key);
   function spotHtml(r, i) {
     const a = artOf(r), name = displayName(r), out = !!r.lent_to;

@@ -6,6 +6,7 @@ import { THREE, mat, PI, mesh, slab, poly, turned, cyl, box, sphere, capsule, at
 /* ---------- local materials ---------- */
 const L = {
   led: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff3dc, emissiveIntensity: 1.8, roughness: 0.2 }),
+  cob: new THREE.MeshStandardMaterial({ color: 0xd2e400, emissive: 0xb8cc00, emissiveIntensity: 0.35, roughness: 0.3 }),
   green: new THREE.MeshStandardMaterial({ color: 0x3be07a, emissive: 0x22cc55, emissiveIntensity: 1.3, roughness: 0.3 }),
   laser: new THREE.MeshStandardMaterial({ color: 0xff3a2a, emissive: 0xee1a10, emissiveIntensity: 1.2, roughness: 0.1 }),
   plug: new THREE.MeshPhysicalMaterial({ color: 0x4a2a16, roughness: 0.42, clearcoat: 0.8 }), // sticky tire plug strip
@@ -647,6 +648,17 @@ function flashlight() {
   const w = group(g); g.position.y = 19.5; g.rotation.z = 0.032; w.userData.yaw = -0.7; return w;
 }
 
+// A 300 lumen slim pocket light (ECPNI032R): a flat black rubber bar, red face (lookOf paints it), a long window with
+// a yellow COB strip on a white reflector at one end, "Snap-on" printed at the other and a lanyard hole in the end
+function pocketLight() {
+  const g = group(at(box(178, 14, 36, mat.rubber, 6), 0, 7, 0), at(box(166, 3, 30, mat.redp, 1.4), 0, 14.4, 0));
+  for (let i = 0; i < 8; i++) for (const s of [-1, 1]) g.add(at(box(6, 10, 2.6, mat.black, 1), 20 + i * 8.6, 7, s * 18.4)); // grip ribs
+  g.add(at(box(78, 2, 22, mat.black, 1.4), -38, 16.2, 0), at(box(72, 1.4, 17, mat.white, 0.6), -38, 16.8, 0), at(box(42, 1.4, 6, L.cob, 0.5), -40, 17.4, 0));
+  g.add(at(flat(decal("Snap-on", 60, 15, { color: "#15181c", font: "italic 900 80px Helvetica, Arial, sans-serif" })), 46, 16.1, 0));
+  g.add(at(box(2, 6, 10, mat.hole, 0.4), -89.2, 7, 0), at(cyl(1.2, 1, mat.black, { segs: 12 }), 4, 16.2, 0));
+  g.rotation.x = 0.5; const w = group(g); w.userData.yaw = -0.35; return w;
+}
+
 // A 545 lumen project light (ECPRB042): a black rounded-octagon puck with a colored rubber bumper down its left side,
 // one round lens with a big LED, standing on a hinged black stand. The bumper is red; lookOf() paints it orange or green.
 function puckLight() {
@@ -667,19 +679,8 @@ function puckLight() {
   g.userData.yaw = -0.45; return g;
 }
 
-// A master disconnect set: split plastic collars in several sizes and colours, in a black tray.
-function disconnectSet() {
-  const g = group(at(box(260, 18, 130, mat.black, 6), 0, 9, 0), at(box(240, 2, 110, mat.hole, 3), 0, 18.2, 0));
-  const ms = [mat.redp, mat.yellow, mat.blue, mat.white, mat.redp, mat.black, mat.redp, mat.yellow, mat.blue, mat.grey];
-  ms.forEach((m, i) => {
-    const r = 15 - (i % 5) * 1.8, x = -88 + (i % 5) * 44, z = i < 5 ? -26 : 26;
-    const c = group(turned([[r * 0.55, 0], [r, 0], [r, 22], [r * 0.7, 26], [r * 0.55, 26], [r * 0.55, 0]], m, { along: "y", segs: 40 }), at(box(r * 2.2, 26, 2, mat.hole, 0.3), 0, 13, 0));
-    c.position.set(x, 19, z); c.rotation.y = i; g.add(c);
-  });
-  g.userData.yaw = -0.3; return g;
-}
 export const MODELS = {
-  shop: () => shopLight(), "puck-light": () => puckLight(), "disconnect-set": () => disconnectSet(), "floor-jack": () => floorJack(), "jack-stand": () => jackStands(), funnel: () => funnel(), "air-hose": () => airHose(),
+  shop: () => shopLight(), "puck-light": () => puckLight(), "pocket-light": () => pocketLight(), "floor-jack": () => floorJack(), "jack-stand": () => jackStands(), funnel: () => funnel(), "air-hose": () => airHose(),
   "tire-gauge": () => tireGauge(), "tire-inflator": () => tireInflator(), "tire-plug": () => tirePlug(), vise: () => vise(), clamp: () => cClamp(),
   caliper: () => caliper(), micrometer: () => micrometer(), feeler: () => feeler(), "dial-indicator": () => dialIndicator(), "pressure-gauge": () => pressureTester(),
   thermometer: () => irThermometer(), stethoscope: () => stethoscope(), puller: () => gearPuller(), "seal-puller": () => sealPuller(), "ball-joint": () => ballJoint(),

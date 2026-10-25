@@ -222,6 +222,12 @@ export function socket({ h = 26, r = 10.5, deep = false, impact = false, points 
     // the part number round the side of the barrel, like the real stamp (turn the socket to read it)
     if (pn && !slot) g.add(band(pn, r + 0.15, deep ? 5 : Math.min(4.6, top - 17), y, { a: -1.75, span: 1.9, color: impact ? "#e9edf1" : "#20252c" }));
   }
+  if (swivel && impact) { // impact swivel: a black barrel underneath with the drive and pin hole, joined by a short pinned neck
+    const rb = Math.max(r, 10), lower = group(turned([[0.1, 0], [rb - 1, 0], [rb, 1], [rb, 17], [rb - 1.4, 19], [rb * 0.55, 19.5], [0.1, 19.5]], m, { along: "y", segs: 48 }));
+    lower.add(at(cyl(1.4, 1, mat.hole, { along: "z", segs: 12 }), 0, 8, rb + 0.2), at(cyl(rb * 0.5, 9, mat.black, { segs: 32 }), 0, 23, 0), at(cyl(1.6, rb * 1.1, mat.satin, { along: "x" }), 0, 23, 0));
+    const o = mesh(new THREE.TorusGeometry(rb + 0.05, 0.7, 8, 48), mat.rubber); o.rotation.x = PI / 2; o.position.y = 8; lower.add(o);
+    g.position.y = 27.5; return group(lower, g);
+  }
   if (swivel) { // universal joint and female drive under the socket
     g.position.y = J;
     const lower = group(turned([[0.1, 0], [8.4, 0], [9, 0.8], [9, 9], [8.2, 10.5], [0.1, 10.5]], mat.chrome, { along: "y", segs: 48 }));

@@ -26,14 +26,17 @@ const brightChrome = mat.chrome.clone(); Object.assign(brightChrome, { roughness
 function bright(o) { o.traverse((m) => { if (m.material === mat.chrome) m.material = brightChrome; }); return o; }
 function turnTo(o, yaw) { o.userData.yaw = yaw; return o; }
 // which socket a set's pieces are (from the set's part number)
-const SET_SOCKET = { "socket-12": { points: 12 }, "socket-deep": { deep: true }, "socket-impact": { impact: true }, "socket-swivel": { swivel: true } };
+const SET_SOCKET = { "socket-12": { points: 12 }, "socket-deep": { deep: true }, "socket-impact": { impact: true }, "socket-swivel": { swivel: true }, impact: { impact: true }, deep: { deep: true } };
+const setSocket = (member = "") => Object.assign({}, ...String(member).split("+").map((t) => SET_SOCKET[t] || {}));
+// IP... swivels are impact swivels (black oxide), IPL... the deep ones (IPLFM12B)
+const impSwivel = (pn = "") => (/^S?IP/.test(pn) ? { impact: true, deep: /^(IPL|SIP)/.test(pn) } : {});
 const MODELS = {
   // Snap-on ratchets are hard-handle (chrome) unless the part is a soft grip one; "-soft" keys get the red grip.
   ...Object.fromEntries([["ratchet", {}], ["ratchet-long", { len: 280 }], ["ratchet-stubby", { len: 115 }], ["ratchet-flex", { flex: true }], ["ratchet-long-flex", { len: 280, flex: true }],
     ["ratchet-round", { round: true }], ["ratchet-thumbwheel", { thumb: true }]].flatMap(([k, o]) => [[k, (x = {}) => ratchet({ ...o, drive: x.drive, pn: x.pn, look: x.look, grip: false })], [k + "-soft", (x = {}) => ratchet({ ...o, drive: x.drive, pn: x.pn, look: x.look, grip: true })]])),
   "ratchet-hard": (x = {}) => ratchet({ drive: x.drive, pn: x.pn, look: x.look, grip: false }),
   socket: (o) => lying(socket(o)), "socket-12": (o) => lying(socket({ ...o, points: 12 })), "socket-deep": (o) => lying(socket({ ...o, deep: true })), "socket-impact": (o) => lying(socket({ ...o, impact: true, r: 12 })),
-  "socket-spark": (o) => lying(socket({ ...o, deep: true, r: 11.5, spark: true })), "socket-o2": (o) => lying(socket({ ...o, deep: true, r: 13, slot: true }), 0.9, 0.2), "socket-swivel": (o) => lying(socket({ ...o, swivel: true })), "socket-bit": (o) => lying(socket({ ...o, h: 20, bit: true })),
+  "socket-spark": (o) => lying(socket({ ...o, deep: true, r: 11.5, spark: true })), "socket-o2": (o) => lying(socket({ ...o, deep: true, r: 13, slot: true }), 0.9, 0.2), "socket-swivel": (o) => lying(socket({ ...o, swivel: true, ...impSwivel(o.pn) })), "socket-bit": (o) => lying(socket({ ...o, h: 20, bit: true })),
   ...Object.fromEntries([["wrench", "combo"], ["wrench-open", "open"], ["wrench-box", "box"], ["wrench-ratchet", "ratchet"], ["wrench-flare", "flare"], ["wrench-speed", "speed"], ["wrench-rbox", "rbox"]].map(([k, style]) => [k, (o) => wrench({ ...o, style })])),
   screwdriver: (o = {}) => screwdriver({ pn: o.pn }), "screwdriver-phillips": (o = {}) => screwdriver({ tip: "phillips", pn: o.pn }), "screwdriver-torx": (o = {}) => screwdriver({ tip: "torx", pn: o.pn }),
   "screwdriver-stubby": (o = {}) => screwdriver({ len: 120, hlen: 70, r: 14, pn: o.pn }), "screwdriver-stubby-phillips": (o = {}) => screwdriver({ tip: "phillips", len: 120, hlen: 70, r: 14, pn: o.pn }),
@@ -44,7 +47,7 @@ const MODELS = {
   extension: (o = {}) => bright(extension({ drive: o.drive, size: o.size, pn: o.pn })), breaker: (o = {}) => breaker({ pn: o.pn }), adapter: () => turnTo(bright(adapter()), 1.05),
   hammer: (o = {}) => hammer({ pn: o.pn }), "hammer-ballpeen": (o = {}) => hammer({ pn: o.pn }), "hammer-deadblow": (o = {}) => hammer({ kind: "deadblow", pn: o.pn }), "hammer-mallet": (o = {}) => hammer({ kind: "mallet", pn: o.pn }), "hammer-sledge": (o = {}) => hammer({ kind: "sledge", pn: o.pn }),
   pry: (o = {}) => prybar({ pn: o.pn }), punch: () => punch({ chisel: true }), "punch-pin": () => punch(), torque: (o = {}) => torque({ electronic: true, pn: o.pn }), "torque-click": (o = {}) => torque({ pn: o.pn }), hexkeys: () => hexkeys(),
-  set: (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || ""), list: o.sizes?.length ? o.sizes : null, kind: SET_SOCKET[o.member] || {} }), "socket-rail": (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "set-wrench": (o = {}) => wrenchSet(o.sizes?.length ? { sizes: o.sizes, member: o.member } : {}),
+  set: (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || ""), list: o.sizes?.length ? o.sizes : null, kind: setSocket(o.member) }), "socket-rail": (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "set-wrench": (o = {}) => wrenchSet(o.sizes?.length ? { sizes: o.sizes, member: o.member } : {}),
 };
 Object.assign(MODELS, ...EXTRA);
 export const has = (key) => key in MODELS;

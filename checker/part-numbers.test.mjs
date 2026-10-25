@@ -107,7 +107,7 @@ const CASES = [
   ["PK100", "knife"], ["KER1440", "knife"], ["CSA12C", "scraper"], ["PKB50", "scraper"], ["8MA", "file"], ["10R", "file"], ["HS18A", "hacksaw"],
   ["JCW60BL", "creeper"], ["FJ200", "floor-jack"], ["CG240", "puller"], ["CJ83C", "puller"], ["ECFLED84", "shop"],
   // diagnostics and storage
-  ["EEDM504F", "multimeter"], ["EEMS341", "diag-tablet"], ["EETH400", "diag-handheld"], ["KRA4107", "storage"], ["KRL1022", "storage"], ["KMP3415", "storage"], ["KRSC326", "storage-cart"],
+  ["EEDM504F", "multimeter"], ["EEMS341", "diag-tablet"], ["EETH400", "diag-solus"], ["EESC337W", "diag-solus"], ["ECPNI032R", "pocket-light"], ["MAGMATR", "magmat"], ["MAGMINI", "magmat-mini"], ["MAGMICROHV", "magmat-micro"], ["MAGMATXLG", "magmat-xl"], ["MAGTRAYR", "magtray-fold"], ["MAGDISH", "magdish"], ["KRA4107", "storage"], ["KRL1022", "storage"], ["KMP3415", "storage"], ["KRSC326", "storage-cart"],
   // cordless (14.4V: 7xx/8xx, 18V: 88xx/9xxx)
   ["CT861", "cl14-impact"], ["CT861DB", "cl14-impact"], ["CT825", "cl14-impact"], ["CTR814DB", "cl14-ratchet"], ["CTR867", "cl14-ratchet"], ["CTR761", "cl14-ratchet"], ["CTR881GMDB", "cl14-ratchet"],
   ["CTS861", "cl14-driver"], ["CDR861", "cl14-drill"], ["CTB8174", "cl14-battery"], ["CT9075", "cl18-impact"], ["CT8850", "cl18-impact"], ["CT9010", "cl18-impact"],
@@ -144,9 +144,9 @@ const CASES = [
   // fadie's own box (2026-10-20): every number checked against Snap-on's listing
   ["OFCA1", "filter-spider"], ["0FCA1KT", "filter-spider"], ["206AFX", "set-extension", '3/8"'], ["305ASX", "set-extension", '1/2"'], ["207IPLFM", "set", '3/8"'],
   ["ADHWS10", "wrench-adjust"], ["ADHWS8O", "wrench-adjust"], ["ADWS8O", "wrench-adjust"], ["BLPBTWKIT", "set-kit", '1/4"'], ["BLPHSM1440", "socket-bit", '1/4"', "4mm"],
-  ["C0100", "tool-bag"], ["PB206B", "bit-case"], ["MAGMATR", "magmat"], ["MAGMINI", "magmat"], ["PHG1004RPBK", "air-bit"], ["PHG1005BK", "air-bit"], ["PH3050BR", "air-hammer"],
-  ["LDT40", "disconnect-set"], ["GSL832", "ratchet-long", '1/2"'], ["TNF72", "ratchet-round", '1/4"'], ["GTM830", "ratchet", '1/4"'], ["IEDP105", "pliers-pump"],
-  ["P92055A", "pliers-needle"], ["YA824C", "pliers"], ["YA1005C", "extractor"], ["PSN500", "trim-tool"], ["SAPB200O", "pry"], ["SPBSDC705FR", "pry"], ["SRXRM710", "set-wrench"],
+  ["C0100", "tool-bag"], ["PB206B", "bit-case"], ["MAGMATR", "magmat"], ["MAGMINI", "magmat-mini"], ["PHG1004RPBK", "air-bit"], ["PHG1005BK", "air-bit"], ["PH3050BR", "air-hammer"],
+  ["LDT40", "disconnect-master"], ["LDT8", "disconnect-set"], ["GSL832", "ratchet-long", '1/2"'], ["TNF72", "ratchet-round", '1/4"'], ["GTM830", "ratchet", '1/4"'], ["IEDP105", "pliers-pump"],
+  ["P92055A", "pliers-needle"], ["YA824C", "pliers"], ["YA1005C", "extractor-case"], ["PSN500", "trim-tool"], ["SAPB200O", "pry"], ["SPBSDC705FR", "pry"], ["SRXRM710", "set-wrench"],
   ["TPGDL2000HD", "tire-inflator"], ["ECHDH042", "headlamp"], ["ECPN1032R", "flashlight"], ["ECPRB042", "puck-light"], ["ECPRB042OM", "puck-light"], ["CTINF9010", "cl18-inflator"], ["CTPP861BKDB", "cl14-polisher"], ["CTRS761", "cl14-saw"], ["CT861AMG", "cl14-impact"], ["CT9055DB", "cl18-impact"],
 ];
 
@@ -167,7 +167,7 @@ for (const pn of ["ZZ123", "YA480B", "A78", "GA98A"]) { const a = artOf({ part_n
 // what's in a set, read from its number (count, sizes, kind of piece)
 for (const [pn, spec] of [["BOERM712", "ratchet+rev;8mm,9mm,10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"], ["SOEXLM710B", "combo+long;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"],
   ["SRXRM710", "speed;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"], ["206AFX", 'extension;1.5",3",4",6",8",11"'], ["208AFX", 'extension;1.5",3",4",6",8",11",18",24"'],
-  ["305ASX", 'extension;2",3",5",8",11"'], ["207IPLFM", "socket-swivel;10mm,11mm,12mm,13mm,14mm,15mm,16mm"], ["310IMMYA", "socket-impact;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"]]) {
+  ["305ASX", 'extension;2",3",5",8",11"'], ["207IPLFM", "socket-swivel+impact+deep;10mm,12mm,13mm,14mm,15mm,17mm,18mm"], ["310IMMYA", "socket-impact;10mm,11mm,12mm,13mm,14mm,15mm,16mm,17mm,18mm,19mm"]]) {
   const a = artOf({ part_number: pn, name: "", category: "Other" });
   if (a.spec !== spec) { bad++; console.log(`${pn} set holds ${a.spec}, want ${spec}`); }
 }
