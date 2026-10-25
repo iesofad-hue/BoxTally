@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=60">
+<link rel="stylesheet" href="/app.css?v=61">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -309,6 +309,30 @@
   </form>
 </dialog>
 
+<dialog id="drawerDlg" class="check-dlg dw-dlg">
+  <form id="drawerFrm" novalidate>
+    <h2 id="dw-title">Add a drawer</h2>
+    <p class="meta-line" id="dw-help">Name the drawer or compartment, then tick the tools that live in it. A tool that's in another drawer moves here.</p>
+    <div class="ck-top">
+      <label class="field"><span class="label">Drawer or compartment</span><input id="dw-name" maxlength="120" placeholder="Top chest, drawer 1" autocomplete="off" list="locList"></label>
+      <div class="dw-tools">
+        <input id="dw-q" type="search" placeholder="Find a tool" autocomplete="off" aria-label="Find a tool">
+        <button class="btn small" type="button" id="dw-all">Select all</button>
+        <button class="btn small" type="button" id="dw-none">Deselect all</button>
+      </div>
+      <p class="ck-count" id="dw-count" aria-live="polite"></p>
+      <p class="err" id="dw-err" hidden></p>
+    </div>
+    <div class="ck-list" id="dw-list"></div>
+    <div class="formfoot">
+      <button class="btn ghost danger" type="button" id="dw-remove" hidden>Remove drawer</button>
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" type="button" id="dw-cancel">Cancel</button>
+      <button class="btn primary" type="submit" id="dw-save">Save</button>
+    </div>
+  </form>
+</dialog>
+
 <dialog id="shareDlg">
   <form id="shareFrm" novalidate>
     <h2>Share my box</h2>
@@ -436,8 +460,8 @@
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script defer src="/drawings.js?v=60"></script>
-<script defer src="/app.js?v=60"></script>
+<script defer src="/drawings.js?v=61"></script>
+<script defer src="/app.js?v=61"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>

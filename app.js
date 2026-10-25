@@ -1803,13 +1803,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function drawersHtml(rows) {
     const groups = new Map();
     rows.forEach((r) => { const k = String(r.location || "").trim(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push(r); });
+    // drawers you've made but not filled yet (only while nothing's filtered out, or they'd just be clutter)
+    if (rows.length === rowsOf("owned").length) emptyDrawers().forEach((k) => { if (!groups.has(k)) groups.set(k, []); });
     const keys = [...groups.keys()].sort((a, b) => (a ? 0 : 1) - (b ? 0 : 1) || a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
-    return keys.map((k, gi) => {
+    const bar = `<div class="drawer-bar"><button class="btn small" type="button" data-dw-new="">+ Add drawer or compartment</button></div>`;
+    return bar + keys.map((k, gi) => {
       const g = groups.get(k), worth = g.reduce((sum, r) => sum + worthAll(r), 0), n = pieces(g);
       const open = !state.closedDrawers.has(k);
-      return `<details class="drawer" data-drawer="${esc(k)}" style="--i:${Math.min(gi, 12)}"${open ? " open" : ""}><summary><span class="dname">${k ? esc(k) : "No drawer set"}</span><span class="dmeta">${n} tool${n === 1 ? "" : "s"} · ${money(Math.round(worth))}</span></summary>`
-        + `<div class="foam">${g.map((r, i) => pocketHtml(r, i)).join("")}</div>`
-        + (k ? "" : `<p class="dhint">Tap Edit and fill in "Where it's kept" to file these into drawers.</p>`) + `</details>`;
+      return `<details class="drawer" data-drawer="${esc(k)}" style="--i:${Math.min(gi, 12)}"${open ? " open" : ""}><summary><span class="dname">${k ? esc(k) : "No drawer set"}</span><span class="dmeta">${n} tool${n === 1 ? "" : "s"}${n ? " · " + money(Math.round(worth)) : ""}</span></summary>`
+        + `<div class="foam">${g.length ? g.map((r, i) => pocketHtml(r, i)).join("") : `<p class="foam-empty">Nothing in here yet.</p>`}</div>`
+        + `<div class="dfoot">${k ? `<button class="btn small" type="button" data-dw-edit="${esc(k)}">${g.length ? "Add or remove tools" : "Add tools"}</button>` : `<span class="dhint">Put these away:</span><button class="btn small" type="button" data-dw-new="">Pick a drawer for them</button>`}</div></details>`;
     }).join("");
   }
   $("list").addEventListener("toggle", (e) => {
@@ -1904,7 +1907,7 @@ document.addEventListener("DOMContentLoaded", () => {
       : "Just the part number is enough. Its eBay price fills in automatically, and what you paid stays private to you." + " Paste several part numbers to add them all at once.";
     // suggestions for "Where it's kept" and "Who's borrowing it?"
     const opts = (vals) => [...new Set(vals.map((v) => String(v || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).slice(0, 80).map((v) => `<option value="${esc(v)}">`).join("");
-    $("locList").innerHTML = opts(t.map((r) => r.location));
+    $("locList").innerHTML = opts(t.map((r) => r.location).concat(emptyDrawers()));
     $("whoList").innerHTML = opts(t.map((r) => r.lent_to).concat(recentWho()));
 
     const list = $("list");
@@ -2206,6 +2209,112 @@ document.addEventListener("DOMContentLoaded", () => {
     checkDlg.close();
     toast(!miss.length ? "Box check done. Everything's there." : `${miss.length} not found yet: ${miss.slice(0, 3).map(displayName).join(", ")}${miss.length > 3 ? "…" : ""}`);
   };
+
+  /* ---------- drawers you make: name one, then tick the tools that go in it ----------
+     A tool's drawer is its "Where it's kept", so filling a drawer just sets that on each tool you tick.
+     A drawer with nothing in it yet has no tools to remember it by, so its name is kept on this device. */
+  const DW_LS = () => `${LS}-drawers-${state.demo ? "demo" : state.user ? state.user.id : "local"}`;
+  const emptyDrawers = () => { try { const v = JSON.parse(localStorage.getItem(DW_LS()) || "[]"); return Array.isArray(v) ? v.filter((x) => typeof x === "string" && x) : []; } catch { return []; } };
+  const setEmptyDrawers = (names) => {
+    const used = new Set(rowsOf("owned").map((r) => String(r.location || "").trim()));
+    try { localStorage.setItem(DW_LS(), JSON.stringify([...new Set(names)].filter((n) => n && !used.has(n)).slice(0, 100))); } catch {}
+  };
+  // move many tools at once: changes maps a tool's id to the drawer it goes in ("" = no drawer)
+  async function setLocations(changes) {
+    if (!changes.size) { render(); return; }
+    const byLoc = new Map();
+    changes.forEach((loc, id) => { if (!byLoc.has(loc)) byLoc.set(loc, []); byLoc.get(loc).push(id); });
+    if (state.demo) { /* the sample box lives in memory only */ }
+    else if (signedIn()) {
+      for (const [loc, ids] of byLoc) { const { error } = await sb.from("items").update({ location: loc }).in("id", ids); if (error) throw error; }
+    } else {
+      const next = local.read().map((r) => (changes.has(String(r.id)) ? { ...r, location: changes.get(String(r.id)) } : r));
+      try { local.write(next); } catch { throw { code: "quota" }; }
+    }
+    state.items = state.items.map((r) => (changes.has(String(r.id)) ? { ...r, location: changes.get(String(r.id)) } : r));
+    render();
+  }
+  const drawerDlg = $("drawerDlg");
+  let dw = null; // the drawer being filled: { from: its name before (null for a new one), picked: Set of tool ids, order: ids }
+  const locOf = (r) => String(r.location || "").trim();
+  function openDrawer(from) {
+    const rows = rowsOf("owned");
+    if (!rows.length) return toast("Add some tools first, then you can put them in drawers.");
+    from = from || null;
+    // tools already in this drawer first, then ones with no drawer, then the rest
+    const rank = (r) => (from && locOf(r) === from ? 0 : !locOf(r) ? 1 : 2);
+    const order = rows.slice().sort((a, b) => rank(a) - rank(b) || locOf(a).localeCompare(locOf(b), undefined, { numeric: true }) || displayName(a).localeCompare(displayName(b))).map((r) => String(r.id));
+    dw = { from, order, picked: new Set(from ? rows.filter((r) => locOf(r) === from).map((r) => String(r.id)) : []) };
+    $("dw-title").textContent = from ? "Edit drawer" : "Add a drawer";
+    $("dw-name").value = from || ""; $("dw-q").value = ""; $("dw-err").hidden = true;
+    $("dw-remove").hidden = !from;
+    renderDrawerPick();
+    drawerDlg.showModal();
+    if (!from && !matchMedia("(pointer: coarse)").matches) $("dw-name").focus();
+  }
+  function renderDrawerPick() {
+    const q = $("dw-q").value.trim().toLowerCase(), byId = new Map(rowsOf("owned").map((r) => [String(r.id), r]));
+    const shown = dw.order.map((id) => byId.get(id)).filter(Boolean)
+      .filter((r) => !q || [displayName(r), r.part_number, r.location, catOf(r)].some((v) => String(v || "").toLowerCase().includes(q)));
+    const n = dw.picked.size;
+    $("dw-count").innerHTML = `<strong>${n} tool${n === 1 ? "" : "s"}</strong> picked${q ? ` · ${shown.length} match${shown.length === 1 ? "es" : ""} "${esc($("dw-q").value.trim())}"` : ""}`;
+    $("dw-list").innerHTML = shown.map((r) => {
+      const id = String(r.id), on = dw.picked.has(id), loc = locOf(r);
+      const where = !loc ? "Not in a drawer" : dw.from && loc === dw.from ? "In this drawer" : `In ${loc}`;
+      return `<button type="button" class="ck-row${on ? " on" : ""}" data-pick="${esc(id)}" aria-pressed="${on}">${thumb(r)}<span class="what"><strong>${esc(displayName(r))}${qtyOf(r) > 1 ? ` ×${qtyOf(r)}` : ""}</strong><span class="meta-line">${esc([r.part_number && r.part_number !== displayName(r) ? r.part_number : "", where].filter(Boolean).join(" · "))}</span></span><span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></button>`;
+    }).join("") || `<p class="meta-line">No tools match that.</p>`;
+  }
+  $("dw-list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pick]"); if (!b) return;
+    const id = b.dataset.pick, on = !dw.picked.has(id);
+    on ? dw.picked.add(id) : dw.picked.delete(id);
+    b.classList.toggle("on", on); b.setAttribute("aria-pressed", on);
+    if (on && navigator.vibrate) try { navigator.vibrate(8); } catch {}
+    const n = dw.picked.size; $("dw-count").querySelector("strong").textContent = `${n} tool${n === 1 ? "" : "s"}`;
+  });
+  // Select all / Deselect all work on what's showing, so you can search "socket" and grab every socket
+  const pickShown = (on) => { $("dw-list").querySelectorAll("[data-pick]").forEach((b) => (on ? dw.picked.add(b.dataset.pick) : dw.picked.delete(b.dataset.pick))); renderDrawerPick(); };
+  $("dw-all").onclick = () => pickShown(true);
+  $("dw-none").onclick = () => pickShown(false);
+  $("dw-q").addEventListener("input", renderDrawerPick);
+  $("dw-q").addEventListener("keydown", (e) => { if (e.key === "Enter") e.preventDefault(); });
+  $("dw-cancel").onclick = () => drawerDlg.close();
+  $("drawerFrm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("dw-name").value.trim().replace(/\s+/g, " ");
+    if (!name) { $("dw-err").textContent = 'Give it a name first, like "Top chest, drawer 1".'; $("dw-err").hidden = false; $("dw-name").focus(); return; }
+    const changes = new Map(), was = new Map();
+    rowsOf("owned").forEach((r) => {
+      const id = String(r.id), cur = locOf(r);
+      // ticked tools go in; tools you unticked come out of this drawer (other drawers are left alone)
+      const want = dw.picked.has(id) ? name : dw.from && cur === dw.from ? "" : cur;
+      if (want !== cur) { changes.set(id, want); was.set(id, r.location || ""); }
+    });
+    const keep = emptyDrawers().filter((k) => k !== dw.from);
+    $("dw-save").disabled = true;
+    try {
+      if (!(await guard(() => setLocations(changes)))) return;
+      setEmptyDrawers(keep.concat(dw.picked.size ? [] : [name]));
+      state.closedDrawers.delete(name);
+      render();
+      drawerDlg.close();
+      const n = dw.picked.size;
+      toast(n ? `${name}: ${n} tool${n === 1 ? "" : "s"}` : `Made ${name}. Tap Add tools to fill it.`, changes.size ? { label: "Undo", run: () => guard(() => setLocations(was)) } : undefined);
+    } finally { $("dw-save").disabled = false; }
+  });
+  $("dw-remove").onclick = async () => {
+    const from = dw.from, changes = new Map(), was = new Map();
+    rowsOf("owned").forEach((r) => { if (locOf(r) === from) { changes.set(String(r.id), ""); was.set(String(r.id), r.location || ""); } });
+    if (!(await guard(() => setLocations(changes)))) return;
+    setEmptyDrawers(emptyDrawers().filter((k) => k !== from));
+    render();
+    drawerDlg.close();
+    toast(changes.size ? `Removed ${from}. Its ${changes.size} tool${changes.size === 1 ? " is" : "s are"} now in No drawer set.` : `Removed ${from}`, { label: "Undo", run: () => guard(async () => { if (changes.size) await setLocations(was); else { setEmptyDrawers(emptyDrawers().concat([from])); render(); } }) });
+  };
+  $("list").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-dw-new], [data-dw-edit]"); if (!b || state.readonly) return;
+    openDrawer(b.dataset.dwEdit || null);
+  });
 
   /* ---------- warranty list: send to the dealer or print ---------- */
   function warrantyText() {

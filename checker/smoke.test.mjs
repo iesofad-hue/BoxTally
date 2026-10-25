@@ -104,6 +104,15 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
     if ((await openDialog())?.id !== "viewer") fail(`${name}: tapping a tool in a drawer didn't open it`);
     await page.keyboard.press("Escape");
     await page.waitForTimeout(300);
+    // make a drawer and fill it from the tool list: search, Select all, Save
+    await page.click("#list [data-dw-new]");
+    await page.fill("#dw-name", "Smoke drawer");
+    await page.fill("#dw-q", "pliers");
+    await page.click("#dw-all");
+    await page.click("#dw-save");
+    await page.waitForTimeout(500);
+    const filled = await page.locator('#list details.drawer[data-drawer="Smoke drawer"] .pocket').count();
+    if (filled !== 2) fail(`${name}: the new drawer got ${filled} tools, not the 2 pliers picked`);
     // tapping a row opens the tool, with its Edit and Delete buttons
     await page.click(".seg [data-view=list]");
     await page.locator("#list .ri h3").first().click();
