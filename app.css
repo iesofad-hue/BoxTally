@@ -205,10 +205,10 @@ textarea { resize: vertical; min-height: 64px; }
 .feed li:first-child { border-top: 0; padding-top: 0; }
 .feed li .what { min-width: 0; overflow-wrap: anywhere; }
 .feed li .when { font-family: var(--f-mono); font-size: .74rem; color: var(--muted); white-space: nowrap; }
-.feed .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--chip); color: var(--muted); overflow: hidden; }
-.feed .ic svg { width: 15px; height: 15px; }
-.feed .ic.down { background: var(--good-soft); color: var(--good); }
-.feed .ic.up { background: var(--bad-soft); color: var(--bad); }
+.feed .ic, .since .ic { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--chip); color: var(--muted); overflow: hidden; }
+.feed .ic svg, .since .ic svg { width: 15px; height: 15px; }
+.feed .ic.down, .since .ic.down { background: var(--good-soft); color: var(--good); }
+.feed .ic.up, .since .ic.up { background: var(--bad-soft); color: var(--bad); }
 .feed .ic.add, .feed .ic.wish, .feed .ic.photo { background: var(--accent-soft); color: var(--accent); }
 .feed .ic.img { background: var(--plate); border: 1px solid var(--plate-line); }
 .feed .ic.img img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
@@ -636,7 +636,7 @@ footer #iosHint { margin: 0 0 8px; }
 
 /* ---------- export ---------- */
 .export { display: inline-flex; gap: 4px; margin-left: auto; }
-@media (max-width: 560px) { .export { margin-left: 0; width: 100%; } .export .btn { flex: 1; justify-content: center; } }
+@media (max-width: 560px) { .export { margin-left: 0; width: 100%; flex-wrap: wrap; } .export .btn { flex: 1 1 40%; justify-content: center; } }
 #printSheet { display: none; }
 @media print {
   @page { margin: 14mm; }
@@ -1223,3 +1223,32 @@ abbr.est { text-decoration: none; font-size: .72em; font-weight: 700; letter-spa
 .gr-refs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: min(40vh, 360px); overflow: auto; }
 .gr-refs li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: 10px; background: var(--sunk); }
 .gr-refs small { color: var(--muted); }
+.gr-errs li > span:first-child { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.gr-errs .mono { font-size: .8rem; }
+
+/* "Since you were last here" card */
+.banner.since { position: relative; display: block; padding-right: 60px; border-color: color-mix(in srgb, var(--good) 45%, var(--line)); }
+.since h2 { margin: 0 0 8px; font-size: 1rem; }
+.since h2 .when { font-family: var(--f-mono); font-size: .74rem; font-weight: 400; color: var(--muted); margin-left: 6px; }
+.since ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.since li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: center; overflow-wrap: anywhere; }
+.since .ic.check { background: var(--accent-soft); color: var(--accent); }
+.since .dlg-x { top: 8px; right: 8px; box-shadow: none; }
+
+/* Import a spreadsheet */
+#impFrm { grid-template-columns: minmax(0, 1fr); }
+.hero-note button.link, .since button.link { padding: 0; border: 0; background: none; color: var(--accent); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; min-height: 32px; }
+.imp-pick { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.imp-pick label.btn { cursor: pointer; }
+.imp-pick input:focus-visible + .meta-line, .imp-pick:focus-within label.btn { outline: 2px solid var(--accent); outline-offset: 2px; }
+.imp-map { display: grid; gap: 8px; }
+.imp-map > .label { margin: 0; }
+.imp-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 190px); gap: 10px; align-items: center; }
+.imp-col > span { min-width: 0; overflow-wrap: anywhere; }
+.imp-col .meta-line { display: block; font-size: .8rem; }
+@media (max-width: 480px) { .imp-col { grid-template-columns: 1fr; gap: 4px; } }
+.imp-prev p { margin: 0 0 8px; }
+.imp-table { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.imp-table table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.imp-table th, .imp-table td { padding: 6px 8px; text-align: left; border-top: 1px solid var(--line); white-space: nowrap; }
+.imp-table th { border-top: 0; color: var(--muted); font-weight: 500; }

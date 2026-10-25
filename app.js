@@ -1497,6 +1497,52 @@ document.addEventListener("DOMContentLoaded", () => {
   const CACHE = LS + "-cache";
   const saveCache = () => { try { if (state.user && !state.demo && !state.readonly) localStorage.setItem(CACHE, JSON.stringify({ uid: state.user.id, at: new Date().toISOString(), items: state.items, catalog: state.catalog, hist: state.hist })); } catch {} };
   const readCache = () => { try { const c = JSON.parse(localStorage.getItem(CACHE)); return c && state.user && c.uid === state.user.id ? c : null; } catch { return null; } };
+  // "Since you were last here": what each tool was worth when you last opened BoxTally is kept in
+  // this browser (one number per tool, nothing else), so the next visit can say what moved since.
+  // A reload within half an hour keeps comparing against the same earlier visit.
+  const SEEN = LS + "-seen";
+  function sinceLastVisit() {
+    const card = $("sinceCard"); if (!card) return;
+    card.hidden = true;
+    if (!sb || state.demo || state.readonly || state.offline) return;
+    const key = SEEN + "-" + (state.user ? state.user.id : "local");
+    let saved = null; try { saved = JSON.parse(localStorage.getItem(key)); } catch {}
+    const snap = () => { const p = {}, l = {}; realItems().forEach((r) => { const v = nowPrice(r); if (v != null) p[r.id] = Math.round(v * 100) / 100; if (listPrice(r) != null && !listEst(r)) l[r.id] = 1; }); return { at: new Date().toISOString(), p, l }; };
+    const now = snap();
+    let prev = saved && saved.prev, cur = saved && saved.cur;
+    if (!cur || Date.now() - Date.parse(cur.at) > 30 * 60000) { prev = cur; cur = now; }
+    try { localStorage.setItem(key, JSON.stringify({ prev, cur, hide: saved && saved.hide })); } catch {}
+    if (!prev || !prev.p || (saved && saved.hide === prev.at)) return;
+    const drops = [], ups = []; let box = 0, newList = 0;
+    realItems().forEach((r) => {
+      const was = prev.p[r.id], is = now.p[r.id];
+      if (r.list === "owned" && prev.l && !prev.l[r.id] && now.l[r.id] && r.id in prev.p) newList++;
+      if (was == null || is == null || Math.abs(is - was) < 1) return;
+      if (r.list === "owned") box += (is - was) * qtyOf(r);
+      else if (r.list === "wishlist") (is < was ? drops : ups).push({ r, d: is - was });
+    });
+    const lines = [];
+    if (drops.length) {
+      drops.sort((a, b) => a.d - b.d);
+      const names = drops.slice(0, 3).map((x) => `<button class="link" type="button" data-since="${esc(x.r.id)}">${esc(displayName(x.r))}</button> <span class="chg down">${money(-x.d, true)}</span>`).join(", ");
+      lines.push(`<li><span class="ic down">${ICON.down}</span><span>${drops.length === 1 ? "A wishlist tool got cheaper" : `${drops.length} wishlist tools got cheaper`}: ${names}${drops.length > 3 ? ` and ${drops.length - 3} more` : ""}</span></li>`);
+    }
+    if (ups.length) lines.push(`<li><span class="ic up">${ICON.up}</span><span>${ups.length} wishlist tool${ups.length === 1 ? "" : "s"} went up in price</span></li>`);
+    if (Math.abs(box) >= 1) lines.push(`<li><span class="ic ${box < 0 ? "down" : "up"}">${box < 0 ? ICON.down : ICON.up}</span><span>Your box is worth <strong>${money(Math.abs(Math.round(box)))} ${box < 0 ? "less" : "more"}</strong> (same tools, new prices)</span></li>`);
+    if (newList) lines.push(`<li><span class="ic check">${ICON.check}</span><span>${newList} of your tools got a Snap-on list price</span></li>`);
+    if (!lines.length) return;
+    $("sinceWhen").textContent = rel(prev.at);
+    $("sinceList").innerHTML = lines.join("");
+    card.hidden = false;
+    card.dataset.at = prev.at;
+  }
+  $("sinceClose").onclick = () => {
+    const card = $("sinceCard"); card.hidden = true;
+    const key = SEEN + "-" + (state.user ? state.user.id : "local");
+    try { const v = JSON.parse(localStorage.getItem(key)) || {}; v.hide = card.dataset.at; localStorage.setItem(key, JSON.stringify(v)); } catch {}
+  };
+  $("sinceList").addEventListener("click", (e) => { const b = e.target.closest("[data-since]"); if (b) openViewer(b.dataset.since); });
+
   async function loadItems() {
     state.demo = false;
     if (state.readonly) return loadShared();
@@ -1523,6 +1569,7 @@ document.addEventListener("DOMContentLoaded", () => {
     state.loaded = true;
     saveCache();
     render();
+    sinceLastVisit();
     linkStart();
     priceMissing();
   }
@@ -3259,9 +3306,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const tile = (v, t) => `<div class="gr-tile"><b>${n(v)}</b><span>${esc(t)}</span></div>`;
     const refs = g.refs || [];
     $("fb-glist").innerHTML = `<div class="gr-tiles">${tile(g.signups_7, "new sign-ups this week")}${tile(g.signups_30, "in 30 days")}${tile(g.signups_all, "accounts in all")}${tile(g.boxes_with_tools, "boxes with tools")}${tile(g.shares, "share links")}${tile(g.feedback_7, "feedback this week")}</div>`
+      + (g.active_7 != null ? `<h3 class="gr-h">Signed-in people using it</h3><div class="gr-tiles">${tile(g.active_1, "today")}${tile(g.active_7, "this week")}${tile(g.active_30, "in 30 days")}${tile(g.changed_7, "changed their box this week")}</div>` : "")
       + `<h3 class="gr-h">Where visitors came from (30 days)</h3>`
       + (refs.length ? `<ul class="gr-refs">${refs.map((r) => `<li><span class="mono">${esc(r.ref)}</span><span>${n(r.n)}${r.n7 ? ` <small>· ${n(r.n7)} this week</small>` : ""}</span></li>`).join("")}</ul>`
-        : `<p class="fb-empty">Nothing yet. Visits from a ?ref= link or from another site (Reddit, Facebook, Google) show up here.</p>`);
+        : `<p class="fb-empty">Nothing yet. Visits from a ?ref= link or from another site (Reddit, Facebook, Google) show up here.</p>`)
+      + (g.errors ? `<h3 class="gr-h">Errors people hit (14 days)</h3>` + (g.errors.length
+        ? `<ul class="gr-refs gr-errs">${g.errors.map((e) => `<li><span><span class="mono">${esc(e.msg)}</span><small>${esc([e.src, e.ver && "v" + e.ver, e.browser, rel(e.last_at)].filter(Boolean).join(" · "))}</small></span><span>${n(e.n)}x</span></li>`).join("")}</ul>`
+        : `<p class="fb-empty">None. If the site breaks on someone's phone, the error shows up here.</p>`) : "");
   }
   async function showGrowth() {
     fbTab = "growth"; growth = null; renderFb();
@@ -3624,6 +3675,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const joined = text.split(/[\r\n\t]+/).map((x) => x.trim()).filter(Boolean)
       .map((line) => line.split(/[\s,;]+/).find((w) => pnLike(cleanPn(w))) || line).join(", ");
     el.setRangeText((a > 0 && !/[\s,]$/.test(el.value.slice(0, a)) ? ", " : "") + joined, a, b, "end");
+    // rows with several columns (part number, price, date...) came from a spreadsheet: offer to bring all of it in
+    if (/\t/.test(text) && /[\r\n]./.test(text.trim())) toast("Pasted the part numbers. Want the prices and dates too?", { label: "Import all columns", run: () => { el.value = ""; openImport(text); } });
   });
   const pnLike = (p) => PN_RE.test(p) && /\d/.test(p) && /[A-Z]/.test(p);
   async function addMany(pns, list) {
@@ -3643,6 +3696,177 @@ document.addEventListener("DOMContentLoaded", () => {
     return true;
   }
   $("q-more").onclick = () => openForm(null, cleanPn($("q-pn").value), true);
+
+  /* ---------- import a spreadsheet: a CSV file, or rows pasted from Excel / Google Sheets / Numbers ----------
+     Each column is matched to a tool detail by its heading (or by what's in it when there's no heading
+     row). You can change any match before adding. Only the part number (or a name) is needed. */
+  const impDlg = $("impDlg");
+  const IMP_FIELDS = [["", "Skip this column"], ["part_number", "Part number"], ["name", "Tool name"], ["qty", "How many"], ["price", "Price paid"], ["date_bought", "Date bought"], ["condition", "Condition"], ["location", "Where it's kept"], ["notes", "Notes"], ["list", "Box or wishlist"], ["priority", "Priority (wishlist)"], ["saved", "Saved so far (wishlist)"]];
+  // CSV with quotes ("a, b" and "" inside), or tab-separated rows straight off a spreadsheet
+  function parseSheet(text) {
+    text = String(text || "").replace(/^﻿/, "");
+    const first = text.split(/\r?\n/).find((l) => l.trim()) || "";
+    const sep = first.includes("\t") ? "\t" : (first.split(";").length > first.split(",").length ? ";" : ",");
+    const rows = []; let row = [], cell = "", q = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (q) { if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += ch; continue; }
+      if (ch === '"' && cell === "") q = true;
+      else if (ch === sep) { row.push(cell); cell = ""; }
+      else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
+      else cell += ch;
+    }
+    if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+    return rows.map((r) => r.map((c) => c.trim().replace(/^'(?=[=+\-@])/, ""))).filter((r) => r.some(Boolean));
+  }
+  const impPrice = (v) => { const m = String(v || "").replace(/,/g, "").match(/\d+(?:\.\d+)?/); const n = m ? Number(m[0]) : 0; return n > 0 && n < 1e6 ? Math.round(n * 100) / 100 : 0; };
+  function impDate(v) {
+    v = String(v || "").trim(); if (!v) return null;
+    let y, m, d, x;
+    if ((x = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/))) [, y, m, d] = x;
+    else if ((x = v.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/))) { [, m, d, y] = x; if (y.length === 2) y = (Number(y) > 70 ? "19" : "20") + y; }
+    else if (/^\d{4}$/.test(v)) { y = v; m = 1; d = 1; }
+    else { const t = new Date(v); if (isNaN(t)) return null; y = t.getFullYear(); m = t.getMonth() + 1; d = t.getDate(); }
+    const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`, t = new Date(iso + "T12:00:00");
+    return isNaN(t) || t.getMonth() + 1 !== Number(m) || Number(y) < 1950 || iso > today() ? null : iso;
+  }
+  const impCond = (v) => { v = String(v || "").toLowerCase(); return !v ? null : /warrant|broke|crack/.test(v) ? "Needs warranty" : /worn|fair|poor|rough|rust/.test(v) ? "Worn" : /^new|like new|mint|nib/.test(v) ? "New" : "Good"; };
+  const impPri = (v) => { v = String(v || "").toLowerCase(); return /need|must|high|1/.test(v) ? "Need" : /some|later|low|3/.test(v) ? "Someday" : /want|med|2/.test(v) ? "Want" : null; };
+  // what a column holds, from its heading
+  function guessHead(h) {
+    h = String(h || "").toLowerCase().trim();
+    if (!h || /ebay|list price|msrp|store|link|url|worth|value|lent|categ|dept|type/.test(h)) return "";
+    if (/^list$|box or wish|owned ?\/ ?wish|^status$/.test(h)) return "list";
+    if (/part|p\/n|^pn$|sku|item ?(no|#|num)|model|tool ?(no|#|num)|^number$|^#$/.test(h)) return "part_number";
+    if (/date|bought|purchased|when/.test(h)) return "date_bought";
+    if (/how many|qty|quant|count|pieces/.test(h)) return "qty";
+    if (/saved/.test(h)) return "saved";
+    if (/paid|price|cost|amount|\$/.test(h)) return "price";
+    if (/cond/.test(h)) return "condition";
+    if (/where|drawer|location|kept|bin|shelf|box$/.test(h)) return "location";
+    if (/note|comment/.test(h)) return "notes";
+    if (/prior/.test(h)) return "priority";
+    if (/tool|name|desc|item/.test(h)) return "name";
+    return "";
+  }
+  // no heading row: guess from the values (part numbers, prices, dates, small whole numbers)
+  function guessCol(vals) {
+    vals = vals.filter(Boolean); if (!vals.length) return "";
+    const share = (f) => vals.filter(f).length / vals.length;
+    if (share((v) => pnLike(cleanPn(v))) >= 0.6) return "part_number";
+    if (share((v) => impDate(v) && /[-/.]/.test(v)) >= 0.6) return "date_bought";
+    if (share((v) => /^\$/.test(v) || /^\d+\.\d\d$/.test(v)) >= 0.6) return "price";
+    if (share((v) => /^\d{1,3}$/.test(v)) >= 0.8) return "qty";
+    if (share((v) => /^(new|good|worn|used|fair|needs warranty|broken)$/i.test(v)) >= 0.6) return "condition";
+    if (share((v) => /[a-z]{3}/i.test(v) && v.length > 6) >= 0.6) return "name";
+    return "";
+  }
+  const imp = { rows: [], head: false, map: [] };
+  function impLoad(text) {
+    const rows = parseSheet(text).slice(0, 2001);
+    const head = rows.length > 1 && !rows[0].some((c) => pnLike(cleanPn(c))) && rows.slice(1).some((r) => r.some((c) => pnLike(cleanPn(c))));
+    const cols = Math.max(0, ...rows.map((r) => r.length));
+    const map = [];
+    for (let i = 0; i < cols; i++) {
+      let g = head ? guessHead(rows[0][i]) : "";
+      if (!g) g = guessCol(rows.slice(head ? 1 : 0, 60).map((r) => r[i] || ""));
+      map.push(map.includes(g) ? "" : g);
+    }
+    Object.assign(imp, { rows, head, map });
+    impShow();
+  }
+  // the tools the sheet turns into, after skipping ones already there and merging repeats
+  function impPlan() {
+    const def = $("i-list").value, col = (f) => imp.map.indexOf(f);
+    const get = (r, f) => (col(f) < 0 ? "" : String(r[col(f)] || "").trim());
+    const out = [], byKey = new Map(), have = { owned: new Set(rowsOf("owned").map((r) => r.part_number)), wishlist: new Set(rowsOf("wishlist").map((r) => r.part_number)) };
+    let already = 0, empty = 0;
+    for (const r of imp.rows.slice(imp.head ? 1 : 0)) {
+      const rawPn = cleanPn(get(r, "part_number")), pn = pnLike(rawPn) ? rawPn : "";
+      const name = (get(r, "name") || (!pn && rawPn ? get(r, "part_number") : "")).slice(0, 200);
+      if (!pn && !name) { empty++; continue; }
+      const lv = get(r, "list").toLowerCase(), list = /wish|want/.test(lv) ? "wishlist" : /own|box|have/.test(lv) ? "owned" : def;
+      if (pn && (have[list].has(pn) || (list === "wishlist" && have.owned.has(pn)))) { already++; continue; }
+      const key = list + "|" + (pn || name.toLowerCase());
+      const q = Math.max(1, Math.min(999, parseInt(get(r, "qty"), 10) || 1));
+      if (byKey.has(key)) { const it = byKey.get(key); if (list === "owned") it.qty = Math.min(999, it.qty + q); continue; }
+      const it = { ...blank(list), part_number: pn, name, price: impPrice(get(r, "price")) };
+      if (list === "owned") {
+        it.qty = q;
+        it.date_bought = impDate(get(r, "date_bought"));
+        it.condition = impCond(get(r, "condition")) || "New";
+        it.location = get(r, "location").slice(0, 120);
+      } else {
+        it.priority = impPri(get(r, "priority")) || "Want";
+        it.saved = impPrice(get(r, "saved"));
+      }
+      it.notes = get(r, "notes").slice(0, 1000);
+      byKey.set(key, it); out.push(it);
+    }
+    return { items: out, already, empty };
+  }
+  function impShow() {
+    const has = imp.rows.length > (imp.head ? 1 : 0);
+    $("i-map").hidden = $("i-prev").hidden = !has;
+    $("i-err").hidden = true;
+    if (!has) { $("i-go").disabled = true; $("i-go").textContent = "Add tools"; return; }
+    const sample = (i) => { const r = imp.rows.find((x, k) => k >= (imp.head ? 1 : 0) && x[i]); return r ? r[i] : ""; };
+    $("i-map").innerHTML = `<p class="label">What's in each column</p>` + imp.map.map((f, i) => `<label class="imp-col"><span><strong>${esc(imp.head ? imp.rows[0][i] || `Column ${i + 1}` : `Column ${i + 1}`)}</strong> <span class="meta-line">${esc(String(sample(i)).slice(0, 40)) || "(empty)"}</span></span><select data-col="${i}">${IMP_FIELDS.map(([k, t]) => `<option value="${k}"${k === f ? " selected" : ""}>${t}</option>`).join("")}</select></label>`).join("");
+    const { items, already, empty } = impPlan(), n = Math.min(items.length, 500);
+    const box = items.filter((x) => x.list === "owned").length, wish = items.length - box;
+    const noPn = !imp.map.includes("part_number") && !imp.map.includes("name");
+    $("i-prev").innerHTML = noPn ? `<p class="err">Pick which column has the part numbers.</p>`
+      : `<p><strong>${items.length} tool${items.length === 1 ? "" : "s"}</strong> to add${box && wish ? ` (${box} to your box, ${wish} to your wishlist)` : ""}.`
+      + (already ? ` ${already} already there will be skipped.` : "") + (empty ? ` ${empty} row${empty === 1 ? "" : "s"} with no part number or name will be skipped.` : "")
+      + (items.length > 500 ? " Only the first 500 at a time." : "") + `</p>`
+      + (items.length ? `<div class="imp-table"><table><thead><tr><th>Part number</th><th>Name</th><th>How many</th><th>Paid</th><th>Bought</th></tr></thead><tbody>${items.slice(0, 5).map((x) => `<tr><td>${esc(x.part_number || "")}</td><td>${esc(x.name || "")}</td><td>${x.list === "owned" ? x.qty : "wishlist"}</td><td>${x.price ? money(x.price, x.price % 1) : ""}</td><td>${x.date_bought ? esc(fmtDate(x.date_bought)) : ""}</td></tr>`).join("")}</tbody></table></div>` : "");
+    $("i-go").disabled = noPn || !n;
+    $("i-go").textContent = n ? `Add ${n} tool${n === 1 ? "" : "s"}` : "Add tools";
+  }
+  function openImport(text) {
+    if (state.readonly) return;
+    $("i-text").value = text || ""; $("i-file").value = ""; $("i-fname").textContent = "";
+    $("i-list").value = state.tab === "wishlist" ? "wishlist" : "owned";
+    impLoad(text || "");
+    impDlg.showModal();
+    routeOpen(impDlg, "/import", "Import a spreadsheet");
+  }
+  $("i-text").addEventListener("input", () => impLoad($("i-text").value));
+  $("i-list").addEventListener("change", impShow);
+  $("i-map").addEventListener("change", (e) => {
+    const s = e.target.closest("[data-col]"); if (!s) return;
+    const i = Number(s.dataset.col), v = s.value;
+    imp.map = imp.map.map((f, k) => (k === i ? v : f === v && v ? "" : f));
+    impShow();
+  });
+  $("i-file").addEventListener("change", async () => {
+    const f = $("i-file").files[0]; if (!f) return;
+    if (f.size > 2e6) { $("i-err").textContent = "That file is too big. Save just the tool list as a CSV and try again."; $("i-err").hidden = false; return; }
+    if (/\.(xlsx?|numbers|ods)$/i.test(f.name)) { $("i-err").textContent = "That's a spreadsheet file, not a CSV. In your spreadsheet app use File > Download (or Save As) > CSV, or copy the rows and paste them below."; $("i-err").hidden = false; return; }
+    $("i-fname").textContent = f.name;
+    const text = await f.text();
+    $("i-text").value = text.length > 20000 ? "" : text;
+    impLoad(text);
+  });
+  $("i-close").onclick = () => impDlg.close();
+  $("impFrm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const { items } = impPlan(), add = items.slice(0, 500);
+    if (!add.length) return;
+    $("i-go").disabled = true; $("i-go").textContent = "Adding…";
+    let n = 0;
+    const ok = await guard(async () => { for (let i = 0; i < add.length; i += 100) n += await saveMany(add.slice(i, i + 100)); });
+    $("i-go").disabled = false;
+    if (!n && !ok) { impShow(); return; }
+    impDlg.close();
+    const lists = new Set(add.map((x) => x.list));
+    if (lists.size === 1 && !lists.has(state.tab)) setTab([...lists][0]);
+    burst(...centerOf($("q-add")), 18);
+    toast(ok ? `Added ${n} tool${n === 1 ? "" : "s"} from your spreadsheet.` : `Added ${n} of ${add.length}. Check your connection and import the rest again (tools already added are skipped).`);
+    priceMissing();
+  });
+  $("importSheet").onclick = () => openImport();
+  $("heroImport").onclick = () => openImport();
 
   const SHOP_CATS = ["Ratchets", "Socket sets", "Combination wrenches", "Torque wrenches", "Impact wrenches", "Screwdrivers", "Pliers", "Pry bars", "Tool storage", "Diagnostics"];
   $("shopCats").insertAdjacentHTML("beforeend", SHOP_CATS.map((c) => `<a href="${esc(storeLink(c))}" target="_blank" rel="noopener">${esc(c)}</a>`).join(""));
@@ -4122,7 +4346,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (a === "wishlist" && b === "add" && !c) return { tab: "wishlist", open: "add" };
     if (a === "add" && !b) return { tab: "owned", open: "add" };
     if (a === "tool" && b) return { open: c === "edit" ? "edit" : "tool", id: b };
-    if (["truck", "insurance", "share", "delete-account", "box-check", "feedback"].includes(a) && !b) return { open: a };
+    if (["truck", "insurance", "share", "delete-account", "box-check", "feedback", "import"].includes(a) && !b) return { open: a };
     return { tab: "owned", unknown: true };
   }
   // make the page match the address: on arrival, and on Back and Forward
@@ -4131,7 +4355,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const r = readRoute();
     const ro = state.readonly, me = signedIn() && !state.demo;
     const item = r.id ? state.items.find((x) => String(x.id) === r.id) : null;
-    const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : r.open === "box-check" ? checkDlg : r.open === "feedback" ? fbDlg : null;
+    const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : r.open === "box-check" ? checkDlg : r.open === "feedback" ? fbDlg : r.open === "import" ? impDlg : null;
     const ok = !r.unknown && !(r.tab === "test" && !testOk() && !rowsOf("test").length) && (!r.open || (r.open === "tool" ? !!item : r.open === "edit" ? !!item && !ro : r.open === "share" || r.open === "delete-account" ? me && !ro : r.open === "feedback" || !ro));
     routeSync = true;
     try {
@@ -4155,6 +4379,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (r.open === "delete-account") openDel();
         else if (r.open === "box-check") openCheck();
         else if (r.open === "feedback") openFeedback();
+        else if (r.open === "import") openImport();
       }
       if (!want) document.title = baseTitle;
     } finally { routeSync = false; }
@@ -4216,6 +4441,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   // Where visitors came from: a ?ref= tag, or else the site that linked here (reddit.com → reddit).
   // Only that one word is counted, once per visit; nothing about the person.
+  // Errors people hit are counted (message, file and line, site version, browser name only: never who or
+  // what's in their box) so the owner sees them in the Visitors tab. Errors from browser add-ons, a lost
+  // signal and the same error twice are left out; at most 5 per visit.
+  (function reportErrors() {
+    if (!sb) return;
+    const ver = ((document.querySelector('script[src*="app.js"]') || {}).src || "").replace(/.*[?&]v=/, "").slice(0, 12);
+    const ua = navigator.userAgent, browser = (/iPhone|iPad/.test(ua) ? "iPhone " : /Android/.test(ua) ? "Android " : /Windows/.test(ua) ? "Windows " : /Mac/.test(ua) ? "Mac " : "")
+      + (/EdgA?\//.test(ua) ? "Edge" : /SamsungBrowser/.test(ua) ? "Samsung" : /CriOS|Chrome\//.test(ua) ? "Chrome" : /FxiOS|Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "other");
+    const sent = new Set();
+    const send = (msg, src) => {
+      msg = String(msg || "").replace(/\s+/g, " ").trim().slice(0, 300);
+      if (!msg || sent.size >= 5 || sent.has(msg) || /Failed to fetch|NetworkError|Load failed|ResizeObserver loop|Script error\.?$|AbortError|network connection was lost/i.test(msg)) return;
+      sent.add(msg);
+      sb.rpc("log_error", { m: msg, s: String(src || "").slice(0, 200), v: ver, b: browser }).then(() => {}, () => {});
+    };
+    const ours = (f) => !f || f.startsWith(location.origin);
+    window.addEventListener("error", (e) => { if (e.message && ours(e.filename)) send(e.message, `${(e.filename || "").replace(location.origin, "")}:${e.lineno || 0}`); });
+    window.addEventListener("unhandledrejection", (e) => {
+      const r = e.reason, stack = (r && r.stack) || "", where = (stack.match(new RegExp(location.origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(/[^\\s:)]+:\\d+)")) || [])[1] || "";
+      if (stack && !where) return; // thrown inside an add-on or another site's script
+      send((r && r.message) || r, where);
+    });
+  })();
   (function countVisit() {
     let ref = startQ.get("ref") || "";
     if (!ref) { try { const h = new URL(document.referrer).hostname.replace(/^(www|m|l|lm|old|out)\./, ""); if (h && !/(^|\.)boxtally\.app$/.test(h)) ref = h.replace(/\.(com|net|org|co|app|io)$/, ""); } catch {} }

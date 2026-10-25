@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=68">
+<link rel="stylesheet" href="/app.css?v=69">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -114,6 +114,7 @@
         <button class="btn primary" type="button" id="heroAdd">Add my first tool</button>
         <button class="btn-account" type="button" id="heroDemo">See a sample box</button>
       </div>
+      <p class="hero-note">Already keep a list in a spreadsheet? <button class="link" type="button" id="heroImport">Import it</button></p>
       <p class="hero-note" id="heroNote">No account needed to try it. Sign in to keep your box on every device.</p>
     </div>
     <div class="dash">
@@ -170,6 +171,11 @@
     <span><button class="btn small primary" id="importYes" type="button">Move them to my account</button> <button class="btn small ghost" id="importNo" type="button">Not now</button></span>
   </div>
 
+  <section class="banner since" id="sinceCard" aria-labelledby="sinceTitle" hidden>
+    <div><h2 id="sinceTitle">Since you were last here <span class="when" id="sinceWhen"></span></h2><ul id="sinceList"></ul></div>
+    <button class="dlg-x" id="sinceClose" type="button" title="Hide" aria-label="Hide this"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </section>
+
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-tools" aria-selected="true" aria-controls="list" type="button">Owned <span class="count" id="c-tools">0</span></button>
     <button class="tab" role="tab" id="tab-wish" aria-selected="false" aria-controls="list" type="button">Wishlist <span class="count" id="c-wish">0</span></button>
@@ -216,6 +222,7 @@
       </span>
     </span>
     <span class="export" id="exportBox">
+      <button class="btn small" type="button" id="importSheet" title="Bring in a tool list from Excel, Google Sheets or a CSV file">Import</button>
       <button class="btn small" type="button" id="exportCsv" title="Download a spreadsheet of your box and wishlist">Download CSV</button>
       <button class="btn small" type="button" id="exportPrint" title="Print a tool list, or save it as a PDF">Print / PDF</button>
       <button class="btn small" type="button" id="boxCheck" title="Go through your box drawer by drawer and see if anything's missing">Box check</button>
@@ -351,6 +358,24 @@
       <span class="spacer" style="flex:1"></span>
       <button class="btn" type="button" id="s-close">Close</button>
       <button class="btn primary" type="submit" id="s-save">Create link</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="impDlg">
+  <form id="impFrm" novalidate>
+    <h2>Import a spreadsheet</h2>
+    <p class="meta-line">Bring in a tool list you already keep in Excel, Google Sheets or Numbers. Save it as a CSV file and pick it, or copy the rows and paste them below. Only the part number is needed. Price paid, date bought, how many, condition, drawer and notes come along when your sheet has them.</p>
+    <div class="imp-pick"><label class="btn" for="i-file">Choose a CSV file</label><input type="file" id="i-file" accept=".csv,.tsv,.txt,text/csv,text/plain" class="sr"> <span class="meta-line" id="i-fname"></span></div>
+    <label class="field"><span class="label">Or paste the rows here</span><textarea id="i-text" rows="4" spellcheck="false" placeholder="Part number, Price paid, Date bought&#10;F80, 120, 3/14/2022"></textarea></label>
+    <label class="field"><span class="label">Add them to</span><select id="i-list"><option value="owned">My box</option><option value="wishlist">My wishlist</option></select></label>
+    <div id="i-map" class="imp-map" hidden></div>
+    <div id="i-prev" class="imp-prev" aria-live="polite" hidden></div>
+    <p class="err" id="i-err" hidden></p>
+    <div class="formfoot">
+      <span class="spacer" style="flex:1"></span>
+      <button class="btn" type="button" id="i-close">Cancel</button>
+      <button class="btn primary" type="submit" id="i-go" disabled>Add tools</button>
     </div>
   </form>
 </dialog>
@@ -495,8 +520,8 @@
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script defer src="/drawings.js?v=68"></script>
-<script defer src="/app.js?v=68"></script>
+<script defer src="/drawings.js?v=69"></script>
+<script defer src="/app.js?v=69"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>

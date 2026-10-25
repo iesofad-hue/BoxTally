@@ -44,7 +44,7 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
 
   // every form opens from its address and fits the screen
   const id = await page.evaluate(() => document.querySelector("#list [data-id]")?.dataset.id);
-  for (const [path, want] of [["/add", "dlg"], ["/wishlist/add", "dlg"], ["/truck", "truckDlg"], ["/insurance", "insDlg"], ["/box-check", "checkDlg"], [`/tool/${id}`, "viewer"], [`/tool/${id}/edit`, "dlg"]]) {
+  for (const [path, want] of [["/add", "dlg"], ["/wishlist/add", "dlg"], ["/truck", "truckDlg"], ["/insurance", "insDlg"], ["/box-check", "checkDlg"], ["/import", "impDlg"], [`/tool/${id}`, "viewer"], [`/tool/${id}/edit`, "dlg"]]) {
     await visit(path);
     const d = await openDialog();
     if (!d || d.id !== want) fail(`${name}: ${path} didn't open ${want}`);
@@ -149,8 +149,51 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
     await page.keyboard.press("Escape");
   }
 
+  // a spreadsheet pasted into Import: the heading row is read, repeats are merged, prices and dates come along
+  await page.click("#bnav [data-go=owned]").catch(() => {});
+  await visit("/import");
+  const beforeImp = await page.evaluate(() => document.querySelectorAll("#list [data-id]").length);
+  await page.fill("#i-text", "Part #\tDescription\tQty\tPaid\tDate\nGOE3S100\t3/8 ratchet\t1\t$129.50\t3/14/2022\nSRDH6\tSockets\t2\t45\t2021-06-01\nGOE3S100\t3/8 ratchet\t1\t$129.50\t3/14/2022\n\t\t\t\t\n");
+  const prev = await page.textContent("#i-prev");
+  if (!/2 tools/.test(prev)) fail(`${name}: Import preview says "${prev.slice(0, 80)}" instead of 2 tools`);
+  if ((await page.$eval("#i-map select[data-col='3']", (s) => s.value)) !== "price") fail(`${name}: Import didn't match the "Paid" column to Price paid`);
+  await page.click("#i-go");
+  await page.waitForFunction(() => !document.getElementById("impDlg").open, null, { timeout: 8000 }).catch(() => fail(`${name}: Import didn't close after adding`));
+  const imported = await page.evaluate(() => document.querySelectorAll("#list [data-id]").length);
+  if (imported < beforeImp + 2) fail(`${name}: Import went from ${beforeImp} to ${imported} tools`);
+
   for (const e of errors) fail(`${name}: page error: ${e}`);
   console.log(`${name}: checked`);
+  await page.close();
+}
+// "Since you were last here": a box saved in this browser, with prices that moved since the last visit
+{
+  const page = await browser.newPage({ viewport: { width: 375, height: 740 }, isMobile: true, hasTouch: true });
+  const errors = []; page.on("pageerror", (e) => errors.push(e.message));
+  // no database answers here: the prices come from the tools themselves (a list price you typed in)
+  await page.route(/supabase\.co/, (r) => r.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+  await page.goto(BASE + "/", { waitUntil: "load" });
+  await page.evaluate(() => {
+    const at = new Date(Date.now() - 3 * 86400000).toISOString();
+    localStorage.setItem("snapon-toolbox-v1", JSON.stringify([
+      { id: "a1", list: "owned", part_number: "F80", name: "", category: "Other", price: 0, list_price: 120, qty: 2, created_at: at },
+      { id: "w1", list: "wishlist", part_number: "FHLD1", name: "", category: "Other", price: 0, list_price: 80, priority: "Want", saved: 0, created_at: at },
+    ]));
+    localStorage.setItem("snapon-toolbox-v1-seen-local", JSON.stringify({ cur: { at, p: { a1: 100, w1: 95 }, l: { a1: 1, w1: 1 } } }));
+  });
+  await page.reload({ waitUntil: "load" });
+  await page.waitForTimeout(1500);
+  if (!(await page.locator("#sinceCard").isVisible())) fail("since card: didn't show after prices moved");
+  else {
+    const t = await page.textContent("#sinceCard");
+    if (!/wishlist tool got cheaper/.test(t) || !/\$15/.test(t)) fail(`since card: no wishlist drop of $15 in "${t.slice(0, 120)}"`);
+    if (!/\$40 more/.test(t)) fail(`since card: box change isn't $40 more (2 x $20) in "${t.slice(0, 160)}"`);
+    await page.click("#sinceClose");
+    await page.reload({ waitUntil: "load" }); await page.waitForTimeout(1200);
+    if (await page.locator("#sinceCard").isVisible()) fail("since card: came back after closing it");
+  }
+  for (const e of errors) fail(`since card: page error: ${e}`);
+  console.log("since card: checked");
   await page.close();
 }
 await browser.close();

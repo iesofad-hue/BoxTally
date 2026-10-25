@@ -33,7 +33,10 @@ Safeguards in the `submit_price` database function:
 
 Each account can hold up to 2,000 tools (box and wishlist together) and 300 uploaded photos of up to 3 MB each. The site shrinks photos well under that before uploading. The limits keep one account from filling the free Supabase plan.
 
-### Export
+### Import and export
+
+**Import** (next to Download CSV, or "Import it" on the welcome) brings in a tool list from a CSV file or rows pasted from Excel, Google Sheets or Numbers. Each column is matched to a tool detail by its heading (part number, name, how many, price paid, date bought, condition, drawer, notes, box or wishlist), and you can change any match before adding. Tools already in your box are skipped and repeats are added up. Up to 500 tools at a time.
+
 
 **Download CSV** saves a spreadsheet of the box and wishlist (opens in Excel, Google Sheets or Numbers). **Print / PDF** prints a clean tool list with totals, or saves it as a PDF from the print dialog. Handy to keep for insurance in case of theft or a shop fire.
 

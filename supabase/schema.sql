@@ -930,3 +930,71 @@ begin
 end $$;
 revoke all on function public.admin_growth() from public, anon;
 grant execute on function public.admin_growth() to authenticated;
+
+
+-- Error log + active users for the owner (2026-10-25)
+-- 1. Errors people hit on the site. One row per day per error message, with a count.
+--    No user id, email or tool details are stored: just the message, the file and line, the site version
+--    and the browser name.
+create table if not exists public.client_errors (
+  day date not null default current_date,
+  msg text not null check (char_length(msg) <= 300),
+  src text not null default '' check (char_length(src) <= 200),
+  ver text not null default '' check (char_length(ver) <= 12),
+  browser text not null default '' check (char_length(browser) <= 40),
+  n integer not null default 0,
+  last_at timestamptz not null default now(),
+  primary key (day, msg, src)
+);
+alter table public.client_errors enable row level security;
+-- no policies: nobody can read or write the table directly, only through the two functions below
+revoke all on public.client_errors from anon, authenticated;
+
+-- 2. The site calls this when something breaks. Anyone can call it (people who aren't signed in hit errors too),
+--    but it only ever adds to a count, keeps text short, holds at most 300 different errors a day,
+--    and forgets anything older than 30 days.
+create or replace function public.log_error(m text, s text, v text, b text)
+returns boolean language plpgsql security definer set search_path to '' as $$
+declare k text := left(btrim(coalesce(m, '')), 300); f text := left(btrim(coalesce(s, '')), 200);
+begin
+  if k = '' then return false; end if;
+  delete from public.client_errors e where e.day < current_date - 30;
+  if not exists (select 1 from public.client_errors e where e.day = current_date and e.msg = k and e.src = f)
+     and (select count(*) from public.client_errors e where e.day = current_date) >= 300 then return false; end if;
+  insert into public.client_errors as e (day, msg, src, ver, browser, n, last_at)
+  values (current_date, k, f, left(coalesce(v, ''), 12), left(coalesce(b, ''), 40), 1, now())
+  on conflict (day, msg, src) do update set n = e.n + 1, last_at = now(), ver = excluded.ver, browser = excluded.browser;
+  return true;
+end $$;
+revoke all on function public.log_error(text, text, text, text) from public;
+grant execute on function public.log_error(text, text, text, text) to anon, authenticated;
+
+-- 3. The owner's Visitors tab: same numbers as before, plus how many signed-in people used BoxTally
+--    today / this week / this month (counted from sign-in sessions, never who), how many changed
+--    something in their box this week, and the errors from the last 14 days.
+create or replace function public.admin_growth()
+returns json language plpgsql stable security definer set search_path to '' as $$
+begin
+  if not exists (select 1 from public.admins a where a.user_id = auth.uid()) then raise exception 'Owner only'; end if;
+  return json_build_object(
+    'signups_7', (select count(*) from auth.users u where u.created_at > now() - interval '7 days'),
+    'signups_30', (select count(*) from auth.users u where u.created_at > now() - interval '30 days'),
+    'signups_all', (select count(*) from auth.users),
+    'boxes_with_tools', (select count(distinct i.user_id) from public.items i where i.list = 'owned'),
+    'shares', (select count(*) from public.box_shares),
+    'feedback_7', (select count(*) from public.feedback f where f.created_at > now() - interval '7 days'),
+    'active_1', (select count(distinct s.user_id) from auth.sessions s where s.updated_at > now() - interval '1 day'),
+    'active_7', (select count(distinct s.user_id) from auth.sessions s where s.updated_at > now() - interval '7 days'),
+    'active_30', (select count(distinct s.user_id) from auth.sessions s where s.updated_at > now() - interval '30 days'),
+    'changed_7', (select count(distinct i.user_id) from public.items i where i.updated_at > now() - interval '7 days' and i.list <> 'test'),
+    'refs', coalesce((select json_agg(x order by x.n desc) from (
+      select v.ref, sum(v.n)::int n, sum(v.n) filter (where v.day > current_date - 7)::int n7
+      from public.visit_refs v where v.day > current_date - 30 group by v.ref order by 2 desc limit 30) x), '[]'::json),
+    'errors', coalesce((select json_agg(x order by x.last_at desc) from (
+      select e.msg, e.src, max(e.ver) ver, max(e.browser) browser, sum(e.n)::int n, max(e.last_at) last_at
+      from public.client_errors e where e.day > current_date - 14 group by e.msg, e.src order by max(e.last_at) desc limit 30) x), '[]'::json)
+  );
+end $$;
+revoke all on function public.admin_growth() from public, anon;
+grant execute on function public.admin_growth() to authenticated;
+
