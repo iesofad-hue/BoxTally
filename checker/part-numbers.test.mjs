@@ -13,7 +13,7 @@ const { artOf, catOf } = new Function("state", "storeOf", "window", html.slice(f
 
 // [part number, drawing, drive, size]  (drive/size left out = not checked)
 const CASES = [
-  ["BLPBSS40", "set", '1/4"'],
+  ["BLPBSS40", "bit-socket-case", '1/4"'], ["SGDMRC44FR", "set-sd-case"],
   // ratchets: the tooth count ends the number; L long, F/X flex, K/C stubby, H soft grip, 8xx round
   ["F80", "ratchet", '3/8"'], ["GF80", "ratchet", '3/8"'], ["FK80", "ratchet-stubby", '3/8"'], ["FL80", "ratchet-long", '3/8"'],
   ["FLF80", "ratchet-long-flex", '3/8"'], ["FX80", "ratchet-flex", '3/8"'], ["FBF80", "ratchet-flex"], ["FKF80", "ratchet-flex"],
@@ -142,7 +142,7 @@ const CASES = [
   ["1250", "pry"], ["BP8B", "hammer-ballpeen"], ["HLE24", "hammer-deadblow"], ["HD4SG", "hammer-sledge"], ["5NHRA", "file"], ["SGHF614BR", "file"],
   ["PSLR4-1", "pick"], ["SGLASA204", "set-pick"], ["YA338", "pick"], ["GA294", "mirror"], ["GA265A", "pickup"], ["MS800", "scraper"], ["YA405A", "knife"], ["PIT160", "hand-impact"],
   // fadie's own box (2026-10-20): every number checked against Snap-on's listing
-  ["OFCA1", "filter-wrench"], ["0FCA1KT", "filter-wrench"], ["206AFX", "set-extension", '3/8"'], ["305ASX", "set-extension", '1/2"'], ["207IPLFM", "set", '3/8"'],
+  ["OFCA1", "filter-spider"], ["0FCA1KT", "filter-spider"], ["206AFX", "set-extension", '3/8"'], ["305ASX", "set-extension", '1/2"'], ["207IPLFM", "set", '3/8"'],
   ["ADHWS10", "wrench-adjust"], ["ADHWS8O", "wrench-adjust"], ["ADWS8O", "wrench-adjust"], ["BLPBTWKIT", "set-kit", '1/4"'], ["BLPHSM1440", "socket-bit", '1/4"', "4mm"],
   ["C0100", "tool-bag"], ["PB206B", "bit-case"], ["MAGMATR", "magmat"], ["MAGMINI", "magmat"], ["PHG1004RPBK", "air-bit"], ["PHG1005BK", "air-bit"], ["PH3050BR", "air-hammer"],
   ["LDT40", "disconnect-set"], ["GSL832", "ratchet-long", '1/2"'], ["TNF72", "ratchet-round", '1/4"'], ["GTM830", "ratchet", '1/4"'], ["IEDP105", "pliers-pump"],
@@ -209,8 +209,11 @@ if (!longNamed.look?.includes("long")) { bad++; console.log("name should make a 
 // tools saved without a category ("Other") show the one their part number says
 const CATS = [["MAGMATR", "Shop & Tech"], ["CTINF9010", "Power Tools"], ["EESC337W", "Diagnostics"], ["PH3050BR", "Power Tools"], ["CTR827", "Power Tools"],
   ["YA1005C", "General Hand Tools"], ["BOERM712", "Service Tools - Sets"], ["GSL832", '1/2" Drive Tools'], ["TL936", '1/4" Drive Tools'], ["SN36", '1/2" Drive Tools'],
-  ["87BCF", "Pliers"], ["HBBD56", "Hammers"], ["SAPB200O", "Prybars"], ["SGDMRC11A", "Screwdrivers"], ["ADHW8AO", "Wrenches"], ["PB206B", "Tool Storage"], ["SDMT25D", "Screwdrivers"], ["RKRF80", "General Hand Tools"], ["ZZZ", "Other"]];
+  ["87BCF", "Pliers"], ["HBBD56", "Hammers"], ["SAPB200O", "Prybars"], ["SGDMRC11A", "Screwdrivers"], ["ADHW8AO", "Wrenches"], ["PB206B", "Tool Storage"], ["BLPBSS40", "Service Tools - Sets"], ["SDMT25D", "Screwdrivers"], ["RKRF80", "General Hand Tools"], ["ZZZ", "Other"]];
 for (const [pn, cat] of CATS) { const got = catOf({ part_number: pn, name: "", category: "Other" }); if (got !== cat) { bad++; console.log(`${pn.padEnd(12)} category ${got}, want ${cat}`); } }
+// Tool Storage picked for a tool sold in a case: the number decides the drawing
+if (artOf({ part_number: "SGDMRC44FR", name: "", category: "Tool Storage" }).key !== "set-sd-case") { bad++; console.log("SGDMRC44FR in Tool Storage should still be a screwdriver set"); }
+if (artOf({ part_number: "KETP682A0ZDL", name: "", category: "Tool Storage" }).key !== "storage") { bad++; console.log("a roll cab in Tool Storage should stay a roll cab"); }
 // a category someone picked stays
 if (catOf({ part_number: "MAGMATR", name: "", category: "Tool Storage" }) !== "Tool Storage") { bad++; console.log("picked category should stay"); }
 // tool storage: only the piece the number names, at its real width, banks and drawers ("type;width;full/banks;flags")

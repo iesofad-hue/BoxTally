@@ -349,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const PN_RULES = [
     // sets and kits
     [/^[TFSL][A-Z]*(72|80|720|830|936|880)[A-Z]*(SET|KIT)/, "set-kit", (m) => PN_DRIVE[m.input[0]]],
-    [/^[O0]FCA\d/, "filter-wrench"], [/^BLPBTW/, "set-kit", at('1/4"')], [/^BLPBSS\d/, "set", at('1/4"')], [/^LDT\d/, "disconnect-set"], // OFCA1KT spider filter wrench, BLPBSS40 40 pc 1/4" stubby bit socket set, LDT40 master disconnect set
+    [/^[O0]FCA\d/, "filter-spider"], [/^BLPBTW/, "set-kit", at('1/4"')], [/^BLPBSS\d/, "bit-socket-case", at('1/4"')], [/^SGDMRC\d+F[A-Z]?$/, "set-sd-case"], [/^LDT\d/, "disconnect-set"], // OFCA1KT spider filter wrench, BLPBSS40 40 pc 1/4" stubby bit socket set, LDT40 master disconnect set
     [/(SET|KIT)\d*[A-Z]?$/, "set", (m) => PN_DRIVE[m.input[0]]],
     // pliers are numbers with letters after: 47ACF slip joint, 96CF needle nose, 87CF diagonal, PL400B a set
     [/^PL\d{3}/, "set-pliers"],
@@ -588,7 +588,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "set-wrench": "Wrench set", "set-screwdriver": "Screwdriver set", "set-pliers": "Pliers set", "set-pick": "Pick set", "set-punch": "Punch & chisel set", "set-bit": "Bit set", "set-kit": "Ratchet & socket kit",
     "diag-tablet": "Scan tool", "diag-handheld": "Handheld scanner", "battery-tester": "Battery tester", borescope: "Inspection camera", jump: "Jump starter",
     "hammer-ballpeen": "Ball peen hammer", "hammer-deadblow": "Dead blow hammer", "hammer-mallet": "Rubber mallet", "punch-pin": "Punch",
-    "socket-spark": "Spark plug socket", "socket-o2": "O2 sensor socket", "filter-wrench": "Oil filter wrench", "torque-click": "Click torque wrench", "torque-angle": "Torque angle gauge",
+    "socket-spark": "Spark plug socket", "socket-o2": "O2 sensor socket", "filter-wrench": "Oil filter wrench", "filter-spider": "Spider filter wrench", "bit-socket-case": "Bit socket set", "set-sd-case": "Ratcheting screwdriver set", "torque-click": "Click torque wrench", "torque-angle": "Torque angle gauge",
     "pliers-strip": "Wire strippers", "pliers-crimp": "Crimpers", "pliers-hose": "Hose clamp pliers", tapdie: "Tap & die", file: "File", scraper: "Gasket scraper", tape: "Tape measure", knife: "Utility knife",
     "cl14-ratchet": "14.4V cordless ratchet", "cl14-impact": "14.4V cordless impact", "cl14-driver": "14.4V impact driver", "cl14-drill": "14.4V drill/driver", "cl14-die": "14.4V die grinder", "cl14-battery": "14.4V battery",
     "cl18-impact": "18V cordless impact", "cl18-driver": "18V impact driver", "cl18-drill": "18V drill/driver", "cl18-ratchet": "18V cordless ratchet",
@@ -623,7 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnDrive = (pn) => (pnGuess(pn) || {}).drive || null;
   // The family a kind of tool belongs to: socket-deep is a socket, air-impact a power tool.
   const POWER_KINDS = ["air-impact", "air-ratchet", "air-hammer", "air-bit", "grinder-die", "grinder-angle", "battery", "charger", "rivet", "polisher", "cutoff", "heatgun"];
-  const familyOf = (k) => (POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp", "puck-light"].includes(k) ? "shop" : k.split("-")[0]);
+  const familyOf = (k) => (["bit-socket-case", "set-sd-case"].includes(k) ? "set" : POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp", "puck-light"].includes(k) ? "shop" : k.split("-")[0]);
   // The drive category a tool belongs in. A hand-picked drive category that the name or part number
   // contradicts (S80A filed under 3/8" Drive Tools) shows, filters and sorts as the right one.
   // The category a drawing kind belongs in, for tools saved without one ("Other", the quick add's default).
@@ -942,7 +942,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const g = pnGuess(pn);
     // The name decides first, then a category the owner picked. The drive categories don't count here: the
     // add form starts on 3/8" Drive Tools, so the part number knows better (OEX18 is a wrench either way).
-    const key = firstHit(ART_WORDS, text) || ART_CAT[r.category];
+    // Tool Storage is a common slip for a tool sold in a case (SGDMRC44FR, a screwdriver set): a part number
+    // that names a tool wins over it, and a box's own number still reads as a box.
+    const key = firstHit(ART_WORDS, text) || (r.category === "Tool Storage" && g ? null : ART_CAT[r.category]);
     let kind;
     if (key === "screwdriver" || (!key && g && g.key === "screwdriver")) kind = screwdriverKind(text, pn);
     else if (key) kind = (VARIANT_WORDS[key] && firstHit(VARIANT_WORDS[key], text)) || (g && familyOf(g.key) === key && g.key) || VARIANT_DEFAULT[key] || key;
@@ -956,7 +958,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Drive size: what the name says, then the part number's drive letter, then the category. The part number
     // beats the category because the add form starts on 3/8" Drive Tools, so an S80A saved without changing
     // it would otherwise read as 3/8".
-    const drive = saidDrive(text) || ((DRIVE_KINDS.includes(familyOf(kind)) || /^set/.test(kind) || CORDLESS_DRIVE.test(kind)) && g && g.drive) || CAT_DRIVE[r.category] || null;
+    const drive = saidDrive(text) || ((DRIVE_KINDS.includes(familyOf(kind)) || /^set|^bit-socket/.test(kind) || CORDLESS_DRIVE.test(kind)) && g && g.drive) || CAT_DRIVE[r.category] || null;
     const spec = ["set", "set-wrench", "set-extension"].includes(kind) ? setSpec(kind, pn, text, drive) : null;
     // a set with no range in its name shows what its part number says: "12 pc · 8mm–19mm"
     const z = spec && spec.split(";")[1].split(","), size = sizeOf(kind, text, pn, drive) || (z && z.length > 1 ? `${z.length} pc · ${z[0]}–${z[z.length - 1]}` : null);
@@ -1223,6 +1225,19 @@ document.addEventListener("DOMContentLoaded", () => {
     + '<path class="k" d="M66 12 H94 L112 30 V58 L94 76 H66 L50 58 V30 Z"/><rect class="sh" x="68" y="15" width="22" height="1.6" rx=".8" opacity=".3"/>'
     + '<circle class="s" cx="81" cy="44" r="18"/><circle class="d" cx="81" cy="44" r="14.6"/><circle class="w" cx="81" cy="44" r="8.4"/><circle class="led" cx="81" cy="44" r="5.4"/><circle class="w" cx="78.6" cy="41.6" r="1.6"/>'
     + '<text class="txw" x="81" y="70" font-size="4.4" text-anchor="middle">545 LM</text>';
+  // 3-leg spider filter wrench (OFCA1): chrome triangle plate with a square drive, standing on its bent legs
+  ART["filter-spider"] = '<path class="s" d="M30 34 H46 V84 Q46 88 42 88 H30 Q27 88 27 85 V82 H38 V40 H30 Z"/><path class="s" d="M130 34 H114 V84 Q114 88 118 88 H130 Q133 88 133 85 V82 H122 V40 H130 Z"/>'
+    + '<path class="s" d="M74 40 H86 V90 Q86 93 83 93 H77 Q74 93 74 90 Z"/><path class="s" d="M28 30 Q80 14 132 30 Q134 36 128 38 Q80 26 32 38 Q26 36 28 30 Z"/><path class="shl" d="M40 29 Q80 19 120 29"/>'
+    + '<ellipse class="s" cx="80" cy="27" rx="13" ry="5"/><rect class="pit" x="76" y="24.4" width="8" height="5" rx=".8"/><circle class="d" cx="56" cy="29" r="2"/><circle class="d" cx="104" cy="29" r="2"/>';
+  // a blow-molded case standing open: lid up behind, base in front with what's in it
+  const openCaseArt = (shell, inner, body) => `<rect class="${shell}" x="18" y="6" width="124" height="40" rx="7"/><rect class="pit" x="24" y="11" width="112" height="30" rx="4"/>`
+    + `<path class="${shell}" d="M14 50 H146 L150 86 Q150 92 144 92 H16 Q10 92 10 86 Z"/><path class="${inner}" d="M22 54 H138 L141 82 H19 Z"/><rect class="d" x="42" y="86" width="14" height="5" rx="1.6"/><rect class="d" x="104" y="86" width="14" height="5" rx="1.6"/>${body}`;
+  { let b = ""; for (let r = 0; r < 4; r++) for (let i = 0; i < 10; i++) { const x = 27 + i * 11.6 + r * -0.3, y = 58 + r * 6.4; b += `<rect class="s" x="${f1(x)}" y="${f1(y)}" width="6" height="4.2" rx="1"/><rect class="sv" x="${f1(x + 1.8)}" y="${f1(y + 4)}" width="2.4" height="1.8" rx=".4"/>`; }
+    ART["bit-socket-case"] = openCaseArt("cg", "cgi", b); }
+  { let b = '<rect class="g" x="80" y="56" width="30" height="9" rx="4.5"/><rect class="k" x="104" y="56.6" width="16" height="7.8" rx="3.9"/><rect class="s" x="72" y="59" width="9" height="3" rx="1"/><rect class="g" x="26" y="56.6" width="34" height="7" rx="2"/>'
+      + '<rect class="s" x="26" y="67" width="40" height="2.4" rx="1.2"/><rect class="s" x="72" y="67" width="60" height="2.4" rx="1.2"/>';
+    for (let r = 0; r < 2; r++) for (let i = 0; i < 14; i++) b += `<path class="s" d="M${f1(26 + i * 8)} ${74 + r * 5} h3.6 v3 h-3.6 Z"/>`;
+    ART["set-sd-case"] = openCaseArt("k", "d", b); }
   ART["cl14-die"] = ART["cl14-ratchet"].slice(0, ART["cl14-ratchet"].indexOf('<text class="txw" x="64"'))
     + '<path class="s" d="M38 44 L56 41 V59 L38 56 Z"/><rect class="sh" x="40" y="44.6" width="13" height="1.5" rx=".75"/><path class="s" d="M39.4 50 L35.7 56.4 L28.3 56.4 L24.6 50 L28.3 43.6 L35.7 43.6 Z"/>'
     + '<rect class="s" x="12" y="48.6" width="14" height="2.8" rx="1"/><ellipse class="s" cx="13" cy="50" rx="5.4" ry="4.4"/><path class="nl" d="M9.4 47.6 L16.4 52.4 M9.4 52.4 L16.4 47.6"/>';

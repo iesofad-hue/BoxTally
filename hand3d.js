@@ -233,6 +233,22 @@ function filterWrench() {
   g.userData.yaw = -0.5; return g;
 }
 
+// 3-leg spider filter wrench (OFCA1): a chrome triangle plate with a 3/8" square drive in the middle and three
+// legs bent down that grip the filter, standing on the legs
+function filterSpider() {
+  const g = group(), R = 52, top = 34;
+  const plate = new THREE.Shape(); for (let i = 0; i < 3; i++) { const a = (i * 2 * PI) / 3 + PI / 2, b = a + PI / 3; const p = [Math.cos(a) * 34, Math.sin(a) * 34], q = [Math.cos(b) * 16, Math.sin(b) * 16]; i ? plate.lineTo(...p) : plate.moveTo(...p); plate.lineTo(...q); }
+  plate.closePath();
+  const pg = new THREE.ExtrudeGeometry(plate, { depth: 4, bevelEnabled: true, bevelThickness: 1.4, bevelSize: 2.4, bevelSegments: 3 }); pg.rotateX(-PI / 2);
+  g.add(at(mesh(pg, mat.satin), 0, top, 0), at(cyl(12, 8, mat.satin, { segs: 32 }), 0, top + 2, 0), at(box(9.6, 1, 9.6, mat.hole, 0.4), 0, top + 6.2, 0));
+  for (let i = 0; i < 3; i++) {
+    const a = (i * 2 * PI) / 3 + PI / 2, leg = group(at(box(R - 30, 4, 14, mat.satin, 1.4), (R - 30) / 2 + 28, 0, 0), at(box(4, top + 4, 14, mat.satin, 1.4), R, -top / 2 + 2, 0), at(box(10, 4, 14, mat.satin, 1.4), R - 4, -top + 2, 0));
+    leg.position.y = top + 2; leg.rotation.y = a; g.add(leg);
+    g.add(at(cyl(2.6, 2, mat.satin, { segs: 16 }), Math.cos(a) * 20, top + 6, -Math.sin(a) * 20));
+  }
+  g.userData.yaw = -0.4; return g;
+}
+
 /* ---------- torque angle gauge ---------- */
 function angleGauge() {
   const dial = paint(512, 512, (x, w) => {
@@ -670,6 +686,7 @@ export const MODELS = {
   speeder: () => speeder(),
   crowfoot: (o = {}) => crowfoot({ gap: o.gap || 13, size: o.size || "", drive: o.drive || "3/8" }),
   "filter-wrench": () => filterWrench(),
+  "filter-spider": () => filterSpider(),
   "torque-angle": () => angleGauge(),
   "pliers-crimp": () => crimpers(),
   "pliers-hose": () => hoseClampPliers(),

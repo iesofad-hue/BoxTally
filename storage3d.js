@@ -10,6 +10,7 @@ const M = {
   foam: new THREE.MeshPhysicalMaterial({ color: 0x26282c, roughness: 0.95 }),
   redrub: new THREE.MeshPhysicalMaterial({ color: 0xa00912, roughness: 0.72, clearcoat: 0.15 }),
   dark: new THREE.MeshPhysicalMaterial({ color: 0x2c3036, roughness: 0.5, clearcoat: 0.3 }),
+  grey: new THREE.MeshPhysicalMaterial({ color: 0x8a8d92, roughness: 0.55, clearcoat: 0.2 }), // blow-molded cases
   hdpe: new THREE.MeshPhysicalMaterial({ color: 0x1b1c1f, roughness: 0.5, clearcoat: 0.3, clearcoatRoughness: 0.4 }),
   green: new THREE.MeshPhysicalMaterial({ color: 0x1f9d55, roughness: 0.35, clearcoat: 0.8 }),
   lens: new THREE.MeshPhysicalMaterial({ color: 0x05070a, roughness: 0.02, clearcoat: 1, metalness: 0.3 }),
@@ -779,6 +780,40 @@ function bitCase() {
   g.add(at(tube([[-40, 15, -75], [-40, 15, -92], [40, 15, -92], [40, 15, -75]], 6, mat.black, 12), 0, 0, 0));
   g.userData.yaw = -0.5; return g;
 }
+// An open blow-molded case: the base on the bench with its insert, the lid swung up behind on its hinge and
+// two latches on the front. fill(g, top) lays the contents on the insert.
+function openCase({ W = 240, D = 160, H = 30, shell = M.grey, insert = M.grey, fill = () => {} } = {}) {
+  const g = group(at(box(W, H, D, shell, 10), 0, H / 2, 0), at(box(W - 16, 4, D - 16, insert, 4), 0, H - 1, 0));
+  const lid = group(at(box(W, 22, D, shell, 10), 0, 11, D / 2), at(box(W - 18, 2, D - 18, M.liner, 4), 0, 0.6, D / 2));
+  lid.position.set(0, H, -D / 2); lid.rotation.x = -PI / 2 - 0.22; g.add(lid);
+  for (const x of [-W * 0.3, W * 0.3]) g.add(at(box(26, 12, 5, M.dark, 2), x, H - 6, D / 2 + 1.5));
+  g.add(at(box(W * 0.36, 12, 8, shell, 4), 0, H / 2, D / 2 + 3)); // carry handle molded into the front
+  fill(g, H + 1);
+  g.userData.yaw = -0.35; return g;
+}
+// 40 pc 1/4" stubby bit socket set (BLPBSS40): four rows of ten bit sockets lying in a grey case
+function bitSocketCase() {
+  return openCase({ fill: (g, t) => {
+    for (let row = 0; row < 4; row++) for (let i = 0; i < 10; i++) {
+      const x = -96 + i * 21.3, z = -48 + row * 32, r = 5.6 + (i % 5) * 0.25;
+      g.add(at(cyl(r, 14, mat.chrome, { along: "z", segs: 20 }), x, t + r, z - 4));
+      g.add(at(cyl(r * 0.5, 10, row === 1 ? mat.chrome : mat.steel, { along: "z", segs: row % 2 ? 6 : 12 }), x, t + r, z + 8));
+      g.add(at(box(r * 2.4, 1, 6, M.liner, 0.3), x, t + 0.3, z + 8));
+    }
+  } });
+}
+// 44 pc ratcheting screwdriver master foam set (SGDMRC44FR): black case, red handle, four extensions, rows of bits
+function sdFoamCase() {
+  return openCase({ W: 300, D: 220, H: 34, shell: M.hdpe, insert: M.foam, fill: (g, t) => {
+    const hd = group(at(capsule(15, 64, mat.redp), 0, 0, 0), at(capsule(13, 40, mat.rubber), -30, 0, 0), at(cyl(5, 22, mat.chrome, { along: "x" }), 56, 0, 0));
+    g.add(at(hd, 50, t + 12, -76), at(box(80, 3, 26, M.redrub, 2), -90, t + 1.5, -76));
+    [[-60, -40, 80], [60, -40, 70], [-30, -14, 170], [-60, 8, 110], [70, 8, 90]].forEach(([x, z, l]) => g.add(at(cyl(3.6, l, mat.chrome, { along: "x", segs: 12 }), x, t + 3.6, z)));
+    for (let row = 0; row < 3; row++) for (let i = 0; i < 12; i++) {
+      const x = -128 + i * 22.6 + (row === 2 && i > 5 ? 8 : 0), z = 34 + row * 26;
+      g.add(at(cyl(3.4, 12, row === 1 ? mat.oxide : mat.chrome, { segs: 6 }), x, t + 6, z), at(cyl(1.6, 6, mat.steel, { segs: 8 }), x, t + 15, z));
+    }
+  } });
+}
 // An extension set: 3", 6" and 10" laid side by side.
 // Lengths come from the set's part number (206AFX: 1-1/2" to 11"); they sit in a black clip rail, shortest in front.
 function extensionSet({ sizes = ['3"', '6"', '10"'], drive = "3/8" } = {}) {
@@ -792,6 +827,8 @@ export const MODELS = {
   "storage-cart": () => serviceCart(),
   "storage-chest": (o = {}) => (o.box ? boxUnit(o.box) : chestOpen()),
   "set-screwdriver": () => screwdriverSet(),
+  "set-sd-case": () => sdFoamCase(),
+  "bit-socket-case": () => bitSocketCase(),
   "set-pliers": () => pliersSet(),
   "set-pick": () => pickSet(),
   "set-punch": () => punchSet(),
