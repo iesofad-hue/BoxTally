@@ -43,7 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const priceAsked = new Set(), finding = new Set(); // part numbers asked about on the spot this visit, and still being looked up
   const state = { admin: false, adminParts: [], tab: "owned", view: "cards", user: null, items: [], catalog: {}, hist: {}, ebay: {}, list: {}, loaded: false, editing: null, confirm: null, lendEdit: null, uploading: {}, introDone: false, closedDrawers: new Set(), demo: false, readonly: false, shareToken: null, shareInfo: null, offline: false };
   const signedIn = () => !!state.user;
-  const tabLabel = () => (state.tab === "owned" ? "box" : "wishlist");
+  const tabLabel = () => (state.tab === "owned" ? "box" : state.tab === "test" ? "Test list" : "wishlist");
+  // The owner's Test list: try any part number to see its price and drawing. Test tools never count
+  // toward the box, the wishlist, Money, share links or anything else; only the owner can save them.
+  const testOk = () => state.admin && signedIn() && !state.demo && !state.readonly;
+  const realItems = () => state.items.filter((r) => r.list !== "test");
+  const whereOf = (list) => (list === "owned" ? "box" : list === "test" ? "Test list" : "wishlist");
 
   /* ---------- prices from the shared list ---------- */
   const storeOf = (r) => state.catalog[r.part_number] || null;
@@ -1388,6 +1393,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("i-pri").innerHTML = opts(PRIS);
   const SORTS = {
     owned: [{ v: "date", t: "Newest first" }, { v: "worth", t: "Worth, high to low" }, { v: "change", t: "Biggest price change" }, { v: "name", t: "Name A–Z" }, { v: "cat", t: "Category" }, { v: "nophoto", t: "Missing photos first" }, { v: "lent", t: "Lent out first" }],
+    test: [{ v: "date", t: "Newest first" }, { v: "worth", t: "Price, high to low" }, { v: "name", t: "Name A–Z" }],
     wishlist: [{ v: "pri", t: "Priority" }, { v: "drop", t: "Price drops first" }, { v: "worth", t: "Price, high to low" }, { v: "close", t: "Closest to paid off" }, { v: "name", t: "Name A–Z" }],
   };
   function setSortOptions() { const cur = $("fSort").value; $("fSort").innerHTML = opts(SORTS[state.tab]); if (SORTS[state.tab].some((s) => s.v === cur)) $("fSort").value = cur; }
@@ -1398,7 +1404,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function filtered() {
     const q = $("q").value.trim().toLowerCase(), cat = $("fCat").value;
     const rows = rowsOf(state.tab).filter((r) => (!cat || catOf(r) === cat) && (!q || [displayName(r), r.part_number, r.notes, r.location].some((f) => String(f || "").toLowerCase().includes(q))));
-    const worth = (r) => (state.tab === "owned" ? worthAll(r) : wishCost(r));
+    const worth = (r) => (state.tab === "owned" ? worthAll(r) : state.tab === "test" ? nowPrice(r) || 0 : wishCost(r));
     const chg = (r) => { const c = lastChange(r); return c ? c.to - c.from : 0; };
     const by = {
       date: (a, b) => String(b.date_bought || "").localeCompare(String(a.date_bought || "")) || String(addedAt(b)).localeCompare(String(addedAt(a))),
@@ -1525,14 +1531,33 @@ document.addEventListener("DOMContentLoaded", () => {
       ${confirmHtml(r)}</div></article>`;
   }
 
+  // Test list: just the prices and the drawing, no "you paid" or saving up
+  function cardTest(r, i) {
+    const now = nowPrice(r), e = ebayPrice(r);
+    return `<article class="card${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}">${photoBlock(r, `<span class="chip">Test</span>`, "")}<div class="card-body">
+      <div><h3 class="${r.name || (storeOf(r) && storeOf(r).name) ? "" : "pending"}">${esc(displayName(r))}</h3>${idRow(r)}</div>
+      <div class="prices">
+        <div><span class="label">${listPrice(r) != null ? `Snap-on list${listEst(r) ? " " + EST : ""}` : "Snap-on list"}</span>${listPrice(r) != null ? `<span class="price-big">${money(listPrice(r), listPrice(r) % 1)}</span>` : `<span class="no-price">${r.part_number && finding.has(r.part_number) ? "Finding prices…" : "Not found yet"}</span>`}</div>
+        <div><span class="label">eBay price</span>${e != null ? `<span class="price-big">${money(e, e % 1)}</span>` : `<span class="no-price">${r.part_number ? (finding.has(r.part_number) ? "Finding prices…" : "No price found yet.") : "Add a part number to get its price."}</span>`}</div>
+      </div>
+      ${listLine(r)}${ebayLine(r)}
+      ${r.notes ? `<span class="meta-line">${esc(r.notes)}</span>` : ""}
+      <div class="actions"><span class="spacer"></span><button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      ${confirmHtml(r)}</div></article>`;
+  }
+
   // List view: one dense row per tool, for big boxes.
   function rowItem(r, i = 0) {
-    const owned = r.list === "owned", p = photoOf(r), ch = lastChange(r), dropped = !owned && ch && ch.to < ch.from;
+    const owned = r.list === "owned", test = r.list === "test", p = photoOf(r), ch = lastChange(r), dropped = !owned && ch && ch.to < ch.from;
     const pic = `<button class="open" type="button" data-act="view" aria-label="${p ? "View photo of" : "See"} ${esc(displayName(r))}${p ? "" : " up close"}">${rowThumb(r)}</button>`;
     // a tool with no name shows its part number as the title, so say what kind of tool it is instead of repeating the number
     const a = displayName(r) === r.part_number && artOf(r), unnamed = a && a.key !== "other";
     let price, sub;
-    if (owned) {
+    if (test) {
+      const now = nowPrice(r);
+      price = now != null ? money(now, now % 1) : "—";
+      sub = now != null ? (listPrice(r) != null ? `List price${listEst(r) ? " " + EST : ""}` : "eBay price") : r.part_number && finding.has(r.part_number) ? "finding prices…" : "no price yet";
+    } else if (owned) {
       const now = nowPrice(r), paid = Number(r.price) || 0, v = now ?? paid, diff = now != null && paid ? now - paid : null;
       price = v ? money(v, v % 1) : "—";
       // say where the price came from, the same way the cards do: Snap-on list price first, else eBay
@@ -1543,12 +1568,12 @@ document.addEventListener("DOMContentLoaded", () => {
       price = cost ? money(cost, cost % 1) : "—";
       sub = !cost ? "" : left ? `${money(left, left % 1)} left` : "Ready to buy";
     }
-    const chips = (owned ? qtyChip(r) + (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
+    const chips = test ? `<span class="chip">Test</span>` : (owned ? qtyChip(r) + (r.condition && r.condition !== "Good" ? `<span class="chip ${condClass[r.condition] || ""}">${esc(r.condition)}</span>` : "") + lentChip(r) : `<span class="chip ${r.priority === "Need" ? "need" : ""}">${esc(r.priority || "Want")}</span>`)
       + (dropped ? `<span class="chip tag">Price dropped</span>` : "");
     return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
       <div><h3>${esc(displayName(r))}</h3><div class="idrow">${unnamed ? `<span class="kind">${esc(a.label)}</span>` : r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(catOf(r) || "Other")}</span>${chips}</div></div>
       <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span></div>
-      <div class="actions">${owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
+      <div class="actions">${test ? "" : owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       </div>${r.lent_to && !state.readonly ? `<span class="meta-line">Lent to ${esc(r.lent_to)} · ${lentDays(r)} days</span>` : ""}${lendForm(r)}${confirmHtml(r)}</article>`;
   }
 
@@ -1600,11 +1625,18 @@ document.addEventListener("DOMContentLoaded", () => {
     setCount($("c-tools"), t.length);
     setCount($("c-wish"), w.length);
     $("bn-tools").textContent = t.length; $("bn-wish").textContent = w.length;
+    // the owner's Test tab, on the tabs up top and the phone's bottom bar
+    const tests = rowsOf("test"), showTest = testOk() || (tests.length > 0 && !state.readonly && !state.demo);
+    $("tab-test").hidden = !showTest; $("bn-testBtn").hidden = !showTest; $("bnav").classList.toggle("five", showTest);
+    setCount($("c-test"), tests.length); $("bn-test").textContent = tests.length;
+    if (state.tab === "test" && !showTest) { state.tab = "owned"; ["tab-tools", "tab-wish", "tab-test"].forEach((k) => $(k).setAttribute("aria-selected", k === "tab-tools")); setSortOptions(); }
     syncBnav();
-    document.body.classList.toggle("has-items", state.loaded && state.items.length > 0);
+    const real = realItems();
+    document.body.classList.toggle("has-items", state.loaded && real.length > 0);
     document.body.classList.toggle("tab-owned", state.tab === "owned");
     // an empty box (first visit, or signed in with nothing added yet) gets the welcome instead of $0 totals
     const fresh = state.loaded && !state.items.length && !state.readonly && !state.demo;
+    document.body.classList.toggle("tab-test", state.tab === "test");
     document.body.classList.toggle("fresh-start", fresh);
     $("hero").hidden = !fresh;
     $("heroNote").hidden = !sb || signedIn();
@@ -1613,20 +1645,20 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.toggle("readonly", !!state.readonly);
     document.body.classList.toggle("demo", !!state.demo);
     // on a phone the wishlist's button is just "Add", so the part number box keeps room for its hint
-    $("q-add").textContent = state.tab === "owned" ? "Add to box" : matchMedia("(max-width: 620px)").matches ? "Add" : "Add to wishlist";
-    $("shopWish").hidden = state.tab === "wishlist";
+    $("q-add").textContent = state.tab === "owned" ? "Add to box" : state.tab === "test" ? "Try it" : matchMedia("(max-width: 620px)").matches ? "Add" : "Add to wishlist";
+    $("shopWish").hidden = state.tab !== "owned";
     $("shopNote").textContent = state.tab === "wishlist"
       ? "Search opens Snap-on's store in a new tab. Found one you want? Type its part number in the box above."
       : "Search opens Snap-on's store in a new tab. Found one you want? Put its part number on your wishlist.";
     // Search, filters and export only show up once there's something to search, filter or export.
-    const tabHas = state.loaded && rowsOf(state.tab).length > 0, anyItems = state.loaded && state.items.length > 0;
+    const tabHas = state.loaded && rowsOf(state.tab).length > 0, anyItems = state.loaded && real.length > 0;
     $("filters").hidden = !tabHas;
     $("exportBox").hidden = !anyItems || state.readonly;
     $("toolbar").hidden = !tabHas && (!anyItems || state.readonly);
     document.querySelector(".shop").classList.toggle("compact", anyItems);
     syncShop(anyItems);
     $("fMore").classList.toggle("on", !!$("fCat").value);
-    $("fabText").textContent = state.tab === "owned" ? "Add tool" : "Add to wishlist";
+    $("fabText").textContent = state.tab === "owned" ? "Add tool" : state.tab === "test" ? "Try a tool" : "Add to wishlist";
     // drawers only make sense for tools you own, and a shared box doesn't show where things are kept
     const drawersOk = state.tab === "owned" && !state.readonly;
     document.querySelector('.seg [data-view="drawers"]').hidden = !drawersOk;
@@ -1634,7 +1666,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".seg [data-view]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === view));
     $("list").className = state.loaded && rowsOf(state.tab).length ? (view === "list" ? "rows" : view === "drawers" ? "drawers" : "grid") : "grid";
     $("localBanner").hidden = !sb || signedIn() || !state.loaded || state.demo || state.readonly;
-    $("localDemo").hidden = state.items.length > 0;
+    $("localDemo").hidden = real.length > 0;
     $("demoBanner").hidden = !state.demo;
     $("shareBanner").hidden = !state.readonly;
     const unchecked = state.admin ? lpTodo().length : 0;
@@ -1656,9 +1688,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!state.loaded) {
       list.innerHTML = Array.from({ length: 3 }, () => `<div class="skel" aria-hidden="true"><div class="a"></div><div class="b"></div></div>`).join("") + `<span class="sr">Loading your tools</span>`;
     } else if (!rowsOf(state.tab).length) {
-      const demoBtn = !state.items.length && !state.demo && !state.readonly ? `<button class="btn primary" data-act="demo" type="button">See a sample box</button><small>Fills in a pretend box so you can look around. Nothing is saved.</small>` : "";
+      const demoBtn = !real.length && state.tab !== "test" && !state.demo && !state.readonly ? `<button class="btn primary" data-act="demo" type="button">See a sample box</button><small>Fills in a pretend box so you can look around. Nothing is saved.</small>` : "";
       list.innerHTML = state.readonly
         ? `<div class="empty"><strong>${state.shareInfo ? "Nothing here yet" : "Link not found"}</strong><span>${state.shareInfo ? "This box doesn't have any tools on this list yet." : "Ask whoever sent it for a new link."}</span></div>`
+        : state.tab === "test"
+        ? `<div class="empty"><strong>Test list is empty</strong><span>Only you can see this tab. Type any part number above to see its Snap-on list price, its eBay price and what its drawing looks like. Nothing here counts toward your box, your wishlist or your totals, and it never shows on share links.</span></div>`
         : state.tab === "owned"
         ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool, or paste a whole list of them. Its eBay price usually fills in on its own within half an hour.</span>${demoBtn}</div>`
         : `<div class="empty"><strong>Wishlist is empty</strong><span>Find a tool in the Shop box above and add it by part number.</span>${demoBtn}</div>`;
@@ -1666,7 +1700,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const rows = filtered();
       list.innerHTML = !rows.length ? `<div class="empty"><strong>No matches</strong><span>Nothing matches that search or category.</span></div>`
         : view === "drawers" ? drawersHtml(rows)
-        : rows.map((r, i) => (view === "list" ? rowItem : state.tab === "owned" ? cardOwned : cardWish)(r, Math.min(i, 12))).join("");
+        : rows.map((r, i) => (view === "list" ? rowItem : state.tab === "owned" ? cardOwned : state.tab === "test" ? cardTest : cardWish)(r, Math.min(i, 12))).join("");
     }
     clearTimeout(saveCache._t); saveCache._t = setTimeout(saveCache, 1200);
     state.flash = null;
@@ -1708,7 +1742,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!state.loaded) return;
     announceTimer = setTimeout(() => {
       const all = rowsOf(state.tab).length, shown = all ? filtered().length : 0;
-      const what = state.tab === "owned" ? "in your box" : "on your wishlist";
+      const what = state.tab === "owned" ? "in your box" : state.tab === "test" ? "on your Test list" : "on your wishlist";
       const text = !all ? `Nothing ${what} yet` : shown === all ? `${all} tool${all === 1 ? "" : "s"} ${what}` : `${shown} of ${all} tools ${what} match`;
       if ($("listStatus").textContent !== text) $("listStatus").textContent = text;
     }, 500);
@@ -1739,7 +1773,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   function activity() {
     const ev = [], nm = (r) => `<strong>${esc(displayName(r))}</strong>`;
-    state.items.forEach((r) => {
+    realItems().forEach((r) => {
       const t = addedAt(r);
       if (t) ev.push({ t, kind: r.list === "wishlist" ? "wish" : r.from_wishlist ? "wish" : "add", r, html: r.list === "wishlist" ? `Put ${nm(r)} on the wishlist` : r.from_wishlist ? `Bought ${nm(r)} off the wishlist` : `Added ${nm(r)} to the box` });
       const h = hist(r);
@@ -2005,14 +2039,14 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   function renderWatch() {
-    const changes = state.items.map((r) => ({ r, ch: lastChange(r) })).filter((x) => x.ch).sort((a, b) => String(b.ch.d).localeCompare(String(a.ch.d)) || (a.ch.to - a.ch.from) - (b.ch.to - b.ch.from));
-    const trackedN = state.items.filter((r) => r.part_number).length;
+    const changes = realItems().map((r) => ({ r, ch: lastChange(r) })).filter((x) => x.ch).sort((a, b) => String(b.ch.d).localeCompare(String(a.ch.d)) || (a.ch.to - a.ch.from) - (b.ch.to - b.ch.from));
+    const trackedN = realItems().filter((r) => r.part_number).length;
     const wishN = rowsOf("wishlist").length;
     $("watch").innerHTML = changes.length
       ? `<ul>${changes.slice(0, 5).map(({ r, ch }) => `<li>${thumb(r)}<span class="nm">${r.list === "wishlist" ? "★ " : ""}${esc(displayName(r))}</span><span class="delta ${ch.to < ch.from ? "up" : "down"}">${ch.to < ch.from ? "↓" : "↑"} ${money(Math.abs(ch.to - ch.from), true)}</span></li>`).join("")}</ul><span class="note">Based on eBay prices.</span>`
       : `<div class="watch-empty"><span class="note">${trackedN ? `Prices for your ${trackedN} tool${trackedN === 1 ? "" : "s"} with a part number update on their own a few times a day.` : "Add tools by part number and their eBay prices fill in on their own."}</span>${!wishN && state.loaded ? `<button class="btn-watch" type="button" data-watch-go>Start a wishlist →</button>` : ""}</div>`;
     if (trackedN && !state.readonly) {
-      const pns = state.items.filter((r) => r.part_number), withList = pns.filter((r) => listPrice(r) != null && !listEst(r)).length;
+      const pns = realItems().filter((r) => r.part_number), withList = pns.filter((r) => listPrice(r) != null && !listEst(r)).length;
       $("watch").insertAdjacentHTML("beforeend", `<div class="watch-empty"><span class="note">${withList === pns.length ? (pns.length === 1 ? "It has Snap-on's own price." : `All ${pns.length} have Snap-on's own price.`) : `${withList} of ${pns.length} have Snap-on's own price so far. The rest use eBay for now.`}</span>${state.admin ? `<button class="btn-watch" type="button" data-list-prices>Manage list prices →</button>` : ""}</div>`);
     }
     $("watch").insertAdjacentHTML("beforeend", EMAIL_ALERTS_READY && signedIn() && !state.demo && !state.readonly
@@ -2092,7 +2126,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const r = state.items.find((x) => x.id === id); if (!r) return;
     const p = photoOf(r);
     viewing = id;
-    const pr = r.list === "owned" ? worthOf(r) : wishCost(r);
+    const pr = r.list === "owned" ? worthOf(r) : r.list === "test" ? nowPrice(r) : wishCost(r);
     $("vName").textContent = displayName(r);
     $("vImg").classList.remove("zoom");
     viewer.classList.toggle("showroom", !p);
@@ -2122,7 +2156,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("vPhoto").hidden = state.readonly || state.demo;
     // the same things the card's buttons do, so a phone's compact list doesn't need a row of buttons per tool
     const del = `<button class="btn small ghost danger" type="button" data-vact="del">Delete</button>`, edit = `<button class="btn small" type="button" data-vact="edit">Edit</button>`;
-    const acts = state.readonly ? "" : r.list === "owned"
+    const acts = state.readonly ? "" : r.list === "test" ? edit + del : r.list === "owned"
       ? (r.lent_to ? `<button class="btn small" type="button" data-vact="returned">Got it back</button>` : `<button class="btn small" type="button" data-vact="lend">Lend</button>`)
         + (r.condition === "Needs warranty" ? `<button class="btn small" type="button" data-vact="swapped" title="You got the new one: take it off the warranty list">Swapped</button>` : `<button class="btn small" type="button" data-vact="broken" title="Put it on your warranty list to swap on the truck">Broken</button>`) + edit + del
       : `<button class="btn small" type="button" data-vact="bought">Bought it</button>` + edit + del;
@@ -2718,12 +2752,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (state.money) { state.money = false; document.body.classList.remove("screen-money"); $("stats").open = statsPref(); }
     $("tab-tools").setAttribute("aria-selected", tab === "owned");
     $("tab-wish").setAttribute("aria-selected", tab === "wishlist");
-    $("list").setAttribute("aria-labelledby", tab === "owned" ? "tab-tools" : "tab-wish");
+    $("tab-test").setAttribute("aria-selected", tab === "test");
+    $("list").setAttribute("aria-labelledby", tab === "owned" ? "tab-tools" : tab === "test" ? "tab-test" : "tab-wish");
     setSortOptions(); render();
     if (!routeSync) go(tabPath());
   }
   $("tab-tools").onclick = () => setTab("owned");
   $("tab-wish").onclick = () => setTab("wishlist");
+  $("tab-test").onclick = () => setTab("test");
 
   /* ---------- phones: the bar along the bottom ----------
      Box and Wishlist are the two lists. Money is its own screen with what the box is worth, the truck
@@ -2836,12 +2872,15 @@ document.addEventListener("DOMContentLoaded", () => {
       $("quick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); $("q-pn").focus({ preventScroll: true });
     } else if (e.key === "1") setTab("owned");
     else if (e.key === "2") setTab("wishlist");
+    else if (e.key === "3" && !$("tab-test").hidden) setTab("test");
   });
   async function guard(fn, okMsg) {
     try { await fn(); if (okMsg) toast(okMsg); return true; }
     catch (e) { toast(e && e.code === "quota" ? PHOTO_ERR.quota : dbMsg(e) || "Couldn't save that. Check your connection and try again."); return false; }
   }
-  const blank = (list) => list === "owned"
+  const blank = (list) => list === "test"
+    ? { list, name: "", part_number: "", category: "Other", price: 0, date_bought: null, condition: null, location: "", notes: "", priority: null, saved: 0 }
+    : list === "owned"
     ? { list, name: "", part_number: "", category: "Other", price: 0, date_bought: today(), condition: "Good", location: "", notes: "", priority: null, saved: 0 }
     : { list, name: "", part_number: "", category: "Other", price: 0, date_bought: null, condition: null, location: "", notes: "", priority: "Want", saved: 0 };
   const addedMsg = (pn, where) => {
@@ -2853,10 +2892,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pn) return false;
     if (!PN_RE.test(pn)) { shake($("quick")); toast("That doesn't look like a Snap-on part number. Use letters, numbers, dots, dashes or slashes."); return false; }
     const same = (r) => (r.part_number || "") === pn;
-    if (rowsOf(list).some(same)) { shake($("quick")); toast(`${pn} is already on your ${list === "owned" ? "box" : "wishlist"}.`); return false; }
+    if (rowsOf(list).some(same)) { shake($("quick")); toast(`${pn} is already on your ${whereOf(list)}.`); return false; }
     if (list === "wishlist" && rowsOf("owned").some(same)) { shake($("quick")); toast(`You already own ${pn}. It's in your box.`); return false; }
     const ok = await guard(() => saveItem({ ...blank(list), part_number: pn }));
-    if (ok) toast(addedMsg(pn, list === "owned" ? "box" : "wishlist"));
+    if (ok) toast(addedMsg(pn, whereOf(list)));
     return ok;
   }
   /* ---------- scan a part number with the camera ---------- */
@@ -2935,7 +2974,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const bad = uniq.filter((p) => !pnLike(p)), good = uniq.filter(pnLike);
     const have = new Set(rowsOf(list).map((r) => r.part_number)), owned = new Set(rowsOf("owned").map((r) => r.part_number));
     const add = good.filter((p) => !have.has(p) && !(list === "wishlist" && owned.has(p)));
-    const skipped = good.length - add.length, where = list === "owned" ? "box" : "wishlist";
+    const skipped = good.length - add.length, where = whereOf(list);
     if (!add.length) { shake($("quick")); toast(skipped ? `All of those are already on your ${where}.` : "None of those look like Snap-on part numbers."); return false; }
     let n = 0;
     if (!(await guard(async () => { n = await saveMany(add.map((pn) => ({ ...blank(list), part_number: pn }))); }))) return false;
@@ -3273,7 +3312,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <p class="foot">Prices today are Snap-on list prices where we could confirm them (checked weekly), otherwise typical eBay asking prices for new tools (refreshed every few hours). BoxTally is not affiliated with Snap-on.</p>`;
   }
   $("exportPrint").onclick = () => {
-    if (!state.items.length) { toast("Add some tools first, then you can print them."); return; }
+    if (!realItems().length) { toast("Add some tools first, then you can print them."); return; }
     $("printSheet").innerHTML = printHtml();
     window.print();
   };
@@ -3318,7 +3357,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // editing shows everything; adding starts with just the basics
     $("frmMore").open = !!item || !!more;
     $("moreSum").textContent = list === "owned" ? "Category, drawing, list price, condition, where it's kept, notes" : "Category, drawing, list price, notes";
-    $("dlgTitle").textContent = item ? "Edit tool" : list === "owned" ? "Add tool" : "Add to wishlist";
+    $("dlgTitle").textContent = item ? "Edit tool" : list === "owned" ? "Add tool" : list === "test" ? "Try a tool" : "Add to wishlist";
     $("l-price").textContent = list === "owned" ? "Snap-on price you paid ($)" : "Your price ($)";
     document.querySelectorAll("[data-only]").forEach((el) => (el.hidden = el.dataset.only !== list));
     $("i-name").value = item?.name || "";
@@ -3341,7 +3380,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("pfPrev")._art = null;
     updateLookup(); renderPf();
     dlg.showModal();
-    routeOpen(dlg, item ? `/tool/${encodeURIComponent(item.id)}/edit` : list === "wishlist" ? "/wishlist/add" : "/add", $("dlgTitle").textContent);
+    routeOpen(dlg, item ? `/tool/${encodeURIComponent(item.id)}/edit` : list === "wishlist" ? "/wishlist/add" : list === "test" ? "/test/add" : "/add", $("dlgTitle").textContent);
     setTimeout(() => deskFocus($(item || pn ? "i-name" : "i-pn")), 0);
   }
   $("i-pn").addEventListener("input", updateLookup);
@@ -3360,6 +3399,7 @@ document.addEventListener("DOMContentLoaded", () => {
       list_price: Number($("i-list").value) > 0 ? Math.round(Number($("i-list").value) * 100) / 100 : null,
       ...(list === "owned"
         ? { date_bought: $("i-date").value || null, condition: $("i-cond").value, location: $("i-loc").value.trim(), qty: Math.max(1, Math.min(999, Math.round(Number($("i-qty").value)) || 1)) }
+        : list === "test" ? {}
         : { priority: $("i-pri").value, saved: Math.max(0, Number($("i-saved").value) || 0) }),
     };
     const oldPath = state.editing ? state.editing.photo_path : null;
@@ -3372,7 +3412,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ok = await guard(() => saveItem(item), state.editing ? "Saved" : (pn ? null : "Added"));
     $("saveBtn").disabled = false; $("saveBtn").textContent = "Save";
     if (ok) {
-      if (!state.editing && pn) toast(addedMsg(pn, list === "owned" ? "box" : "wishlist"));
+      if (!state.editing && pn) toast(addedMsg(pn, whereOf(list)));
       dropOldPhoto(oldPath, item.photo_path);
       dlg.close();
     } else if (item.photo_path && item.photo_path !== oldPath) dropOldPhoto(item.photo_path, null);
@@ -3386,7 +3426,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let routeSync = false, routePending = true, routeBacking = false, routeQueue = [], baseTitle = document.title;
   const slug = (s) => String(s || "").toLowerCase().replace(/["']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
   const shareQ = () => (state.shareToken ? `?box=${encodeURIComponent(state.shareToken)}` : "");
-  const tabPath = () => (state.money ? "/money" : state.tab === "wishlist" ? "/wishlist" : "/");
+  const tabPath = () => (state.money ? "/money" : state.tab === "wishlist" ? "/wishlist" : state.tab === "test" ? "/test" : "/");
   const here = () => location.pathname.replace(/\/index\.html$/, "/");
   // move to an address; while Back from closing something is still on its way, wait for it first
   function go(path, opts = {}) {
@@ -3417,6 +3457,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const [a, b, c] = seg;
     if (!a) return { tab: "owned" };
     if (a === "wishlist" && !b) return { tab: "wishlist" };
+    if (a === "test" && !b) return { tab: "test" };
+    if (a === "test" && b === "add" && !c) return { tab: "test", open: "add" };
     if (a === "money" && !b) return { money: true };
     if (a === "wishlist" && b === "add" && !c) return { tab: "wishlist", open: "add" };
     if (a === "add" && !b) return { tab: "owned", open: "add" };
@@ -3431,7 +3473,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ro = state.readonly, me = signedIn() && !state.demo;
     const item = r.id ? state.items.find((x) => String(x.id) === r.id) : null;
     const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : r.open === "box-check" ? checkDlg : null;
-    const ok = !r.unknown && (!r.open || (r.open === "tool" ? !!item : r.open === "edit" ? !!item && !ro : r.open === "share" || r.open === "delete-account" ? me && !ro : !ro));
+    const ok = !r.unknown && !(r.tab === "test" && !testOk() && !rowsOf("test").length) && (!r.open || (r.open === "tool" ? !!item : r.open === "edit" ? !!item && !ro : r.open === "share" || r.open === "delete-account" ? me && !ro : !ro));
     routeSync = true;
     try {
       document.querySelectorAll("dialog[open]").forEach((d) => { if (d._route !== here() || !ok) d.close(); });

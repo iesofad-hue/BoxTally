@@ -8,7 +8,7 @@
 create table public.items (
   id            uuid primary key default gen_random_uuid(),
   user_id       uuid not null default auth.uid() references auth.users(id) on delete cascade,
-  list          text not null check (list in ('owned', 'wishlist')),
+  list          text not null check (list in ('owned', 'wishlist', 'test')), -- 'test': the owner's Test tab, never counted or shared
   name          text not null default '' check (char_length(name) <= 200),
   part_number   text not null default '' check (char_length(part_number) <= 40),
   category      text not null default 'Other' check (char_length(category) <= 60),
@@ -400,7 +400,7 @@ language sql stable security definer set search_path = '' as $$
         'date_bought', case when s.show_prices then i.date_bought end
       ) order by i.created_at)
       from public.items i
-      where i.user_id = s.user_id and (i.list = 'owned' or s.show_wishlist)
+      where i.user_id = s.user_id and (i.list = 'owned' or (i.list = 'wishlist' and s.show_wishlist))
     ), '[]'::json))
   from public.box_shares s
   where s.token = t and char_length(t) = 20;
@@ -520,7 +520,7 @@ language sql stable security definer set search_path = '' as $$
         'date_bought', case when s.show_prices then i.date_bought end
       ) order by i.created_at)
       from public.items i
-      where i.user_id = s.user_id and (i.list = 'owned' or s.show_wishlist)
+      where i.user_id = s.user_id and (i.list = 'owned' or (i.list = 'wishlist' and s.show_wishlist))
     ), '[]'::json))
   from public.box_shares s
   where s.token = t and char_length(t) = 20;
@@ -755,7 +755,7 @@ language sql stable security definer set search_path = '' as $$
         'date_bought', case when s.show_prices then i.date_bought end
       ) order by i.created_at)
       from public.items i
-      where i.user_id = s.user_id and (i.list = 'owned' or s.show_wishlist)
+      where i.user_id = s.user_id and (i.list = 'owned' or (i.list = 'wishlist' and s.show_wishlist))
     ), '[]'::json))
   from public.box_shares s
   where s.token = t and char_length(t) = 20;
@@ -795,3 +795,18 @@ end $$;
 revoke execute on function public.admin_ai_guesses() from public, anon;
 -- checker/list-prices.mjs logs its lookups here too (no user), for the shared 400-a-month cap
 alter table public.price_lookups alter column user_id drop not null;
+
+-- The Test tab (2026-10-25): only the BoxTally owner (public.admins) can save tools with list = 'test'.
+-- shared_box() only returns 'owned' and, if shown, 'wishlist' rows, so test tools never reach a share link.
+create or replace function public.items_test_owner_only()
+ returns trigger language plpgsql security definer set search_path to ''
+as $function$
+begin
+  if new.list = 'test' and not exists (select 1 from public.admins a where a.user_id = auth.uid() and a.user_id = new.user_id) then
+    raise exception 'The Test list is only for the BoxTally owner.';
+  end if;
+  return new;
+end
+$function$;
+create trigger items_test_owner_only before insert or update of list, user_id on public.items
+  for each row execute function public.items_test_owner_only();
