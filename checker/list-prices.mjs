@@ -132,7 +132,7 @@ if (ONLY.length) {
   // Not-found answers are retried after 30 days; found prices after RECHECK_DAYS
   const due = tracked.map((t) => t.part_number).filter((pn) => {
     const o = old[pn];
-    if (o && o.source === "owner" && o.price != null) return false; // the owner's own prices are never overwritten
+    if (o && o.source === "owner") return false; // the owner set a price, or checked Snap-on doesn't list it
     if ((!o || o.price == null) && pricedFams.has(colorFamily(pn))) return false;
     return !o || Date.parse(o.checked_at) < (o.price == null ? Date.now() - 30 * 864e5 : cutoff);
   });

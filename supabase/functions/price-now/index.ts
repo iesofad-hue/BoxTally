@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
   let listDue = GEMINI ? pns.filter((pn) => {
     const o = lOld[pn];
     if (!o) return true;
-    if (o.source === "owner" && o.price != null) return false;
+    if (o.source === "owner") return false; // the owner set a price, or checked Snap-on doesn't list it
     return now - Date.parse(o.checked_at) > (o.price == null ? LIST_RETRY_MS : LIST_RECHECK_MS);
   }) : [];
   // another color of the same tool already has a price: the page uses that, so don't ask Gemini

@@ -75,7 +75,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const listEst = (r) => {
     if (Number(r.list_price) > 0) return false;
     const l = listRow(r), own = r.part_number && state.list && state.list[r.part_number];
-    return !(l && l.price != null) && !!own && Number(own.ai_price) > 0;
+    return !(l && l.price != null) && !!own && own.source !== "owner" && Number(own.ai_price) > 0;
+  };
+  // the owner checked and Snap-on's site doesn't list this tool (a saved "no price"): it uses eBay, with a note
+  const notOnSnap = (r) => {
+    const own = r.part_number && state.list && state.list[r.part_number];
+    return !!own && own.source === "owner" && own.price == null && listPrice(r) == null;
   };
   const listPrice = (r) => {
     if (Number(r.list_price) > 0) return Number(r.list_price);
@@ -1459,7 +1464,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const EBAY_HOW = { variant: (n) => `as ${n}`, auction: () => "auction bids", similar: (n) => `estimate from ${n}` };
   const listLine = (r) => {
     const v = listPrice(r);
-    if (v == null) return "";
+    if (v == null) return notOnSnap(r) ? `<span class="meta-line ebay-line">Snap-on list: not listed on Snap-on's site, so this uses eBay</span>` : "";
     return `<span class="meta-line ebay-line">Snap-on list: ${money(v, v % 1)}${listEst(r) ? ` ${EST} (Gemini's guess, not checked yet)` : ""} · <a href="https://shop.snapon.com/product/${encodeURIComponent(r.part_number)}" target="_blank" rel="noopener">see on snapon.com</a></span>`;
   };
   const ebayLine = (r) => {
@@ -1501,7 +1506,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="prices">
         <div><span class="label">${state.readonly ? "Paid" : "You paid"}</span>${hidePaid() ? `<span class="no-price">Kept private</span>` : paid || !mine ? `<span class="price-big">${paid ? money(paid, paid % 1) : "—"}</span><span class="meta-line">${r.date_bought ? fmtDate(r.date_bought) : "&nbsp;"}</span>` : `<span class="no-price">Not entered.<br><button class="btn small" data-act="edit" type="button">Add what you paid</button></span>`}</div>
         <div><span class="label">${listPrice(r) != null ? `Snap-on list${listEst(r) ? " " + EST : ""}` : "eBay price now"}</span>${now != null
-          ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : listEst(r) ? `<span class="src-tag">Snap-on</span> list price, estimated` : listPrice(r) != null ? `<span class="src-tag">Snap-on</span> list price` : `<span class="src-tag">eBay</span> typical new price`}</span>`
+          ? `<span class="price-big">${money(now, now % 1)}</span><span class="meta-line">${diff ? `<span class="chg ${diff > 0 ? "down" : "up"}">${signed(diff)}</span> vs what you paid` : listEst(r) ? `<span class="src-tag">Snap-on</span> list price, estimated` : listPrice(r) != null ? `<span class="src-tag">Snap-on</span> list price` : `<span class="src-tag">eBay</span> typical new price`}</span>${notOnSnap(r) ? `<span class="meta-line not-snap">Not listed on Snap-on's site</span>` : ""}`
           : `<span class="no-price">${r.part_number ? (finding.has(r.part_number) ? "Finding prices…" : "No price found yet.") : "Add a part number to get its price."}</span>`}</div>
       </div>
       ${qtyOf(r) > 1 ? `<span class="meta-line qty-line">${qtyOf(r)} in ${mine || state.demo ? "your" : "this"} box · ${money(worthAll(r), worthAll(r) % 1)} together</span>` : ""}
@@ -1572,7 +1577,7 @@ document.addEventListener("DOMContentLoaded", () => {
       + (dropped ? `<span class="chip tag">Price dropped</span>` : "");
     return `<article class="ri ${dropped ? "drop" : ""}${fresh(r)}" data-id="${esc(r.id)}" style="--i:${i}"><div class="ri-main">${pic}
       <div><h3>${esc(displayName(r))}</h3><div class="idrow">${unnamed ? `<span class="kind">${esc(a.label)}</span>` : r.part_number ? `<a class="pn" href="${esc(storeLink(r.part_number))}" target="_blank" rel="noopener" title="View on Snap-on's store">${esc(r.part_number)}</a>` : ""}<span>${esc(catOf(r) || "Other")}</span>${chips}</div></div>
-      <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span></div>
+      <div class="ri-price"><span class="num">${price}</span><span class="meta-line">${sub || "&nbsp;"}</span>${owned && notOnSnap(r) && nowPrice(r) != null ? `<span class="meta-line not-snap">Not on Snap-on's site</span>` : ""}</div>
       <div class="actions">${test ? "" : owned ? (r.lent_to && !state.readonly ? `<button class="btn small" data-act="returned" type="button">Got it back</button>` : lendBtn(r)) : `<button class="btn small" data-act="bought" type="button">Bought it</button>`}<button class="btn small ghost" data-act="edit" type="button">Edit</button><button class="btn small ghost danger" data-act="del" type="button" aria-label="Delete ${esc(displayName(r))}">Delete</button></div>
       </div>${r.lent_to && !state.readonly ? `<span class="meta-line">Lent to ${esc(r.lent_to)} · ${lentDays(r)} days</span>` : ""}${lendForm(r)}${confirmHtml(r)}</article>`;
   }
