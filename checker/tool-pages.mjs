@@ -85,8 +85,8 @@ const facts = (t) => [t.a.drive && `${t.a.drive} drive`, t.a.size && !/^(power|a
 
 function toolPage(t, i, list) {
   const name = t.desc || t.kind, f = facts(t);
-  const title = `Snap-on ${t.pn}: ${name} · BoxTally`;
-  const desc = `Snap-on ${t.pn}: ${name}${f.length ? ` (${f.join(", ")})` : ""}. See what it's worth today at Snap-on list and eBay prices, and track it in your toolbox free with BoxTally.`;
+  const title = `${t.pn} ${name} (Snap-on): value & tracker · BoxTally`; // part number first, so it reads as BoxTally's page about the tool, not an official Snap-on page
+  const desc = `${t.pn}, ${name}${f.length ? ` (${f.join(", ")})` : ""}, a Snap-on tool. BoxTally is an independent tracker: see what it's worth today at Snap-on list and eBay prices, and track it in your toolbox free with BoxTally.`;
   // neighbours of the same kind, so every page links to a dozen others
   const same = byKind.get(t.kind), at = same.indexOf(t), near = same.slice(Math.max(0, at - 6), at).concat(same.slice(at + 1, at + 7));
   const q = encodeURIComponent(t.pn);
