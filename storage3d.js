@@ -581,8 +581,7 @@ function solusScanner() {
   for (const s of [-1, 1]) u.add(at(box(150, T - 10, 6, mat.redp, 2.5), -10, 0, s * (L / 2 + 1))); // red accents top and bottom
   u.add(at(slab(rrect(W - 60, L - 24, 8), 1.5, 0.5, mat.gloss), -4, T / 2 - 2, 0));
   u.add(at(up(plane(170, 104, canvasMat(170, 104, solusScreen))), -18, T / 2 + 0.2, 4), at(up(plane(176, 110, M.glass)), -18, T / 2 + 0.4, 4));
-  u.add(at(up(plane(40, 8, label("SOLUS+", 40, 8, { color: "#f1f3f5", font: "800 80px Helvetica, Arial, sans-serif" }))), -18, T / 2 + 0.3, -60));
-  u.add(at(up(plane(48, 10, label("Snap-on", 48, 10, { color: "#e3262f", font: "italic 900 80px Helvetica, Arial, sans-serif" }))), -18, T / 2 + 0.3, 66));
+  // no brand or product names printed on the model (trademarks stay off BoxTally's own art)
   const kx = W / 2 - 54; // keys: Y/N, the D-pad, the shortcut key and power
   u.add(at(cyl(14, 3, mat.black, { segs: 32 }), kx, T / 2 - 0.5, -24), at(cyl(5, 4, mat.satin, { segs: 20 }), kx, T / 2, -24));
   u.add(at(cyl(5, 3, mat.black, { segs: 20 }), kx - 7, T / 2 - 0.5, -56), at(cyl(5, 3, mat.black, { segs: 20 }), kx + 7, T / 2 - 0.5, -56));
@@ -790,7 +789,7 @@ function drainPan() {
 /* ---------- the keys ---------- */
 /* Snap-on magnetic mats, trays and dishes. The color is the end of the part number (MAGMATR red, ...G green,
    ...HV hi-viz, none black): models are red and lookOf() paints them. Faces carry a carbon-fibre weave and a black
-   "Snap-on" tag; the weave is a printed overlay so the paint shows through it. */
+   plain black tag (no brand name); the weave is a printed overlay so the paint shows through it. */
 const weave = (w, d) => canvasMat(w, d, (x, W, H) => {
   x.clearRect(0, 0, W, H); const s = 10;
   for (let i = 0; i * s < W; i++) for (let j = 0; j * s < H; j++) {
@@ -798,14 +797,15 @@ const weave = (w, d) => canvasMat(w, d, (x, W, H) => {
     x.beginPath(); (i + j) % 2 ? x.ellipse(i * s + s / 2, j * s + s / 2, s * 0.5, s * 0.22, PI / 4, 0, PI * 2) : x.ellipse(i * s + s / 2, j * s + s / 2, s * 0.5, s * 0.22, -PI / 4, 0, PI * 2); x.fill();
   }
 }, { transparent: true, px: 1024 });
-const snapTag = (w) => group(at(box(w, 1.4, w * 0.3, mat.black, 0.5), 0, 0.7, 0), at(up(plane(w * 0.86, w * 0.22, label("Snap-on", w, w * 0.25, { color: "#f1f3f5", font: "italic 900 80px Helvetica, Arial, sans-serif" }))), 0, 1.5, 0));
+// a plain black name plate; deliberately blank, never a brand name or logo
+const snapTag = (w) => group(at(box(w, 1.4, w * 0.3, mat.black, 0.5), 0, 0.7, 0));
 // a flat mat: black bound edge round a painted face; size "micro" (with a hang tab), "mini" (square), "xl" (long strip)
 function magMat(size = "") {
   const [w, d, r] = { micro: [64, 64, 12], mini: [140, 140, 18], xl: [440, 92, 12] }[size] || [280, 204, 22];
   const g = group(at(slab(rrect(w, d, r), 2, 1, mat.rubber), 0, 2, 0), at(slab(rrect(w - 10, d - 10, r - 4), 0.6, 0.6, M.redrub), 0, 3.4, 0));
   g.add(at(up(plane(w - 10, d - 10, weave(w - 10, d - 10))), 0, 4.75, 0));
-  if (size === "micro") { // the hang tab with the Snap-on S
-    g.add(at(box(26, 2.4, 44, mat.rubber, 1), 0, 1.6, -d / 2 - 14), at(up(plane(14, 14, label("S", 14, 14, { color: "#f1f3f5", font: "italic 900 80px Helvetica, Arial, sans-serif" }))), 0, 2.9, -d / 2 - 22));
+  if (size === "micro") { // the hang tab (plain, no logo)
+    g.add(at(box(26, 2.4, 44, mat.rubber, 1), 0, 1.6, -d / 2 - 14));
   } else {
     const t = snapTag(Math.min(52, w * 0.24)); t.position.set(size === "mini" ? 0 : w / 2 - 44, 4.2, d / 2 - 16); if (size !== "mini") t.rotation.y = 0.1; g.add(t);
   }
@@ -836,10 +836,9 @@ function magDish() {
   const t = snapTag(40); t.rotation.x = PI / 2; t.position.set(0, Hh * 0.62, S / 2 + 0.6); g.add(t);
   g.userData.yaw = -0.4; return g;
 }
-// magnetic tool pouch (MAGPOUCH): a flat black pouch standing up with its mouth open and "Snap-on" across the front
+// magnetic tool pouch (MAGPOUCH): a flat black pouch standing up with its mouth open (no brand name on it)
 function magPouch() {
   const g = group(at(box(200, 110, 26, M.vinyl, 10), 0, 55, 0), at(box(186, 4, 14, mat.hole, 2), 0, 109, 0), at(box(204, 6, 30, mat.rubber, 3), 0, 3, 0));
-  g.add(at(plane(110, 22, label("Snap-on", 110, 22, { color: "#f1f3f5", font: "italic 900 80px Helvetica, Arial, sans-serif" })), 0, 62, 13.2));
   g.userData.yaw = -0.4; return g;
 }
 // extra-large magnetic parts bowl (MAGBOWLXL): a long black open bowl with rounded ends and a few bolts in it

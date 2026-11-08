@@ -73,7 +73,7 @@ const head = ({ title, desc, path, extra = "" }) => `<!doctype html>
 <header class="bar"><div class="in"><a class="brand" href="/">BOX<b>TALLY</b></a><a class="btn ghost" href="/?sample&amp;ref=tool-page">See a sample box</a></div></header>
 `;
 const foot = `<footer class="foot"><div class="in">
-  <p>BoxTally is a free, independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated. Prices are Snap-on list prices where known and typical eBay asking prices otherwise; check before you buy. Tool drawings are BoxTally's own.</p>
+  <p>BoxTally is a free, independent tracker and is not affiliated with, sponsored by or endorsed by Snap-on Incorporated. Snap-on® is a registered trademark of Snap-on Incorporated. Prices are Snap-on list prices where known and typical eBay asking prices otherwise; check before you buy. Tool drawings are BoxTally's own and carry no brand logos.</p>
   <p><a href="/">BoxTally</a> · <a href="/t/">All tools</a> · <a href="/privacy.html">Privacy</a> · <a href="mailto:contact@boxtally.app">Contact</a></p>
 </div></footer>
 <script defer src="/t/tool.js?v=${V}"></script>

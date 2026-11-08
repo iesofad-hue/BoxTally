@@ -649,12 +649,11 @@ function flashlight() {
 }
 
 // A 300 lumen slim pocket light (ECPNI032R): a flat black rubber bar, red face (lookOf paints it), a long window with
-// a yellow COB strip on a white reflector at one end, "Snap-on" printed at the other and a lanyard hole in the end
+// a yellow COB strip on a white reflector at one end, nothing printed at the other (no brand names on BoxTally art) and a lanyard hole in the end
 function pocketLight() {
   const g = group(at(box(178, 14, 36, mat.rubber, 6), 0, 7, 0), at(box(166, 3, 30, mat.redp, 1.4), 0, 14.4, 0));
   for (let i = 0; i < 8; i++) for (const s of [-1, 1]) g.add(at(box(6, 10, 2.6, mat.black, 1), 20 + i * 8.6, 7, s * 18.4)); // grip ribs
   g.add(at(box(78, 2, 22, mat.black, 1.4), -38, 16.2, 0), at(box(72, 1.4, 17, mat.white, 0.6), -38, 16.8, 0), at(box(42, 1.4, 6, L.cob, 0.5), -40, 17.4, 0));
-  g.add(at(flat(decal("Snap-on", 60, 15, { color: "#15181c", font: "italic 900 80px Helvetica, Arial, sans-serif" })), 46, 16.1, 0));
   g.add(at(box(2, 6, 10, mat.hole, 0.4), -89.2, 7, 0), at(cyl(1.2, 1, mat.black, { segs: 12 }), 4, 16.2, 0));
   g.rotation.x = 0.5; const w = group(g); w.userData.yaw = -0.35; return w;
 }
@@ -671,7 +670,6 @@ function puckLight() {
   head.add(at(zt([[0.1, 0], [27, 0], [27, 2.4], [24, 3], [0.1, 3]], mat.chrome, 64), 0, 2, D / 2 - 1));
   head.add(at(zt([[0.1, 0], [22, 0], [22, 1.4], [0.1, 1.4]], L.lens, 64), 0, 2, D / 2 + 1.6));
   head.add(at(zt([[0.1, 0], [10, 0], [9, 1.6], [0.1, 2]], L.led, 48), 0, 2, D / 2 + 2.6));
-  head.add(at(decal("Snap-on", 26, 6, { color: "#e8590c" }), 14, -28, D / 2 + 0.3));
   head.add(at(cyl(4, 2, mat.rubber, { along: "y" }), 0, R * 0.92 + 1, 0)); // power button on top
   head.position.y = 16 + R; head.rotation.x = -0.18;
   const g = group(head, at(box(78, 8, 58, mat.black, 3.5), 0, 4, -4), at(cyl(5, 46, mat.black, { along: "x" }), 0, 13, 0));
