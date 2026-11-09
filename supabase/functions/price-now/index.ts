@@ -17,7 +17,7 @@
 // 30 days overall, shared with checker/list-prices.mjs. Each lookup runs a few Google searches, and
 // 400 keeps them under Google's 5,000 free searches a month.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { pick, altQueries } from "./ebay-match.mjs";
+import { pick, altQueries, searchText } from "./ebay-match.mjs";
 import { colorFamily } from "./color-family.mjs";
 
 const URL_ = Deno.env.get("SUPABASE_URL")!;
@@ -52,7 +52,7 @@ async function ebayToken() {
   return ebayTok.v;
 }
 async function ebaySearch(token: string, q: string) {
-  const params = new URLSearchParams({ q: `snap-on ${q}`, limit: "100", filter: "priceCurrency:USD" });
+  const params = new URLSearchParams({ q: searchText(q), limit: "100", filter: "priceCurrency:USD" });
   const res = await fetch(`https://api.ebay.com/buy/browse/v1/item_summary/search?${params}`, {
     headers: { Authorization: `Bearer ${token}`, "X-EBAY-C-MARKETPLACE-ID": "EBAY_US" },
   });

@@ -20,7 +20,7 @@
 //
 // Run by hand: node checker/ebay.mjs [PART ...] [--dry-run] [--explain]
 
-import { pick, altQueries, exact, variant } from "./ebay-match.mjs";
+import { pick, altQueries, exact, variant, searchText } from "./ebay-match.mjs";
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || "https://ctteljhhjsfvyyiwzxiy.supabase.co").replace(/\/+$/, "");
 const KEY = process.env.SUPABASE_SECRET_KEY || "";
@@ -69,7 +69,7 @@ async function ebayToken() {
 }
 
 async function search(token, q) {
-  const params = new URLSearchParams({ q: `snap-on ${q}`, limit: "100", filter: "priceCurrency:USD" });
+  const params = new URLSearchParams({ q: searchText(q), limit: "100", filter: "priceCurrency:USD" });
   const res = await fetch(`https://api.ebay.com/buy/browse/v1/item_summary/search?${params}`, {
     headers: { Authorization: `Bearer ${token}`, "X-EBAY-C-MARKETPLACE-ID": "EBAY_US" },
   });

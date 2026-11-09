@@ -985,7 +985,43 @@ function extensionSet({ sizes = ['3"', '6"', '10"'], drive = "3/8" } = {}) {
   g.add(at(box(30, 8, n * step + 6, mat.black, 2), 12, 4, 0));
   g.position.x = -ins[0] * 12.7; g.rotation.x = 0.45; const out = group(g); out.userData.yaw = -0.1; return out;
 }
+// 19 pc long power bit set (SDML19KT): black case and foam, seven long bits across the lid, two long flat
+// tips, a quick-change coupler and two columns of shorter power bits in the base
+function longBit(len, tip = "ph", m = mat.chrome) {
+  const g = group(at(cyl(3.67, 22, m, { along: "x", segs: 6 }), 11, 0, 0), at(cyl(2.4, len - 30, m, { along: "x", segs: 20 }), 22 + (len - 30) / 2, 0, 0));
+  if (tip === "flat") { const b = at(box(8, 1.4, 6, m, 0.4), len - 4, 0, 0); g.add(b); }
+  else g.add(at(cyl(2.4, 8, m, { along: "x", r2: 0.5, segs: tip === "tx" ? 6 : 4 }), len - 4, 0, 0));
+  return g;
+}
+function longBitCase() {
+  const W = 300, D = 170;
+  return openCase({ W, D, H: 30, shell: M.hdpe, insert: M.foam, lidIn: M.foam, lidFill: (lid) => {
+    for (let i = 0; i < 7; i++) { const b = longBit(220 - (i % 2) * 14, i < 3 ? "ph" : "tx"); b.position.set(-110 + (i % 2) * 14, -4, 30 + i * 17); lid.add(b); }
+  }, fill: (g, t) => {
+    for (const [z, len] of [[-62, 240], [-46, 226]]) { const b = longBit(len, "flat"); b.position.set(-120, t + 3, z); g.add(b); }
+    g.add(at(cyl(9, 30, mat.oxide, { along: "z", segs: 28 }), 0, t + 9, 20)); // quick-change coupler
+    for (let i = 0; i < 4; i++) {
+      const a = longBit(100, i < 2 ? "tx" : "ph"), b = longBit(100, i % 2 ? "flat" : "ph");
+      a.position.set(-132, t + 3, -8 + i * 18); b.position.set(28, t + 3, -8 + i * 18); g.add(a, b);
+    }
+  } });
+}
+// 3 pc 3/8" drive flip lug nut socket set (203FLSM): two long black two-ended impact sockets standing up and a
+// black impact extension between them
+function flipLugSet() {
+  const flip = (r) => {
+    const s = group(turned([[r * 0.6, 0], [r, 0], [r, 46], [r - 0.6, 47.5], [r, 49], [r, 96], [r * 0.6, 96]], mat.oxide, { along: "y", segs: 48 }));
+    for (const y of [95.6, 0.4]) s.add(at(cyl(r * 0.62, 1, mat.hole, { segs: 6 }), 0, y, 0));
+    return s;
+  };
+  const ext = group(turned([[0.1, 0], [11, 0], [11, 18], [8, 26], [5.5, 34], [5.5, 92], [0.1, 92]], mat.oxide, { along: "y", segs: 40 }),
+    at(box(9.5, 10, 9.5, mat.oxide, 0.8), 0, 96, 0), at(cyl(1.6, 1, mat.hole, { along: "z", segs: 16 }), 0, 9, 11));
+  const g = group(at(flip(15.5), -48, 0, 0), at(ext, 0, 0, 4), at(flip(16.5), 50, 0, 0));
+  g.userData.yaw = 0; return g;
+}
 export const MODELS = {
+  "bit-long-case": () => longBitCase(),
+  "lug-flip-set": () => flipLugSet(),
   storage: (o = {}) => (o.box ? boxUnit(o.box) : rollCabChest()),
   "storage-cart": () => serviceCart(),
   "storage-chest": (o = {}) => (o.box ? boxUnit(o.box) : chestOpen()),

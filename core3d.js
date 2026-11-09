@@ -137,7 +137,7 @@ const RATCHET_SIZE = { "1/4": [0.76, 0.94], "3/8": [1, 1], "1/2": [1.3, 1.06], "
 export function ratchet({ len = 200, grip = true, flex = false, round = false, thumb = false, drive = "3/8", pn = "", look = [] } = {}) {
   if (!RATCHET_SIZE[drive]) drive = "3/8";
   const is = (w) => look.includes(w), compact = is("compact");
-  if (is("flex")) flex = true;
+  if (is("flex") || is("mp")) flex = true;
   if (is("xlong")) len = 450; else if (compact) len = 160;
   const [k, stretch] = RATCHET_SIZE[drive]; len *= stretch;
   const head = ratchetHead({ round, thumb, drive: DRIVES[drive] / k, qr: is("qr") }), parts = [];
@@ -181,6 +181,7 @@ export function ratchet({ len = 200, grip = true, flex = false, round = false, t
     const piv = group(head); head.position.x = -4 - head.scale.x * 38; piv.position.x = 42; piv.rotation.z = -0.42;
     parts.push(piv, at(box(16, 8.4, 3.2, mat.chrome, 1.2), 46, 0, 6.3), at(box(16, 8.4, 3.2, mat.chrome, 1.2), 46, 0, -6.3),
       at(cyl(3.2, 17.4, mat.satin, { along: "z" }), 42, 0, 0), at(cyl(1.4, 17.8, mat.hole, { along: "z", segs: 12 }), 42, 0, 0));
+    if (is("mp")) parts.push(at(cyl(5.6, 4, mat.black, { along: "z" }), 42, 0, 9), at(box(10, 4, 4, mat.black, 1), 50, 3.6, 8)); // multi-position head: release button on the side, lock tab
   } else parts.push(head);
   const out = group(parts); out.scale.setScalar(k);
   return out;
@@ -502,6 +503,11 @@ export function adapter() {
 
 /* ---------- hammers ---------- */
 // Hammers lie on their side: handle along the bench (+x), head across it (along z) with the striking face toward the camera.
+const hickory = new THREE.MeshPhysicalMaterial({ color: 0xc08a52, roughness: 0.5, clearcoat: 0.7, clearcoatRoughness: 0.25 });
+function woodHandle(hl) { // one-piece lacquered hickory: slim neck under the head, swelling to an oval grip and a flared end
+  const h = turned([[0.1, 0], [8.6, 0], [8.8, 14], [8, 40], [8.4, hl * 0.5], [10.6, hl * 0.78], [11.6, hl * 0.92], [12.4, hl - 6], [11, hl - 1], [0.1, hl]], hickory, { segs: 40 });
+  h.scale.set(1, 0.8, 1.2); h.position.x = 4; return h;
+}
 function hammerHandle(hl = 280, { shaftM = mat.red, gripM = mat.rubber } = {}) {
   const sl = hl - 105;
   const shaft = turned([[0.1, 0], [8.6, 0], [8.6, 14], [10.8, 16], [11.4, 22], [9.4, 32], [8.3, 70], [8.4, sl - 40], [9.2, sl], [0.1, sl]], shaftM, { segs: 40 });
@@ -512,7 +518,7 @@ function hammerHandle(hl = 280, { shaftM = mat.red, gripM = mat.rubber } = {}) {
 }
 // the end of the handle showing through the top of the eye, split by a steel wedge
 const wedge = (x, rz, ry) => { const e = at(cyl(1, 0.8, mat.black, { along: "x", segs: 24 }), x, 0, 0); e.scale.set(1, ry, rz); return group(e, at(box(1.2, 1.4, rz * 1.6, mat.steel, 0.2), x - 0.4, 0, 0), at(cyl(1.4, 1.6, mat.steel, { along: "x", segs: 12 }), x - 0.5, 0, rz * 0.45)); };
-export function hammer({ kind = "ballpeen", pn = "" } = {}) {
+export function hammer({ kind = "ballpeen", pn = "", wood = false } = {}) {
   let head, hl = 262;
   if (kind === "deadblow") {
     head = group(turnedZ([[0.1, -34], [17, -34], [19.5, -33], [20.5, -31], [20.5, -26], [19.8, -25], [20.5, -24], [20.5, 24], [19.8, 25], [20.5, 26], [20.5, 31], [19.5, 33], [17, 34], [0.1, 34]], mat.red));
@@ -536,7 +542,7 @@ export function hammer({ kind = "ballpeen", pn = "" } = {}) {
   }
   if (kind === "deadblow" || kind === "mallet") head.add(at(cyl(11, 6, mat.red, { along: "x", r2: 9.4 }), 21, 0, 0));
   const print = pn && (kind === "deadblow" || kind === "mallet") && wrapX(pn, 9.6, Math.min(50, pn.length * 4.8), 5, 70, { a: 0.6, color: "#f4f5f6" });
-  return group(hammerHandle(hl, { gripM: kind === "deadblow" ? mat.black : mat.rubber }), head, print);
+  return group(wood ? woodHandle(hl + 50) : hammerHandle(hl, { gripM: kind === "deadblow" ? mat.black : mat.rubber }), head, print);
 }
 export function prybar({ pn = "" } = {}) {
   const g = group(turned([[0.1, 0], [6, 0], [6.4, 2], [6.4, 250], [0.1, 250]], mat.chrome, { segs: 6 }), tube([[2, 0, 0], [-10, 0, 1.5], [-20, 0, 6]], 6, mat.chrome, 6));

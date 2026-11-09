@@ -1,6 +1,6 @@
 // Checks how eBay listing titles are matched to part numbers. Run: node checker/ebay-match.test.mjs
 // Titles are real ones the eBay checker saw on 2026-10-20.
-import { exact, variant, sibling, pick, altQueries, base } from "./ebay-match.mjs";
+import { exact, variant, sibling, pick, altQueries, base, searchText } from "./ebay-match.mjs";
 
 let bad = 0;
 const eq = (got, want, what) => { if (JSON.stringify(got) !== JSON.stringify(want)) { bad++; console.log(`FAIL ${what}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`); } };
@@ -49,6 +49,10 @@ eq(altQueries("0FCA1KT"), ["OFCA1KT", "0FCA1"], "alt query 0/O");
   const copy = readFileSync(new URL("../supabase/functions/price-now/ebay-match.mjs", import.meta.url), "utf8");
   if (here !== copy) { bad++; console.log("FAIL supabase/functions/price-now/ebay-match.mjs differs from checker/ebay-match.mjs: copy it over"); }
 }
+
+// E-Z Red Quarter Sticks are searched and matched under their own brand
+for (const [q, want] of [["4S04", "e-z red 4S04"], ["4S12L", "e-z red 4S12L"], ["F80", "snap-on F80"]]) if (searchText(q) !== want) { bad++; console.log(`FAIL searchText(${q}) = ${searchText(q)}`); }
+if (!exact("E-Z Red 4S04 Stubby Quarter Stick 1/4 Combination Drive", "4S04")) { bad++; console.log("FAIL E-Z Red title should match 4S04"); }
 
 console.log(bad ? `${bad} failed` : "All eBay matching checks passed.");
 process.exit(bad ? 1 : 0);

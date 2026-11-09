@@ -45,7 +45,7 @@ const MODELS = {
   pick: (o = {}) => pick({ pn: o.pn }), "pick-straight": (o = {}) => pick({ shape: "straight", pn: o.pn }), "pick-45": (o = {}) => pick({ shape: "45", pn: o.pn }), "pick-complex": (o = {}) => pick({ shape: "complex", pn: o.pn }),
   pliers: (o = {}) => pliers({ pn: o.pn }), "pliers-needle": (o = {}) => pliers({ jaw: "needle", pn: o.pn }), "pliers-diag": (o = {}) => pliers({ jaw: "diag", pn: o.pn }), "pliers-pump": (o = {}) => pliers({ pump: true, pn: o.pn }), "pliers-strip": (o = {}) => pliers({ jaw: "strip", pn: o.pn }),
   extension: (o = {}) => bright(extension({ drive: o.drive, size: o.size, pn: o.pn })), breaker: (o = {}) => breaker({ pn: o.pn }), adapter: () => turnTo(bright(adapter()), 1.05),
-  hammer: (o = {}) => hammer({ pn: o.pn }), "hammer-ballpeen": (o = {}) => hammer({ pn: o.pn }), "hammer-deadblow": (o = {}) => hammer({ kind: "deadblow", pn: o.pn }), "hammer-mallet": (o = {}) => hammer({ kind: "mallet", pn: o.pn }), "hammer-sledge": (o = {}) => hammer({ kind: "sledge", pn: o.pn }),
+  hammer: (o = {}) => hammer({ pn: o.pn }), "hammer-ballpeen": (o = {}) => hammer({ pn: o.pn, wood: o.look.includes("wood") }), "hammer-deadblow": (o = {}) => hammer({ kind: "deadblow", pn: o.pn }), "hammer-mallet": (o = {}) => hammer({ kind: "mallet", pn: o.pn }), "hammer-sledge": (o = {}) => hammer({ kind: "sledge", pn: o.pn }),
   pry: (o = {}) => prybar({ pn: o.pn }), punch: () => punch({ chisel: true }), "punch-pin": () => punch(), torque: (o = {}) => torque({ electronic: true, pn: o.pn }), "torque-click": (o = {}) => torque({ pn: o.pn }), hexkeys: () => hexkeys(),
   set: (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || ""), list: o.sizes?.length ? o.sizes : null, kind: setSocket(o.member) }), "socket-rail": (o = {}) => socketRail({ drive: o.drive, sae: /SAE/i.test(o.size || "") }), "set-wrench": (o = {}) => wrenchSet(o.sizes?.length ? { sizes: o.sizes, member: o.member } : {}),
 };
@@ -262,7 +262,7 @@ const ZOOM = {
   hammer: ["x", 0, 0.3], pry: ["x", 0, 0.18], punch: ["x", 0.8, 1], "punch-pin": ["x", 0, 0.2], "wrench-adjust": ["x", 0, 0.34], "pipe-wrench": ["x", 0, 0.34],
   // a pistol-grip tool: the nose, above the grip (the chuck, anvil or bit holder is what tells them apart)
   power: ["x", 0.62, 1, "y", 0.6, 1], cl14: ["x", 0.62, 1, "y", 0.6, 1], cl18: ["x", 0.62, 1, "y", 0.6, 1], "air-impact": ["x", 0.62, 1, "y", 0.6, 1],
-  "power-ratchet": ["x", 0, 0.3], "cl14-ratchet": ["x", 0, 0.3], "cl18-ratchet": ["x", 0, 0.3], "cl14-die": ["x", 0, 0.3],
+  "clip-tool": ["x", 0, 0.32], "power-ratchet": ["x", 0, 0.3], "cl14-ratchet": ["x", 0, 0.3], "cl18-ratchet": ["x", 0, 0.3], "cl14-die": ["x", 0, 0.3],
 };
 const zoomOf = (key) => ZOOM[key] || (/-battery$|^cl18-inflator$|^cl1[48]-saw$|-angle$/.test(key) ? null : ZOOM[key.replace(/-soft$/, "")] || ZOOM[key.split("-")[0]] || null);
 function focusPoints(model, spec) {

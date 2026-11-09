@@ -3,7 +3,9 @@
 
 // Listings that are clearly not the tool itself: lots, junk, accessories sold "for" a tool.
 export const BAD = /\b(lot of|lot\b|for parts|not working|broken|repair kit|rebuild|rebuilt|replacement (part|blade|head)|empty (case|box|tray)|(case|box|tray|bag|pouch|holster|sheath) only|decal|sticker|manual|for set|fits|for snap[\s-]?on|compatible)\b/i;
-const SNAP = /snap[\s-]?on|blue[\s-]?point/i;
+const SNAP = /snap[\s-]?on|blue[\s-]?point|e[\s-]?z[\s-]?red/i;
+// What to type into eBay's search: "snap-on F80". E-Z Red tools sold on the truck (4S04 Quarter Stick) are listed under E-Z Red.
+export const searchText = (q) => (/^4S\d{2}[A-Z]?$/.test(norm(q)) ? "e-z red " : "snap-on ") + q;
 
 export const norm = (s) => String(s).toUpperCase().replace(/[^A-Z0-9]/g, "");
 // Looser form for variants: 0 and O read the same (0FCA1KT = OFCA1KT)

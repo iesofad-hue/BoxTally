@@ -25,7 +25,7 @@ const CASES = [
   ["S80", "ratchet", '1/2"'], ["S80A", "ratchet", '1/2"'], ["SH80", "ratchet-soft"], ["SL80", "ratchet-long"], ["SLF80", "ratchet-long-flex"],
   ["SHLF80", "ratchet-long-flex-soft", '1/2"'], ["SX80", "ratchet-flex"], ["SR936", "ratchet"], ["CSS949A", "ratchet", '1/2"'],
   ["L872", "ratchet-round", '3/4"'], ["BPRSR940", "ratchet", '1/2"'], ["BPRTR936", "ratchet", '1/4"'],
-  ["TM72SET", "set-kit", '1/4"'],
+  ["TM72SET", "set-kit", '1/4"'], ["4S04", "quarter-stick"], ["4S12L", "quarter-stick"], ["203FLSM", "lug-flip-set"], ["SDM19KT", "set-bit"],
   // breaker bars, speeders, extensions, u-joints, adapters
   ["SN18B", "breaker", '1/2"'], ["GSN18B", "breaker", '1/2"'], ["SN24C", "breaker"], ["SHBB24", "breaker"], ["CSN24B", "breaker"],
   ["THBB10", "breaker", '1/4"'], ["FHBB12A", "breaker", '3/8"'], ["F10LC", "breaker", '3/8"'], ["F12LA", "breaker", '3/8"'], ["TM10G", "breaker", '1/4"'],
@@ -173,6 +173,11 @@ for (const [pn, spec] of [["BOERM712", "ratchet+rev;8mm,9mm,10mm,11mm,12mm,13mm,
 }
 // how a tool looks inside its kind, read from the number: [part number, kind, look, label]
 const LOOKS = [
+  // fadie's 2026-11-09 adds
+  ["SDML19KT", "bit-long-case", "", "Long power bit set"], ["203FLSM", "lug-flip-set", "", "Flip lug nut socket set"], ["PBFT50R", "clip-tool", "", "Retractable clip removal tool"],
+  ["PBFT50G", "clip-tool", "c-g", "Green retractable clip removal tool"], ["4S04", "quarter-stick", "", "Ratchet & bit stick driver"], ["4S12L", "quarter-stick", "", "Ratchet & bit stick driver"],
+  ["BP16B", "hammer-ballpeen", "wood", "Hickory ball peen hammer"], ["TH72MP", "ratchet-flex-soft", "mp", "Multi-position head ratchet"], ["FHC72MP", "ratchet-flex-soft", "compact+mp", "Compact multi-position head ratchet"],
+  ["FBF80A", "ratchet-flex", "bent", "Bent-handle flex ratchet"], ["SHLF80A", "ratchet-long-flex-soft", "", "Long soft-grip flex ratchet"], ["CTR714AGM", "cl14-ratchet", "c-gm", "Gunmetal 14.4V cordless ratchet"],
   ["SRXRM13", "wrench-speed", "", "Speed open-end wrench"], ["RBM1213C", "wrench-rbox", "", "Ratcheting box wrench"], ["SOEXLM13", "wrench", "long", "Long combination wrench"],
   ["OXIM13B", "wrench", "midget", "Midget combination wrench"], ["OSHM130B", "wrench", "6pt", "6-point combination wrench"], ["GOEXM13B", "wrench", "ind", "Industrial combination wrench"],
   ["FHOM13B", "wrench", "flex", "Flex-head combination wrench"], ["OEXRM13", "wrench-ratchet", "", "Ratcheting wrench"], ["BOERM13", "wrench-ratchet", "rev", "Reversible ratcheting wrench"],

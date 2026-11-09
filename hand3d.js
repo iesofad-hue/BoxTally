@@ -677,7 +677,40 @@ function terminalKit() {
   g.userData.yaw = -0.25; return g;
 }
 
+/* ---------- body clip tool and stick ratchet ---------- */
+// Retractable clip removal tool (PBFT50R): a machined red aluminium body with a black thumb slider and screws,
+// the flat grey blade slid out the front with its forked (two-pronged) tip. Lies on the bench, blade toward -x.
+function clipTool() {
+  const body = new THREE.MeshPhysicalMaterial({ color: 0xc8121b, metalness: 0.35, roughness: 0.32, clearcoat: 0.6 });
+  const g = group(at(box(120, 14, 24, body, 3), 60, 7, 0), at(box(118, 0.6, 2, mat.hole, 0.2), 60, 14.1, -3)); // body and its parting line
+  g.add(at(box(34, 1, 5, mat.hole, 0.4), 34, 14.2, 3)); // slider slot
+  g.add(at(box(16, 7, 8, mat.black, 2.4), 34, 16, 3)); // thumb slider
+  for (let i = 0; i < 4; i++) g.add(at(box(1.2, 1.2, 7, mat.rubber, 0.3), 28.5 + i * 3.6, 19.6, 3));
+  for (const [x, z] of [[8, -7], [8, 7], [112, -7], [112, 7], [72, -8]]) g.add(at(cyl(1.6, 1, mat.black, { segs: 16 }), x, 14.3, z));
+  // the blade: flat bar, a bend near the tip, then two prongs round a slot
+  const blade = slab(poly([[0, -6], [-60, -6.4], [-74, -7.6], [-82, -8.2], [-86, -3.2], [-80, -2], [-77, -1.4], [-77, 1.4], [-80, 2], [-86, 3.2], [-82, 8.2], [-74, 7.6], [-60, 6.4], [0, 6]]), 2.4, 0.5, mat.satin);
+  g.add(at(blade, 0, 6, 0), at(box(40, 0.4, 2, mat.steel, 0.1), -30, 7.6, 0));
+  g.position.x = -20; const out = group(g); out.userData.yaw = -0.55; return out;
+}
+// E-Z Red Quarter Stick (4S04 4", 4S12L extra long): slim stick with a 1/4" square drive ratchet on one end, a
+// knurled black body and a ratcheting 1/4" hex bit holder (with a bit) on the other
+function quarterStick({ pn = "" } = {}) {
+  const inch = +(String(pn).match(/^4S(\d\d)/) || [])[1] || 4, L = Math.max(70, inch * 25.4);
+  const end = (flip) => {
+    const e = group(turned([[0.1, 0], [9, 0], [9.6, 1.2], [9.6, 20], [8.4, 22], [0.1, 22]], mat.chrome, { segs: 40 }));
+    for (let i = 0; i < 3; i++) e.add(at(cyl(9.7, 0.6, mat.hole, { along: "x", segs: 40 }), 6 + i * 4, 0, 0)); // the reversing collar's grooves
+    if (flip) e.scale.x = -1; return e;
+  };
+  const g = group(at(cyl(7.4, L - 44, mat.gloss, { along: "x", segs: 40 }), L / 2, 0, 0));
+  for (let x = 30; x < L - 30; x += 3.2) g.add(at(cyl(7.6, 0.8, mat.black, { along: "x", segs: 40 }), x, 0, 0)); // knurl rings
+  g.add(at(end(true), 22, 0, 0), at(end(false), L - 22, 0, 0));
+  g.add(at(box(6.35, 6.35, 6.35, mat.chrome, 0.6), -3, 0, 0), at(sphere(0.9, mat.chrome), -3, 3.4, 0)); // square drive and detent ball
+  g.add(at(cyl(3.67, 12, mat.chrome, { along: "x", segs: 6 }), L + 6, 0, 0), at(cyl(2.4, 6, mat.chrome, { along: "x", r2: 0.6, segs: 24 }), L + 15, 0, 0)); // hex bit
+  g.position.set(-L / 2, 9.6, 0); const out = group(g); out.userData.yaw = -0.4; return out;
+}
 export const MODELS = {
+  "clip-tool": () => clipTool(),
+  "quarter-stick": (o = {}) => quarterStick(o),
   "wrench-adjust": (o = {}) => adjustable({ gap: o.gap ? Math.min(28, Math.max(12, o.gap)) : 18 }),
   "pliers-locking": () => lockingPliers(),
   "pliers-snap": () => snapRingPliers(),

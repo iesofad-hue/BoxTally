@@ -336,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // K or C stubby, H soft grip (softGrip below); 8xx/7x7 teeth and the TS72/TMR fingertips are round heads.
   function ratchetKind(m) {
     const t = m.groups.mods, round = /^(8[67]\d|7[34]7)$/.test(m.groups.teeth) || /MR|N/.test(t) || (m.groups.d === "T" && t === "S");
-    const flex = /[FX]/.test(t), long = /L/.test(t);
+    const flex = /[FX]/.test(t) || /\dMP[A-Z]*$/.test(m.input), long = /L/.test(t);
     return round ? "ratchet-round" : flex && long ? "ratchet-long-flex" : flex ? "ratchet-flex" : long ? "ratchet-long" : /[KC]/.test(t) ? "ratchet-stubby" : "ratchet";
   }
   // which socket drawing: deep or semi-deep, 12-point, else 6-point
@@ -351,6 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // sets and kits
     [/^[TFSL][A-Z]*(72|80|720|830|936|880)[A-Z]*(SET|KIT)/, "set-kit", (m) => PN_DRIVE[m.input[0]]],
     [/^[O0]FCA\d/, "filter-spider"], [/^BLPBTW/, "set-kit", at('1/4"')], [/^BLPBSS\d/, "bit-socket-case", at('1/4"')], [/^SGDMRC\d+F[A-Z]?$/, "set-sd-case"], [/^LDT([3-9]\d|\d{3})/, "disconnect-master"], [/^LDT\d/, "disconnect-set"], // OFCA1KT spider filter wrench, BLPBSS40 40 pc 1/4" stubby bit socket set, LDT40 master disconnect set
+    [/^SDML\d{1,3}KT$/, "bit-long-case"], [/^\d{3}FLSM?[A-Z]?$/, "lug-flip-set", at('3/8"')], // SDML19KT 19 pc long power bit set in a black case; 203FLSM flip lug nut sockets + impact extension
     [/(SET|KIT)\d*[A-Z]?$/, "set", (m) => PN_DRIVE[m.input[0]]],
     // pliers are numbers with letters after: 47ACF slip joint, 96CF needle nose, 87CF diagonal, PL400B a set
     [/^PL\d{3}/, "set-pliers"],
@@ -421,7 +422,8 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^CT(Q|J)?\d/, "power", (m) => (/^CT825/.test(m.input) ? '1/4"' : /^CT[78]\d\d(?!\d)/.test(m.input) ? '3/8"' : /^CT91\d\d/.test(m.input) ? '3/4"' : /^CT(88|90)\d\d/.test(m.input) ? '1/2"' : null)],
     // air tools (FAR72 is an air ratchet, not a 72-tooth 3/8" ratchet)
     [/^(FAR|PTR)\d/, "air-ratchet"], [/^(IM(3\d|\d{4})[A-Z]?|MG\d{3,4}[A-Z]*|PT\d{3}[A-Z]?)$/, "air-impact"], [/^PH\d{3,4}/, "air-hammer"], [/^PHG?\d{2,4}[A-Z]*$/, "air-bit"], [/^PTGR\d/, "grinder-die"],
-    [/^PIT\d/, "hand-impact"],
+    [/^PIT\d/, "hand-impact"], [/^PBFT\d/, "clip-tool"], // PBFT50R retractable clip removal tool
+    [/^4S\d{2}[A-Z]?$/, "quarter-stick"], // E-Z Red Quarter Stick: 4S04 4" stubby, 4S12L extra long
     // ---- drive tools ----
     // 1" drive: L873 ratchet head, L113H breaker bar, L63 / L853HA1 extensions; IM62B 1" impact extension
     [/^G?L873$/, "ratchet", at('1"')], [/^L113H$/, "breaker", at('1"')], [/^L(63|853HA\d?)$/, "extension", at('1"')],
@@ -601,7 +603,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extractor: "Bolt extractors", "hand-impact": "Hand impact driver", flashlight: "Flashlight", hacksaw: "Hacksaw", snips: "Aviation snips", "bolt-cutter": "Bolt cutters", "tubing-cutter": "Tubing cutter",
     flaring: "Flaring tool", "wire-brush": "Wire brush", "drill-bits": "Drill bit set", "hammer-body": "Body hammer & dolly", "hammer-sledge": "Sledge hammer",
     "lug-wrench": "Lug wrench", "strap-wrench": "Strap wrench", "pipe-wrench": "Pipe wrench", "terminal-tool": "Terminal tool kit", solder: "Soldering iron", "socket-rail": "Socket rail", stool: "Shop stool",
-    creeper: "Creeper", magtray: "Magnetic tray", magmat: "Magnetic mat", "magmat-mini": "Mini magnetic mat", "magmat-micro": "Micro magnetic mat", "magmat-xl": "XL magnetic mat", "magtray-fold": "Folding magnetic tray", magdish: "Magnetic dish", magpouch: "Magnetic tool pouch", magbowl: "Magnetic parts bowl", "tool-bag": "Kit bag", "bit-case": "Bit case", "air-bit": "Air hammer bits", "insert-bit": "Screwdriver bit", "repair-kit": "Repair kit", "set-extension": "Extension set", "disconnect-set": "Disconnect tool set", "disconnect-master": "Master disconnect set", mirror: "Inspection mirror", headlamp: "Headlamp", polisher: "Polisher", cutoff: "Cut-off tool", rivet: "Rivet gun", heatgun: "Heat gun",
+    creeper: "Creeper", magtray: "Magnetic tray", magmat: "Magnetic mat", "magmat-mini": "Mini magnetic mat", "magmat-micro": "Micro magnetic mat", "magmat-xl": "XL magnetic mat", "magtray-fold": "Folding magnetic tray", magdish: "Magnetic dish", magpouch: "Magnetic tool pouch", magbowl: "Magnetic parts bowl", "bit-long-case": "Long power bit set", "lug-flip-set": "Flip lug nut socket set", "clip-tool": "Retractable clip removal tool", "quarter-stick": "Ratchet & bit stick driver", "tool-bag": "Kit bag", "bit-case": "Bit case", "air-bit": "Air hammer bits", "insert-bit": "Screwdriver bit", "repair-kit": "Repair kit", "set-extension": "Extension set", "disconnect-set": "Disconnect tool set", "disconnect-master": "Master disconnect set", mirror: "Inspection mirror", headlamp: "Headlamp", polisher: "Polisher", cutoff: "Cut-off tool", rivet: "Rivet gun", heatgun: "Heat gun",
     torque: "Digital torque wrench", insulated: "Insulated screwdriver", pry: "Pry bar", punch: "Chisel", hammer: "Hammer", general: "Hand tool", set: "Socket set", storage: "Roll cab", shop: "Shop light", diag: "Lab scope", other: "Drawing",
   };
   const DRIVE_KINDS = ["ratchet", "socket", "extension", "breaker", "ujoint", "adapter", "speeder"];
@@ -624,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pnDrive = (pn) => (pnGuess(pn) || {}).drive || null;
   // The family a kind of tool belongs to: socket-deep is a socket, air-impact a power tool.
   const POWER_KINDS = ["air-impact", "air-ratchet", "air-hammer", "air-bit", "grinder-die", "grinder-angle", "battery", "charger", "rivet", "polisher", "cutoff", "heatgun"];
-  const familyOf = (k) => (["bit-socket-case", "set-sd-case"].includes(k) ? "set" : POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp", "puck-light", "pocket-light"].includes(k) || /^mag/.test(k) ? "shop" : k.split("-")[0]);
+  const familyOf = (k) => (["bit-socket-case", "set-sd-case", "bit-long-case", "lug-flip-set"].includes(k) ? "set" : POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp", "puck-light", "pocket-light"].includes(k) || /^mag/.test(k) ? "shop" : k.split("-")[0]);
   // The drive category a tool belongs in. A hand-picked drive category that the name or part number
   // contradicts (S80A filed under 3/8" Drive Tools) shows, filters and sorts as the right one.
   // The category a drawing kind belongs in, for tools saved without one ("Other", the quick add's default).
@@ -634,7 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pick: "Awls, Hooks and Picks", pry: "Prybars", punch: "Punches/Chisels", hammer: "Hammers", insulated: "Non-Conductive Composite",
     general: "General Hand Tools", repair: "General Hand Tools", insert: "Screwdrivers", hexkeys: "General Hand Tools", pickup: "General Hand Tools", hacksaw: "General Hand Tools", wire: "General Hand Tools",
     extractor: "General Hand Tools", tapdie: "General Hand Tools", drill: "General Hand Tools", puller: "General Hand Tools", seal: "General Hand Tools",
-    trim: "General Hand Tools", brake: "General Hand Tools", ball: "General Hand Tools", spring: "General Hand Tools", flaring: "General Hand Tools",
+    trim: "General Hand Tools", clip: "General Hand Tools", quarter: "General Hand Tools", brake: "General Hand Tools", ball: "General Hand Tools", spring: "General Hand Tools", flaring: "General Hand Tools",
     tubing: "General Hand Tools", bolt: "General Hand Tools", hand: "General Hand Tools", clamp: "General Hand Tools", feeler: "General Hand Tools",
     caliper: "General Hand Tools", micrometer: "General Hand Tools", dial: "General Hand Tools", terminal: "General Hand Tools",
     set: "Service Tools - Sets", disconnect: "Service Tools - Sets", power: "Power Tools",
@@ -761,7 +763,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (round && (/F/.test(mods) || (m && /^7[34]7$/.test(m.groups.teeth)) || /swivel|flex/i.test(text))) t.push("flex");
       if ((/R/.test(mods) && !/MR/.test(mods)) || /quick[- ]?release/i.test(text)) t.push("qr");
       if ((/[BO]/.test(mods) && /F/.test(mods)) || /bent|offset/i.test(text)) t.push("bent");
+      if (/\dMP[A-Z]*$/.test(p) || /multi[- ]?position/i.test(text)) t.push("mp"); // TH72MP: the head indexes and locks at angles
     }
+    // ball peen hammers: BP16B has a hickory handle (BPN16B is the fiberglass one)
+    if (kind === "hammer-ballpeen" && (/^BP\d{1,2}[A-Z]?$/.test(p) || /hickory|wood/i.test(text)) && !/fiberglass|steel handle/i.test(text)) t.push("wood");
+    // body clip tools: PBFT50R red, ...G green, O orange, B blue, BK black, HV hi-viz
+    if (kind === "clip-tool") { const m = pn.match(/\d(BK|HV|R|G|O|B)$/); const c = m && { G: "c-g", O: "c-o", B: "c-mb", BK: "c-bk", HV: "c-hv" }[m[1]]; if (c) t.push(c); }
     if (fam === "power") {
       const c = paintOf(pn, text); if (c) t.push(c);
       if (/ratchet/.test(kind)) {
@@ -803,7 +810,7 @@ document.addEventListener("DOMContentLoaded", () => {
     [/^wrench-ratchet$/, "flex", "Flex-head ratcheting wrench"], [/^wrench-ratchet$/, "rev", "Reversible ratcheting wrench"], [/^wrench-rbox$/, "off25", "Offset ratcheting box wrench"],
     [/^wrench-box$/, "deep", "Deep offset box wrench"], [/^wrench-box$/, "s", "S-shaped box wrench"], [/^wrench-box$/, "slim", "Slimline box wrench"], [/^wrench-box$/, "short", "Short box wrench"],
     [/^wrench-open$/, "angle", "Angle-head open-end wrench"],
-    [/^ratchet/, "compact", "Compact flex-head ratchet", "Compact ratchet"], [/^ratchet/, "xlong", "Extra-long flex-head ratchet", "Extra-long ratchet"], [/^ratchet/, "lock", "Locking flex-head ratchet"],
+    [/^ratchet/, "mp", "Multi-position head ratchet"], [/^ratchet/, "compact", "Compact flex-head ratchet", "Compact ratchet"], [/^ratchet/, "xlong", "Extra-long flex-head ratchet", "Extra-long ratchet"], [/^ratchet/, "lock", "Locking flex-head ratchet"],
     [/^ratchet-round/, "flex", "Round swivel-head ratchet"], [/^ratchet/, "bent", "Bent-handle flex ratchet"], [/^ratchet/, "qr", null, "Quick-release ratchet"],
     [/^cl1\d-ratchet$/, "xneck", (v) => v + "V extra-long ratchet"], [/^cl1\d-ratchet$/, "neck", (v) => v + "V long-neck ratchet"], [/^cl1\d-ratchet$/, "fast", (v) => v + "V high-speed ratchet"],
     [/drill$/, "hammer", (v) => (v ? v + "V hammer drill" : "Hammer drill")],
@@ -822,6 +829,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const pick = /flex/.test(kind) || w === "flex" || w === "lock" || w === "bent" ? flex : plain || flex;
       if (pick) { out = typeof pick === "function" ? pick(v) : pick; break; }
     }
+    if (look.includes("mp") && look.includes("compact")) out = "Compact multi-position head ratchet";
+    if (kind === "hammer-ballpeen" && look.includes("wood")) out = "Hickory ball peen hammer";
+    if (kind === "clip-tool") { const c = look.find((w) => PAINT_NAME[w]); if (c) out = PAINT_NAME[c] + " " + out.charAt(0).toLowerCase() + out.slice(1); }
     if (look.includes("ind")) out = "Industrial " + out.charAt(0).toLowerCase() + out.slice(1);
     const c = look.find((w) => PAINT_NAME[w]);
     if (c && familyOf(kind) === "power") out = PAINT_NAME[c] + " " + out;
@@ -1265,6 +1275,28 @@ document.addEventListener("DOMContentLoaded", () => {
     for (let i = 0; i < 6; i++) b += `<circle class="s" cx="${30 + i * 8.6}" cy="78" r="${3.6 - i * 0.3}"/><circle class="pit" cx="${30 + i * 8.6}" cy="78" r="${1.8 - i * 0.15}"/>`;
     ["y", "bl", "g", "g", "y", "w"].forEach((c, i) => { b += `<path class="${c}" stroke-width="0" d="M${86 + i * 7} 82 V76 L${90 + i * 7} 73 V75 L${88.6 + i * 7} 76.4 V82 Z"/>`; });
     ART["disconnect-master"] = openCaseArt("cg", "cgi", b, lid); }
+  // 19 pc long power bit set (SDML19KT): black case, seven long bits across the lid, two long flat tips, a quick-change coupler
+  // and two columns of power bits in the base
+  { const bit = (x, y, len, tip = "ph") => `<rect class="s" x="${x}" y="${y}" width="9" height="3" rx=".6"/><rect class="s" x="${x + 8.6}" y="${y + 0.6}" width="${len - 13}" height="1.8" rx=".9"/>`
+      + (tip === "flat" ? `<path class="s" d="M${x + len - 5} ${y + 0.4} L${x + len} ${y - 0.2} V${y + 3.2} L${x + len - 5} ${y + 2.6} Z"/>` : `<path class="s" d="M${x + len - 5} ${y + 0.3} L${x + len} ${y + 1.5} L${x + len - 5} ${y + 2.7} Z"/>`);
+    let lid = '<rect class="pit" x="24" y="11" width="112" height="30" rx="4"/>';
+    for (let i = 0; i < 7; i++) lid += bit(30 + (i % 2) * 6, 13.6 + i * 3.8, 94 - (i % 2) * 6);
+    let b = bit(30, 56, 96, "flat") + bit(36, 60, 90, "flat") + '<rect class="k" x="72" y="66" width="12" height="15" rx="2"/><rect class="pit" x="74" y="68" width="8" height="2" rx="1"/>';
+    for (let i = 0; i < 4; i++) b += bit(24, 66 + i * 4, 44, i < 2 ? "tx" : "ph") + bit(92, 66 + i * 4, 44, i % 2 ? "flat" : "ph");
+    ART["bit-long-case"] = openCaseArt("k", "d", b, lid); }
+  // 3 pc flip lug nut socket set (203FLSM): two long black two-ended impact sockets standing up, a black impact extension between them
+  { const sock = (x) => `<rect class="d" x="${x}" y="20" width="34" height="70" rx="5"/><ellipse class="k" cx="${x + 17}" cy="21" rx="16" ry="4.6"/><path class="pit" d="M${x + 10} 21 l3.5 -3 h7 l3.5 3 l-3.5 3 h-7 Z"/>`
+      + `<path class="nl" opacity=".55" d="M${x + 1} 56 H${x + 33} M${x + 1} 58.4 H${x + 33}"/><rect class="sh" x="${x + 5}" y="26" width="3" height="58" rx="1.5" opacity=".18"/>`;
+    ART["lug-flip-set"] = sock(16) + sock(110) + '<rect class="d" x="72" y="16" width="10" height="9" rx="1"/><rect class="d" x="70" y="24" width="14" height="34" rx="3"/>'
+      + '<path class="d" d="M70 58 L66 68 V88 Q66 91 69 91 H85 Q88 91 88 88 V68 L84 58 Z"/><circle class="pit" cx="77" cy="82" r="2.2"/><rect class="sh" x="72.4" y="27" width="2" height="28" rx="1" opacity=".18"/>'; }
+  // retractable clip removal tool (PBFT50R): red aluminium body, black thumb slider, screws, a forked grey blade sliding out the front
+  ART["clip-tool"] = '<path class="s" d="M8 52 L14 49 L20 50.4 L60 47.6 L70 47.6 V57.4 L22 58 L16 58.2 L10 60.6 L12 56.4 L22 55 V53.6 L14 54.4 Z"/><path class="nl" opacity=".4" d="M26 52.6 L66 51"/>'
+    + '<rect class="g" x="66" y="40" width="86" height="22" rx="4"/><path class="nl" opacity=".35" d="M70 46 H148"/><rect class="pit" x="84" y="42.6" width="22" height="3" rx="1.5"/>'
+    + '<path class="k" d="M88 41 Q95 32 104 40 Z"/><circle class="pit" cx="72" cy="56" r="1.4"/><circle class="pit" cx="146" cy="56" r="1.4"/><circle class="pit" cx="120" cy="43.6" r="1.2"/><circle class="pit" cx="146" cy="43.6" r="1.2"/>';
+  // E-Z Red Quarter Stick (4S04, 4S12L): a slim stick, 1/4" square drive ratchet end, knurled black body, ratcheting hex bit end
+  ART["quarter-stick"] = '<rect class="s" x="12" y="47.6" width="7" height="6.8" rx=".6"/><rect class="s" x="18" y="44" width="22" height="14" rx="4"/><path class="nl" opacity=".45" d="M22 45.4 V56.6 M25 45.4 V56.6 M28 45.4 V56.6"/>'
+    + '<rect class="k" x="39" y="45" width="82" height="12" rx="5"/><path class="kn" d="M46 46.4 V55.6 M52 46.4 V55.6 M58 46.4 V55.6 M64 46.4 V55.6 M70 46.4 V55.6 M90 46.4 V55.6 M96 46.4 V55.6 M102 46.4 V55.6 M108 46.4 V55.6 M114 46.4 V55.6"/>'
+    + '<rect class="s" x="120" y="44" width="20" height="14" rx="4"/><path class="nl" opacity=".45" d="M131 45.4 V56.6 M134 45.4 V56.6"/><rect class="s" x="139" y="48.4" width="9" height="5.2" rx=".6"/><path class="s" d="M147.6 48.6 L153 51 L147.6 53.4 Z"/>';
   // slim pocket light (ECPNI032R): black rubber bar, red face, COB window at one end, "Snap-on" at the other
   ART["pocket-light"] = '<rect class="k" x="10" y="40" width="140" height="26" rx="7"/><rect class="g" x="16" y="43.4" width="128" height="19" rx="3"/>'
     + '<rect class="k" x="22" y="45.6" width="56" height="14.8" rx="2"/><rect class="w" x="25" y="47.6" width="50" height="10.8" rx="1.2"/><rect class="y" x="30" y="50.6" width="30" height="4.6" rx="1.2"/>'
@@ -1362,7 +1394,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const bb = built ? artBounds(key + "|" + look.join("+"), built) : boxed ? artBounds("box|" + a.box, boxed) : artBounds(ART[key] ? key : "other");
     // the finish and paint: black industrial chrome, gunmetal or green housings, orange grips
-    const tint = look.filter((w) => w === "ind" || /^c-/.test(w)).join(" ");
+    const tint = look.filter((w) => w === "ind" || w === "wood" || /^c-/.test(w)).join(" ");
     const floor = `<ellipse class="floor" cx="${(bb.x + bb.w / 2).toFixed(1)}" cy="${Math.min(bb.y + 2.5, 95).toFixed(1)}" rx="${Math.max(18, Math.min(68, bb.w * 0.47)).toFixed(1)}" ry="5.5"/>`;
     // the big views stand the tool on a polished floor: a faded mirror image under it
     const mirror = refl ? `<g class="refl" mask="url(#bx-refl)"><g transform="matrix(1 0 0 -1 0 ${(2 * bb.y + 1).toFixed(1)})"${tint ? ` class="${tint}"` : ""}>${svg}</g></g>` : "";
@@ -1936,7 +1968,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   // Big things don't lie in foam: a cordless gun, a meter or a box seen from straight above is just a lump.
   // They stand on a lit shelf under the drawer's foam instead, the way the truck shows them in its display case.
-  const SPOT_KEYS = /^(power|cl1[48]-|air-(impact|hammer|ratchet)|battery|charger|grinder|cutoff|blowgun|polisher|rivet|heatgun|jump|grease-gun|solder|storage|tool-bag|bit-case|bit-socket-case|set-sd-case|extractor-case|set-kit|terminal-tool|disconnect-|tapdie|creeper|stool|magtray|magmat|magdish|magpouch|magbowl|drain-pan|other$|diag|battery-tester|borescope|multimeter|tire-gauge|tire-inflator|pressure-gauge|dial-indicator|torque-angle|thermometer|shop$|puck-light|floor-jack|jack-stand|funnel|air-hose|vise|headlamp)/;
+  const SPOT_KEYS = /^(power|cl1[48]-|air-(impact|hammer|ratchet)|battery|charger|grinder|cutoff|blowgun|polisher|rivet|heatgun|jump|grease-gun|solder|storage|tool-bag|bit-case|bit-socket-case|bit-long-case|set-sd-case|extractor-case|set-kit|terminal-tool|disconnect-|tapdie|creeper|stool|magtray|magmat|magdish|magpouch|magbowl|drain-pan|other$|diag|battery-tester|borescope|multimeter|tire-gauge|tire-inflator|pressure-gauge|dial-indicator|torque-angle|thermometer|shop$|puck-light|floor-jack|jack-stand|funnel|air-hose|vise|headlamp)/;
   const inSpot = (r) => SPOT_KEYS.test(artOf(r).key);
   function spotHtml(r, i) {
     const a = artOf(r), name = displayName(r), out = !!r.lent_to;
