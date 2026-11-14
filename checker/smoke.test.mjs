@@ -216,6 +216,8 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
   await page.click("#pnSug .ps-row");
   await page.waitForFunction(() => /Added FXWP1 to your wishlist/.test(document.getElementById("asMsg").textContent), null, { timeout: 8000 }).catch(() => fail("add panel: tapping a match didn't add it to the wishlist"));
   await page.click("#addSheet .dlg-x");
+  // the address changes as the panel finishes closing, which can take a moment while 3D pictures are being made
+  await page.waitForURL(/\/wishlist$/, { timeout: 3000 }).catch(() => {});
   if (!/\/wishlist$/.test(page.url())) fail(`add panel: closing it after a wishlist add didn't show the wishlist (${page.url()})`);
   for (const e of errors) fail(`add panel: page error: ${e}`);
   console.log("add panel: checked");

@@ -810,6 +810,8 @@ end
 $function$;
 create trigger items_test_owner_only before insert or update of list, user_id on public.items
   for each row execute function public.items_test_owner_only();
+-- it only runs as a trigger, so nobody calls it directly (2026-11-14)
+revoke execute on function public.items_test_owner_only() from public, anon, authenticated;
 -- BoxTally Feedback box (2026-10-25). Run once in Supabase > SQL Editor.
 -- 1. A private table. RLS is on and there are NO policies, so nobody can read or write it
 --    directly through the website's key. Everything goes through the 4 functions below.
@@ -825,6 +827,7 @@ create table if not exists public.feedback (
 alter table public.feedback enable row level security;
 revoke all on public.feedback from anon, authenticated;
 create index if not exists feedback_created_idx on public.feedback (created_at desc);
+create index if not exists feedback_user_id_idx on public.feedback (user_id);
 
 -- 2. Anyone (signed in or not) can send. Limits: 5 an hour per signed-in person,
 --    30 an hour from all guests together, and 2,000 kept messages at most.

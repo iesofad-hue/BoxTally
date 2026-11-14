@@ -43,10 +43,13 @@ jobs:
           [ "$out" = "401" ] && grep -q "Sign in first" /tmp/pn.json
       - name: Install a hidden browser
         run: |
-          npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1 axe-core@4.10.2
           npx playwright install --with-deps chromium
       - name: Open the site and load the sample box
         run: |
           python3 -m http.server 8080 >/dev/null 2>&1 &
           sleep 1
           node checker/smoke.test.mjs
+      - name: Easy to read and use (contrast, phone width, no-signal bar)
+        # the site is still being served from the step above
+        run: node checker/quality.test.mjs

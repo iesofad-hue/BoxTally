@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=74">
+<link rel="stylesheet" href="/app.css?v=75">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -88,7 +88,7 @@
   <radialGradient id="bx-floor" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#10151c" stop-opacity=".22"/><stop offset="1" stop-color="#10151c" stop-opacity="0"/></radialGradient>
 </defs></svg>
 
-<section class="band">
+<header class="band">
   <div class="inner">
     <div class="top">
       <div>
@@ -147,7 +147,7 @@
       <div class="rail" id="rail"></div>
     </div>
   </div>
-</section>
+</header>
 
 <main class="inner body">
   <div class="banner info" id="localBanner" hidden>
@@ -532,9 +532,10 @@
 <button class="fb-btn" id="fbBtn" type="button" aria-label="Feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z"/><path d="M8 9h8M8 12h5" stroke-linecap="round"/></svg><span class="fb-t">Feedback</span><b class="fb-dot" id="fbDot" hidden></b></button>
 
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="netbar" id="netBar" role="status" hidden><span id="netText"></span><button type="button" class="netbar-act" id="netAct" hidden></button></div>
 
-<script defer src="/drawings.js?v=74"></script>
-<script defer src="/app.js?v=74"></script>
+<script defer src="/drawings.js?v=75"></script>
+<script defer src="/app.js?v=75"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>

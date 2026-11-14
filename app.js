@@ -2778,9 +2778,24 @@ document.addEventListener("DOMContentLoaded", () => {
     try { const c = document.createElement("canvas"); if (!(c.getContext("webgl2") || c.getContext("webgl"))) return Promise.resolve(null); } catch (e) { return Promise.resolve(null); }
     return import("/tool3d.js").catch(() => null);
   })());
+  // To keep the first look quick on a phone signal, the 3D engine (about 1 MB) only starts once the page
+  // has loaded and gone quiet, and a tool only gets its 3D picture when it's on screen or about to be
+  // (closed drawers wait until they're opened). With Data Saver on, or on a 2G signal, cards keep their drawings.
+  const lean3d = (() => { try { const c = navigator.connection; return !!(c && (c.saveData || /2g$/.test(c.effectiveType || ""))); } catch { return false; } })();
+  let ready3d = false;
+  const near3d = "IntersectionObserver" in window ? new IntersectionObserver((ens) => {
+    const vis = ens.filter((e) => e.isIntersecting).map((e) => e.target);
+    vis.forEach((el) => near3d.unobserve(el));
+    if (vis.length) upgradeEls(vis);
+  }, { rootMargin: "400px 0px" }) : null;
   function upgrade3d() {
-    const todo = [...document.querySelectorAll("[data-m3d]:not([data-m3d-done])")];
+    if (!ready3d || lean3d) return;
+    const todo = [...document.querySelectorAll("[data-m3d]:not([data-m3d-done]):not([data-m3d-wait])")];
     if (!todo.length) return;
+    if (!near3d) return upgradeEls(todo);
+    todo.forEach((el) => { el.setAttribute("data-m3d-wait", ""); near3d.observe(el); });
+  }
+  function upgradeEls(todo) {
     load3d().then((t) => {
       if (!t) return;
       for (const el of todo) {
@@ -2815,7 +2830,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   new MutationObserver(() => { clearTimeout(upgrade3d.t); upgrade3d.t = setTimeout(upgrade3d, 60); }).observe(document.body, { childList: true, subtree: true });
-  setTimeout(upgrade3d, 300);
+  {
+    const go = () => { ready3d = true; upgrade3d(); };
+    const idle = () => ("requestIdleCallback" in window ? requestIdleCallback(go, { timeout: 2500 }) : setTimeout(go, 800));
+    if (document.readyState === "complete") idle(); else addEventListener("load", idle, { once: true });
+  }
   // One copy of the studio lighting whose light can move: it follows the pointer over a drawing card
   // and over the showroom view, so the chrome catches the light as you move, like turning a tool in your hand.
   const liveLight = (() => {
@@ -3550,6 +3569,37 @@ document.addEventListener("DOMContentLoaded", () => {
     if (action) t.querySelector(".toast-act").onclick = () => { t.hidden = true; clearTimeout(toast._t); action.run(); };
     t.hidden = false; t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
     clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), action ? 7000 : 3800);
+  }
+
+  /* ---------- signal and updates ----------
+     A bar at the top says when the phone has no signal (and stays until it's back, unlike a toast),
+     and when a new version of BoxTally has arrived, with a button to switch to it. It never reloads
+     by itself, so nothing half-typed is lost. */
+  function netBar(text, act) {
+    const bar = $("netBar"), b = $("netAct");
+    if (!text) { bar.hidden = true; return; }
+    $("netText").textContent = text;
+    b.hidden = !act; if (act) { b.textContent = act.label; b.onclick = act.run; }
+    bar.hidden = false;
+  }
+  let updateReady = false;
+  const showUpdate = () => netBar("A new version of BoxTally is ready.", { label: "Refresh", run: () => location.reload() });
+  function netState() {
+    if (navigator.onLine === false) netBar(state.readonly ? "No signal. Showing what's loaded." : "No signal. You can look around; changes need a connection.");
+    else if (updateReady) showUpdate();
+    else netBar("");
+  }
+  addEventListener("offline", netState);
+  addEventListener("online", () => {
+    netState();
+    // opened with no signal: fetch the real box now that the signal is back
+    if (state.offline && signedIn() && !state.demo) loadItems().then(render, () => {});
+  });
+  if (navigator.onLine === false) setTimeout(netState, 0);
+  if ("serviceWorker" in navigator) {
+    // a new version takes over an open page: only worth saying when there was an older one before it
+    const had = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (!had || updateReady) return; updateReady = true; netState(); });
   }
 
   /* ---------- little touches ---------- */

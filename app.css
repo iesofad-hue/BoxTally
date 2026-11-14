@@ -107,7 +107,9 @@ h1 em { font-style: normal; color: var(--band-accent); }
 .tile .big { font-family: var(--f-display); font-size: 2.8rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .tile .sub { color: var(--band-muted); font-size: .88rem; }
 .delta { font-family: var(--f-mono); font-size: .85rem; font-weight: 500; }
-.delta.up { color: #4fc58a; } .delta.down { color: #f08a80; }
+.delta.up { color: var(--good); } .delta.down { color: var(--bad); }
+/* the bright versions only on the dark band; on white panels they were too faint to read */
+.band .delta.up { color: #4fc58a; } .band .delta.down { color: #f08a80; }
 .tile .bar { background: rgb(255 255 255 / .12); }
 .watch ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
 .watch li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; font-size: .88rem; }
@@ -127,11 +129,11 @@ h1 em { font-style: normal; color: var(--band-accent); }
 .rail-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
 .rail-head .label { color: var(--band-muted); }
 .rail { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 8px; scrollbar-width: thin; }
-.shot { flex: 0 0 150px; scroll-snap-align: start; display: grid; gap: 6px; background: none; border: 0; padding: 0; color: inherit; text-align: left; font: inherit; cursor: zoom-in; }
+.shot { flex: 0 0 150px; scroll-snap-align: start; display: grid; align-content: start; gap: 6px; background: none; border: 0; padding: 0; color: inherit; text-align: left; font: inherit; cursor: zoom-in; }
 .shot .plate { aspect-ratio: 1; border-radius: 12px; background: var(--plate); overflow: hidden; display: grid; place-items: center; border: 1px solid var(--band-line); }
 .shot .plate img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
 .shot .plate img.mine { object-fit: cover; padding: 0; }
-.shot .cap { font-size: .8rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.shot .cap { font-size: .8rem; line-height: 1.25; min-height: 2.5em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .shot .pr { font-family: var(--f-mono); font-size: .78rem; color: var(--band-muted); }
 @media (prefers-reduced-motion: no-preference) { .shot .plate img { transition: transform .35s ease; } .shot:hover .plate img { transform: scale(1.06); } }
 
@@ -1055,7 +1057,8 @@ abbr.est { text-decoration: none; font-size: .72em; font-weight: 700; letter-spa
 /* the cut: the foam is dug out a little wider than the tool, so a dark gap shows all round it */
 .pocket .pk .art svg, .pocket .pk img.m3d { filter: var(--pkw,) drop-shadow(3px 0 0 var(--pocket)) drop-shadow(-3px 0 0 var(--pocket)) drop-shadow(0 3px 0 var(--pocket)) drop-shadow(0 -3px 0 var(--pocket)) drop-shadow(0 0 3px rgb(0 0 0 / .6)); }
 .pocket.out .pk .art svg, .pocket.out .pk img.m3d { filter: brightness(0) drop-shadow(3px 0 0 var(--pocket)) drop-shadow(-3px 0 0 var(--pocket)) drop-shadow(0 3px 0 var(--pocket)) drop-shadow(0 -3px 0 var(--pocket)); opacity: .9; }
-.pocket .pk-name { font-family: var(--f-mono); font-size: .68rem; color: rgb(255 255 255 / .86); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+/* names get two lines before they're cut short, so "14.4 V 3/8\" drive cordless impact" reads in full */
+.pocket .pk-name { font-family: var(--f-mono); font-size: .68rem; line-height: 1.3; color: rgb(255 255 255 / .86); text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; padding: 0 4px; }
 .pocket .lent-tag, .pocket .w-tag { position: absolute; top: 2px; right: 2px; z-index: 2; font: 700 .76rem/1.25 var(--f-display); letter-spacing: .03em; padding: 1px 7px; border-radius: 4px; transform: rotate(4deg); box-shadow: 0 2px 5px rgb(0 0 0 / .45); max-width: 75%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; }
 .pocket .lent-tag { background: #f5c518; color: #1a1a1a; }
 .pocket .pk-qty { position: absolute; top: 4px; left: 4px; z-index: 2; font: 600 .7rem var(--f-mono); color: #fff; background: rgb(0 0 0 / .55); padding: 0 6px; border-radius: 999px; pointer-events: none; }
@@ -1084,7 +1087,7 @@ abbr.est { text-decoration: none; font-size: .72em; font-weight: 700; letter-spa
 .spot .sp .art .refl { opacity: .4; }
 .spot .sp .m3d, .spot .sp .m3d-turn { position: absolute; inset: 3% 3% 5%; width: 94%; height: 92%; object-fit: contain; }
 .spot.out .sp .m3d, .spot.out .sp .m3d-turn, .spot.out .sp .art svg { filter: brightness(.18) saturate(0); opacity: .75; }
-.spot .pk-name { font-family: var(--f-mono); font-size: .68rem; color: rgb(255 255 255 / .86); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
+.spot .pk-name { font-family: var(--f-mono); font-size: .68rem; line-height: 1.3; color: rgb(255 255 255 / .86); text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; padding: 0 4px; }
 .spot .lent-tag { position: absolute; top: 4px; right: 4px; z-index: 3; font: 700 .76rem/1.25 var(--f-display); letter-spacing: .03em; padding: 1px 7px; border-radius: 4px; transform: rotate(4deg);
   box-shadow: 0 2px 5px rgb(0 0 0 / .45); max-width: 75%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; background: #f5c518; color: #1a1a1a; }
 .spot .pk-qty { position: absolute; top: 6px; left: 6px; z-index: 3; font: 600 .7rem var(--f-mono); color: #fff; background: rgb(0 0 0 / .55); padding: 0 6px; border-radius: 999px; pointer-events: none; }
@@ -1316,3 +1319,23 @@ body:not(.readonly) #asSlot .scanpick { order: 4; }
 .dw-tip-x { display: none; }
 @media (max-width: 620px) { .drawers .dw-tip .dw-tip-x { display: grid; } }
 .dw-tip-x svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+
+/* ---------- quality pass (2026-11-14) ---------- */
+/* Phones: a drawer's tool count and worth sit under its name, so "Roll cab, bottom drawer" fits on one line instead of three */
+@media (max-width: 620px) {
+  .drawers .drawer > summary { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 10px; row-gap: 1px; }
+  .drawers .drawer > summary::before { width: 26px; grid-row: 1 / span 2; }
+  .drawers .drawer > summary::after { grid-column: 3; grid-row: 1 / span 2; }
+  .drawers .drawer .dname { grid-column: 2; line-height: 1.15; }
+  .drawers .drawer .dmeta { grid-column: 2; grid-row: 2; }
+}
+/* the Box/Wishlist count on the bottom bar: full strength, so it's easy to read on the pink highlight */
+.bnav .bn-count { opacity: 1; }
+/* the signal / new-version bar along the top of the screen */
+.netbar { position: fixed; z-index: 6; top: calc(8px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px;
+  width: max-content; max-width: calc(100vw - 32px); padding: 8px 10px 8px 14px; border-radius: 12px; background: var(--fg); color: var(--bg); font-size: .88rem; line-height: 1.3; box-shadow: var(--shadow-hi); }
+.netbar[hidden] { display: none; }
+.netbar-act { flex: none; font: inherit; font-weight: 700; min-height: 36px; padding: 0 14px; border: 0; border-radius: 9px; background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+.netbar-act[hidden] { display: none; }
+@media print { .netbar { display: none; } }
+
