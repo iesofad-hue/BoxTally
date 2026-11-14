@@ -196,6 +196,31 @@ for (const [name, width, height] of [["phone", 375, 740], ["desktop", 1280, 800]
   console.log("since card: checked");
   await page.close();
 }
+// Phones: the bottom bar's Add opens the short panel, typing lists matching tools, and a made-up number is questioned
+{
+  const page = await browser.newPage({ viewport: { width: 375, height: 740 }, isMobile: true, hasTouch: true });
+  const errors = []; page.on("pageerror", (e) => errors.push(e.message));
+  await page.route(/supabase\.co/, (r) => r.fulfill({ status: 200, contentType: "application/json", body: "[]" }));
+  await page.goto(BASE + "/?sample", { waitUntil: "load" });
+  await page.waitForTimeout(1500);
+  if (await page.locator("#fbBtn").isVisible()) fail("add panel: the Feedback bubble still floats over the page on phones");
+  await page.click("#bnav .bn-add");
+  if (!(await page.locator("#addSheet").isVisible())) fail("add panel: Add didn't open the short panel");
+  await page.type("#q-pn", "FXWP", { delay: 30 });
+  await page.waitForSelector("#pnSug .ps-row", { timeout: 5000 }).catch(() => fail("add panel: no suggestions for FXWP"));
+  await page.fill("#q-pn", "GOOFY123"); await page.click("#q-add");
+  await page.waitForSelector("#pnSug [data-anyway]", { timeout: 5000 }).catch(() => fail("add panel: GOOFY123 was added without asking"));
+  await page.click("#asTo [data-to=wishlist]");
+  await page.fill("#q-pn", ""); await page.type("#q-pn", "FXWP1", { delay: 30 });
+  await page.waitForSelector("#pnSug .ps-row", { timeout: 5000 }).catch(() => {});
+  await page.click("#pnSug .ps-row");
+  await page.waitForFunction(() => /Added FXWP1 to your wishlist/.test(document.getElementById("asMsg").textContent), null, { timeout: 8000 }).catch(() => fail("add panel: tapping a match didn't add it to the wishlist"));
+  await page.click("#addSheet .dlg-x");
+  if (!/\/wishlist$/.test(page.url())) fail(`add panel: closing it after a wishlist add didn't show the wishlist (${page.url()})`);
+  for (const e of errors) fail(`add panel: page error: ${e}`);
+  console.log("add panel: checked");
+  await page.close();
+}
 await browser.close();
 
 if (!bad) console.log("All smoke checks passed.");

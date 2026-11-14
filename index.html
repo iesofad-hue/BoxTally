@@ -38,7 +38,7 @@
 <!-- the 3D engine for tool models; only downloaded once a tool needs it (see tool3d.js) -->
 <script type="importmap">{ "imports": { "three": "/vendor/three-0.160.0.module.min.js", "three/addons/": "/vendor/three-addons/" } }</script>
 <script defer src="/vendor/supabase-2.116.0.js"></script>
-<link rel="stylesheet" href="/app.css?v=73">
+<link rel="stylesheet" href="/app.css?v=74">
 </head>
 <body>
 <!-- shading shared by every tool drawing -->
@@ -185,12 +185,13 @@
   </div>
 
   <form class="quick" id="quick" novalidate>
-    <input id="q-pn" class="mono" placeholder="Part number, e.g. F80" aria-label="Part number" autocapitalize="characters" autocomplete="off">
+    <input id="q-pn" class="mono" placeholder="Part number or name, e.g. F80" aria-label="Part number or tool name" autocapitalize="characters" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="pnSug" aria-expanded="false">
     <button class="btn primary" type="submit" id="q-add">Add to box</button>
     <button class="btn scanbtn" type="button" id="q-scan" title="Take a photo of the part number stamped on a tool or its package"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M7 12h10"/></svg><span class="scan-t">Scan</span></button>
     <input type="file" id="scanInput" accept="image/*" capture="environment" hidden>
     <button class="btn" type="button" id="q-more">Add with details &amp; photo</button>
     <div class="scanpick" id="scanPick" hidden></div>
+    <div class="pnsug" id="pnSug" role="listbox" aria-label="Matching tools" hidden></div>
     <span class="hint" id="q-hint">Just the part number is enough. Its eBay price fills in automatically, and you can add what you paid and a photo only you see.</span>
   </form>
 
@@ -208,6 +209,7 @@
     <summary><strong>Stats</strong><span class="peek" id="statsPeek"></span></summary>
     <div class="insights" id="insights"></div>
   </details>
+  <p class="fb-inline" id="fbInlineWrap"><button class="btn" type="button" id="fbInline">Send feedback or report a problem<b class="fb-dot" id="fbDot2" hidden></b></button></p>
 
   <div class="toolbar" id="toolbar" hidden>
     <span class="filters" id="filters">
@@ -473,13 +475,24 @@
   </div>
 </dialog>
 
+<!-- Phones: the bottom bar's Add opens this short panel. The add box (#quick) is moved in here on phones,
+     so it's the same box with the same suggestions and Scan as on a computer. -->
+<dialog id="addSheet" class="add-sheet" aria-labelledby="asTitle">
+  <div class="as-body">
+    <h2 id="asTitle">Add a tool</h2>
+    <div class="as-to" id="asTo" role="group" aria-label="Add it to"><button type="button" data-to="owned" aria-pressed="true">My box</button><button type="button" data-to="wishlist" aria-pressed="false">Wishlist</button></div>
+    <div id="asSlot"></div>
+    <p class="toast as-msg" id="asMsg" role="status" hidden></p>
+  </div>
+</dialog>
+
 <!-- Phones: the app's sections along the bottom, like a phone app. Hidden on bigger screens and on shared boxes. -->
 <nav class="bnav" id="bnav" aria-label="Sections">
   <button type="button" data-go="owned" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 7h4M10 12.5h4M10 17.5h4"/></svg><span>Box <b class="bn-count" id="bn-tools">0</b></span></button>
   <button type="button" data-go="wishlist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span>Wishlist <b class="bn-count" id="bn-wish">0</b></span></button>
   <button type="button" data-go="test" id="bn-testBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/></svg><span>Test <b class="bn-count" id="bn-test">0</b></span></button>
   <button type="button" data-go="add" class="bn-add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Add</span></button>
-  <button type="button" data-go="money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M16.5 7.5c-.8-1.2-2.5-2-4.5-2-2.5 0-4.2 1.3-4.2 3.1 0 4.3 8.7 2.4 8.7 6.8 0 1.9-1.9 3.2-4.5 3.2-2.1 0-3.9-.9-4.7-2.3"/></svg><span>Money</span></button>
+  <button type="button" data-go="money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M16.5 7.5c-.8-1.2-2.5-2-4.5-2-2.5 0-4.2 1.3-4.2 3.1 0 4.3 8.7 2.4 8.7 6.8 0 1.9-1.9 3.2-4.5 3.2-2.1 0-3.9-.9-4.7-2.3"/></svg><span>Money</span><b class="fb-dot" id="fbDot3" hidden></b></button>
 </nav>
 
 <button class="fab" id="fab" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span id="fabText">Add tool</span></button>
@@ -520,8 +533,8 @@
 
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script defer src="/drawings.js?v=73"></script>
-<script defer src="/app.js?v=73"></script>
+<script defer src="/drawings.js?v=74"></script>
+<script defer src="/app.js?v=74"></script>
 <!-- Cloudflare Web Analytics: cookie-free page view counts -->
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "96e0ff34f39b4b88aa38ba489917ec42"}'></script>
 </body>

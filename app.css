@@ -1253,3 +1253,66 @@ abbr.est { text-decoration: none; font-size: .72em; font-weight: 700; letter-spa
 .imp-table table { width: 100%; border-collapse: collapse; font-size: .82rem; }
 .imp-table th, .imp-table td { padding: 6px 8px; text-align: left; border-top: 1px solid var(--line); white-space: nowrap; }
 .imp-table th { border-top: 0; color: var(--muted); font-weight: 500; }
+
+/* ---------- the add box: suggestions as you type, and the phone Add panel (2026-11-14) ---------- */
+.pnsug { flex-basis: 100%; display: grid; gap: 2px; max-height: min(360px, 50vh); overflow-y: auto; overscroll-behavior: contain; border-top: 1px solid var(--line); padding-top: 6px; }
+.pnsug[hidden] { display: none; }
+.ps-note { margin: 2px 4px 6px; font-size: .9rem; line-height: 1.45; color: var(--fg); }
+.ps-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 4px 10px 4px 4px; border: 0; border-radius: 10px; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+.ps-row[aria-selected="true"] { background: var(--accent-soft); }
+@media (hover: hover) { .ps-row:hover { background: var(--accent-soft); } }
+.ps-row .ps-art { width: 64px; height: 40px; }
+.ps-t { display: grid; min-width: 0; }
+.ps-t b { font-size: .95rem; font-weight: 600; }
+.ps-t span { font-size: .82rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ps-p { font-family: var(--f-mono); font-size: .85rem; white-space: nowrap; }
+.ps-p em { font-family: var(--f-body); font-style: normal; font-size: .76rem; font-weight: 600; color: var(--good); }
+.ps-anyway { justify-self: start; margin: 6px 4px 2px; }
+
+.add-sheet { width: min(560px, calc(100vw - 16px)); }
+.as-body { display: grid; gap: 12px; padding: 20px 16px 16px; }
+.as-body h2 { padding-right: 52px; }
+.as-to { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--sunk); }
+.as-to[hidden] { display: none; }
+.as-to button { min-height: 44px; border: 0; border-radius: 9px; background: none; color: var(--muted); font: inherit; font-weight: 600; cursor: pointer; }
+.as-to button[aria-pressed="true"] { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+#asSlot .quick { padding: 0; border: 0; background: none; box-shadow: none; }
+body:not(.readonly) #asSlot #q-more { display: inline-flex; justify-content: center; flex: 1 1 100%; order: 3; }
+body:not(.readonly) #asSlot .pnsug { order: 4; }
+body:not(.readonly) #asSlot .scanpick { order: 4; }
+.as-msg { position: static; transform: none; max-width: none; margin: 0; animation: none !important; }
+.as-msg[hidden] { display: none; }
+@media (max-width: 620px) { .add-sheet { margin: 10px auto auto; max-height: calc(100dvh - 20px); } }
+
+/* Feedback on phones: a button on the Money screen, not a bubble floating over the add box and lists */
+.fb-inline { display: none; }
+@media (max-width: 620px) {
+  body:not(.readonly) .fb-btn { display: none; }
+  .screen-money:not(.readonly) .fb-inline { display: flex; justify-content: center; margin: 4px 0 8px; }
+  .fb-inline .btn { position: relative; }
+  .bnav button { position: relative; }
+  .bnav .fb-dot { top: 2px; right: calc(50% - 22px); }
+}
+
+/* Phones with tools in the box: a slimmer header so the tools start higher up (2026-11-14).
+   Logo and account buttons share one row, the save status is just its colored dot, and each total keeps to one line. */
+@media (max-width: 620px) {
+  body.has-items:not(.readonly):not(.screen-money) .band { padding-block: calc(10px + env(safe-area-inset-top, 0px)) 12px; }
+  body.has-items:not(.readonly):not(.screen-money) .band .inner { gap: 10px; }
+  body.has-items:not(.readonly):not(.screen-money) .eyebrow { display: none; }
+  body.has-items:not(.readonly):not(.screen-money) .top { align-items: center; gap: 8px; }
+  body.has-items:not(.readonly):not(.screen-money) h1 { font-size: 1.7rem; }
+  body.has-items:not(.readonly):not(.screen-money) .top-actions { gap: 6px; }
+  body.has-items:not(.readonly):not(.screen-money) .top-actions .btn-account { padding: 7px 11px; font-size: .8rem; }
+  body.has-items:not(.readonly):not(.screen-money) .sync { padding: 9px; border: 0; background: none; }
+  body.has-items:not(.readonly):not(.screen-money) #syncText,
+  body.has-items:not(.readonly):not(.screen-money) .who > span:not(.av) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  body.has-items:not(.readonly):not(.screen-money) .tile { padding: 10px 12px; gap: 2px; }
+  body.has-items:not(.readonly):not(.screen-money) .tile .label { font-size: .7rem; }
+  body.has-items:not(.readonly):not(.screen-money) .tile .sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* the drag tip, once you've closed it */
+  .drawers .dw-tip .dw-tip-x { margin-left: auto; flex: none; width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 50%; background: none; color: inherit; cursor: pointer; }
+}
+.dw-tip-x { display: none; }
+@media (max-width: 620px) { .drawers .dw-tip .dw-tip-x { display: grid; } }
+.dw-tip-x svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }

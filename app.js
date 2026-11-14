@@ -1987,7 +1987,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const keys = [...groups.keys()].sort((a, b) => (a ? 0 : 1) - (b ? 0 : 1) || a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
     // tell people they can drag tools between drawers (a phone needs a hold first, so the page still scrolls)
     const tip = matchMedia("(pointer: coarse)").matches ? "Hold a tool, then drag it into any drawer or compartment" : "Drag and drop tools into any drawer or compartment";
-    const bar = `<div class="drawer-bar"><p class="dw-tip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6.5 6.5 0 0 1-6.5 6.5h-.6a5 5 0 0 1-3.9-1.9L4.6 15a1.6 1.6 0 0 1 2.4-2l2 2"/></svg>${tip}</p><button class="btn small" type="button" data-dw-new="">+ Add drawer or compartment</button></div>`;
+    // on phones the tip can be closed for good (it takes a lot of a small screen once you know)
+    let tipGone = false; try { tipGone = matchMedia("(max-width: 620px)").matches && localStorage.getItem(LS + "-dwtip") === "1"; } catch {}
+    const bar = `<div class="drawer-bar"><p class="dw-tip"${tipGone ? " hidden" : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1.5a1.5 1.5 0 0 1 3 0V11m0-1a1.5 1.5 0 0 1 3 0v4.5a6.5 6.5 0 0 1-6.5 6.5h-.6a5 5 0 0 1-3.9-1.9L4.6 15a1.6 1.6 0 0 1 2.4-2l2 2"/></svg>${tip}<button class="dw-tip-x" type="button" data-dw-tip-x aria-label="Hide this tip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></p><button class="btn small" type="button" data-dw-new="">+ Add drawer or compartment</button></div>`;
     return bar + keys.map((k, gi) => {
       const g = groups.get(k), worth = g.reduce((sum, r) => sum + worthAll(r), 0), n = pieces(g);
       const open = !state.closedDrawers.has(k);
@@ -2053,7 +2055,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.toggle("readonly", !!state.readonly);
     document.body.classList.toggle("demo", !!state.demo);
     // on a phone the wishlist's button is just "Add", so the part number box keeps room for its hint
-    $("q-add").textContent = state.tab === "owned" ? "Add to box" : state.tab === "test" ? "Try it" : matchMedia("(max-width: 620px)").matches ? "Add" : "Add to wishlist";
+    syncAddLabel();
     $("shopWish").hidden = state.tab !== "owned";
     $("shopNote").textContent = state.tab === "wishlist"
       ? "Search opens Snap-on's store in a new tab. Found one you want? Type its part number in the box above."
@@ -2103,7 +2105,7 @@ document.addEventListener("DOMContentLoaded", () => {
         : state.tab === "test"
         ? `<div class="empty"><strong>Test list is empty</strong><span>Only you can see this tab. Type any part number above to see its Snap-on list price, its eBay price and what its drawing looks like. Nothing here counts toward your box, your wishlist or your totals, and it never shows on share links.</span></div>`
         : state.tab === "owned"
-        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Type a part number above to add your first tool, or paste a whole list of them. Its eBay price usually fills in on its own within half an hour.</span>${demoBtn}</div>`
+        ? `<div class="empty">${ICON.tool.replace("<svg", '<svg width="44" height="44"')}<strong>No tools yet</strong><span>Add your first tool by its part number, or paste a whole list of them. Its eBay price usually fills in on its own within half an hour.</span>${demoBtn}</div>`
         : `<div class="empty"><strong>Wishlist is empty</strong><span>Find a tool in the Shop box above and add it by part number.</span>${demoBtn}</div>`;
     } else {
       const rows = filtered();
@@ -3249,10 +3251,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   $("localDemo").onclick = () => enterDemo();
   $("heroDemo").onclick = () => enterDemo();
-  $("heroAdd").onclick = () => {
-    $("quick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
-    $("q-pn").focus({ preventScroll: true });
-  };
+  $("heroAdd").onclick = () => openAdd("owned");
   $("demoExit").onclick = () => { state.introDone = false; state.railIntro = false; state.demoTruck = null; state.demoIns = null; loadItems(); scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); };
 
   /* ---------- share my box: a read-only link ---------- */
@@ -3285,6 +3284,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function syncFbDot() {
     const n = state.admin ? fbUnread() : 0;
     $("fbDot").hidden = !n; $("fbDot").textContent = n > 9 ? "9+" : String(n);
+    $("fbDot2").hidden = !n; $("fbDot2").textContent = $("fbDot").textContent;
+    $("fbDot3").hidden = !n; $("fbDot3").textContent = $("fbDot").textContent;
     $("fbBtn").setAttribute("aria-label", n ? `Feedback, ${n} new message${n === 1 ? "" : "s"}` : "Feedback");
     $("fb-n").textContent = String(fbRows.length);
   }
@@ -3363,6 +3364,13 @@ document.addEventListener("DOMContentLoaded", () => {
     else setTimeout(() => deskFocus($("fb-msg")), 0);
   }
   $("fbBtn").onclick = openFeedback;
+  // phones: the floating bubble covered the add box and lists, so Feedback lives on the Money screen instead
+  $("fbInline").onclick = openFeedback;
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("[data-dw-tip-x]")) return;
+    try { localStorage.setItem(LS + "-dwtip", "1"); } catch {}
+    const tip = e.target.closest(".dw-tip"); if (tip) tip.hidden = true;
+  });
   $("fbLink").onclick = (e) => { e.preventDefault(); openFeedback(); };
   $("fb-close").onclick = () => fbDlg.close();
   $("fb-msg").addEventListener("input", fbLeft);
@@ -3528,7 +3536,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   function bnavGo(to) {
     if (to === "money") return setMoney(true);
-    if (to === "add") { if (state.money) setTab("owned"); return openForm(null); }
+    if (to === "add") return openAdd(state.money ? "owned" : state.tab);
     const same = !state.money && state.tab === to;
     if (state.money && state.tab === to) setMoney(false); else setTab(to);
     if (same) scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); // tapping the list you're on goes back to its top
@@ -3537,7 +3545,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // A message at the bottom; with an action (like Undo) it stays a little longer and has a button.
   function toast(msg, action) {
-    const t = $("toast");
+    const t = $("addSheet").open ? $("asMsg") : $("toast");
     t.innerHTML = `<span>${esc(msg)}</span>` + (action ? `<button type="button" class="toast-act">${esc(action.label)}</button>` : "");
     if (action) t.querySelector(".toast-act").onclick = () => { t.hidden = true; clearTimeout(toast._t); action.run(); };
     t.hidden = false; t.style.animation = "none"; void t.offsetWidth; t.style.animation = "";
@@ -3609,7 +3617,7 @@ document.addEventListener("DOMContentLoaded", () => {
       s.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); s.focus({ preventScroll: true }); s.select();
     } else if ((e.key === "n" || e.key === "N") && !state.readonly) {
       e.preventDefault();
-      $("quick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); $("q-pn").focus({ preventScroll: true });
+      openAdd();
     } else if (e.key === "1") setTab("owned");
     else if (e.key === "2") setTab("wishlist");
     else if (e.key === "3" && !$("tab-test").hidden) setTab("test");
@@ -3638,6 +3646,156 @@ document.addEventListener("DOMContentLoaded", () => {
     if (ok) toast(addedMsg(pn, whereOf(list)));
     return ok;
   }
+  /* ---------- the add box: suggestions as you type, a check for typos, and the phone panel (2026-11-14) ----------
+     BoxTally's list of Snap-on part numbers (the same one the /t/ pages are made from) loads the first time you
+     type, about 35 KB. Typing a number or a few words of a name lists the matching tools with their drawing;
+     tapping one adds it. A number that isn't on the list is usually a typo, so it asks once before adding it. */
+  let PNS = null, pnsP = null, pnOk = null, sugI = -1, sugRows = [], sheetTo = "owned", sheetAdded = null;
+  function loadPns() {
+    if (PNS) return Promise.resolve(true);
+    if (!pnsP) pnsP = fetch("/checker/catalog-part-numbers.tsv").then((r) => (r.ok ? r.text() : Promise.reject())).then((t) => {
+      const rows = t.split("\n").slice(1).map((l) => { const [pn, d = ""] = l.split("\t"); const P = cleanPn(pn); return P && { pn: P, d: d.trim(), u: d.trim().toUpperCase() }; }).filter(Boolean);
+      PNS = rows; PNS.byPn = new Map(rows.map((x) => [x.pn, x]));
+      PNS.fams = new Set(rows.map((x) => colorFamily(x.pn)).filter(Boolean));
+      return true;
+    }).catch(() => { pnsP = null; return false; });
+    return pnsP;
+  }
+  // known: on the list, the same tool in another color, already in someone's box here, or in the shared catalog
+  const knownPn = (pn) => !PNS || PNS.byPn.has(pn) || (colorFamily(pn) && PNS.fams.has(colorFamily(pn)))
+    || !!state.catalog[pn] || state.items.some((r) => r.part_number === pn);
+  function pnMatches(q, n = 6) {
+    if (!PNS) return [];
+    const Q = String(q || "").toUpperCase().trim(), P = Q.replace(/\s+/g, ""), words = Q.split(/\s+/).filter(Boolean);
+    if (!P) return [];
+    const hits = [];
+    for (const x of PNS) {
+      let sc = x.pn === P ? 0 : x.pn.startsWith(P) ? 1 : P.length >= 3 && x.pn.includes(P) ? 3 : -1;
+      // a name: the earlier the words come in its description, the better ("low torque wrench" before "driver, low torque")
+      if (sc < 0 && Q.length >= 3 && words.every((w) => x.u.includes(w))) sc = 4 + Math.min(x.u.indexOf(words[0]), 60) / 100;
+      if (sc >= 0) hits.push([sc, x]);
+    }
+    hits.sort((a, b) => a[0] - b[0] || a[1].pn.length - b[1].pn.length || a[1].pn.localeCompare(b[1].pn));
+    return hits.slice(0, n).map((h) => h[1]);
+  }
+  // the closest numbers to a typo: one or two letters off (F08 -> F80, FXW181 -> FXW181B)
+  function pnNear(pn, n = 4) {
+    if (!PNS) return [];
+    const d = (a, b) => {
+      if (Math.abs(a.length - b.length) > 2) return 9;
+      let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+      for (let i = 1; i <= a.length; i++) {
+        const cur = [i];
+        for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        prev = cur;
+      }
+      return prev[b.length];
+    };
+    // one letter off, or two when it starts the same way (so F08 finds F081, not a file called 10R)
+    return PNS.map((x) => [d(pn, x.pn), x]).filter(([k, x]) => k <= 1 || (k === 2 && x.pn[0] === pn[0])).sort((a, b) => a[0] - b[0] || a[1].pn.localeCompare(b[1].pn)).slice(0, n).map((h) => h[1]);
+  }
+  const sugBox = $("pnSug");
+  function sugHtml(x, i) {
+    const r = { part_number: x.pn, name: x.d }, lp = listPrice(r), eb = ebayPrice(r), price = lp ?? eb;
+    const have = rowsOf("owned").some((o) => o.part_number === x.pn) ? "In your box" : rowsOf("wishlist").some((o) => o.part_number === x.pn) ? "On your wishlist" : "";
+    return `<button type="button" class="ps-row" role="option" id="ps-${i}" data-pn="${esc(x.pn)}" aria-selected="${i === sugI}">${artTag(artOf(r), "ps-art")}`
+      + `<span class="ps-t"><b class="mono">${esc(x.pn)}</b><span>${esc(x.d || "Snap-on tool")}</span></span>`
+      + `<span class="ps-p">${have ? `<em>${have}</em>` : price != null ? money(price) : ""}</span></button>`;
+  }
+  function showSug(rows, note, extra = "") {
+    sugRows = rows; sugI = -1;
+    if (!rows.length && !note) return hideSug();
+    sugBox.innerHTML = (note ? `<p class="ps-note">${note}</p>` : "") + rows.map(sugHtml).join("") + extra;
+    sugBox.hidden = false; $("q-pn").setAttribute("aria-expanded", "true");
+  }
+  function hideSug() { sugBox.hidden = true; sugBox.innerHTML = ""; sugRows = []; sugI = -1; $("q-pn").setAttribute("aria-expanded", "false"); $("q-pn").removeAttribute("aria-activedescendant"); }
+  function showUnknown(pn, raw) {
+    const seen = new Set(), rows = [...pnMatches(raw, 3), ...pnNear(pn)].filter((x) => x.pn !== pn && !seen.has(x.pn) && seen.add(x.pn)).slice(0, 4);
+    shake($("quick"));
+    showSug(rows, `BoxTally doesn't know <b class="mono">${esc(pn)}</b>. Check the number stamped on the tool.${rows.length ? " Did you mean one of these?" : ""}`,
+      `<button type="button" class="btn small ps-anyway" data-anyway="${esc(pn)}">It's right, add ${esc(pn)} anyway</button>`);
+  }
+  let sugT = 0;
+  $("q-pn").addEventListener("input", () => {
+    pnOk = null; clearTimeout(sugT);
+    const v = $("q-pn").value;
+    // a pasted list, or nothing typed yet: no suggestions
+    if (!v.trim() || /[,;\n]/.test(v) || v.trim().split(/\s+/).filter((w) => pnLike(cleanPn(w))).length > 1) return hideSug();
+    sugT = setTimeout(() => loadPns().then(() => { if ($("q-pn").value === v) showSug(pnMatches(v)); }), 90);
+  });
+  $("q-pn").addEventListener("focus", () => { loadPns(); });
+  $("q-pn").addEventListener("keydown", (e) => {
+    if (sugBox.hidden) return;
+    const opts = [...sugBox.querySelectorAll(".ps-row")];
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      if (!opts.length) return;
+      e.preventDefault();
+      // up and down go round the matches and back to the box itself (-1)
+      sugI = ((sugI + 1 + (e.key === "ArrowDown" ? 1 : -1) + opts.length + 1) % (opts.length + 1)) - 1;
+      opts.forEach((o, i) => o.setAttribute("aria-selected", i === sugI));
+      if (sugI >= 0) { $("q-pn").setAttribute("aria-activedescendant", opts[sugI].id); opts[sugI].scrollIntoView({ block: "nearest" }); } else $("q-pn").removeAttribute("aria-activedescendant");
+    } else if (e.key === "Enter" && sugI >= 0) { e.preventDefault(); pickSug(opts[sugI].dataset.pn); }
+    else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); hideSug(); }
+  });
+  // keep the cursor in the box while a suggestion is tapped, so the list doesn't close under the finger
+  sugBox.addEventListener("pointerdown", (e) => { if (e.target.closest("button")) e.preventDefault(); });
+  sugBox.addEventListener("click", (e) => {
+    const any = e.target.closest("[data-anyway]");
+    if (any) { pnOk = any.dataset.anyway; $("q-pn").value = pnOk; $("quick").requestSubmit(); return; }
+    const b = e.target.closest("[data-pn]"); if (b) pickSug(b.dataset.pn);
+  });
+  function pickSug(pn) { $("q-pn").value = pn; pnOk = pn; hideSug(); $("quick").requestSubmit(); }
+  document.addEventListener("click", (e) => { if (!sugBox.hidden && !e.target.closest("#quick")) hideSug(); });
+
+  // Phones: the bottom bar's Add opens a short panel with this same add box (moved into it), Scan, and a
+  // Box / Wishlist switch. The long form with photo, price and date is one tap away under "More details".
+  const phoneMq = matchMedia("(max-width: 620px)"), addSheet = $("addSheet"), quickSpot = document.createComment("add box");
+  $("quick").before(quickSpot);
+  // (these two run from render too, which can come before this part of the file has run: no consts from here)
+  function addTo() { return $("addSheet").open ? sheetTo : state.tab; }
+  function syncAddLabel() {
+    const to = addTo(), open = $("addSheet").open;
+    $("q-add").textContent = to === "owned" ? "Add to box" : to === "test" ? "Try it" : matchMedia("(max-width: 620px)").matches && !open ? "Add" : "Add to wishlist";
+    $("q-more").textContent = open ? "More details & photo" : "Add with details & photo";
+  }
+  function placeQuick() {
+    const q = $("quick");
+    if (phoneMq.matches) { if (q.parentNode !== $("asSlot")) $("asSlot").appendChild(q); }
+    else { if (addSheet.open) addSheet.close(); if (q.previousSibling !== quickSpot) quickSpot.after(q); }
+    syncAddLabel();
+  }
+  phoneMq.addEventListener("change", placeQuick);
+  placeQuick();
+  function syncSheetTo() {
+    $("asTo").hidden = sheetTo === "test";
+    $("asTitle").textContent = sheetTo === "test" ? "Try a part number" : "Add a tool";
+    $("asTo").querySelectorAll("[data-to]").forEach((b) => b.setAttribute("aria-pressed", b.dataset.to === sheetTo));
+    syncAddLabel();
+  }
+  $("asTo").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-to]"); if (!b) return;
+    sheetTo = b.dataset.to; syncSheetTo(); hideSug(); $("q-pn").focus();
+  });
+  function openAdd(list, pn) {
+    if (state.readonly) return;
+    list = list || (state.tab === "test" ? "test" : state.tab === "wishlist" ? "wishlist" : "owned");
+    if (pn != null) $("q-pn").value = pn;
+    if (!phoneMq.matches) {
+      if (list !== state.tab) setTab(list);
+      if (here() === "/new") go(tabPath(), { replace: true });
+      $("quick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+      $("q-pn").focus({ preventScroll: true });
+      return;
+    }
+    sheetTo = list; $("asMsg").hidden = true;
+    if (!addSheet.open) { addSheet.showModal(); routeOpen(addSheet, "/new", "Add a tool"); }
+    syncSheetTo();
+    setTimeout(() => $("q-pn").focus(), 40);
+  }
+  addSheet.addEventListener("close", () => { hideSug(); $("scanPick").hidden = true; $("asMsg").hidden = true; syncAddLabel(); });
+  // after adding to the other list from the panel, closing it shows you that list
+  addSheet.addEventListener("close", () => { if (sheetAdded && sheetAdded !== state.tab && !state.money) setTab(sheetAdded); sheetAdded = null; });
+
   /* ---------- scan a part number with the camera ---------- */
   const scanCands = (text) => {
     const seen = new Set(), out = [];
@@ -3692,10 +3850,17 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     if (state.readonly) return;
     // in a list, only words with letters and numbers count; "ratchet" or "3/8" get reported, not added
-    const parts = $("q-pn").value.split(/[\s,;]+/).map(cleanPn).filter(Boolean);
+    const raw = $("q-pn").value, to = addTo();
+    const parts = raw.split(/[\s,;]+/).map(cleanPn).filter(Boolean);
     if (!parts.length) { openForm(null); return; }
-    if (parts.length > 1) { if (await addMany(parts, state.tab)) $("q-pn").value = ""; return; }
-    if (await addByPn(parts[0], state.tab)) { $("q-pn").value = ""; burst(...centerOf($("q-add")), 10); }
+    // a tool's name ("3/8 ratchet") rather than its number: show the matches to pick from
+    if (!parts.some(pnLike) && (await loadPns()) && pnMatches(raw).length) { showSug(pnMatches(raw), "Tap the one you mean:"); return; }
+    if (parts.length > 1) { if (await addMany(parts, to)) { $("q-pn").value = ""; hideSug(); if ($("addSheet").open) sheetAdded = to; } return; }
+    // a number BoxTally has never seen is usually a typo: say so, offer the closest ones, and let it through on a second tap
+    if (to !== "test" && pnOk !== parts[0] && (await loadPns()) && !knownPn(parts[0])) { showUnknown(parts[0], raw); return; }
+    const btn = $("q-add"), label = btn.textContent; btn.disabled = true; btn.textContent = "Adding…";
+    const ok = await addByPn(parts[0], to).finally(() => { btn.disabled = false; btn.textContent = label; });
+    if (ok) { $("q-pn").value = ""; pnOk = null; hideSug(); if ($("addSheet").open) sheetAdded = to; burst(...centerOf($("q-add")), 10); }
   });
   // Pasting a list (one per line, from a receipt or a set's contents) keeps the part numbers apart
   $("q-pn").addEventListener("paste", (e) => {
@@ -3906,11 +4071,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("shopQ").addEventListener("input", () => { $("shopGo").href = shopHref(); });
   $("shopQ").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("shopGo").href = shopHref(); $("shopGo").click(); } });
   // One add box for everything: these jump to the Wishlist tab and put the cursor in it.
-  function goAddWish() {
-    if (state.tab !== "wishlist") setTab("wishlist");
-    $("quick").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
-    $("q-pn").focus({ preventScroll: true });
-  }
+  function goAddWish() { openAdd("wishlist"); }
   $("shopWish").onclick = goAddWish;
 
   document.querySelector(".seg").addEventListener("click", (e) => {
@@ -3923,10 +4084,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let quickVisible = true;
   const syncFab = () => { $("fab").hidden = quickVisible || !state.loaded || state.readonly; };
   if ("IntersectionObserver" in window) new IntersectionObserver(([en]) => { quickVisible = en.isIntersecting; syncFab(); }).observe($("quick"));
-  $("fab").onclick = () => {
-    $("quick").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
-    $("q-pn").focus({ preventScroll: true });
-  };
+  $("fab").onclick = () => openAdd();
   $("watch").addEventListener("click", (e) => {
     if (e.target.closest("[data-watch-go]")) goAddWish();
     if (e.target.closest("[data-list-prices]")) openListPrices();
@@ -4377,6 +4535,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (a === "money" && !b) return { money: true };
     if (a === "wishlist" && b === "add" && !c) return { tab: "wishlist", open: "add" };
     if (a === "add" && !b) return { tab: "owned", open: "add" };
+    if (a === "new" && !b) return { open: "new" };
     if (a === "tool" && b) return { open: c === "edit" ? "edit" : "tool", id: b };
     if (["truck", "insurance", "share", "delete-account", "box-check", "feedback", "import"].includes(a) && !b) return { open: a };
     return { tab: "owned", unknown: true };
@@ -4387,7 +4546,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const r = readRoute();
     const ro = state.readonly, me = signedIn() && !state.demo;
     const item = r.id ? state.items.find((x) => String(x.id) === r.id) : null;
-    const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : r.open === "box-check" ? checkDlg : r.open === "feedback" ? fbDlg : r.open === "import" ? impDlg : null;
+    const want = r.open === "tool" ? viewer : r.open === "edit" || r.open === "add" ? dlg : r.open === "truck" ? truckDlg : r.open === "insurance" ? insDlg : r.open === "share" ? shareDlg : r.open === "delete-account" ? delDlg : r.open === "box-check" ? checkDlg : r.open === "feedback" ? fbDlg : r.open === "import" ? impDlg : r.open === "new" ? $("addSheet") : null;
     const ok = !r.unknown && !(r.tab === "test" && !testOk() && !rowsOf("test").length) && (!r.open || (r.open === "tool" ? !!item : r.open === "edit" ? !!item && !ro : r.open === "share" || r.open === "delete-account" ? me && !ro : r.open === "feedback" || !ro));
     routeSync = true;
     try {
@@ -4412,6 +4571,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (r.open === "box-check") openCheck();
         else if (r.open === "feedback") openFeedback();
         else if (r.open === "import") openImport();
+        else if (r.open === "new") openAdd();
       }
       if (!want) document.title = baseTitle;
     } finally { routeSync = false; }
@@ -4467,8 +4627,7 @@ document.addEventListener("DOMContentLoaded", () => {
     clean();
     if (!pn) return;
     if (startQ.get("list") === "wishlist" && state.tab !== "wishlist") setTab("wishlist");
-    $("q-pn").value = pn;
-    setTimeout(() => { $("quick").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" }); $("q-pn").focus({ preventScroll: true }); }, 60);
+    setTimeout(() => openAdd(state.tab, pn), 60);
     toast(`${pn} is ready. Tap ${$("q-add").textContent} to add it.`);
   }
   // Where visitors came from: a ?ref= tag, or else the site that linked here (reddit.com → reddit).
