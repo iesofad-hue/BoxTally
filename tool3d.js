@@ -264,7 +264,7 @@ const ZOOM = {
   power: ["x", 0.62, 1, "y", 0.6, 1], cl14: ["x", 0.62, 1, "y", 0.6, 1], cl18: ["x", 0.62, 1, "y", 0.6, 1], "air-impact": ["x", 0.62, 1, "y", 0.6, 1],
   "clip-tool": ["x", 0, 0.32], "power-ratchet": ["x", 0, 0.3], "cl14-ratchet": ["x", 0, 0.3], "cl18-ratchet": ["x", 0, 0.3], "cl14-die": ["x", 0, 0.3],
 };
-const zoomOf = (key) => ZOOM[key] || (/-battery$|^cl18-inflator$|^cl1[48]-saw$|-angle$/.test(key) ? null : ZOOM[key.replace(/-soft$/, "")] || ZOOM[key.split("-")[0]] || null);
+const zoomOf = (key) => ZOOM[key] || (/-battery(-xl)?$|^cl18-inflator$|^cl1[48]-saw$|-angle$/.test(key) ? null : ZOOM[key.replace(/-soft$/, "")] || ZOOM[key.split("-")[0]] || null);
 function focusPoints(model, spec) {
   model.updateMatrixWorld(true);
   const inv = model.matrixWorld.clone().invert(), m4 = new THREE.Matrix4(), v = new THREE.Vector3(), all = [];

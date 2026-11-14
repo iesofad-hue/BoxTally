@@ -112,7 +112,7 @@ const CASES = [
   ["CT861", "cl14-impact"], ["CT861DB", "cl14-impact"], ["CT825", "cl14-impact"], ["CTR814DB", "cl14-ratchet"], ["CTR867", "cl14-ratchet"], ["CTR761", "cl14-ratchet"], ["CTR881GMDB", "cl14-ratchet"],
   ["CTS861", "cl14-driver"], ["CDR861", "cl14-drill"], ["CTB8174", "cl14-battery"], ["CT9075", "cl18-impact"], ["CT8850", "cl18-impact"], ["CT9010", "cl18-impact"],
   ["CDR9015", "cl18-drill"], ["CTGR8850", "cl18-grinder"], ["CTGRS8825", "grinder-die"], ["CTRS8850", "cl18-saw"], ["CTB185", "cl18-battery"], ["CTB8185", "cl18-battery"],
-  ["CTC772A", "charger"], ["CGRS861", "cl14-die"], ["CDRR2005DB", "cl14-drill"], ["CDRR200545K2", "cl14-drill"], ["CTPP761", "cl14-polisher"], ["CTBF8818DB", "polisher"],
+  ["CTC772A", "charger-14"], ["CTC131", "charger-dual"], ["CTB1880", "cl18-battery-xl"], ["CTLMAG-BOOTM", "battery-boot"], ["CTLMAGBOOT", "battery-boot"], ["CTC720", "charger"], ["CGRS861", "cl14-die"], ["CDRR2005DB", "cl14-drill"], ["CDRR200545K2", "cl14-drill"], ["CTPP761", "cl14-polisher"], ["CTBF8818DB", "polisher"],
   // fadie's own 14.4V tools (all 7 must get the 14.4V look, not the 18V one)
   ["CTR827", "cl14-ratchet"], ["CTR868GMDB", "cl14-ratchet"], ["CTR881", "cl14-ratchet"], ["CGRS861", "cl14-die"], ["CTRS761", "cl14-saw"], ["CT861AMG", "cl14-impact"], ["CTPP861", "cl14-polisher"],
   ["CTR761", "cl14-ratchet"], ["CT761", "cl14-impact"], ["CTS761", "cl14-driver"], ["CDR761", "cl14-drill"], ["CTB8172", "cl14-battery"],

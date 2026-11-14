@@ -95,6 +95,8 @@ const PACKS = {
   "18": { L: 120, W: 80, H: 62, v: "18V", lo: mat.redp, hi: mat.black, btn: mat.black, panel: true, leds: 4 },
   gen: { L: 108, W: 74, H: 52, v: "", lo: mat.black, hi: mat.grey, btn: mat.redp, panel: true, leds: 4 },
   "14": { L: 96, W: 64, H: 42, v: "14.4V", lo: mat.black, hi: mat.black, btn: mat.redp, panel: false, leds: 3 },
+  // CTB1880 18V 8.0 Ah: the same slide-on pack grown taller, all black, with its charge gauge on the top
+  "18xl": { L: 128, W: 84, H: 92, v: "18V", lo: mat.black, hi: mat.black, btn: mat.black, panel: true, leds: 4, stripe: false, ah: "8.0 Ah", topGauge: true, rail: mat.black },
 };
 // slide-on pack, standing on the bench, slides on toward -x; release button and fuel gauge on the front (+x)
 function battery(kind = "18", { top = false } = {}) {
@@ -107,10 +109,11 @@ function battery(kind = "18", { top = false } = {}) {
     g.add(at(rbox(L * 0.56, yl * 0.62, 2.6, mat.rubber, 4, 0.9), -L * 0.12, yl * 0.47, s * (W / 2 + 0.3)));
     for (let i = 0; i < 3; i++) g.add(at(rbox(2, yl * 0.5, 1.6, mat.rubber, 0.8, 0.5), -L * 0.36 + i * 5 + 4, yl * 0.47, s * (W / 2 + 1.6)));
   }
-  if (p.lo === p.hi) g.add(at(rbox(L - 4, 3, W - 4, mat.redp, 1.5, 1), 0, yl + 3, 0)); // 14.4V: red stripe
+  if (p.lo === p.hi && p.stripe !== false) g.add(at(rbox(L - 4, 3, W - 4, mat.redp, 1.5, 1), 0, yl + 3, 0)); // 14.4V: red stripe
   const lz = W / 2 + (p.panel ? 1.9 : 0.5), lx = p.panel ? -L * 0.1 : L * 0.1;
   if (p.v) g.add(print(p.v, 40, 15, lx + 4, yl * 0.52, lz), print(p.v, 40, 15, lx + 4, yl * 0.52, -lz, WHITE, "-z")); // a pack of unknown voltage says none
-  g.add(print(kind === "14" ? "Li-ion · 2.5 Ah" : "Li-ion · 5.0 Ah", 30, 5, lx + 4, yl * 0.52 - 10, lz, { color: "#9aa3ad" }));
+  g.add(print(p.ah ? "Li-ion · " + p.ah : kind === "14" ? "Li-ion · 2.5 Ah" : "Li-ion · 5.0 Ah", 30, 5, lx + 4, yl * 0.52 - 10, lz, { color: "#9aa3ad" }));
+  if (p.ah) for (const s of [1, -1]) g.add(at(rbox(L * 0.62, 1.6, 1, mat.grey, 0.6, 0.3), lx + 4, yl * 0.52 + (s > 0 ? 11 : -16), lz + 0.2)); // the printed band round the label
   for (const s of [1, -1]) { // cooling slots along both sides of the top shell, and rubber bumpers on the corners
     for (let i = 0; i < 5; i++) g.add(at(box(2, hh * 0.38, 1.2, mat.hole, 0.3), -L * 0.3 + i * 5.5, yl - 2 + hh * 0.5, s * ((W - 6) / 2 + 0.1)));
     for (const e of [1, -1]) g.add(at(rbox(7, yl * 0.8, 7, mat.rubber, 3, 1.4), e * (L / 2 - 2.6), yl * 0.44, s * (W / 2 - 2.6)));
@@ -126,10 +129,14 @@ function battery(kind = "18", { top = false } = {}) {
   if (top) { // rail tower, contacts and latch (hidden inside the tool's foot otherwise)
     const tw = W * 0.42, tl = L * 0.7, tx = -L * 0.1;
     g.add(at(rbox(tl, 10, tw, mat.black, 3, 1.5), tx, H + 4, 0));
-    for (const s of [1, -1]) g.add(at(rbox(tl, 2.4, 7, mat.satin, 1, 0.6), tx, H + 8.2, s * (tw / 2 + 1.5)));
+    for (const s of [1, -1]) g.add(at(rbox(tl, 2.4, 7, p.rail || mat.satin, 1, 0.6), tx, H + 8.2, s * (tw / 2 + 1.5)));
     for (let i = 0; i < 4; i++) { const z = (i - 1.5) * 6; g.add(at(box(14, 0.6, 2.4, mat.hole, 0.1), tx + tl / 2 - 9, H + 9.2, z), at(box(12, 0.8, 1, mat.brass, 0.1), tx + tl / 2 - 9, H + 9.1, z)); }
     g.add(at(rbox(12, 6, tw * 0.7, p.btn, 2, 1.2), tx + tl / 2 + 8, H + 1.5, 0));
     g.add(print(kind === "14" ? "14.4 V" : "18 V", 26, 6, tx - 8, H + 9.2, 0, WHITE, "y"));
+  }
+  if (p.topGauge) { // a gauge window on the top of the front shell: four green bars
+    g.add(at(rbox(22, 1.6, W * 0.42, mat.screen, 2, 0.5), L / 2 - 16, H + 0.4, 0));
+    for (let i = 0; i < 4; i++) g.add(at(box(14, 1, 4, M.ledG, 0.2), L / 2 - 16, H + 1.4, (i - 1.5) * 7));
   }
   return g;
 }
@@ -568,6 +575,77 @@ function charger() {
   g.add(tube([[-104, 20, 0], [-120, 12, 0], [-130, 4, 20], [-118, 4, 56], [-80, 4, 74], [-30, 4, 78]], 4, mat.rubber, 10));
   g.userData.yaw = -0.5; return g;
 }
+// the top of a flat-topped body: a rounded pad in plan (x across, z front to back), h thick
+const pad = (w, d, h, m, r = 6, b = 1) => { const o = rbox(w, d, h, m, r, b); o.rotation.x = -PI / 2; return o; };
+// CTC131 dual-bay charger: a low all-black slab with vents round the top edge, the lamp label at the back left, a round
+// pocket the 14.4V stem drops into (front left) and the 18V slide-on bay (right). The cord plugs into the back.
+function chargerDual() {
+  const g = group(), W = 200, D = 168, H = 40;
+  g.add(at(pad(W, D, H, mat.black, 12, 6), 0, H / 2, 0));
+  g.add(at(pad(W - 4, D - 4, 3, mat.grey, 10, 1), 0, 4, 0)); // grey base band
+  g.add(at(pad(W - 12, D - 12, 4, mat.black, 10, 2), 0, H + 1, 0)); // raised top deck
+  for (let i = 0; i < 26; i++) g.add(at(box(2.2, 1, 9, mat.hole, 0.2), -W / 2 + 14 + i * 6.8, H + 2.6, -D / 2 + 12)); // vents along the back
+  for (const s of [1, -1]) for (let i = 0; i < 16; i++) g.add(at(box(1.2, 14, 3, mat.hole, 0.2), s * (W / 2 + 0.2), H * 0.55, -D / 2 + 20 + i * 8.6));
+  // the lamp label
+  g.add(at(pad(66, 30, 1, mat.screen, 3, 0.3), -48, H + 3.4, -40));
+  [[M.ledG, -64, -46], [M.ledG, -40, -46], [M.ledR, -64, -34], [M.ledG, -40, -34]].forEach(([m, x, z]) => g.add(at(cyl(1.8, 1.2, m, { segs: 14 }), x, H + 4.2, z)));
+  g.add(at(pad(10, 6, 1, mat.white, 1, 0.2), -24, H + 4.1, -34));
+  // 14.4V pocket: a raised collar round a deep oval hole with the contacts at the bottom
+  g.add(at(pad(56, 64, 6, mat.black, 22, 2), -50, H + 5, 20));
+  g.add(at(pad(38, 46, 2, mat.hole, 16, 0.5), -50, H + 7.4, 18));
+  for (let i = 0; i < 3; i++) for (const s of [1, -1]) g.add(at(box(2, 1, 6, mat.brass, 0.2), -54 + i * 4 + (s > 0 ? 8 : 0) - 4, H + 8.6, 14 + s * 6));
+  // 18V bay: a raised block with rails and a channel, contacts at the back of the channel, a step at the front
+  g.add(at(pad(80, 120, 12, mat.black, 6, 2), 46, H + 8, -4));
+  g.add(at(pad(56, 104, 2, mat.hole, 3, 0.4), 46, H + 14.4, -6));
+  for (const s of [1, -1]) g.add(at(box(6, 4, 100, mat.black, 1), 46 + s * 25, H + 16, -6)); // rails
+  g.add(at(pad(40, 20, 6, mat.black, 3, 1), 46, H + 15, -48));
+  for (let i = 0; i < 5; i++) g.add(at(box(2.4, 6, 12, mat.brass, 0.3), 34 + i * 6, H + 17, -32));
+  g.add(at(pad(66, 10, 3, mat.black, 3, 1), 46, H + 15, 52));
+  for (const x of [-50, 46]) g.add(at(box(6, 1.2, 4, mat.grey, 0.3), x, H + 3.6, D / 2 - 12)); // fit marks on the front
+  // cord into the back, coiled behind
+  g.add(at(box(14, 10, 8, mat.rubber, 2), -70, 14, -D / 2 - 4));
+  g.add(tube([[-70, 14, -D / 2 - 8], [-74, 6, -D / 2 - 26], [-100, 4, -D / 2 - 30], [-124, 4, -D / 2 + 10], [-120, 4, -10], [-108, 4, 40]], 3.6, mat.rubber, 10));
+  g.userData.yaw = -0.35; return g;
+}
+// CTC772A 14.4V charger: a long black box with the lamp label at the back, a green charge gauge strip down one side
+// of the top, and up front a raised ribbed cradle round the pocket the 14.4V stem drops into. Cord from the back.
+function charger14() {
+  const g = group(), L = 190, W = 108, H = 50;
+  g.add(at(rbox(L, H, W, mat.black, 12, 8), 0, H / 2, 0));
+  g.add(at(rbox(L - 6, 4, W - 6, mat.rubber, 2, 1), 0, 2, 0));
+  for (const s of [1, -1]) for (let i = 0; i < 5; i++) g.add(at(box(20, 2.4, 1.2, mat.hole, 0.2), -L / 2 + 22, 14 + i * 6, s * (W / 2 + 0.1))); // side vents, back
+  for (const s of [1, -1]) for (let i = 0; i < 4; i++) g.add(at(box(16, 2.4, 1.2, mat.hole, 0.2), L / 2 - 22, 14 + i * 6, s * (W / 2 + 0.1))); // and front
+  // label at the back, gauge along the far side
+  g.add(at(pad(40, 46, 1, mat.screen, 3, 0.3), -L / 2 + 34, H + 0.3, -14));
+  [[M.ledG, -52, -28], [M.ledG, -64, -8], [M.ledR, -52, -8], [M.ledG, -64, -28]].forEach(([m, x, z]) => g.add(at(cyl(1.8, 1.2, m, { segs: 14 }), x - 6, H + 1, z + 4)));
+  g.add(at(pad(80, 6, 1, mat.screen, 2, 0.3), -20, H + 0.4, -W / 2 + 12));
+  for (let i = 0; i < 4; i++) g.add(at(box(14, 1, 3.2, M.ledG, 0.2), -46 + i * 18, H + 1.2, -W / 2 + 12));
+  // the cradle: a raised round hump with ribs on its front face and the pocket on top
+  const cx = 42, cz = 4;
+  g.add(at(cyl(40, 22, mat.black, { segs: 48 }), cx, H + 11, cz));
+  g.add(at(cyl(43, 4, mat.black, { segs: 48 }), cx, H + 2, cz));
+  for (let i = 0; i < 13; i++) { const a = -PI / 2 + (i - 6) * 0.17; g.add(at(box(3, 20, 3, mat.hole, 0.4), cx + Math.cos(a + PI / 2) * 40.2, H + 11, cz + Math.sin(a + PI / 2) * 40.2)); }
+  g.add(at(pad(40, 48, 2, mat.hole, 14, 0.4), cx, H + 21.4, cz - 2));
+  for (const s of [1, -1]) for (let i = 0; i < 2; i++) g.add(at(box(2.4, 1, 6, mat.brass, 0.2), cx - 4 + i * 8, H + 22.6, cz - 2 + s * 8));
+  // cord from the back corner
+  g.add(at(box(12, 10, 12, mat.rubber, 2), -L / 2 - 4, 16, W / 2 - 20));
+  g.add(tube([[-L / 2 - 8, 16, W / 2 - 20], [-L / 2 - 26, 8, W / 2 - 10], [-L / 2 - 30, 4, W / 2 + 20], [-40, 4, W / 2 + 26], [40, 4, W / 2 + 30], [L / 2 + 10, 4, W / 2 + 18]], 3.6, mat.rubber, 10));
+  g.userData.yaw = -0.5; return g;
+}
+// CTLMAG-BOOTM magnetic boot for the 14.4V pack: an open black rubber cradle, a flat floor with a raised wall at each
+// end whose sides slope down, and a magnet set in the floor so the pack can hang on a lift or fender
+function batteryBoot() {
+  const g = group(), L = 150, D = 76, T = 10, Hw = 52;
+  g.add(at(pad(L, D, T, mat.rubber, 8, 3), 0, T / 2, 0));
+  for (const s of [1, -1]) {
+    const wall = ext(rp([[-D / 2, 0], [D / 2, 0], [D / 2, Hw * 0.55], [D / 2 - 14, Hw], [-D / 2 + 14, Hw], [-D / 2, Hw * 0.55]], [4, 4, 6, 6, 6, 6]), 16, 3, mat.rubber);
+    wall.rotation.y = PI / 2; g.add(at(wall, s * (L / 2 - 8), 0, 0));
+    g.add(at(box(4, Hw * 0.7, D - 24, mat.black, 1), s * (L / 2 - 17), Hw * 0.4, 0)); // inner lip
+  }
+  g.add(at(pad(L - 48, D - 18, 1, mat.black, 6, 0.3), 0, T + 0.2, 0)); // floor
+  g.add(at(cyl(16, 1, mat.satin, { segs: 32 }), 0, 0.2, 0));
+  g.userData.yaw = -0.45; return g;
+}
 function jumpStarter() {
   const g = group(), W = 250, H = 180, D = 96;
   g.add(at(rbox(W, H, D, mat.redp, 22, 10), 0, H / 2 + 6, 0));
@@ -731,6 +809,10 @@ export const MODELS = {
   "cl18-battery": () => batteryModel("18"),
   battery: () => batteryModel("gen"),
   charger: () => charger(),
+  "charger-dual": () => chargerDual(),
+  "charger-14": () => charger14(),
+  "cl18-battery-xl": () => batteryModel("18xl"),
+  "battery-boot": () => batteryBoot(),
   // air tools: composite black housings, satin metal, hose fitting under the grip
   "air-impact": (o) => pistol(sized({ pk: null, nose: "impact", len: 130, R: 31, drive: 12.7, body: M.comp, trim: mat.rubber, rearCap: mat.satin, tag: "1/2", tag2: "AIR · 90 PSI", regulator: true, gripH: 98 }, o)),
   "air-hammer": (o = {}) => pistol({ pn: o.pn, pk: null, nose: "hammer", len: 96, R: 26, body: M.comp, rearCap: mat.satin, tag2: "AIR HAMMER", gripH: 96, gripT: 32, gripW: 42 }),

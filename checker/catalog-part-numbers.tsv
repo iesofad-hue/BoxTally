@@ -1125,9 +1125,11 @@ CTUSB761	14.4 V MicroLithium USB power unit
 CTUSB8850	Cordless USB power unit (no description on page)
 CTB185	18 V 5.0 Ah lithium battery
 CTB8174	14.4 V 2.5 Ah lithium battery
-CTB8187	Battery (no description on page)
-CTB1856	Battery (no description on page)
-CTC131	18 V battery charger
+CTB1880	18 V 8.0 Ah lithium battery
+CTLMAG-BOOTM	Magnetic boot for 14.4 V cordless battery pack (black)
+CTB8187	18 V 5.0 Ah lithium battery (black)
+CTB1856	18 V lithium battery
+CTC131	14.4 V & 18 V dual bay battery charger
 CTC772A	14.4 V battery charger
 EEBC12000USB	Battery/USB accessory (no description on page)
 YA409-6	Optional 1/4" collet for CDRR2005 series mini drills

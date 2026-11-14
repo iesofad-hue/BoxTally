@@ -416,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // storage (KER above is a knife)
     [/^KR(SC|BC)/, "storage-cart"], [/^K[A-Z]{1,4}\d/, "storage"],
     // cordless: CT impact, CTR ratchet, CDR drill, CTS screwdriver, CTGR grinder, CTB battery, CTC charger
-    [/^CTB\d/, "battery"], [/^CTC\d/, "charger"], [/^CTRS\d/, "cl18-saw"], [/^CTRG\d/, "rivet"], [/^CTR\d/, "power-ratchet", (m) => (/^CTR[78][12]\d(?!\d)/.test(m.input) ? '1/4"' : /^CTR[78]\d\d(?!\d)/.test(m.input) ? '3/8"' : null)],
+    [/^CTB18[89]0/, "cl18-battery-xl"], [/^CTB\d/, "battery"], [/^CTC131/, "charger-dual"], [/^CTC772/, "charger-14"], [/^CTC\d/, "charger"], [/^CTLMAG-?BOOT/, "battery-boot"], [/^CTRS\d/, "cl18-saw"], [/^CTRG\d/, "rivet"], [/^CTR\d/, "power-ratchet", (m) => (/^CTR[78][12]\d(?!\d)/.test(m.input) ? '1/4"' : /^CTR[78]\d\d(?!\d)/.test(m.input) ? '3/8"' : null)],
     [/^C?TGRS\d/, "grinder-die"], [/^CTGR\d/, "grinder-angle"], [/^CTS[RS]?\d/, "power-driver"], [/^CDR[RS]?\d/, "power-drill"],
     [/^CT(BF|PP)\d/, "polisher"], [/^CT(L|FL|LED|LAR|LZ|LUV|LUH|LU)\d/, "shop"], [/^CTG\d/, "thermometer"], [/^CTINF/, "tire-inflator"],
     [/^CT(Q|J)?\d/, "power", (m) => (/^CT825/.test(m.input) ? '1/4"' : /^CT[78]\d\d(?!\d)/.test(m.input) ? '3/8"' : /^CT91\d\d/.test(m.input) ? '3/4"' : /^CT(88|90)\d\d/.test(m.input) ? '1/2"' : null)],
@@ -584,7 +584,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "ratchet-soft": "Soft-grip ratchet", "ratchet-long-soft": "Long soft-grip ratchet", "ratchet-stubby-soft": "Stubby soft-grip ratchet", "ratchet-flex-soft": "Soft-grip flex ratchet",
     "ratchet-long-flex-soft": "Long soft-grip flex ratchet", "ratchet-round-soft": "Soft-grip round-head ratchet", "ratchet-thumbwheel-soft": "Soft-grip thumbwheel ratchet",
     power: "Cordless impact", "power-stubby": "Stubby impact", "power-12": "High-torque impact", "power-driver": "Impact driver", "power-drill": "Drill/driver", "power-ratchet": "Cordless ratchet",
-    "air-impact": "Air impact", "air-ratchet": "Air ratchet", "air-hammer": "Air hammer", "grinder-die": "Die grinder", "grinder-angle": "Angle grinder", battery: "Battery", charger: "Charger",
+    "air-impact": "Air impact", "air-ratchet": "Air ratchet", "air-hammer": "Air hammer", "grinder-die": "Die grinder", "grinder-angle": "Angle grinder", battery: "Battery", charger: "Charger", "charger-dual": "Dual-bay charger", "charger-14": "14.4V charger", "battery-boot": "Battery boot", "cl18-battery-xl": "18V 8.0 Ah battery",
     extension: "Extension", breaker: "Breaker bar", ujoint: "Universal joint", adapter: "Adapter", speeder: "Speed handle",
     hexkeys: "Hex keys", nutdriver: "Nut driver", crowfoot: "Crowfoot wrench", testlight: "Test light", multimeter: "Multimeter", pickup: "Pickup tool",
     "storage-cart": "Service cart", "storage-chest": "Top chest",
@@ -625,7 +625,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const saidDrive = (text) => { const m = String(text || "").match(/\b(1\/4|3\/8|1\/2|3\/4)\s*(?:"|in\b|inch|″)?\s*(?:-\s*)?(?:drive|dr\b)/i); return m ? m[1] + '"' : null; };
   const pnDrive = (pn) => (pnGuess(pn) || {}).drive || null;
   // The family a kind of tool belongs to: socket-deep is a socket, air-impact a power tool.
-  const POWER_KINDS = ["air-impact", "air-ratchet", "air-hammer", "air-bit", "grinder-die", "grinder-angle", "battery", "charger", "rivet", "polisher", "cutoff", "heatgun"];
+  const PN_OWN = ["charger-dual", "charger-14", "cl18-battery-xl", "battery-boot"];
+  const POWER_KINDS = ["air-impact", "air-ratchet", "air-hammer", "air-bit", "grinder-die", "grinder-angle", "battery", "charger", "charger-dual", "charger-14", "battery-boot", "rivet", "polisher", "cutoff", "heatgun"];
   const familyOf = (k) => (["bit-socket-case", "set-sd-case", "bit-long-case", "lug-flip-set"].includes(k) ? "set" : POWER_KINDS.includes(k) || /^(power|cl1)/.test(k) ? "power" : ["knife", "scraper", "file", "tape"].includes(k) ? "general" : ["creeper", "magtray", "magmat", "mirror", "headlamp", "puck-light", "pocket-light"].includes(k) || /^mag/.test(k) ? "shop" : k.split("-")[0]);
   // The drive category a tool belongs in. A hand-picked drive category that the name or part number
   // contradicts (S80A filed under 3/8" Drive Tools) shows, filters and sorts as the right one.
@@ -970,6 +971,8 @@ document.addEventListener("DOMContentLoaded", () => {
     else kind = g ? g.key : DRIVE_CATS.includes(r.category) ? "ratchet" : "other";
     { const v = voltOf(text, pn); if (v && CORDLESS[v][kind]) kind = CORDLESS[v][kind]; }
     if (/^ratchet/.test(kind) && softGrip(text, pn) && ART[kind + "-soft"]) kind += "-soft";
+    // a few part numbers have a look of their own that a plain name ("battery charger") must not hide
+    if (g && PN_OWN.includes(g.key)) kind = g.key;
     if (chosen) kind = chosen;
     // a roll cab, top chest, hutch or locker: what its number and name say it is (see boxSpec)
     const box = (kind === "storage" || kind === "storage-chest") ? boxSpec(chosen || kind, pn, text) : null;
@@ -1228,6 +1231,41 @@ document.addEventListener("DOMContentLoaded", () => {
     + '<rect class="d" x="50" y="60" width="58" height="26" rx="6"/><rect class="sh" x="55" y="63" width="30" height="1.6" rx=".8" opacity=".4"/><rect class="g" x="46.6" y="66" width="4.4" height="12" rx="1.6"/><rect class="g" x="107" y="66" width="4.4" height="12" rx="1.6"/>'
     + '<text class="txw" x="74" y="76" font-size="8" text-anchor="middle">14.4V</text><text class="txw" x="74" y="82.4" font-size="3.6" text-anchor="middle">LITHIUM 2.5 Ah</text>'
     + '<circle class="led" cx="94" cy="74" r="1.5"/><circle class="led" cx="98.6" cy="74" r="1.5"/><circle class="ledoff" cx="103.2" cy="74" r="1.5"/>';
+  // CTC131 dual-bay charger: a low, all-black slab with vents round the top edge, the label with its lamps at the
+  // back left, a round pocket the 14.4V stem drops into (front left) and the 18V slide-on bay on the right. Detachable cord.
+  ART["charger-dual"] = '<path class="to" stroke-width="4.4" d="M18 80 Q6 80 6 92"/><path class="tk" stroke-width="2.2" d="M18 80 Q6 80 6 92"/>'
+    + '<path class="d" d="M20 66 H140 Q144 66 144 70 V84 Q144 88 140 88 H20 Q16 88 16 84 V70 Q16 66 20 66 Z"/>'
+    + '<path class="d" d="M28 50 H132 L144 67 H16 Z"/><path class="kn" opacity=".35" d="M34 52.6 H126"/>'
+    + '<path class="gr" stroke="#fff" stroke-opacity=".22" d="M22 72 V82 M26 72 V82 M30 72 V82 M130 72 V82 M134 72 V82 M138 72 V82"/>'
+    + '<rect class="k" x="36" y="54" width="26" height="6" rx="1.2"/><circle class="led" cx="41" cy="57" r="1.3"/><circle class="ledg" cx="48" cy="57" r="1.3"/><circle class="ledr" cx="55" cy="57" r="1.3"/>'
+    + '<ellipse class="d" cx="52" cy="63" rx="17" ry="4.6"/><ellipse class="pit" cx="52" cy="62.6" rx="11" ry="2.8"/>'
+    + '<path class="d" d="M86 36 H126 L130 64 H82 Z"/><rect class="pit" x="94" y="40" width="24" height="10" rx="1.4"/>'
+    + '<path class="s" d="M98 41.6 V48.4 M102 41.6 V48.4 M106 41.6 V48.4 M110 41.6 V48.4 M114 41.6 V48.4" stroke="#d8b64a" stroke-width="1.2"/>'
+    + '<rect class="sh" x="88" y="38" width="30" height="1.4" rx=".7" opacity=".3"/><rect class="sh" x="24" y="68" width="60" height="1.4" rx=".7" opacity=".25"/>';
+  // CTC772A 14.4V charger: a long black box, the label at the back, a green charge gauge down the side and a raised,
+  // ribbed cradle up front with the round pocket the 14.4V stem drops into. Cord out of the back.
+  ART["charger-14"] = '<path class="to" stroke-width="4.4" d="M24 78 Q10 78 10 92"/><path class="tk" stroke-width="2.2" d="M24 78 Q10 78 10 92"/>'
+    + '<path class="d" d="M28 62 H132 Q136 62 136 66 V84 Q136 88 132 88 H28 Q24 88 24 84 V66 Q24 62 28 62 Z"/>'
+    + '<path class="d" d="M34 50 H126 L136 63 H24 Z"/>'
+    + '<path class="gr" stroke="#fff" stroke-opacity=".2" d="M30 70 H40 M30 75 H40 M30 80 H40 M120 70 H130 M120 75 H130 M120 80 H130"/>'
+    + '<rect class="k" x="38" y="52.6" width="18" height="7.4" rx="1.2"/><circle class="ledg" cx="42" cy="55" r="1.1"/><circle class="led" cx="47" cy="55" r="1.1"/><circle class="ledr" cx="52" cy="55" r="1.1"/><rect class="w" x="41" y="57.4" width="12" height="1.4" rx=".5" opacity=".7"/>'
+    + '<path class="ledg" stroke-width=".6" d="M108 53 H124 L125.4 55 H109 Z"/>'
+    + '<path class="d" d="M64 64 Q64 38 84 38 Q104 38 104 64 Z"/>'
+    + '<path class="gr" stroke="#fff" stroke-opacity=".28" d="M68 62 V52 M72 62 V46 M76 62 V43 M80 62 V42 M88 62 V42 M92 62 V43 M96 62 V46 M100 62 V52"/>'
+    + '<ellipse class="pit" cx="84" cy="40.6" rx="11" ry="3"/><rect class="sh" x="30" y="64.6" width="50" height="1.4" rx=".7" opacity=".25"/>';
+  // CTB1880 18V 8.0 Ah pack: a tall, all-black slide-on pack with the green four-bar charge gauge on its top front
+  ART["cl18-battery-xl"] = '<path class="d" d="M32 36 H128 Q134 36 134 42 V82 Q134 90 126 90 H34 Q26 90 26 82 V42 Q26 36 32 36 Z"/>'
+    + '<path class="d" d="M36 22 H124 Q130 22 130 28 V38 H30 V28 Q30 22 36 22 Z"/><path class="kn" opacity=".45" d="M32 46 V82 M36 46 V82 M124 46 V82 M128 46 V82"/>'
+    + '<rect class="d" x="48" y="13" width="56" height="11" rx="3"/><rect class="s" x="54" y="15.4" width="44" height="4.6" rx="1.4"/>'
+    + '<rect class="pit" x="62" y="16.2" width="5" height="3" rx=".8"/><rect class="pit" x="74" y="16.2" width="5" height="3" rx=".8"/><rect class="pit" x="86" y="16.2" width="5" height="3" rx=".8"/>'
+    + '<rect class="k" x="106" y="25" width="18" height="9" rx="1.6"/><rect class="ledg" x="108.4" y="27" width="2.6" height="5" rx=".5"/><rect class="ledg" x="112.4" y="27" width="2.6" height="5" rx=".5"/><rect class="ledg" x="116.4" y="27" width="2.6" height="5" rx=".5"/><rect class="ledg" x="120.4" y="27" width="2.6" height="5" rx=".5"/>'
+    + '<path class="kn" opacity=".55" d="M40 58 L120 50 M40 76 L120 68"/>'
+    + '<text class="txw" x="74" y="66" font-size="11" text-anchor="middle" transform="rotate(-5.7 74 64)">18V</text><text class="txw" x="96" y="70" font-size="4.6" text-anchor="middle" transform="rotate(-5.7 96 68)">LITHIUM 8.0 Ah</text>'
+    + '<rect class="sh" x="36" y="25" width="60" height="2.2" rx="1.1" opacity=".45"/>';
+  // CTLMAG-BOOTM magnetic boot for the 14.4V pack: an open black rubber cradle, a flat floor with a raised wall at each end
+  ART["battery-boot"] = '<path class="d" d="M22 46 Q22 42 26 42 H40 Q44 42 44 46 V70 H116 V46 Q116 42 120 42 H134 Q138 42 138 46 V84 Q138 88 134 88 H26 Q22 88 22 84 Z"/>'
+    + '<path class="pit" opacity=".7" d="M44 70 H116 V76 H44 Z"/><path class="kn" opacity=".3" d="M26 48 V82 M134 48 V82"/>'
+    + '<path class="sh" opacity=".25" d="M30 45 H38 L36 54 H32 Z M122 45 H130 L128 54 H124 Z"/><rect class="sh" x="48" y="79" width="64" height="1.6" rx=".8" opacity=".2"/>';
   // 14.4V polish/prep tool (CTPP861/761): the stubby 14.4V pistol body, a short gear nose and a small backing pad facing forward
   { const b = ART["cl14-impact"]; ART["cl14-polisher"] = b.slice(0, b.indexOf('<path class="s" d="M51 24.0')).replace('>3/8</text>', '>1 · 2</text>')
     + '<path class="s" d="M51 25 L45 27.4 V40.6 L51 43 Z"/><rect class="sh" x="45.6" y="28.6" width="5" height="1.4" rx=".7"/><rect class="s" x="40.4" y="31.4" width="5.2" height="5.2" rx="1"/>'
